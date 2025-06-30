@@ -1,370 +1,17 @@
-// Class declarations
+/// <reference types="google-apps-script" />
 
-class AccountSheet {
-  static get COLUMNS() {
-    return {
-      DATE: 1,
-      DESCRIPTION: 2,
-      CREDIT: 3,
-      DEBIT: 4,
-      NOTE: 5,
-      COUNTERPARTY: 6,
-      COUNTERPARTY_DATE: 7,
-      BALANCE: 8,
-    };
-  };
-
-  static get ROW_DATA_STARTS() { return 2; }
-
-  static get HEADERS() {
-    return ['Date', 'Description', 'Credit (£)', 'Debit (£)', 'Note', 'CPTY', 'Date CPTY', 'Balance (£)'];
-  }
-
-  static get MINIMUM_COLUMNS() { return 8; }
-
-  constructor(iswSheet) {
-    if (iswSheet) {
-      const sheetName = iswSheet.getSheetName();
-      if (sheetName[0] === '_') {
-        this.sheet = iswSheet;
-      } else {
-        throw new Error(`${sheetName} is NOT an account sheet`);
-      }
-    }
-  }
-
-  addDefaultNotes() {
-    this.addNoteToCell('F1', 'Counterparty');
-    this.addNoteToCell('G1', 'Counterparty date');
-  }
-
-  addNoteToCell(a1CellRange, note) {
-    this.sheet.getRange(a1CellRange).setNote(note);
-  }
-
-  alignLeft(a1range) {
-    this.sheet.getRange(a1range).setHorizontalAlignment('left');
-  }
-
-  formatSheet() {
-    try {
-      this.validateSheet();
-      this.setSheetFormatting();
-      this.addDefaultNotes();
-      this.convertColumnToUppercase(AccountSheet.COLUMNS.DESCRIPTION);
-      this.convertColumnToUppercase(AccountSheet.COLUMNS.NOTE);
-      this.setColumnWidth(AccountSheet.COLUMNS.DESCRIPTION, 500);
-      this.setColumnWidth(AccountSheet.COLUMNS.NOTE, 170);
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  applyDescriptionReplacements() {
-    const descriptionReplacements = new DescriptionReplacements();
-    descriptionReplacements.applyReplacements(this.sheet);
-  }
-
-  convertColumnToUppercase(column) {
-    const START_ROW = 2;
-    const lastRow = this.sheet.getLastRow();
-    const numRows = lastRow - START_ROW + 1;
-
-    const range = this.sheet.getRange(START_ROW, column, numRows, 1);
-    const values = range.getValues().map(row => [row[0]?.toString().toUpperCase()]);
-
-    range.setValues(values);
-  }
-
-  formatAsBold(a1range) {
-    this.sheet.getRange(a1range).setFontWeight('bold');
-  }
-
-  formatAsDate(...a1ranges) {
-    a1ranges.forEach(a1range => {
-      this.setNumberFormat(a1range, 'dd/MM/yyyy');
-      this.setDateValidation(a1range);
-    });
-  }
-
-  formatAsUKCurrency(...a1ranges) {
-    a1ranges.forEach(a1range => {
-      this.setNumberFormat(a1range, '£#,##0.00');
-    });
-  }
-
-  get spreadsheet() {
-    return this.sheet.spreadsheet;
-  }
-
-  get spreadsheetName() {
-    return this.sheet.spreadsheetName;
-  }
-
-  getExpectedHeader(column) {
-    return column === AccountSheet.COLUMNS.DESCRIPTION
-      ? this.xLookup(this.getSheetName().slice(1), this.sheet.getParent().getSheetByName(BankAccounts.SHEET.NAME), 'A', 'AQ')
-      : AccountSheet.HEADERS[column - 1];
-  }
-
-  getSheetName() {
-    return this.sheet.getSheetName();
-  }
-
-  setBackground(a1range, background = '#FFFFFF') {
-    this.sheet.getRange(a1range).setBackground(background);
-  }
-
-  setColumnWidth(column, widthInPixels) {
-    this.sheet.setColumnWidth(column, widthInPixels);
-  }
-
-  setCounterpartyValidation(a1range) {
-    const range = this.sheet.getRange(a1range);
-    const validationRange = `'${BankAccounts.SHEET.NAME}'!$A$2:$A`;
-    const rule = gasSpreadsheetApp.newDataValidation()
-      .requireValueInRange(this.sheet.getParent().getRange(validationRange), true)
-      .setAllowInvalid(false)
-      .setHelpText('Please select a valid counterparty.')
-      .build();
-
-    range.setDataValidation(rule);
-  }
-
-  setDateValidation(a1range) {
-    const range = this.sheet.getRange(a1range);
-    const rule = gasSpreadsheetApp.newDataValidation()
-      .requireDate()
-      .setAllowInvalid(false)
-      .setHelpText('Please enter a valid date in DD/MM/YYYY format.')
-      .build();
-
-    range.setDataValidation(rule);
-  }
-
-  setNumberFormat(a1range, format) {
-    this.sheet.getRange(a1range).setNumberFormat(format);
-  }
-
-  /* Background colour can be cyan */
-  setSheetFont(fontFamily = 'Arial', fontSize = 10, fontColor = '#000000') {
-    const range = this.sheet.getDataRange();
-    range
-      .setFontFamily(fontFamily)
-      .setFontSize(fontSize)
-      .setFontColor(fontColor);
-  }
-
-  setSheetFormatting() {
-    const sheet = this.sheet;
-    const dataRange = sheet.getDataRange();
-
-    dataRange.clearDataValidations();
-
-    // Apply formatting in batches
-    const headerRange = sheet.getRange(1, 1, 1, AccountSheet.MINIMUM_COLUMNS);
-    headerRange
-      .setFontWeight('bold')
-      .setHorizontalAlignment('left');
-
-    this.setCounterpartyValidation('F2:F');
-    this.setSheetFont();
-    this.formatAsDate('A2:A', 'G2:G');
-    this.formatAsUKCurrency('C2:D', 'H2:H');
-    this.formatAsBold('A1:H1');
-    this.alignLeft('A1:H1');
-    this.setBackground('A1:H1');
-  }
-
-  validateFrozenRows() {
-    const frozenRows = this.sheet.getFrozenRows();
-    if (frozenRows !== 1) {
-      throw new Error(`There should be 1 frozen row; found ${frozenRows}`);
-    }
-  }
-
-  validateHeaders() {
-    const headers = this.sheet.getRange(1, 1, 1, AccountSheet.MINIMUM_COLUMNS).getValues()[0];
-    headers.forEach((value, index) => {
-      const expected = this.getExpectedHeader(index + 1);
-      if (value !== expected) {
-        throw new Error(`Column ${index + 1} should be '${expected}' but found '${value}'`);
-      }
-    });
-  }
-
-  validateMinimumColumns() {
-    const lastColumn = this.sheet.getLastColumn();
-    if (lastColumn < AccountSheet.MINIMUM_COLUMNS) {
-      throw new Error(`Sheet ${this.getSheetName()} requires at least ${AccountSheet.MINIMUM_COLUMNS} columns, but found ${lastColumn}`);
-    }
-  }
-
-  validateSheet() {
-    this.validateMinimumColumns();
-    this.validateHeaders();
-    this.validateFrozenRows();
-  }
-
-  xLookup(searchValue, sheet, searchCol, resultCol) {
-    const searchRange = sheet.getRange(`${searchCol}1:${searchCol}`).getValues();
-    for (let i = 0; i < searchRange.length; i++) {
-      if (searchRange[i][0] === searchValue) {
-        return sheet.getRange(`${resultCol}${i + 1}`).getValue();
-      }
-    }
-    return null;
-  }
-}
-
-class BankAccounts {
-  static get COLUMNS() {
-    return {
-      KEY: 1,
-      OWNER_CODE: 3,
-      CHECK_BALANCE_FREQUENCY: 12,
-      BALANCE_UPDATED: 19,
-      KEY_LABEL: 'A'
-    }
-  };
-  static get OWNER_CODES() {
-    return {
-      BRIAN: 'A',
-      CHARLIE: 'C',
-      LINDA: 'L'
-    }
-  };
-  static get SHEET() { return { NAME: 'Bank accounts' } };
-
-  constructor() {
-    this.sheet = new Sheet(BankAccounts.SHEET.NAME);
-
-    if (!this.sheet) {
-      throw new Error(`Sheet '${BankAccounts.SHEET.NAME}' not found.`);
-    }
-  }
-
-  applyFilters(filters) {
-    const sheet = this.sheet;
-
-    // Clear any existing filters
-    this.removeFilter();
-
-    const filter = sheet.getDataRange().createFilter();
-
-    filters.forEach(item => {
-      const criteria = item.hideValues === null
-        ? activeSpreadsheet.newFilterCriteria().whenCellEmpty().build()
-        : activeSpreadsheet.newFilterCriteria().setHiddenValues(item.hideValues).build();
-
-      filter.setColumnFilterCriteria(item.column, criteria);
-    });
-  }
-
-  getDataRange() {
-    return this.sheet.getDataRange();
-  }
-
-  getSheetName() {
-    return this.sheet.getSheetName();
-  }
-
-  getSheet() {
-    return this.sheet;
-  }
-
-  getValues() {
-    return this.getDataRange().getValues();
-  }
-
-  hideColumns(columnsToHide) {
-    const sheet = this.sheet;
-    const ranges = sheet.getRangeList(columnsToHide);
-
-    ranges.getRanges().forEach(range => sheet.hideColumn(range));
-  }
-
-  removeFilter() {
-    const sheet = this.sheet;
-    const existingFilter = sheet.getFilter();
-    if (existingFilter) {
-      existingFilter.remove();
-    }
-    return sheet;
-  }
-
-  showAll() {
-    const sheet = this.sheet;
-
-    this.removeFilter();
-    sheet.showColumns(1, sheet.getLastColumn());
-    sheet.activate();
-  }
-
-  showDaily() {
-    this.showAll();
-    const colCheckBalanceFrequency = BankAccounts.COLUMNS.CHECK_BALANCE_FREQUENCY;
-    const colOwnerCode = BankAccounts.COLUMNS.OWNER_CODE;
-    const hideOwnerCodes = [
-      BankAccounts.OWNER_CODES.BRIAN,
-      BankAccounts.OWNER_CODES.CHARLIE,
-      BankAccounts.OWNER_CODES.LINDA,
-    ];
-    const filters = [
-      { column: colOwnerCode, hideValues: hideOwnerCodes },
-      { column: colCheckBalanceFrequency, hideValues: ["Monthly", "Never"] }
-    ];
-
-    this.applyFilters(filters);
-
-    const columnsToHide = ['C:L', 'N:O', 'Q:Q', 'S:AN', 'AQ:AQ'];
-    this.hideColumns(columnsToHide);
-  }
-
-  showMonthly() {
-    this.showAll();
-    const filters = [
-      { column: 3, hideValues: ["C", "L"] },  // Filter by Owner Code (Column C)
-      { column: 12, hideValues: ["Daily", "Never"] }  // Filter by Check Balance Frequency (Column L)
-    ];
-
-    this.applyFilters(filters);
-
-    const columnsToHide = ['C:L', 'N:O', 'Q:Q', 'S:U', 'W:AJ'];
-    this.hideColumns(columnsToHide);
-  }
-
-  showOpenAccounts() {
-    this.showAll();
-    const filters = [
-      { column: 3, hideValues: ["C", "L"] },  // Filter by Owner Code (Column C)
-      { column: 11, hideValues: null }  // Filter by Date Closed (Column K)
-    ];
-
-    this.applyFilters(filters);
-  }
-
-  updateLastUpdatedByKey(key) {
-    const row = findRowByKey(BankAccounts.SHEET.NAME, BankAccounts.COLUMNS.KEY_LABEL, key);
-
-
-    const lastUpdateCell = this.sheet.getRange(row, BankAccounts.COLUMNS.BALANCE_UPDATED);
-    lastUpdateCell.setValue(new Date());
-  }
-
-  updateLastUpdatedBySheet(sheet) {
-    if (isAccountSheet(sheet)) {
-      const key = sheet.getSheetName().slice(1);
-      this.updateLastUpdatedByKey(key);
-    }
-  }
-}
+import { Sheet } from './Sheet';
+import { OurFinances } from './OurFinances';
 
 class BankDebitsDue {
+  private spreadsheet: Spreadsheet;
+  private sheet: Sheet;
+  private howManyDaysAhead: number;
+  
   static get COL_ACCOUNT_KEY() { return 0; }
   static get COL_CHANGE_AMOUNT() { return 1; }
 
-  constructor(ourFinances) {
+  constructor(ourFinances: OurFinances) {
     this.spreadsheet = ourFinances.spreadsheet;
     this.sheet = this.spreadsheet.getSheetByName('Bank debits due');
     this.howManyDaysAhead = ourFinances.howManyDaysAhead;
@@ -1038,291 +685,6 @@ class HMRC_S {
   }
 }
 
-class OurFinances {
-  constructor() {
-    this.spreadsheet = activeSpreadsheet;
-  }
-
-  getFixedAmountMismatches() {
-    return this.checkFixedAmounts.getMismatchMessages();
-  }
-
-  getUpcomingDebits() {
-    // Collect upcoming debits from different sources
-    return [
-      this.bankDebitsDue.getUpcomingDebits(),
-      this.budgetAdhocTransactions.getUpcomingDebits(),
-      this.budgetAnnualTransactions.getUpcomingDebits(),
-      this.budgetMonthlyTransactions.getUpcomingDebits(),
-      this.budgetWeeklyTransactions.getUpcomingDebits()
-    ];
-  }
-
-  get budgetAnnualTransactions() {
-    if (typeof this._budgetAnnualTransactions === 'undefined') {
-      this._budgetAnnualTransactions = new BudgetAnnualTransactions(this)
-    }
-    return this._budgetAnnualTransactions
-  }
-
-  get budgetAdhocTransactions() {
-    if (typeof this._budgetAdhocTransactions === 'undefined') {
-      this._budgetAdhocTransactions = new BudgetAdhocTransactions(this)
-    }
-    return this._budgetAdhocTransactions
-  }
-
-  get bankAccounts() {
-    if (typeof this._bankAccounts === 'undefined') {
-      this._bankAccounts = new BankAccounts(this)
-    }
-    return this._bankAccounts
-  }
-
-  get bankDebitsDue() {
-    if (typeof this._bankDebitsDue === 'undefined') {
-      this._bankDebitsDue = new BankDebitsDue(this)
-    }
-    return this._bankDebitsDue
-  }
-
-  get checkFixedAmounts() {
-    if (typeof this._checkFixedAmounts === 'undefined') {
-      this._checkFixedAmounts = new CheckFixedAmounts(this)
-    }
-    return this._checkFixedAmounts;
-  }
-
-  get howManyDaysAhead() {
-    if (typeof this._howManyDaysAhead === 'undefined') {
-      const sheetName = 'Bank debits due';
-      const sheet = this.getSheetByName(sheetName);
-      const searchValue = 'Look ahead';
-      this._howManyDaysAhead = xLookup(searchValue, sheet, 'F', 'G');
-    }
-    return this._howManyDaysAhead;
-  }
-
-  get budgetMonthlyTransactions() {
-    if (typeof this._budgetMonthlyTransactions === 'undefined') {
-      this._budgetMonthlyTransactions = new BudgetMonthlyTransactions(this);
-    }
-    return this._budgetMonthlyTransactions
-  }
-
-  get budgetWeeklyTransactions() {
-    if (typeof this._budgetWeeklyTransactions === 'undefined') {
-      this._budgetWeeklyTransactions = new BudgetWeeklyTransactions(this)
-    }
-    return this._budgetWeeklyTransactions
-  }
-
-  getName() {
-    return this.spreadsheet.getName();
-  }
-
-  getSheetByName(sheetName) {
-    return this.spreadsheet.getSheetByName(sheetName)
-  }
-
-  showAllAccounts() {
-    this.bankAccounts.showAll()
-  }
-}
-
-class Sheet {
-  constructor(x = null) {
-    
-    const xType = getType(x);
-
-    if (xType === 'string') {
-      const sheetName = x;
-      
-      this.sheet = activeSpreadsheet.getSheetByName(sheetName);
-      if (!this.sheet) {
-        throw new Error(`Sheet with name "${sheetName}" not found`);
-      }
-      return;
-    }
-    
-    if (xType === 'Object') {
-      const gasSheet = x;
-      this.sheet = gasSheet;
-      return;
-    }
-
-    if (x === null) {
-      this.sheet = activeSpreadsheet.getActiveSheet();
-      if (!this.sheet) {
-        this.sheet = null;
-      }
-      return;
-    }
-
-    // Handle unexpected types
-    throw new TypeError(`Unexpected input type: ${xType}`);
-  }
-
-  get spreadsheet() {
-    if (!this._spreadsheet) {
-      this._spreadsheet = new Spreadsheet(this.sheet.getParent().getId());
-    }
-    return this._spreadsheet;
-  }
-
-  get spreadsheetName() {
-    if (!this._spreadsheetName) {
-      this._spreadsheetName = this.spreadsheet.spreadsheetName;
-    }
-    return this._spreadsheetName;
-  }
-
-  activate() {
-    this.sheet.activate();
-  }
-
-  clear() {
-    this.sheet.clear();
-  }
-
-  clearContents() {
-    this.sheet.clearContents();
-  }
-
-  deleteExcessColumns() {
-    const frozenColumns = this.sheet.getFrozenColumns();
-    const lastColumn = this.sheet.getLastColumn();
-    const maxColumns = this.sheet.getMaxColumns();
-
-    // Determine the start column for deletion
-    const startColumn = Math.max(lastColumn + 1, frozenColumns + 2);
-
-    const howManyColumnsToDelete = 1 + maxColumns - startColumn;
-
-    if (howManyColumnsToDelete > 0) {
-      this.sheet.deleteColumns(startColumn, howManyColumnsToDelete);
-    }
-  }
-
-  deleteExcessRows() {
-    const frozenRows = this.sheet.getFrozenRows()
-    const lastRow = this.sheet.getLastRow();
-    let startRow = lastRow + 1
-    if (lastRow <= frozenRows) {
-      startRow = frozenRows + 2;
-    }
-    const maxRows = this.sheet.getMaxRows()
-    const howManyRowsToDelete = 1 + maxRows - startRow
-
-    if (maxRows > startRow) {
-      this.sheet.deleteRows(startRow, howManyRowsToDelete);
-    }
-  }
-
-  deleteRows(startRow, howManyRowsToDelete) {
-    this.sheet.deleteRows(startRow, howManyRowsToDelete);
-  }
-  
-  getDataRange() {
-    return this.sheet.getDataRange();
-  }
-
-  getFilter() {
-    return this.sheet.getFilter()
-  }
-
-  getFrozenColumns() {
-    return this.sheet.getFrozenColumns()
-  }
-
-  getFrozenRows() {
-    return this.sheet.getFrozenRows()
-  }
-
-  getLastColumn() {
-    return this.sheet.getLastColumn();
-  }
-
-  getLastRow() {
-    return this.sheet.getLastRow();
-  }
-
-  getName() {
-    return this.sheet.getName();
-  }
-
-  getMaxColumns() {
-    return this.sheet.getMaxColumns();
-  }
-
-  getMaxRows() {
-    return this.sheet.getMaxRows();
-  }
-
-  getParent() {
-    return this.sheet.getParent();
-  }
-
-  getRange(...args) {
-    return this.sheet.getRange(...args);
-  }
-
-  getRangeList(...args) {
-    return this.sheet.getRangeList(...args);
-  }
-
-  getSheetId() {
-    return this.sheet.getSheetId();
-  }
-
-  getSheetName() {
-    return this.sheet.getSheetName();
-  }
-
-  getValue(range) {
-    return this.getRange(range).getValue();
-  }
-
-  hideColumn(...args) {
-    return this.sheet.hideColumn(...args)
-  }
-
-  setActiveCell(...args) {
-    this.sheet.setActiveCell(...args)
-  }
-
-  setActiveRange(range) {
-    this.sheet.setActiveRange(range);
-  }
-
-  setColumnWidth(column, width) {
-    return this.sheet.setColumnWidth(column, width)
-  }
-
-  setSheetByName(sheetName) {
-    this.spreadsheet = activeSpreadsheet;
-    this.sheet = activeSpreadsheet.getSheetByName(sheetName);
-
-    if (!this.sheet) {
-      throw new Error(`Sheet '${sheetName}' not found.`);
-    }
-  }
-
-  setValue(range, value) {
-    return this.getRange(range).setValue(value);
-  }
-
-  showColumns(...args) {
-    return this.sheet.showColumns(...args);
-  }
-
-  trimSheet() {
-    this.deleteExcessColumns();
-    this.deleteExcessRows();
-    return this;
-  }
-}
-
 class Spreadsheet {
   constructor(spreadsheetId) {
     if (spreadsheetId) {
@@ -1334,7 +696,7 @@ class Spreadsheet {
     } else {
       try {
         this.spreadsheet = this.getActiveSpreadsheet();
-        
+
       } catch (error) {
         throw error;
       }
@@ -1366,15 +728,15 @@ class Spreadsheet {
     return this._gasSheets;
   }
 
-  getSheetByName(sheetName) {
+  getSheetByName(sheetName: string): Sheet | null {
     let sheet;
 
     try {
       const sheetMap = this.getSheetMap();
       const sheetCount = Object.keys(sheetMap).length;
-      
+
       sheet = sheetMap[sheetName];
-      
+
       if (!sheet) {
         return null; // Explicitly return null for missing sheets
       }
@@ -1588,7 +950,7 @@ class Transactions {
         [`=${safeKeyFormula}`, `=${safeValuesFormula}`]
       ]);
 
-      
+
     } catch (error) {
       throw error;
     }
@@ -2060,7 +1422,7 @@ function getDtf() {
 
 function getFirstRowRange(sheet) {
   const lastColumn = sheet.getLastColumn();
-  const firstRowRange = sheet.getRange(1, 1, 1, lastColumn); 
+  const firstRowRange = sheet.getRange(1, 1, 1, lastColumn);
   return firstRowRange;
 }
 
@@ -2221,7 +1583,7 @@ function getSeasonName(date) {
 
 function getSheetNamesByType(sheetNameType) {
   let sheetNames;
-  
+
   const spreadsheetSummary = new SpreadsheetSummary();
   // Process based on sheetNameType
   switch (sheetNameType) {
@@ -2422,7 +1784,7 @@ function isCellADate(cell) {
 
 /**
  * Checks if the given range represents a single cell.
- * 
+ *
  * @param {Range} range - The range to check.
  * @returns {boolean} - Returns true if the range contains only one cell, otherwise false.
  */
@@ -2677,7 +2039,7 @@ function updateSpreadsheetSummary() {
 
 /**
  * Custom XLOOKUP function for Google Apps Script
- * 
+ *
  * @param {string|number} searchValue - The value you are searching for.
  * @param {Sheet} sheet - The sheet where the lookup is performed.
  * @param {string} searchCol - The column letter to search in (e.g., 'A').

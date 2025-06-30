@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "target": "ES2015",
+    "module": "none",
+    "outDir": "dist",
+    "rootDir": "src",
+    "strict": true,
+    "types": ["google-apps-script"]
+  },
+  "include": ["src/**/*.ts"]
+}

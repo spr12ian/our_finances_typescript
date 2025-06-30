@@ -1,0 +1,24 @@
+{
+  "name": "our_finances_typescript",
+  "version": "1.0.0",
+  "description": "GAS repository",
+  "main": "Code.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/spr12ian/our_finances_typescript.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/spr12ian/our_finances_typescript/issues"
+  },
+  "homepage": "https://github.com/spr12ian/our_finances_typescript#readme",
+  "devDependencies": {
+    "@types/google-apps-script": "^1.0.99",
+    "typescript": "^5.8.3"
+  }
+}

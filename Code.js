@@ -1132,19 +1132,19 @@ class OurFinances {
 
 class Sheet {
   constructor(x = null) {
-
+    
     const xType = getType(x);
 
     if (xType === 'string') {
       const sheetName = x;
-
+      
       this.sheet = activeSpreadsheet.getSheetByName(sheetName);
       if (!this.sheet) {
         throw new Error(`Sheet with name "${sheetName}" not found`);
       }
       return;
     }
-
+    
     if (xType === 'Object') {
       const gasSheet = x;
       this.sheet = gasSheet;
@@ -1222,7 +1222,7 @@ class Sheet {
   deleteRows(startRow, howManyRowsToDelete) {
     this.sheet.deleteRows(startRow, howManyRowsToDelete);
   }
-
+  
   getDataRange() {
     return this.sheet.getDataRange();
   }
@@ -1334,7 +1334,7 @@ class Spreadsheet {
     } else {
       try {
         this.spreadsheet = this.getActiveSpreadsheet();
-
+        
       } catch (error) {
         throw error;
       }
@@ -1372,9 +1372,9 @@ class Spreadsheet {
     try {
       const sheetMap = this.getSheetMap();
       const sheetCount = Object.keys(sheetMap).length;
-
+      
       sheet = sheetMap[sheetName];
-
+      
       if (!sheet) {
         return null; // Explicitly return null for missing sheets
       }
@@ -1588,7 +1588,7 @@ class Transactions {
         [`=${safeKeyFormula}`, `=${safeValuesFormula}`]
       ]);
 
-
+      
     } catch (error) {
       throw error;
     }
@@ -2060,7 +2060,7 @@ function getDtf() {
 
 function getFirstRowRange(sheet) {
   const lastColumn = sheet.getLastColumn();
-  const firstRowRange = sheet.getRange(1, 1, 1, lastColumn);
+  const firstRowRange = sheet.getRange(1, 1, 1, lastColumn); 
   return firstRowRange;
 }
 
@@ -2221,7 +2221,7 @@ function getSeasonName(date) {
 
 function getSheetNamesByType(sheetNameType) {
   let sheetNames;
-
+  
   const spreadsheetSummary = new SpreadsheetSummary();
   // Process based on sheetNameType
   switch (sheetNameType) {
@@ -2422,7 +2422,7 @@ function isCellADate(cell) {
 
 /**
  * Checks if the given range represents a single cell.
- *
+ * 
  * @param {Range} range - The range to check.
  * @returns {boolean} - Returns true if the range contains only one cell, otherwise false.
  */
@@ -2677,7 +2677,7 @@ function updateSpreadsheetSummary() {
 
 /**
  * Custom XLOOKUP function for Google Apps Script
- *
+ * 
  * @param {string|number} searchValue - The value you are searching for.
  * @param {Sheet} sheet - The sheet where the lookup is performed.
  * @param {string} searchCol - The column letter to search in (e.g., 'A').

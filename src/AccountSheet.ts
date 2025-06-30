@@ -41,7 +41,7 @@ export class AccountSheet {
     this.addNoteToCell('G1', 'Counterparty date');
   }
 
-  addNoteToCell(a1CellRange, note) {
+  addNoteToCell(a1CellRange, note: string) {
     this.sheet.getRange(a1CellRange).setNote(note);
   }
 

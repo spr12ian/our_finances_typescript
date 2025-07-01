@@ -1,13 +1,12 @@
 /// <reference types="google-apps-script" />
 
-import { OurFinances } from './OurFinances';
-import { Sheet } from './Sheet';
+import { Sheet } from "./Sheet";
 
-
-
-
-class DescriptionReplacements {
-  static get SHEET_NAME() { return 'Description replacements'; }
+export class DescriptionReplacements {
+  private sheet: Sheet;
+  static get SHEET_NAME() {
+    return "Description replacements";
+  }
 
   constructor() {
     this.sheet = new Sheet(DescriptionReplacements.SHEET_NAME);
@@ -16,18 +15,29 @@ class DescriptionReplacements {
   applyReplacements(accountSheet) {
     const accountSheetName = accountSheet.sheetName;
     if (accountSheetName === this.getSheetName()) {
-      throw new Error(`Cannot applyDescriptionReplacements to '${accountSheetName}'`);
+      throw new Error(
+        `Cannot applyDescriptionReplacements to '${accountSheetName}'`
+      );
     }
 
-    const headerValue = accountSheet.getRange(1, AccountSheet.COLUMNS.DESCRIPTION).getValue();
+    const headerValue = accountSheet
+      .getRange(1, AccountSheet.COLUMNS.DESCRIPTION)
+      .getValue();
     if (!headerValue.startsWith("Description")) {
-      throw new Error(`Unexpected description header '${headerValue}' in sheet: ${accountSheetName}`);
+      throw new Error(
+        `Unexpected description header '${headerValue}' in sheet: ${accountSheetName}`
+      );
     }
 
     const lastRow = accountSheet.getLastRow();
     const numRows = lastRow + 1 - AccountSheet.ROW_DATA_STARTS;
 
-    const range = accountSheet.getRange(AccountSheet.ROW_DATA_STARTS, AccountSheet.COLUMNS.DESCRIPTION, numRows, 1);
+    const range = accountSheet.getRange(
+      AccountSheet.ROW_DATA_STARTS,
+      AccountSheet.COLUMNS.DESCRIPTION,
+      numRows,
+      1
+    );
     const values = range.getValues();
 
     let numReplacements = 0;
@@ -50,11 +60,10 @@ class DescriptionReplacements {
   getReplacementsMap() {
     const replacements = this.sheet.getDataRange().getValues().slice(1);
 
-    return replacements
-      .reduce((map, [description, replacement]) => {
-        map[description] = replacement;
-        return map;
-      }, {});
+    return replacements.reduce((map, [description, replacement]) => {
+      map[description] = replacement;
+      return map;
+    }, {});
   }
 
   getSheetName() {

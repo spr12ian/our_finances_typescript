@@ -1,14 +1,6 @@
 /// <reference types="google-apps-script" />
 
-import { OurFinances } from './OurFinances';
-import { Sheet } from './Sheet';
-
-
-
-
-
-
-class HMRC_S {
+export class HMRC_S {
   // Column definitions using static getters
   static get COLUMNS() {
     return {
@@ -21,7 +13,7 @@ class HMRC_S {
   // Sheet configuration using static getters
   static get SHEET() {
     return {
-      NAME: 'HMRC S',
+      NAME: "HMRC S",
       HEADER_ROW: 1, // Number of header rows to skip
     };
   }
@@ -39,18 +31,25 @@ class HMRC_S {
       // Check if the edit occurred in the "CATEGORY" column
       if (column === HMRC_S.COLUMNS.CATEGORY + 1) {
         const sheet = trigger.getSheet();
-        const startColLetter = this.columnNumberToLetter(HMRC_S.COLUMNS.LATEST_TAX_YEAR + 1);
+        const startColLetter = this.columnNumberToLetter(
+          HMRC_S.COLUMNS.LATEST_TAX_YEAR + 1
+        );
         const lastColLetter = this.columnNumberToLetter(sheet.getLastColumn());
 
         // Construct QUERY formulas
-        const queries = this.buildQueries(value, startColLetter, lastColLetter, row);
+        const queries = this.buildQueries(
+          value,
+          startColLetter,
+          lastColLetter,
+          row
+        );
 
         // Set the formulas in the target range
         const targetRange = `${startColLetter}${row}:${lastColLetter}${row}`;
         sheet.getRange(targetRange).setValues([queries]);
       }
     } catch (error) {
-      console.error('Error handling handleEdit:', error);
+      console.error("Error handling handleEdit:", error);
     }
   }
 
@@ -69,7 +68,7 @@ class HMRC_S {
 
   // Convert column number to letter (e.g., 1 -> A)
   columnNumberToLetter(colNum) {
-    let letter = '';
+    let letter = "";
     while (colNum > 0) {
       const mod = (colNum - 1) % 26;
       letter = String.fromCharCode(65 + mod) + letter;
@@ -81,17 +80,17 @@ class HMRC_S {
   // Calculate the next column letter (e.g., A -> B)
   nextColumnLetter(col) {
     let carry = 1;
-    let result = '';
+    let result = "";
     for (let i = col.length - 1; i >= 0; i--) {
       const code = col.charCodeAt(i) + carry;
       if (code > 90) {
-        result = 'A' + result;
+        result = "A" + result;
         carry = 1;
       } else {
         result = String.fromCharCode(code) + result;
         carry = 0;
       }
     }
-    return carry ? 'A' + result : result;
+    return carry ? "A" + result : result;
   }
 }

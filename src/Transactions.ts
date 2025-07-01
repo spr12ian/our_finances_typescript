@@ -1,13 +1,11 @@
 /// <reference types="google-apps-script" />
 
-import { OurFinances } from './OurFinances';
-import { Sheet } from './Sheet';
+import { Sheet } from "./Sheet";
 
-
-class Transactions {
+export class Transactions {
   static get SHEET() {
     return {
-      NAME: 'Transactions'
+      NAME: "Transactions",
     };
   }
 
@@ -52,7 +50,9 @@ class Transactions {
       typeof transactionFormulas.keyFormula !== "string" ||
       typeof transactionFormulas.valuesFormula !== "string"
     ) {
-      throw new Error("Invalid transactionFormulas: Expected an object with 'keyFormula' and 'valuesFormula' as strings.");
+      throw new Error(
+        "Invalid transactionFormulas: Expected an object with 'keyFormula' and 'valuesFormula' as strings."
+      );
     }
 
     const { keyFormula, valuesFormula } = transactionFormulas;
@@ -63,11 +63,9 @@ class Transactions {
 
     try {
       // Set formulas in a single batch operation
-      this.sheet.getRange("A1:B1").setFormulas([
-        [`=${safeKeyFormula}`, `=${safeValuesFormula}`]
-      ]);
-
-
+      this.sheet
+        .getRange("A1:B1")
+        .setFormulas([[`=${safeKeyFormula}`, `=${safeValuesFormula}`]]);
     } catch (error) {
       throw error;
     }

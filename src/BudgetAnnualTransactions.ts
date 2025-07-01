@@ -1,27 +1,26 @@
 /// <reference types="google-apps-script" />
 
-import { OurFinances } from './OurFinances';
-import { Sheet } from './Sheet';
-
-class BudgetAnnualTransactions {
+export class BudgetAnnualTransactions {
   static get COLUMNS() {
     return {
       DATE: 0,
       DESCRIPTION: 1,
       CHANGE_AMOUNT: 3,
       FROM_ACCOUNT: 4,
-      PAYMENT_TYPE: 5
-    }
-  };
+      PAYMENT_TYPE: 5,
+    };
+  }
   static get SHEET() {
     return {
-      NAME: 'Budget annual transactions'
-    }
+      NAME: "Budget annual transactions",
+    };
   }
 
   constructor(ourFinances) {
     this.spreadsheet = ourFinances.spreadsheet;
-    this.sheet = this.spreadsheet.getSheetByName(BudgetAnnualTransactions.SHEET.NAME);
+    this.sheet = this.spreadsheet.getSheetByName(
+      BudgetAnnualTransactions.SHEET.NAME
+    );
     this.howManyDaysAhead = ourFinances.howManyDaysAhead;
 
     if (!this.sheet) {
@@ -38,7 +37,7 @@ class BudgetAnnualTransactions {
   getUpcomingDebits() {
     const howManyDaysAhead = this.howManyDaysAhead;
     const today = getNewDate();
-    let upcomingPayments = '';
+    let upcomingPayments = "";
 
     // Fetch scheduled transactions and remove the header row
     const scheduledTransactions = this.getScheduledTransactions();
@@ -47,20 +46,32 @@ class BudgetAnnualTransactions {
     if (!scheduledTransactions.length) return upcomingPayments;
 
     // Iterate over each transaction and filter the valid ones
-    scheduledTransactions.forEach(transaction => {
+    scheduledTransactions.forEach((transaction) => {
       const {
         [BudgetAnnualTransactions.COLUMNS.DATE]: date,
         [BudgetAnnualTransactions.COLUMNS.CHANGE_AMOUNT]: changeAmount,
         [BudgetAnnualTransactions.COLUMNS.DESCRIPTION]: description,
         [BudgetAnnualTransactions.COLUMNS.FROM_ACCOUNT]: fromAccount,
-        [BudgetAnnualTransactions.COLUMNS.PAYMENT_TYPE]: paymentType
+        [BudgetAnnualTransactions.COLUMNS.PAYMENT_TYPE]: paymentType,
       } = transaction;
 
       if (Math.abs(changeAmount) > 1) {
-        const formattedDaySelected = getFormattedDate(new Date(date), "GMT+1", "dd/MM/yyyy");
+        const formattedDaySelected = getFormattedDate(
+          new Date(date),
+          "GMT+1",
+          "dd/MM/yyyy"
+        );
 
         // Generate payment details if the date falls within the upcoming days
-        const paymentDetails = this._generatePaymentDetails(formattedDaySelected, changeAmount, fromAccount, paymentType, description, today, howManyDaysAhead);
+        const paymentDetails = this._generatePaymentDetails(
+          formattedDaySelected,
+          changeAmount,
+          fromAccount,
+          paymentType,
+          description,
+          today,
+          howManyDaysAhead
+        );
         if (paymentDetails) {
           upcomingPayments += paymentDetails;
         }
@@ -68,20 +79,30 @@ class BudgetAnnualTransactions {
     });
 
     if (upcomingPayments.length) {
-      upcomingPayments = '\nAnnual payment(s) due:\n' + upcomingPayments;
+      upcomingPayments = "\nAnnual payment(s) due:\n" + upcomingPayments;
     }
 
     return upcomingPayments;
   }
 
   // Helper method to generate payment details
-  _generatePaymentDetails(formattedDaySelected, changeAmount, fromAccount, paymentType, description, today, howManyDaysAhead) {
+  _generatePaymentDetails(
+    formattedDaySelected,
+    changeAmount,
+    fromAccount,
+    paymentType,
+    description,
+    today,
+    howManyDaysAhead
+  ) {
     const { first, iterator: days } = setupDaysIterator(today);
     let day = first;
 
     for (let index = 0; index <= howManyDaysAhead; index++) {
       if (formattedDaySelected === day.day) {
-        return `\t${getOrdinalDate(day.date)} ${getAmountAsGBP(changeAmount)} from ${fromAccount} by ${paymentType} ${description}\n`;
+        return `\t${getOrdinalDate(day.date)} ${getAmountAsGBP(
+          changeAmount
+        )} from ${fromAccount} by ${paymentType} ${description}\n`;
       }
       day = days.next();
     }

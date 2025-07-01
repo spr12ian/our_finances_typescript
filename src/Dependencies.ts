@@ -1,18 +1,17 @@
 /// <reference types="google-apps-script" />
 
-import { OurFinances } from './OurFinances';
-import { Sheet } from './Sheet';
+import { Sheet } from "./Sheet";
 
-
-class Dependencies {
-  static get SHEET_NAME() { return 'Dependencies'; }
+export class Dependencies {
+  static get SHEET_NAME() {
+    return "Dependencies";
+  }
   constructor() {
     this.sheet = new Sheet(Dependencies.SHEET_NAME);
   }
 
   getAllDependencies() {
-
-    if (typeof this.allDependencies !== 'undefined') {
+    if (typeof this.allDependencies !== "undefined") {
       return this.allDependencies;
     }
 
@@ -37,7 +36,7 @@ class Dependencies {
       const spreadsheet = new Spreadsheet(spreadsheetId);
       return spreadsheet.spreadsheetName;
     } catch (error) {
-      return null;  // or handle it accordingly
+      return null; // or handle it accordingly
     }
   }
 
@@ -46,8 +45,8 @@ class Dependencies {
   }
 
   /**
- * Updates the spreadsheet names for all dependencies in the specified column.
- */
+   * Updates the spreadsheet names for all dependencies in the specified column.
+   */
   updateAllDependencies() {
     const allDependencies = this.getAllDependencies();
     const col = "B";

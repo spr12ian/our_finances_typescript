@@ -2,10 +2,9 @@
 
 export class Sheet {
   constructor(x = null) {
-
     const xType = getType(x);
 
-    if (xType === 'string') {
+    if (xType === "string") {
       const sheetName = x;
 
       this.sheet = activeSpreadsheet.getSheetByName(sheetName);
@@ -15,7 +14,7 @@ export class Sheet {
       return;
     }
 
-    if (xType === 'Object') {
+    if (xType === "Object") {
       const gasSheet = x;
       this.sheet = gasSheet;
       return;
@@ -75,14 +74,14 @@ export class Sheet {
   }
 
   deleteExcessRows() {
-    const frozenRows = this.sheet.getFrozenRows()
+    const frozenRows = this.sheet.getFrozenRows();
     const lastRow = this.sheet.getLastRow();
-    let startRow = lastRow + 1
+    let startRow = lastRow + 1;
     if (lastRow <= frozenRows) {
       startRow = frozenRows + 2;
     }
-    const maxRows = this.sheet.getMaxRows()
-    const howManyRowsToDelete = 1 + maxRows - startRow
+    const maxRows = this.sheet.getMaxRows();
+    const howManyRowsToDelete = 1 + maxRows - startRow;
 
     if (maxRows > startRow) {
       this.sheet.deleteRows(startRow, howManyRowsToDelete);
@@ -98,15 +97,15 @@ export class Sheet {
   }
 
   getFilter() {
-    return this.sheet.getFilter()
+    return this.sheet.getFilter();
   }
 
   getFrozenColumns() {
-    return this.sheet.getFrozenColumns()
+    return this.sheet.getFrozenColumns();
   }
 
   getFrozenRows() {
-    return this.sheet.getFrozenRows()
+    return this.sheet.getFrozenRows();
   }
 
   getLastColumn() {
@@ -154,11 +153,11 @@ export class Sheet {
   }
 
   hideColumn(...args) {
-    return this.sheet.hideColumn(...args)
+    return this.sheet.hideColumn(...args);
   }
 
   setActiveCell(...args) {
-    this.sheet.setActiveCell(...args)
+    this.sheet.setActiveCell(...args);
   }
 
   setActiveRange(range) {
@@ -166,7 +165,7 @@ export class Sheet {
   }
 
   setColumnWidth(column, width) {
-    return this.sheet.setColumnWidth(column, width)
+    return this.sheet.setColumnWidth(column, width);
   }
 
   setSheetByName(sheetName) {

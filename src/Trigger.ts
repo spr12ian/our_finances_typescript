@@ -1,13 +1,6 @@
 /// <reference types="google-apps-script" />
 
-import { OurFinances } from './OurFinances';
-import { Sheet } from './Sheet';
-
-
-
-
-
-class Trigger {
+export class Trigger {
   constructor(event) {
     this.event = event;
   }

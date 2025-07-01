@@ -18,67 +18,67 @@ export class OurFinances {
       this.budgetAdhocTransactions.getUpcomingDebits(),
       this.budgetAnnualTransactions.getUpcomingDebits(),
       this.budgetMonthlyTransactions.getUpcomingDebits(),
-      this.budgetWeeklyTransactions.getUpcomingDebits()
+      this.budgetWeeklyTransactions.getUpcomingDebits(),
     ];
   }
 
   get budgetAnnualTransactions() {
-    if (typeof this._budgetAnnualTransactions === 'undefined') {
-      this._budgetAnnualTransactions = new BudgetAnnualTransactions(this)
+    if (typeof this._budgetAnnualTransactions === "undefined") {
+      this._budgetAnnualTransactions = new BudgetAnnualTransactions(this);
     }
-    return this._budgetAnnualTransactions
+    return this._budgetAnnualTransactions;
   }
 
   get budgetAdhocTransactions() {
-    if (typeof this._budgetAdhocTransactions === 'undefined') {
-      this._budgetAdhocTransactions = new BudgetAdhocTransactions(this)
+    if (typeof this._budgetAdhocTransactions === "undefined") {
+      this._budgetAdhocTransactions = new BudgetAdhocTransactions(this);
     }
-    return this._budgetAdhocTransactions
+    return this._budgetAdhocTransactions;
   }
 
   get bankAccounts() {
-    if (typeof this._bankAccounts === 'undefined') {
-      this._bankAccounts = new BankAccounts(this)
+    if (typeof this._bankAccounts === "undefined") {
+      this._bankAccounts = new BankAccounts(this);
     }
-    return this._bankAccounts
+    return this._bankAccounts;
   }
 
   get bankDebitsDue() {
-    if (typeof this._bankDebitsDue === 'undefined') {
-      this._bankDebitsDue = new BankDebitsDue(this)
+    if (typeof this._bankDebitsDue === "undefined") {
+      this._bankDebitsDue = new BankDebitsDue(this);
     }
-    return this._bankDebitsDue
+    return this._bankDebitsDue;
   }
 
   get checkFixedAmounts() {
-    if (typeof this._checkFixedAmounts === 'undefined') {
-      this._checkFixedAmounts = new CheckFixedAmounts(this)
+    if (typeof this._checkFixedAmounts === "undefined") {
+      this._checkFixedAmounts = new CheckFixedAmounts(this);
     }
     return this._checkFixedAmounts;
   }
 
   get howManyDaysAhead() {
-    if (typeof this._howManyDaysAhead === 'undefined') {
-      const sheetName = 'Bank debits due';
+    if (typeof this._howManyDaysAhead === "undefined") {
+      const sheetName = "Bank debits due";
       const sheet = this.getSheetByName(sheetName);
-      const searchValue = 'Look ahead';
-      this._howManyDaysAhead = xLookup(searchValue, sheet, 'F', 'G');
+      const searchValue = "Look ahead";
+      this._howManyDaysAhead = xLookup(searchValue, sheet, "F", "G");
     }
     return this._howManyDaysAhead;
   }
 
   get budgetMonthlyTransactions() {
-    if (typeof this._budgetMonthlyTransactions === 'undefined') {
+    if (typeof this._budgetMonthlyTransactions === "undefined") {
       this._budgetMonthlyTransactions = new BudgetMonthlyTransactions(this);
     }
-    return this._budgetMonthlyTransactions
+    return this._budgetMonthlyTransactions;
   }
 
   get budgetWeeklyTransactions() {
-    if (typeof this._budgetWeeklyTransactions === 'undefined') {
-      this._budgetWeeklyTransactions = new BudgetWeeklyTransactions(this)
+    if (typeof this._budgetWeeklyTransactions === "undefined") {
+      this._budgetWeeklyTransactions = new BudgetWeeklyTransactions(this);
     }
-    return this._budgetWeeklyTransactions
+    return this._budgetWeeklyTransactions;
   }
 
   getName() {
@@ -86,10 +86,10 @@ export class OurFinances {
   }
 
   getSheetByName(sheetName) {
-    return this.spreadsheet.getSheetByName(sheetName)
+    return this.spreadsheet.getSheetByName(sheetName);
   }
 
   showAllAccounts() {
-    this.bankAccounts.showAll()
+    this.bankAccounts.showAll();
   }
 }

@@ -1,14 +1,11 @@
 /// <reference types="google-apps-script" />
 
-import { OurFinances } from './OurFinances';
-import { Sheet } from './Sheet';
+import { Sheet } from "./Sheet";
 
-
-
-class TransactionsBuilder {
+export class TransactionsBuilder {
   static get SHEET() {
     return {
-      NAME: 'Transactions builder'
+      NAME: "Transactions builder",
     };
   }
 
@@ -39,18 +36,24 @@ class TransactionsBuilder {
       const values = range.getValues();
 
       // Validate the retrieved values
-      if (!Array.isArray(values) || values.length !== 2 || values[0].length === 0 || values[1].length === 0) {
-        throw new Error("Invalid range data: Expected a 2x1 array with formulas in G3 and G4.");
+      if (
+        !Array.isArray(values) ||
+        values.length !== 2 ||
+        values[0].length === 0 ||
+        values[1].length === 0
+      ) {
+        throw new Error(
+          "Invalid range data: Expected a 2x1 array with formulas in G3 and G4."
+        );
       }
 
       const [keyFormulaRow, valuesFormulaRow] = values;
       const keyFormula = keyFormulaRow[0];
       const valuesFormula = valuesFormulaRow[0];
 
-
       return {
         keyFormula,
-        valuesFormula
+        valuesFormula,
       };
     } catch (error) {
       throw error;

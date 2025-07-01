@@ -1,13 +1,8 @@
 /// <reference types="google-apps-script" />
 
-import { OurFinances } from './OurFinances';
-import { Sheet } from './Sheet';
+import { Sheet } from "./Sheet";
 
-
-
-
-
-class Spreadsheet {
+export class Spreadsheet {
   constructor(spreadsheetId) {
     if (spreadsheetId) {
       try {
@@ -18,7 +13,6 @@ class Spreadsheet {
     } else {
       try {
         this.spreadsheet = this.getActiveSpreadsheet();
-
       } catch (error) {
         throw error;
       }
@@ -34,10 +28,10 @@ class Spreadsheet {
 
   getActiveSheet() {
     const activeSheet = this.spreadsheet.getActiveSheet();
-    examineObject(activeSheet, 'activeSheet');
+    examineObject(activeSheet, "activeSheet");
 
     const iswActiveSheet = new Sheet(activeSheet);
-    examineObject(iswActiveSheet, 'iswActiveSheet');
+    examineObject(iswActiveSheet, "iswActiveSheet");
 
     return iswActiveSheet;
   }
@@ -81,7 +75,7 @@ class Spreadsheet {
 
       // Create the sheet map efficiently using Object.fromEntries
       this._sheetMap = Object.fromEntries(
-        sheets.map(sheet => [sheet.getName(), sheet])
+        sheets.map((sheet) => [sheet.getName(), sheet])
       );
     }
 
@@ -90,7 +84,7 @@ class Spreadsheet {
 
   getSheets() {
     if (!this._sheets) {
-      this._sheets = this.getGasSheets().map(sheet => new Sheet(sheet));
+      this._sheets = this.getGasSheets().map((sheet) => new Sheet(sheet));
     }
     return this._sheets;
   }

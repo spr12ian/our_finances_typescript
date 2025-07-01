@@ -1,21 +1,23 @@
-class BankAccounts {
+export class BankAccounts {
   static get COLUMNS() {
     return {
       KEY: 1,
       OWNER_CODE: 3,
       CHECK_BALANCE_FREQUENCY: 12,
       BALANCE_UPDATED: 19,
-      KEY_LABEL: 'A'
-    }
-  };
+      KEY_LABEL: "A",
+    };
+  }
   static get OWNER_CODES() {
     return {
-      BRIAN: 'A',
-      CHARLIE: 'C',
-      LINDA: 'L'
-    }
-  };
-  static get SHEET() { return { NAME: 'Bank accounts' } };
+      BRIAN: "A",
+      CHARLIE: "C",
+      LINDA: "L",
+    };
+  }
+  static get SHEET() {
+    return { NAME: "Bank accounts" };
+  }
 
   constructor() {
     this.sheet = new Sheet(BankAccounts.SHEET.NAME);
@@ -33,10 +35,14 @@ class BankAccounts {
 
     const filter = sheet.getDataRange().createFilter();
 
-    filters.forEach(item => {
-      const criteria = item.hideValues === null
-        ? activeSpreadsheet.newFilterCriteria().whenCellEmpty().build()
-        : activeSpreadsheet.newFilterCriteria().setHiddenValues(item.hideValues).build();
+    filters.forEach((item) => {
+      const criteria =
+        item.hideValues === null
+          ? activeSpreadsheet.newFilterCriteria().whenCellEmpty().build()
+          : activeSpreadsheet
+              .newFilterCriteria()
+              .setHiddenValues(item.hideValues)
+              .build();
 
       filter.setColumnFilterCriteria(item.column, criteria);
     });
@@ -62,7 +68,7 @@ class BankAccounts {
     const sheet = this.sheet;
     const ranges = sheet.getRangeList(columnsToHide);
 
-    ranges.getRanges().forEach(range => sheet.hideColumn(range));
+    ranges.getRanges().forEach((range) => sheet.hideColumn(range));
   }
 
   removeFilter() {
@@ -84,7 +90,8 @@ class BankAccounts {
 
   showDaily() {
     this.showAll();
-    const colCheckBalanceFrequency = BankAccounts.COLUMNS.CHECK_BALANCE_FREQUENCY;
+    const colCheckBalanceFrequency =
+      BankAccounts.COLUMNS.CHECK_BALANCE_FREQUENCY;
     const colOwnerCode = BankAccounts.COLUMNS.OWNER_CODE;
     const hideOwnerCodes = [
       BankAccounts.OWNER_CODES.BRIAN,
@@ -93,43 +100,49 @@ class BankAccounts {
     ];
     const filters = [
       { column: colOwnerCode, hideValues: hideOwnerCodes },
-      { column: colCheckBalanceFrequency, hideValues: ["Monthly", "Never"] }
+      { column: colCheckBalanceFrequency, hideValues: ["Monthly", "Never"] },
     ];
 
     this.applyFilters(filters);
 
-    const columnsToHide = ['C:L', 'N:O', 'Q:Q', 'S:AN', 'AQ:AQ'];
+    const columnsToHide = ["C:L", "N:O", "Q:Q", "S:AN", "AQ:AQ"];
     this.hideColumns(columnsToHide);
   }
 
   showMonthly() {
     this.showAll();
     const filters = [
-      { column: 3, hideValues: ["C", "L"] },  // Filter by Owner Code (Column C)
-      { column: 12, hideValues: ["Daily", "Never"] }  // Filter by Check Balance Frequency (Column L)
+      { column: 3, hideValues: ["C", "L"] }, // Filter by Owner Code (Column C)
+      { column: 12, hideValues: ["Daily", "Never"] }, // Filter by Check Balance Frequency (Column L)
     ];
 
     this.applyFilters(filters);
 
-    const columnsToHide = ['C:L', 'N:O', 'Q:Q', 'S:U', 'W:AJ'];
+    const columnsToHide = ["C:L", "N:O", "Q:Q", "S:U", "W:AJ"];
     this.hideColumns(columnsToHide);
   }
 
   showOpenAccounts() {
     this.showAll();
     const filters = [
-      { column: 3, hideValues: ["C", "L"] },  // Filter by Owner Code (Column C)
-      { column: 11, hideValues: null }  // Filter by Date Closed (Column K)
+      { column: 3, hideValues: ["C", "L"] }, // Filter by Owner Code (Column C)
+      { column: 11, hideValues: null }, // Filter by Date Closed (Column K)
     ];
 
     this.applyFilters(filters);
   }
 
   updateLastUpdatedByKey(key) {
-    const row = findRowByKey(BankAccounts.SHEET.NAME, BankAccounts.COLUMNS.KEY_LABEL, key);
+    const row = findRowByKey(
+      BankAccounts.SHEET.NAME,
+      BankAccounts.COLUMNS.KEY_LABEL,
+      key
+    );
 
-
-    const lastUpdateCell = this.sheet.getRange(row, BankAccounts.COLUMNS.BALANCE_UPDATED);
+    const lastUpdateCell = this.sheet.getRange(
+      row,
+      BankAccounts.COLUMNS.BALANCE_UPDATED
+    );
     lastUpdateCell.setValue(new Date());
   }
 

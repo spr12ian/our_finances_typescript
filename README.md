@@ -1,16 +1,17 @@
 # our_finances_typescript
+
 GAS repository
 
-make install_google_clasp
+`make install_google_clasp`
 
-clasp login
+`clasp login`
 
-clasp clone <script-id>
+`clasp clone <script-id>`
 
-npm init -y
+`npm init -y`
 
-npm install --save-dev typescript @types/google-apps-script
+`npm install --save-dev typescript @types/google-apps-script`
 
-npx tsc --init
+`npx tsc --init`
 
-clasp push
+`clasp push`

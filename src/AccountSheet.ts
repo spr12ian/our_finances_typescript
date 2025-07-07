@@ -1,5 +1,6 @@
 /// <reference types="google-apps-script" />
 
+import { BankAccounts } from "./BankAccounts";
 import { DescriptionReplacements } from "./DescriptionReplacements";
 import { Sheet } from "./Sheet";
 
@@ -92,18 +93,24 @@ export class AccountSheet {
     range.setValues(values);
   }
 
-  formatAsBold(a1range) {
+  formatAsBold(a1range: string) {
     this.sheet.getRange(a1range).setFontWeight("bold");
   }
 
-  formatAsDate(...a1ranges) {
+  /**
+   * Formats the given A1 cell ranges as dates (dd/MM/yyyy)
+   * and applies date validation to each.
+   *
+   * @param {...string} a1ranges - One or more A1 notation ranges (e.g. "A2:A10").
+   */
+  formatAsDate(...a1ranges: string[]): void {
     a1ranges.forEach((a1range) => {
       this.setNumberFormat(a1range, "dd/MM/yyyy");
       this.setDateValidation(a1range);
     });
   }
 
-  formatAsUKCurrency(...a1ranges) {
+  formatAsUKCurrency(...a1ranges: string[]): void {
     a1ranges.forEach((a1range) => {
       this.setNumberFormat(a1range, "£#,##0.00");
     });
@@ -117,7 +124,7 @@ export class AccountSheet {
     return this.sheet.spreadsheetName;
   }
 
-  getExpectedHeader(column) {
+  getExpectedHeader(column: number) {
     return column === AccountSheet.COLUMNS.DESCRIPTION
       ? this.xLookup(
           this.getSheetName().slice(1),
@@ -132,15 +139,15 @@ export class AccountSheet {
     return this.sheet.getSheetName();
   }
 
-  setBackground(a1range, background = "#FFFFFF") {
+  setBackground(a1range: string, background = "#FFFFFF"): void {
     this.sheet.getRange(a1range).setBackground(background);
   }
 
-  setColumnWidth(column, widthInPixels) {
+  setColumnWidth(column: number, widthInPixels: number) {
     this.sheet.setColumnWidth(column, widthInPixels);
   }
 
-  setCounterpartyValidation(a1range) {
+  setCounterpartyValidation(a1range: string) {
     const range = this.sheet.getRange(a1range);
     const validationRange = `'${BankAccounts.SHEET.NAME}'!$A$2:$A`;
     const rule = gasSpreadsheetApp
@@ -156,7 +163,7 @@ export class AccountSheet {
     range.setDataValidation(rule);
   }
 
-  setDateValidation(a1range) {
+  setDateValidation(a1range: string) {
     const range = this.sheet.getRange(a1range);
     const rule = gasSpreadsheetApp
       .newDataValidation()
@@ -168,7 +175,7 @@ export class AccountSheet {
     range.setDataValidation(rule);
   }
 
-  setNumberFormat(a1range, format) {
+  setNumberFormat(a1range: string, format: string) {
     this.sheet.getRange(a1range).setNumberFormat(format);
   }
 
@@ -211,7 +218,7 @@ export class AccountSheet {
     const headers = this.sheet
       .getRange(1, 1, 1, AccountSheet.MINIMUM_COLUMNS)
       .getValues()[0];
-    headers.forEach((value, index) => {
+    headers.forEach((value: string, index: number) => {
       const expected = this.getExpectedHeader(index + 1);
       if (value !== expected) {
         throw new Error(
@@ -238,7 +245,7 @@ export class AccountSheet {
     this.validateFrozenRows();
   }
 
-  xLookup(searchValue, sheet, searchCol, resultCol) {
+  xLookup(searchValue:string, sheet:Sheet, searchCol:string, resultCol:string) {
     const searchRange = sheet
       .getRange(`${searchCol}1:${searchCol}`)
       .getValues();

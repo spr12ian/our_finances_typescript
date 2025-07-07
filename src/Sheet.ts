@@ -1,6 +1,8 @@
 /// <reference types="google-apps-script" />
 
+import { getType } from "./functions";
 export class Sheet {
+  private sheet:any
   constructor(x = null) {
     const xType = getType(x);
 

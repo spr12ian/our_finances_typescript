@@ -690,7 +690,7 @@ function getToday(
   return today;
 }
 
-function getType(value) {
+export function getType(value) {
   if (value === null) {
     return "null";
   }

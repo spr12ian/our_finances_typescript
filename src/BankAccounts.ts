@@ -1,4 +1,8 @@
+
+import { Sheet } from "./Sheet";
+
 export class BankAccounts {
+  private sheet:Sheet
   static get COLUMNS() {
     return {
       KEY: 1,

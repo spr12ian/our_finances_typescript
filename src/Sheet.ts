@@ -1,195 +1,159 @@
 /// <reference types="google-apps-script" />
 
 import { getType } from "./functions";
+import { Spreadsheet } from "./Spreadsheet";
+
 export class Sheet {
-  private sheet:any
-  constructor(x = null) {
-    const xType = getType(x);
+  private readonly sheet: GoogleAppsScript.Spreadsheet.Sheet;
+  private _spreadsheet?: Spreadsheet;
+  private _spreadsheetName?: string;
+
+  private constructor(sheet: GoogleAppsScript.Spreadsheet.Sheet) {
+    this.sheet = sheet;
+  }
+
+  static from(input: unknown): Sheet {
+    const xType = getType(input);
 
     if (xType === "string") {
-      const sheetName = x;
-
-      this.sheet = activeSpreadsheet.getSheetByName(sheetName);
-      if (!this.sheet) {
-        throw new Error(`Sheet with name "${sheetName}" not found`);
+      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(input as string);
+      if (!sheet) {
+        throw new Error(`Sheet with name "${input}" not found`);
       }
-      return;
+      return new Sheet(sheet);
     }
 
-    if (xType === "Object") {
-      const gasSheet = x;
-      this.sheet = gasSheet;
-      return;
+    if (xType === "object" && input instanceof Sheet) {
+      return input;
     }
 
-    if (x === null) {
-      this.sheet = activeSpreadsheet.getActiveSheet();
-      if (!this.sheet) {
-        this.sheet = null;
+    if (xType === "object" && input instanceof GoogleAppsScript.Spreadsheet.Sheet) {
+      return new Sheet(input as GoogleAppsScript.Spreadsheet.Sheet);
+    }
+
+    if (input === null) {
+      const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+      if (!sheet) {
+        throw new Error("No active sheet found");
       }
-      return;
+      return new Sheet(sheet);
     }
 
-    // Handle unexpected types
     throw new TypeError(`Unexpected input type: ${xType}`);
   }
 
-  get spreadsheet() {
+  get spreadsheet(): Spreadsheet {
     if (!this._spreadsheet) {
-      this._spreadsheet = new Spreadsheet(this.sheet.getParent().getId());
+      this._spreadsheet = Spreadsheet.from(this.sheet.getParent().getId());
     }
     return this._spreadsheet;
   }
 
-  get spreadsheetName() {
+  get spreadsheetName(): string {
     if (!this._spreadsheetName) {
-      this._spreadsheetName = this.spreadsheet.spreadsheetName;
+      this._spreadsheetName = this.spreadsheet.name;
     }
     return this._spreadsheetName;
   }
 
-  activate() {
+  activate(): void {
     this.sheet.activate();
   }
 
-  clear() {
+  clear(): void {
     this.sheet.clear();
   }
 
-  clearContents() {
+  clearContents(): void {
     this.sheet.clearContents();
   }
 
-  deleteExcessColumns() {
+  deleteExcessColumns(): void {
     const frozenColumns = this.sheet.getFrozenColumns();
     const lastColumn = this.sheet.getLastColumn();
     const maxColumns = this.sheet.getMaxColumns();
 
-    // Determine the start column for deletion
     const startColumn = Math.max(lastColumn + 1, frozenColumns + 2);
+    const howMany = maxColumns - startColumn + 1;
 
-    const howManyColumnsToDelete = 1 + maxColumns - startColumn;
-
-    if (howManyColumnsToDelete > 0) {
-      this.sheet.deleteColumns(startColumn, howManyColumnsToDelete);
+    if (howMany > 0) {
+      this.sheet.deleteColumns(startColumn, howMany);
     }
   }
 
-  deleteExcessRows() {
+  deleteExcessRows(): void {
     const frozenRows = this.sheet.getFrozenRows();
     const lastRow = this.sheet.getLastRow();
-    let startRow = lastRow + 1;
-    if (lastRow <= frozenRows) {
-      startRow = frozenRows + 2;
-    }
+    const startRow = lastRow <= frozenRows ? frozenRows + 2 : lastRow + 1;
     const maxRows = this.sheet.getMaxRows();
-    const howManyRowsToDelete = 1 + maxRows - startRow;
+    const howMany = maxRows - startRow + 1;
 
-    if (maxRows > startRow) {
-      this.sheet.deleteRows(startRow, howManyRowsToDelete);
+    if (howMany > 0) {
+      this.sheet.deleteRows(startRow, howMany);
     }
   }
 
-  deleteRows(startRow, howManyRowsToDelete) {
-    this.sheet.deleteRows(startRow, howManyRowsToDelete);
+  deleteRows(startRow: number, howMany: number): void {
+    this.sheet.deleteRows(startRow, howMany);
   }
 
-  getDataRange() {
+  getDataRange(): GoogleAppsScript.Spreadsheet.Range {
     return this.sheet.getDataRange();
   }
 
-  getFilter() {
-    return this.sheet.getFilter();
+  getValue(range: string): any {
+    return this.sheet.getRange(range).getValue();
   }
 
-  getFrozenColumns() {
-    return this.sheet.getFrozenColumns();
+  setValue(range: string, value: any): void {
+    this.sheet.getRange(range).setValue(value);
   }
 
-  getFrozenRows() {
-    return this.sheet.getFrozenRows();
+  getRange(a1Notation: string): GoogleAppsScript.Spreadsheet.Range {
+    return this.sheet.getRange(a1Notation);
   }
 
-  getLastColumn() {
-    return this.sheet.getLastColumn();
-  }
-
-  getLastRow() {
-    return this.sheet.getLastRow();
-  }
-
-  getName() {
-    return this.sheet.getName();
-  }
-
-  getMaxColumns() {
-    return this.sheet.getMaxColumns();
-  }
-
-  getMaxRows() {
-    return this.sheet.getMaxRows();
-  }
-
-  getParent() {
-    return this.sheet.getParent();
-  }
-
-  getRange(...args) {
-    return this.sheet.getRange(...args);
-  }
-
-  getRangeList(...args) {
-    return this.sheet.getRangeList(...args);
-  }
-
-  getSheetId() {
-    return this.sheet.getSheetId();
-  }
-
-  getSheetName() {
+  getSheetName(): string {
     return this.sheet.getSheetName();
   }
 
-  getValue(range) {
-    return this.getRange(range).getValue();
+  getSheetId(): number {
+    return this.sheet.getSheetId();
   }
 
-  hideColumn(...args) {
-    return this.sheet.hideColumn(...args);
+  setColumnWidth(column: number, width: number): void {
+    this.sheet.setColumnWidth(column, width);
   }
 
-  setActiveCell(...args) {
-    this.sheet.setActiveCell(...args);
-  }
-
-  setActiveRange(range) {
-    this.sheet.setActiveRange(range);
-  }
-
-  setColumnWidth(column, width) {
-    return this.sheet.setColumnWidth(column, width);
-  }
-
-  setSheetByName(sheetName) {
-    this.spreadsheet = activeSpreadsheet;
-    this.sheet = activeSpreadsheet.getSheetByName(sheetName);
-
-    if (!this.sheet) {
-      throw new Error(`Sheet '${sheetName}' not found.`);
+  setActiveCell(range: GoogleAppsScript.Spreadsheet.Range | string): void {
+    if (typeof range === "string") {
+      this.sheet.setActiveCell(this.sheet.getRange(range));
+    } else {
+      this.sheet.setActiveCell(range);
     }
   }
 
-  setValue(range, value) {
-    return this.getRange(range).setValue(value);
+
+  setActiveRange(range: GoogleAppsScript.Spreadsheet.Range): void {
+    this.sheet.setActiveRange(range);
   }
 
-  showColumns(...args) {
-    return this.sheet.showColumns(...args);
+  showColumns(start: number, num: number): void {
+    this.sheet.showColumns(start, num);
   }
 
-  trimSheet() {
+  hideColumn(column: GoogleAppsScript.Spreadsheet.Range): void {
+    this.sheet.hideColumn(column);
+  }
+
+  trimSheet(): Sheet {
     this.deleteExcessColumns();
     this.deleteExcessRows();
     return this;
+  }
+
+  // Expose raw GAS sheet when necessary
+  get raw(): GoogleAppsScript.Spreadsheet.Sheet {
+    return this.sheet;
   }
 }

@@ -1,18 +1,37 @@
 /// <reference types="google-apps-script" />
 
-// Main program starts here
+import { Spreadsheet } from "./Spreadsheet";
+import { getSheetNamesByType, goToSheetLastRow } from "./functions";
 
-const locale = "en-GB";
+/**
+ * Application entry point – executed when the script is loaded.
+ */
 
-const activeSpreadsheet = new Spreadsheet();
+// ────────────────────────────────────────────────────────────
+//  Locale (used elsewhere for date/number formatting)
+// ────────────────────────────────────────────────────────────
+export const LOCALE = "en-GB" as const;
 
-const gasSpreadsheetApp = SpreadsheetApp;
+// ────────────────────────────────────────────────────────────
+//  Spreadsheet context
+// ────────────────────────────────────────────────────────────
+export const spreadsheet = Spreadsheet.from(); // active spreadsheet
+export const gasSpreadsheetApp = spreadsheet.raw; // escape hatch if needed
 
-const accountSheetNames = getSheetNamesByType("account");
-const dynamicFunctions = accountSheetNames.reduce((acc, sheetName) => {
-  const funName = `dynamicAccount${sheetName}`;
-  acc[funName] = () => goToSheetLastRow(sheetName);
-  return acc;
-}, {});
+// ────────────────────────────────────────────────────────────
+//  Dynamically create helper functions
+// ────────────────────────────────────────────────────────────
+(() => {
+  const accountSheetNames = getSheetNamesByType("account");
 
-Object.assign(this, dynamicFunctions);
+  // Produce a map like { dynamicAccountCash: () => void, … }
+  const helpers: Record<string, () => void> = {};
+
+  for (const name of accountSheetNames) {
+    const key = `dynamicAccount${name}`;
+    helpers[key] = () => goToSheetLastRow(name);
+  }
+
+  // Attach to global scope so they can be invoked directly from GAS
+  Object.assign(globalThis, helpers);
+})();

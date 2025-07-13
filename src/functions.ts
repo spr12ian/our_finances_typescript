@@ -2,10 +2,11 @@
 
 import { OurFinances } from "./OurFinances";
 import { Sheet } from "./Sheet";
+import { SpreadsheetSummary } from "./SpreadsheetSummary";
 
 // Function declarations
 
-function alert(message) {
+function alert(message: string) {
   SpreadsheetApp.getUi().alert(message);
 }
 
@@ -655,7 +656,7 @@ function getSeasonName(date) {
   return seasons[seasonIndex];
 }
 
-function getSheetNamesByType(sheetNameType) {
+export function getSheetNamesByType(sheetNameType: string) {
   let sheetNames;
 
   const spreadsheetSummary = new SpreadsheetSummary();
@@ -736,7 +737,7 @@ function goToSheet(sheetName) {
   }
 }
 
-function goToSheetLastRow(sheetName) {
+export function goToSheetLastRow(sheetName:string) {
   const sheet = new Sheet(sheetName);
   sheet.setActiveRange(sheet.getRange(sheet.getLastRow(), 1));
 }

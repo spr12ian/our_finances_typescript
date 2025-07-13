@@ -2,122 +2,94 @@
 
 import { Sheet } from "./Sheet";
 
+/**
+ * Thin, type‑safe wrapper around a GAS `Spreadsheet`.
+ *
+ * ▼ Why this wrapper?
+ *   • Keeps your business logic free of global `SpreadsheetApp.*` calls.
+ *   • Gives you strongly‑typed helpers (and IntelliSense) while still
+ *     exposing the raw spreadsheet when you need full API surface.
+ */
 export class Spreadsheet {
-  constructor(spreadsheetId) {
-    if (spreadsheetId) {
-      try {
-        this.spreadsheet = this.openById(spreadsheetId);
-      } catch (error) {
-        throw error;
-      }
-    } else {
-      try {
-        this.spreadsheet = this.getActiveSpreadsheet();
-      } catch (error) {
-        throw error;
-      }
-    }
+  /** Cached GAS spreadsheet instance */
+  private readonly ss: GoogleAppsScript.Spreadsheet.Spreadsheet;
+
+  /** Lazily‑built map: sheet name → `Sheet` wrapper */
+  private _sheetCache?: Map<string, Sheet>;
+
+  private constructor(ss: GoogleAppsScript.Spreadsheet.Spreadsheet) {
+    this.ss = ss;
   }
 
-  getActiveSpreadsheet() {
-    if (!this._activeSpreadsheet) {
-      this._activeSpreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-    }
-    return this._activeSpreadsheet;
-  }
+  /**
+   * Factory: open by ID or fall back to the active spreadsheet.
+   */
+  static from(id?: string): Spreadsheet {
+    const ss = typeof id === "string" && id.trim()
+      ? SpreadsheetApp.openById(id)
+      : SpreadsheetApp.getActiveSpreadsheet();
 
-  getActiveSheet() {
-    const activeSheet = this.spreadsheet.getActiveSheet();
-    examineObject(activeSheet, "activeSheet");
-
-    const iswActiveSheet = new Sheet(activeSheet);
-    examineObject(iswActiveSheet, "iswActiveSheet");
-
-    return iswActiveSheet;
-  }
-
-  getGasSheets() {
-    if (!this._gasSheets) {
-      this._gasSheets = this.spreadsheet.getSheets();
+    if (!ss) {
+      throw new Error("Unable to obtain a spreadsheet instance");
     }
 
-    return this._gasSheets;
+    return new Spreadsheet(ss);
   }
 
-  getSheetByName(sheetName: string): Sheet | null {
-    let sheet;
 
-    try {
-      const sheetMap = this.getSheetMap();
-      const sheetCount = Object.keys(sheetMap).length;
+  // ────────────────────────────────────────────────────────────
+  //  Metadata getters
+  // ────────────────────────────────────────────────────────────
+  get name(): string {
+    return this.ss.getName();
+  }
 
-      sheet = sheetMap[sheetName];
+  get url(): string {
+    return this.ss.getUrl();
+  }
 
-      if (!sheet) {
-        return null; // Explicitly return null for missing sheets
-      }
-    } catch (error) {
-      return null; // Return null in case of errors
+  // ────────────────────────────────────────────────────────────
+  //  Sheet access helpers
+  // ────────────────────────────────────────────────────────────
+  get activeSheet(): Sheet {
+    return Sheet.from(this.ss.getActiveSheet())
+  }
+
+  get sheets(): Sheet[] {
+    return this.ss.getSheets().map((s) => Sheet.from(s));
+  }
+
+  sheetByName(name: string): Sheet | null {
+    return this.sheetMap.get(name) ?? null;
+  }
+
+  private get sheetMap(): Map<string, Sheet> {
+    if (!this._sheetCache) {
+      const entries: [string, Sheet][] = this.sheets.map((s) => [s.getSheetName(), s]);
+      this._sheetCache = new Map(entries);
     }
-
-    return sheet;
+    return this._sheetCache;
   }
 
-  getSheetMap() {
-    if (!this._sheetMap) {
-      // Lazily initialize the sheet map only when it's accessed
-      const sheets = this.getSheets();
-
-      // Ensure `sheets` is an array before processing
-      if (!Array.isArray(sheets)) {
-        throw new Error("getSheets() must return an array");
-      }
-
-      // Create the sheet map efficiently using Object.fromEntries
-      this._sheetMap = Object.fromEntries(
-        sheets.map((sheet) => [sheet.getName(), sheet])
-      );
-    }
-
-    return this._sheetMap;
+  // ────────────────────────────────────────────────────────────
+  //  Spreadsheet‑level operations
+  // ────────────────────────────────────────────────────────────
+  moveActiveSheetTo(position: number): void {
+    this.ss.moveActiveSheet(position);
   }
 
-  getSheets() {
-    if (!this._sheets) {
-      this._sheets = this.getGasSheets().map((sheet) => new Sheet(sheet));
-    }
-    return this._sheets;
+  newFilterCriteria(): GoogleAppsScript.Spreadsheet.FilterCriteriaBuilder {
+    return SpreadsheetApp.newFilterCriteria();
   }
 
-  getSpreadsheetName() {
-    return this.spreadsheet.getName();
+  toast(message: string, title: string = '', timeoutSeconds: number = 5): void {
+    this.ss.toast(message, title, timeoutSeconds);
   }
 
-  getUrl() {
-    return this.spreadsheet.getUrl();
-  }
-
-  moveActiveSheet(sheetNumber) {
-    this.spreadsheet.moveActiveSheet(sheetNumber);
-  }
-
-  newFilterCriteria() {
-    return gasSpreadsheetApp.newFilterCriteria();
-  }
-
-  openById(spreadsheetId) {
-    if (!this.spreadsheets[spreadsheetId]) {
-      this.spreadsheets[spreadsheetId] = SpreadsheetApp.openById(spreadsheetId);
-    }
-    return this.spreadsheets[spreadsheetId];
-  }
-
-  setActiveSheet(sheet) {
-    examineObject(sheet);
-    this.spreadsheet.setActiveSheet(sheet.sheet);
-  }
-
-  toast(msg, title, timeoutSeconds) {
-    this.spreadsheet.toast(msg, title, timeoutSeconds);
+  // ────────────────────────────────────────────────────────────
+  //  Escape hatch – expose the underlying GAS Spreadsheet
+  // ────────────────────────────────────────────────────────────
+  get raw(): GoogleAppsScript.Spreadsheet.Spreadsheet {
+    return this.ss;
   }
 }

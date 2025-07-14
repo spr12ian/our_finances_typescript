@@ -14,4 +14,18 @@ GAS repository
 
 `npx tsc --init`
 
+`npm install --save-dev tsup`
+
+`npm install --save-dev esbuild # optional, used by tsup under the hood`
+
+`npm install`
+
+`npm run clean`
+
+`npm run build`
+
+`npm run prepare-clasp`
+
+`npm run push`
+
 `clasp push`

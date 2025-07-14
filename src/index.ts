@@ -2,6 +2,7 @@
 
 import { Spreadsheet } from "./Spreadsheet";
 import { getSheetNamesByType, goToSheetLastRow } from "./functions";
+import { onOpen } from "./onOpen";
 
 /**
  * Application entry point – executed when the script is loaded.
@@ -15,8 +16,8 @@ export const LOCALE = "en-GB" as const;
 // ────────────────────────────────────────────────────────────
 //  Spreadsheet context
 // ────────────────────────────────────────────────────────────
-export const spreadsheet = Spreadsheet.from(); // active spreadsheet
-export const gasSpreadsheetApp = spreadsheet.raw; // escape hatch if needed
+export const activeSpreadsheet = Spreadsheet.from(); // active spreadsheet
+export const gasSpreadsheetApp = activeSpreadsheet.raw; // escape hatch if needed
 
 // ────────────────────────────────────────────────────────────
 //  Dynamically create helper functions
@@ -35,3 +36,9 @@ export const gasSpreadsheetApp = spreadsheet.raw; // escape hatch if needed
   // Attach to global scope so they can be invoked directly from GAS
   Object.assign(globalThis, helpers);
 })();
+
+// ────────────────────────────────────────────────────────────
+// Register trigger handlers
+// ────────────────────────────────────────────────────────────
+Object.assign(globalThis, { onOpen });
+

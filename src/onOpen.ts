@@ -53,10 +53,6 @@ function checkDependencies() {
   dependencies.updateAllDependencies();
 }
 
-function cloneDate(date) {
-  return new Date(date.getTime());
-}
-
 function columnNumberToLetter(columnNumber) {
   let dividend = columnNumber;
   let letter = "";
@@ -984,31 +980,6 @@ function setLastUpdatedOnAccountBalanceChange(sheet) {
 
     bankAccounts.updateLastUpdatedByKey(key);
   }
-}
-
-function setupDaysIterator(startDate) {
-  const getNextResult = (iteratorDate) => {
-    const date = cloneDate(iteratorDate); // Default date in long format
-    const day = getDtf().format(date); // 19/01/1964
-    const dayName = getDayName(date); // Sunday
-    const dayOfMonth = getDayOfMonth(date); // 29
-    const season = getSeasonName(date); // Winter, Spring, Summer, Autumn
-
-    // Return result as an object
-    return { date, day, dayName, dayOfMonth, season };
-  };
-
-  const iteratorDate = new Date(startDate);
-  const first = getNextResult(iteratorDate);
-
-  const iterator = {
-    next: () => {
-      iteratorDate.setDate(iteratorDate.getDate() + 1);
-      return getNextResult(iteratorDate);
-    },
-  };
-
-  return { first, iterator };
 }
 
 function sortGoogleSheets() {

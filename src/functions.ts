@@ -10,30 +10,6 @@ function alert(message: string) {
   SpreadsheetApp.getUi().alert(message);
 }
 
-function budget() {
-  goToSheet("Budget");
-}
-
-function budgetAnnualTransactions() {
-  goToSheet(BudgetAnnualTransactions.SHEET.NAME);
-}
-
-function budgetMonthlyTransactions() {
-  goToSheet("Budget monthly transactions");
-}
-
-function budgetAdhocTransactions() {
-  goToSheet("Budget ad hoc transactions");
-}
-
-function budgetPredictedSpend() {
-  goToSheet("Budget predicted spend");
-}
-
-function budgetWeeklyTransactions() {
-  goToSheet("Budget weekly transactions");
-}
-
 function checkDependencies() {
   const dependencies = new Dependencies();
   dependencies.updateAllDependencies();
@@ -43,7 +19,7 @@ function cloneDate(date) {
   return new Date(date.getTime());
 }
 
-function columnNumberToLetter(columnNumber) {
+function columnNumberToLetter(columnNumber: number): string {
   let dividend = columnNumber;
   let letter = "";
   while (dividend > 0) {
@@ -587,7 +563,7 @@ function goToSheet(sheetName) {
   }
 }
 
-export function goToSheetLastRow(sheetName:string) {
+export function goToSheetLastRow(sheetName: string) {
   const sheet = new Sheet(sheetName);
   sheet.setActiveRange(sheet.getRange(sheet.getLastRow(), 1));
 }

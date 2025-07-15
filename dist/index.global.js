@@ -1,5 +1,84 @@
 "use strict";
 (() => {
+  // src/OurFinances.ts
+  var OurFinances = class {
+    constructor() {
+      this.spreadsheet = activeSpreadsheet;
+    }
+    getFixedAmountMismatches() {
+      return this.checkFixedAmounts.getMismatchMessages();
+    }
+    getUpcomingDebits() {
+      return [
+        this.bankDebitsDue.getUpcomingDebits(),
+        this.budgetAdhocTransactions.getUpcomingDebits(),
+        this.budgetAnnualTransactions.getUpcomingDebits(),
+        this.budgetMonthlyTransactions.getUpcomingDebits(),
+        this.budgetWeeklyTransactions.getUpcomingDebits()
+      ];
+    }
+    get budgetAnnualTransactions() {
+      if (typeof this._budgetAnnualTransactions === "undefined") {
+        this._budgetAnnualTransactions = new BudgetAnnualTransactions(this);
+      }
+      return this._budgetAnnualTransactions;
+    }
+    get budgetAdhocTransactions() {
+      if (typeof this._budgetAdhocTransactions === "undefined") {
+        this._budgetAdhocTransactions = new BudgetAdhocTransactions(this);
+      }
+      return this._budgetAdhocTransactions;
+    }
+    get bankAccounts() {
+      if (typeof this._bankAccounts === "undefined") {
+        this._bankAccounts = new BankAccounts(this);
+      }
+      return this._bankAccounts;
+    }
+    get bankDebitsDue() {
+      if (typeof this._bankDebitsDue === "undefined") {
+        this._bankDebitsDue = new BankDebitsDue(this);
+      }
+      return this._bankDebitsDue;
+    }
+    get checkFixedAmounts() {
+      if (typeof this._checkFixedAmounts === "undefined") {
+        this._checkFixedAmounts = new CheckFixedAmounts(this);
+      }
+      return this._checkFixedAmounts;
+    }
+    get howManyDaysAhead() {
+      if (typeof this._howManyDaysAhead === "undefined") {
+        const sheetName = "Bank debits due";
+        const sheet = this.getSheetByName(sheetName);
+        const searchValue = "Look ahead";
+        this._howManyDaysAhead = xLookup(searchValue, sheet, "F", "G");
+      }
+      return this._howManyDaysAhead;
+    }
+    get budgetMonthlyTransactions() {
+      if (typeof this._budgetMonthlyTransactions === "undefined") {
+        this._budgetMonthlyTransactions = new BudgetMonthlyTransactions(this);
+      }
+      return this._budgetMonthlyTransactions;
+    }
+    get budgetWeeklyTransactions() {
+      if (typeof this._budgetWeeklyTransactions === "undefined") {
+        this._budgetWeeklyTransactions = new BudgetWeeklyTransactions(this);
+      }
+      return this._budgetWeeklyTransactions;
+    }
+    getName() {
+      return this.spreadsheet.getName();
+    }
+    getSheetByName(sheetName) {
+      return this.spreadsheet.getSheetByName(sheetName);
+    }
+    showAllAccounts() {
+      this.bankAccounts.showAll();
+    }
+  };
+
   // src/SpreadsheetSummary.ts
   var SpreadsheetSummary = class _SpreadsheetSummary {
     static get COLUMNS() {
@@ -69,105 +148,6 @@
   };
 
   // src/functions.ts
-  function getAccountSheetNames() {
-    return [
-      "_AHALIF",
-      "_ASANTA",
-      "_BCHASE",
-      "_BCHRND",
-      "_BCHSAV",
-      "_BCOISA",
-      "_BCOLOY",
-      "_BCYNER",
-      "_BFAMIL",
-      "_BGOLDM",
-      "_BHASAV",
-      "_BHAULT",
-      "_BMETRO",
-      "_BMOCHA",
-      "_BMOFWN",
-      "_BMOKID",
-      "_BMONZO",
-      "_BMOPAR",
-      "_BMOSAV",
-      "_BNSPBZ",
-      "_BOAISA",
-      "_BOAKNO",
-      "_BOXBUR",
-      "_BPAYPA",
-      "_BPOSTO",
-      "_BSAISA",
-      "_BSANTA",
-      "_BSASA2",
-      "_BSASA3",
-      "_BSASAV",
-      "_BSATAX",
-      "_BTES01",
-      "_BTESCO",
-      "_BTRISA",
-      "_BVANGA",
-      "_BVMISA",
-      "_BVMSAV",
-      "_BWALLE",
-      "_CLLOYD",
-      "_CMETRO",
-      "_CVITRA",
-      "_JFIXES",
-      "_JSANTA",
-      "_JWALEU",
-      "_SAMAZO",
-      "_SCHASE",
-      "_SCHBST",
-      "_SCHRND",
-      "_SCHSAV",
-      "_SCOIS2",
-      "_SCOISA",
-      "_SCOLOY",
-      "_SFAMIL",
-      "_SGOLDM",
-      "_SJL3BH",
-      "_SKI3BH",
-      "_SKROOO",
-      "_SMETRO",
-      "_SMONZ1",
-      "_SMONZO",
-      "_SNSPBZ",
-      "_SOAISA",
-      "_SOAKNO",
-      "_SOXBUR",
-      "_SPAYPA",
-      "_SPOSTO",
-      "_SREVOL",
-      "_SSACR1",
-      "_SSACRD",
-      "_SSAISA",
-      "_SSANT1",
-      "_SSANTA",
-      "_SSAPRM",
-      "_SSAZ01",
-      "_SSAZ02",
-      "_SSAZ03",
-      "_SSTARB",
-      "_SSTARL",
-      "_STAFIX",
-      "_STASAV",
-      "_STES01",
-      "_STES02",
-      "_STES03",
-      "_STESCO",
-      "_STRISA",
-      "_SVANGA",
-      "_SVI2TJ",
-      "_SVI3BH",
-      "_SVIGB2",
-      "_SVIGBL",
-      "_SVIIRF",
-      "_SVMISA",
-      "_SVMSAV",
-      "_SWALLE",
-      "_SZOPA1"
-    ];
-  }
   function getSheetNamesByType(sheetNameType) {
     let sheetNames;
     const spreadsheetSummary = new SpreadsheetSummary();
@@ -394,23 +374,129 @@
     }
   };
 
-  // src/onOpen.ts
-  function alert(message) {
-    SpreadsheetApp.getUi().alert(message);
+  // src/onDateChange.ts
+  function dailySorts() {
+    const sheetsToSort = [
+      BankAccounts.SHEET.NAME,
+      BudgetAnnualTransactions.SHEET.NAME,
+      "Budget monthly transactions",
+      "Budget weekly transactions",
+      "Description replacements",
+      "Transactions categories"
+    ];
+    sheetsToSort.forEach((sheetName) => {
+      const sheet = activeSpreadsheet.getSheetByName(sheetName);
+      if (sheet) {
+        sortSheetByFirstColumnOmittingHeader(sheet);
+      } else {
+        throw new Error(`${sheetName} not found`);
+      }
+    });
   }
-  function createAccountsMenu() {
-    if (accountSheetNames.length === 0) {
-      alert("No account sheets found!");
+  function getMyEmailAddress() {
+    var _a;
+    const myEmailAddress = (_a = getPrivateData()) == null ? void 0 : _a["MY_EMAIL_ADDRESS"];
+    if (myEmailAddress) {
+      return myEmailAddress;
+    } else {
+      console.error("MY_EMAIL_ADDRESS not found in private data");
+      return null;
+    }
+  }
+  function getPrivateData() {
+    const privateDataId = "1hxcINN1seSzn-sLPI25KmV9t4kxLvZlievc0X3EgMhs";
+    const sheet = gasSpreadsheetApp.openById(privateDataId);
+    if (!sheet) {
+      return;
+    }
+    const values = sheet.getDataRange().getValues().slice(1);
+    if (values.length === 0) {
+      return;
+    }
+    let keyValuePairs = {};
+    values.forEach(([key, value]) => {
+      if (key && value) {
+        if (key && value) {
+          keyValuePairs[key] = value;
+        }
+      }
+    });
+    return keyValuePairs;
+  }
+  function getToday(options = { weekday: "long", year: "numeric", month: "long", day: "numeric" }) {
+    const date = /* @__PURE__ */ new Date();
+    let today;
+    try {
+      const dtf = new Intl.DateTimeFormat(locale, options);
+      today = dtf.format(date);
+    } catch (error) {
+      today = date.toLocaleDateString(locale, options);
+    }
+    return today;
+  }
+  function onDateChange() {
+    sendDailyEmail();
+    dailySorts();
+  }
+  function sendDailyEmail() {
+    const ourFinances = new OurFinances();
+    const fixedAmountMismatches = ourFinances.getFixedAmountMismatches();
+    const upcomingDebits = ourFinances.getUpcomingDebits();
+    const subject = `Our finances daily email: ${getToday()}`;
+    let emailBody = ``;
+    if (fixedAmountMismatches.length > 0) {
+      emailBody += `Fixed amount mismatches
+`;
+      emailBody += fixedAmountMismatches.join("\n");
+      emailBody += `
+
+`;
+    }
+    if (upcomingDebits.length) {
+      emailBody += `Upcoming debits
+`;
+      emailBody += upcomingDebits.join("\n");
+      emailBody += `
+
+`;
+    }
+    emailBody += `
+
+Sent from (sendDailyEmail): ${ourFinances.spreadsheet.getUrl()}
+`;
+    sendMeEmail(subject, emailBody);
+  }
+  function sendEmail(recipient, subject, body, options) {
+    return GmailApp.sendEmail(recipient, subject, body, options);
+  }
+  function sendMeEmail(subject, emailBody, options) {
+    const body = `${subject}
+
+${emailBody}`;
+    return sendEmail(getMyEmailAddress(), subject, body, options);
+  }
+  function sortSheetByFirstColumnOmittingHeader(sheet) {
+    const dataRange = sheet.getDataRange();
+    const numRows = dataRange.getNumRows();
+    const numCols = dataRange.getNumColumns();
+    const rangeToSort = sheet.getRange(2, 1, numRows - 1, numCols);
+    rangeToSort.sort({ column: 1, ascending: true });
+  }
+
+  // src/onOpen.ts
+  function buildAccountsMenu_(ui, accountSheetNames2) {
+    if (accountSheetNames2.length === 0) {
+      ui.alert("No account sheets found!");
       return;
     }
     const itemArray = [];
-    for (const accountSheetName of accountSheetNames) {
+    for (const accountSheetName of accountSheetNames2) {
       const funName = "dynamicAccount" + accountSheetName;
       itemArray.push([accountSheetName, funName]);
     }
-    createUiMenu("Accounts", itemArray);
+    createMenu(ui, "Accounts", itemArray);
   }
-  function createGasMenu() {
+  function buildGasMenu_(ui) {
     const itemArray = [
       ["All accounts", "allAccounts"],
       ["Apply Description replacements", "applyDescriptionReplacements"],
@@ -426,10 +512,9 @@
       ["Trim sheet", "trimGoogleSheet"],
       ["Update spreadsheet summary", "updateSpreadsheetSummary"]
     ];
-    createUiMenu("GAS Menu", itemArray);
+    createMenu(ui, "GAS Menu", itemArray);
   }
-  function createSectionsMenu() {
-    const ui = gasSpreadsheetApp.getUi();
+  function buildSectionsMenu_(ui) {
     const menu = ui.createMenu("Sections").addSubMenu(
       ui.createMenu("Budget").addItem("Budget", "budget").addItem(
         BudgetAnnualTransactions.SHEET.NAME,
@@ -455,27 +540,146 @@
       ui.createMenu("SW18 3PT").addItem("Home Assistant inventory", "goToSheetSW183PTInventory").addItem("Inventory", "goToSheetSW183PTInventory")
     ).addSeparator().addItem("Xfers mismatch", "goToSheetXfersMismatch").addToUi();
   }
-  function createUiMenu(menuCaption, menuItemArray) {
-    const ui = gasSpreadsheetApp.getUi();
+  function createMenu(ui, menuCaption, menuItemArray) {
     const menu = ui.createMenu(menuCaption);
     menuItemArray.forEach(([itemName, itemFunction]) => {
       menu.addItem(itemName, itemFunction);
     });
     menu.addToUi();
   }
+  function getAccountSheetNames2() {
+    return [
+      "_AHALIF",
+      "_ASANTA",
+      "_BCHASE",
+      "_BCHRND",
+      "_BCHSAV",
+      "_BCOISA",
+      "_BCOLOY",
+      "_BCYNER",
+      "_BFAMIL",
+      "_BGOLDM",
+      "_BHASAV",
+      "_BHAULT",
+      "_BMETRO",
+      "_BMOCHA",
+      "_BMOFWN",
+      "_BMOKID",
+      "_BMONZO",
+      "_BMOPAR",
+      "_BMOSAV",
+      "_BNSPBZ",
+      "_BOAISA",
+      "_BOAKNO",
+      "_BOXBUR",
+      "_BPAYPA",
+      "_BPOSTO",
+      "_BSAISA",
+      "_BSANTA",
+      "_BSASA2",
+      "_BSASA3",
+      "_BSASAV",
+      "_BSATAX",
+      "_BTES01",
+      "_BTESCO",
+      "_BTRISA",
+      "_BVANGA",
+      "_BVMISA",
+      "_BVMSAV",
+      "_BWALLE",
+      "_CLLOYD",
+      "_CMETRO",
+      "_CVITRA",
+      "_JFIXES",
+      "_JSANTA",
+      "_JWALEU",
+      "_SAMAZO",
+      "_SCHASE",
+      "_SCHBST",
+      "_SCHRND",
+      "_SCHSAV",
+      "_SCOIS2",
+      "_SCOISA",
+      "_SCOLOY",
+      "_SFAMIL",
+      "_SGOLDM",
+      "_SJL3BH",
+      "_SKI3BH",
+      "_SKROOO",
+      "_SMETRO",
+      "_SMONZ1",
+      "_SMONZO",
+      "_SNSPBZ",
+      "_SOAISA",
+      "_SOAKNO",
+      "_SOXBUR",
+      "_SPAYPA",
+      "_SPOSTO",
+      "_SREVOL",
+      "_SSACR1",
+      "_SSACRD",
+      "_SSAISA",
+      "_SSANT1",
+      "_SSANTA",
+      "_SSAPRM",
+      "_SSAZ01",
+      "_SSAZ02",
+      "_SSAZ03",
+      "_SSTARB",
+      "_SSTARL",
+      "_STAFIX",
+      "_STASAV",
+      "_STES01",
+      "_STES02",
+      "_STES03",
+      "_STESCO",
+      "_STRISA",
+      "_SVANGA",
+      "_SVI2TJ",
+      "_SVI3BH",
+      "_SVIGB2",
+      "_SVIGBL",
+      "_SVIIRF",
+      "_SVMISA",
+      "_SVMSAV",
+      "_SWALLE",
+      "_SZOPA1"
+    ];
+  }
+  function getSheetNamesByType2(sheetNameType) {
+    let sheetNames;
+    const spreadsheetSummary = new SpreadsheetSummary();
+    switch (sheetNameType) {
+      case "account":
+        sheetNames = getAccountSheetNames2();
+        break;
+      case "all":
+        sheetNames = spreadsheetSummary.getSheetNames();
+        break;
+      default:
+        throw new Error(`Unexpected sheetNameType: ${sheetNameType}`);
+    }
+    return sheetNames;
+  }
   function onOpen() {
-    const spreadsheet2 = activeSpreadsheet;
-    spreadsheet2.toast("Please wait while I do a few tasks", "Please wait!", 500);
-    createAccountsMenu();
-    createGasMenu();
-    createSectionsMenu();
-    spreadsheet2.toast("You can do your thing now.", "I'm finished!", 3);
+    try {
+      const ss = SpreadsheetApp.getActiveSpreadsheet();
+      ss.toast("Please wait while I do a few tasks", "Please wait!", 500);
+      const ui = SpreadsheetApp.getUi();
+      const accountSheetNames2 = getSheetNamesByType2("account");
+      buildAccountsMenu_(ui, accountSheetNames2);
+      buildGasMenu_(ui);
+      buildSectionsMenu_(ui);
+      ss.toast("You can do your thing now.", "I'm finished!", 3);
+    } catch (err) {
+      console.error("onOpen error:", err);
+    }
   }
 
   // src/index.ts
   var LOCALE = "en-GB";
-  var spreadsheet = Spreadsheet.from();
-  var gasSpreadsheetApp2 = spreadsheet.raw;
+  var activeSpreadsheet2 = Spreadsheet.from();
+  var gasSpreadsheetApp2 = activeSpreadsheet2.raw;
   (() => {
     const accountSheetNames2 = getSheetNamesByType("account");
     const helpers = {};
@@ -483,7 +687,7 @@
       const key = `dynamicAccount${name}`;
       helpers[key] = () => goToSheetLastRow(name);
     }
-    Object.assign(globalThis, helpers);
+    Object.assign(globalThis, { accountSheetNames: accountSheetNames2, helpers });
   })();
-  Object.assign(globalThis, { onOpen });
+  Object.assign(globalThis, { onDateChange, onOpen });
 })();

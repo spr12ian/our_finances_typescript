@@ -2,8 +2,8 @@
 
 import { OurFinances } from "./OurFinances";
 import { Sheet } from "./Sheet";
+import { Spreadsheet } from "./Spreadsheet";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
-import { gasSpreadsheetApp } from "./index";
 
 // Function declarations
 
@@ -82,16 +82,13 @@ function convertCurrentColumnToUppercase() {
   range.setValues(uppercasedValues);
 }
 
-function buildAccountsMenu_(
-  ui: GoogleAppsScript.Base.Ui,
-  accountSheetNames: string[]
-): void {
+function createAccountsMenu() {
   // accountSheetNames is defined as a global
   //const accountSheetNames = getSheetNamesByType('account');
 
   // Check if any accounts are found
   if (accountSheetNames.length === 0) {
-    ui.alert("No account sheets found!");
+    alert("No account sheets found!");
     return;
   }
 
@@ -102,10 +99,10 @@ function buildAccountsMenu_(
     itemArray.push([accountSheetName, funName]);
   }
 
-  createMenu(ui, "Accounts", itemArray);
+  createUiMenu("Accounts", itemArray);
 }
 
-function buildGasMenu_(ui: GoogleAppsScript.Base.Ui) {
+function createGasMenu() {
   const itemArray = [
     ["All accounts", "allAccounts"],
     ["Apply Description replacements", "applyDescriptionReplacements"],
@@ -121,92 +118,11 @@ function buildGasMenu_(ui: GoogleAppsScript.Base.Ui) {
     ["Trim sheet", "trimGoogleSheet"],
     ["Update spreadsheet summary", "updateSpreadsheetSummary"],
   ];
-  createMenu(ui, "GAS Menu", itemArray);
+  createUiMenu("GAS Menu", itemArray);
 }
 
-function buildSectionsMenu_(ui: GoogleAppsScript.Base.Ui) {
-  const menu = ui
-    .createMenu("Sections")
-    .addSubMenu(
-      ui
-        .createMenu("Budget")
-        .addItem("Budget", "budget")
-        .addItem(
-          BudgetAnnualTransactions.SHEET.NAME,
-          "budgetAnnualTransactions"
-        )
-        .addItem("Budget monthly transactions", "budgetMonthlyTransactions")
-        .addItem("Budget ad hoc transactions", "budgetAdhocTransactions")
-        .addItem("Budget predicted spend", "budgetPredictedSpend")
-        .addItem("Budget weekly transactions", "budgetWeeklyTransactions")
-    )
-    .addSeparator()
-    .addSubMenu(
-      ui
-        .createMenu("Categories")
-        .addItem("4 All transactions by date", "goToSheetTransactionsByDate")
-        .addItem("5 Assign categories", "goToSheetTransactionsCategories")
-        .addItem("1 Categories", "goToSheetCategories")
-        .addItem("Category clash", "goToSheetCategoryClash")
-        .addItem("7 Merge transactions", "mergeTransactions")
-        .addItem("8 Copy keys", "copyKeys")
-        .addItem(
-          "2 Not in transaction categories",
-          "goToSheetNotInTransactionCategories"
-        )
-        .addItem("6 Transactions builder", "goToSheetTransactionsBuilder")
-        .addItem("3 Uncategorised by date", "goToSheetUnlabelledByDate")
-    )
-    .addSeparator()
-    .addSubMenu(
-      ui
-        .createMenu("Charlie")
-        .addItem("Charlie's transactions", "goToSheet_CVITRA")
-    )
-    .addSeparator()
-    .addSubMenu(
-      ui
-        .createMenu("Fownes Street")
-        .addItem("Fownes Street Halifax account", "goToSheet_AHALIF")
-        .addItem("Fownes Street Ian B HMRC records", "goToSheet_SVI2TJ")
-        .addItem("Fownes Street IRF transactions", "goToSheet_SVIIRF")
-    )
-    .addSeparator()
-    .addSubMenu(
-      ui
-        .createMenu("Glenburnie")
-        .addItem("Glenburnie investment loan", "goToSheet_SVIGBL")
-        .addItem("Glenburnie loan", "goToSheetLoanGlenburnie")
-    )
-    .addSeparator()
-    .addSubMenu(
-      ui
-        .createMenu("HMRC")
-        .addItem(
-          "HMRC Transactions summary",
-          "goToSheetHMRCTransactionsSummary"
-        )
-        .addItem("Self Assessment Ian Bernard", "goToSheetHMRC_B")
-        .addItem("Self Assessment Ian Sweeney", "goToSheetHMRC_S")
-        .addItem("SES Childcare", "goToSheetHMRCTransactionsSummary")
-        .addItem("SES Property management", "goToSheetHMRCTransactionsSummary")
-        .addItem("TR People", "goToSheetPeople")
-        .addItem("UKP Fownes Street", "goToSheetHMRCTransactionsSummary")
-        .addItem("UKP One Park West", "goToSheetHMRCTransactionsSummary")
-    )
-    .addSeparator()
-    .addSubMenu(
-      ui
-        .createMenu("SW18 3PT")
-        .addItem("Home Assistant inventory", "goToSheetSW183PTInventory")
-        .addItem("Inventory", "goToSheetSW183PTInventory")
-    )
-    .addSeparator()
-    .addItem("Xfers mismatch", "goToSheetXfersMismatch")
-    .addToUi();
-}
-
-function createMenu(ui: GoogleAppsScript.Base.Ui, menuCaption:string, menuItemArray) {
+function createUiMenu(menuCaption, menuItemArray) {
+  const ui = gasSpreadsheetApp.getUi();
   const menu = ui.createMenu(menuCaption);
 
   menuItemArray.forEach(([itemName, itemFunction]) => {
@@ -214,6 +130,25 @@ function createMenu(ui: GoogleAppsScript.Base.Ui, menuCaption:string, menuItemAr
   });
 
   menu.addToUi();
+}
+
+function dailySorts() {
+  const sheetsToSort = [
+    BankAccounts.SHEET.NAME,
+    BudgetAnnualTransactions.SHEET.NAME,
+    "Budget monthly transactions",
+    "Budget weekly transactions",
+    "Description replacements",
+    "Transactions categories",
+  ];
+  sheetsToSort.forEach((sheetName) => {
+    const sheet = activeSpreadsheet.getSheetByName(sheetName);
+    if (sheet) {
+      sortSheetByFirstColumnOmittingHeader(sheet);
+    } else {
+      throw new Error(`${sheetName} not found`);
+    }
+  });
 }
 
 function dailyUpdate() {
@@ -338,107 +273,6 @@ function formatSheet() {
 
   const accountSheet = new AccountSheet(activeSheet);
   accountSheet.formatSheet();
-}
-
-function getAccountSheetNames(): string[] {
-  // Generated via Python
-  return [
-    "_AHALIF",
-    "_ASANTA",
-    "_BCHASE",
-    "_BCHRND",
-    "_BCHSAV",
-    "_BCOISA",
-    "_BCOLOY",
-    "_BCYNER",
-    "_BFAMIL",
-    "_BGOLDM",
-    "_BHASAV",
-    "_BHAULT",
-    "_BMETRO",
-    "_BMOCHA",
-    "_BMOFWN",
-    "_BMOKID",
-    "_BMONZO",
-    "_BMOPAR",
-    "_BMOSAV",
-    "_BNSPBZ",
-    "_BOAISA",
-    "_BOAKNO",
-    "_BOXBUR",
-    "_BPAYPA",
-    "_BPOSTO",
-    "_BSAISA",
-    "_BSANTA",
-    "_BSASA2",
-    "_BSASA3",
-    "_BSASAV",
-    "_BSATAX",
-    "_BTES01",
-    "_BTESCO",
-    "_BTRISA",
-    "_BVANGA",
-    "_BVMISA",
-    "_BVMSAV",
-    "_BWALLE",
-    "_CLLOYD",
-    "_CMETRO",
-    "_CVITRA",
-    "_JFIXES",
-    "_JSANTA",
-    "_JWALEU",
-    "_SAMAZO",
-    "_SCHASE",
-    "_SCHBST",
-    "_SCHRND",
-    "_SCHSAV",
-    "_SCOIS2",
-    "_SCOISA",
-    "_SCOLOY",
-    "_SFAMIL",
-    "_SGOLDM",
-    "_SJL3BH",
-    "_SKI3BH",
-    "_SKROOO",
-    "_SMETRO",
-    "_SMONZ1",
-    "_SMONZO",
-    "_SNSPBZ",
-    "_SOAISA",
-    "_SOAKNO",
-    "_SOXBUR",
-    "_SPAYPA",
-    "_SPOSTO",
-    "_SREVOL",
-    "_SSACR1",
-    "_SSACRD",
-    "_SSAISA",
-    "_SSANT1",
-    "_SSANTA",
-    "_SSAPRM",
-    "_SSAZ01",
-    "_SSAZ02",
-    "_SSAZ03",
-    "_SSTARB",
-    "_SSTARL",
-    "_STAFIX",
-    "_STASAV",
-    "_STES01",
-    "_STES02",
-    "_STES03",
-    "_STESCO",
-    "_STRISA",
-    "_SVANGA",
-    "_SVI2TJ",
-    "_SVI3BH",
-    "_SVIGB2",
-    "_SVIGBL",
-    "_SVIIRF",
-    "_SVMISA",
-    "_SVMSAV",
-    "_SWALLE",
-    "_SZOPA1",
-  ];
 }
 
 /**
@@ -631,7 +465,7 @@ function getSeasonName(date) {
   return seasons[seasonIndex];
 }
 
-export function getSheetNamesByType(sheetNameType: string): string[] {
+export function getSheetNamesByType(sheetNameType: string) {
   let sheetNames;
 
   const spreadsheetSummary = new SpreadsheetSummary();
@@ -874,6 +708,12 @@ function monthlyUpdate() {
   ourFinances.bankAccounts.showMonthly();
 }
 
+// onDateChange is not a Google trigger; it must be created under Triggers (time based)!!!
+export function onDateChange() {
+  sendDailyEmail();
+  dailySorts();
+}
+
 function onEdit(event) {
   const trigger = new Trigger(event);
   const sheet = trigger.getSheet();
@@ -888,30 +728,40 @@ function onEdit(event) {
   bankAccounts.updateLastUpdatedBySheet(sheet);
 }
 
-export function onOpen() {
-  try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-
-    // Displaying a temporary notification to the user
-    ss.toast("Please wait while I do a few tasks", "Please wait!", 500);
-
-    const ui = SpreadsheetApp.getUi();
-
-    const accountSheetNames = getSheetNamesByType("account"); // now safe
-    buildAccountsMenu_(ui, accountSheetNames);
-    buildGasMenu_(ui);
-    buildSectionsMenu_(ui);
-
-    // Notifying the user that the tasks are finished
-    ss.toast("You can do your thing now.", "I'm finished!", 3);
-  } catch (err) {
-    console.error("onOpen error:", err);
-  }
-}
-
 function openAccounts() {
   const ourFinances = new OurFinances();
   ourFinances.bankAccounts.showOpenAccounts();
+}
+
+function sendDailyEmail() {
+  const ourFinances = new OurFinances();
+  const fixedAmountMismatches = ourFinances.getFixedAmountMismatches();
+  const upcomingDebits = ourFinances.getUpcomingDebits();
+
+  const subject = `Our finances daily email: ${getToday()}`;
+
+  // Initialize the email body
+  let emailBody = ``;
+
+  if (fixedAmountMismatches.length > 0) {
+    emailBody += `Fixed amount mismatches\n`;
+    // Concatenate the fixedAmountMismatches into the email body
+    emailBody += fixedAmountMismatches.join("\n");
+    emailBody += `\n\n`;
+  }
+
+  if (upcomingDebits.length) {
+    emailBody += `Upcoming debits\n`;
+    // Concatenate the debits into the email body
+    emailBody += upcomingDebits.join("\n");
+    emailBody += `\n\n`;
+  }
+
+  // Append the spreadsheet URL
+  emailBody += `\n\nSent from (sendDailyEmail): ${ourFinances.spreadsheet.getUrl()}\n`;
+
+  // Send the email
+  sendMeEmail(subject, emailBody);
 }
 
 function sendEmail(recipient, subject, body, options) {

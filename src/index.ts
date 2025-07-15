@@ -2,6 +2,7 @@
 
 import { Spreadsheet } from "./Spreadsheet";
 import { getSheetNamesByType, goToSheetLastRow } from "./functions";
+import { onDateChange } from "./onDateChange";
 import { onOpen } from "./onOpen";
 
 /**
@@ -34,11 +35,11 @@ export const gasSpreadsheetApp = activeSpreadsheet.raw; // escape hatch if neede
   }
 
   // Attach to global scope so they can be invoked directly from GAS
-  Object.assign(globalThis, helpers);
+  Object.assign(globalThis, { accountSheetNames, helpers });
 })();
 
 // ────────────────────────────────────────────────────────────
 // Register trigger handlers
 // ────────────────────────────────────────────────────────────
-Object.assign(globalThis, { onOpen });
+Object.assign(globalThis, { onDateChange, onOpen });
 

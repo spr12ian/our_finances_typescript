@@ -48,25 +48,6 @@ function convertCurrentColumnToUppercase() {
   range.setValues(uppercasedValues);
 }
 
-function dailySorts() {
-  const sheetsToSort = [
-    BankAccounts.SHEET.NAME,
-    BudgetAnnualTransactions.SHEET.NAME,
-    "Budget monthly transactions",
-    "Budget weekly transactions",
-    "Description replacements",
-    "Transactions categories",
-  ];
-  sheetsToSort.forEach((sheetName) => {
-    const sheet = activeSpreadsheet.getSheetByName(sheetName);
-    if (sheet) {
-      sortSheetByFirstColumnOmittingHeader(sheet);
-    } else {
-      throw new Error(`${sheetName} not found`);
-    }
-  });
-}
-
 function dailyUpdate() {
   const bankAccounts = new BankAccounts();
   bankAccounts.showDaily();
@@ -189,107 +170,6 @@ function formatSheet() {
 
   const accountSheet = new AccountSheet(activeSheet);
   accountSheet.formatSheet();
-}
-
-function getAccountSheetNames() {
-  // Generated via Python
-  return [
-    "_AHALIF",
-    "_ASANTA",
-    "_BCHASE",
-    "_BCHRND",
-    "_BCHSAV",
-    "_BCOISA",
-    "_BCOLOY",
-    "_BCYNER",
-    "_BFAMIL",
-    "_BGOLDM",
-    "_BHASAV",
-    "_BHAULT",
-    "_BMETRO",
-    "_BMOCHA",
-    "_BMOFWN",
-    "_BMOKID",
-    "_BMONZO",
-    "_BMOPAR",
-    "_BMOSAV",
-    "_BNSPBZ",
-    "_BOAISA",
-    "_BOAKNO",
-    "_BOXBUR",
-    "_BPAYPA",
-    "_BPOSTO",
-    "_BSAISA",
-    "_BSANTA",
-    "_BSASA2",
-    "_BSASA3",
-    "_BSASAV",
-    "_BSATAX",
-    "_BTES01",
-    "_BTESCO",
-    "_BTRISA",
-    "_BVANGA",
-    "_BVMISA",
-    "_BVMSAV",
-    "_BWALLE",
-    "_CLLOYD",
-    "_CMETRO",
-    "_CVITRA",
-    "_JFIXES",
-    "_JSANTA",
-    "_JWALEU",
-    "_SAMAZO",
-    "_SCHASE",
-    "_SCHBST",
-    "_SCHRND",
-    "_SCHSAV",
-    "_SCOIS2",
-    "_SCOISA",
-    "_SCOLOY",
-    "_SFAMIL",
-    "_SGOLDM",
-    "_SJL3BH",
-    "_SKI3BH",
-    "_SKROOO",
-    "_SMETRO",
-    "_SMONZ1",
-    "_SMONZO",
-    "_SNSPBZ",
-    "_SOAISA",
-    "_SOAKNO",
-    "_SOXBUR",
-    "_SPAYPA",
-    "_SPOSTO",
-    "_SREVOL",
-    "_SSACR1",
-    "_SSACRD",
-    "_SSAISA",
-    "_SSANT1",
-    "_SSANTA",
-    "_SSAPRM",
-    "_SSAZ01",
-    "_SSAZ02",
-    "_SSAZ03",
-    "_SSTARB",
-    "_SSTARL",
-    "_STAFIX",
-    "_STASAV",
-    "_STES01",
-    "_STES02",
-    "_STES03",
-    "_STESCO",
-    "_STRISA",
-    "_SVANGA",
-    "_SVI2TJ",
-    "_SVI3BH",
-    "_SVIGB2",
-    "_SVIGBL",
-    "_SVIIRF",
-    "_SVMISA",
-    "_SVMSAV",
-    "_SWALLE",
-    "_SZOPA1",
-  ];
 }
 
 /**
@@ -725,11 +605,7 @@ function monthlyUpdate() {
   ourFinances.bankAccounts.showMonthly();
 }
 
-// onDateChange is not a Google trigger; it must be created under Triggers (time based)!!!
-function onDateChange() {
-  sendDailyEmail();
-  dailySorts();
-}
+
 
 function onEdit(event) {
   const trigger = new Trigger(event);
@@ -748,37 +624,6 @@ function onEdit(event) {
 function openAccounts() {
   const ourFinances = new OurFinances();
   ourFinances.bankAccounts.showOpenAccounts();
-}
-
-function sendDailyEmail() {
-  const ourFinances = new OurFinances();
-  const fixedAmountMismatches = ourFinances.getFixedAmountMismatches();
-  const upcomingDebits = ourFinances.getUpcomingDebits();
-
-  const subject = `Our finances daily email: ${getToday()}`;
-
-  // Initialize the email body
-  let emailBody = ``;
-
-  if (fixedAmountMismatches.length > 0) {
-    emailBody += `Fixed amount mismatches\n`;
-    // Concatenate the fixedAmountMismatches into the email body
-    emailBody += fixedAmountMismatches.join("\n");
-    emailBody += `\n\n`;
-  }
-
-  if (upcomingDebits.length) {
-    emailBody += `Upcoming debits\n`;
-    // Concatenate the debits into the email body
-    emailBody += upcomingDebits.join("\n");
-    emailBody += `\n\n`;
-  }
-
-  // Append the spreadsheet URL
-  emailBody += `\n\nSent from (sendDailyEmail): ${ourFinances.spreadsheet.getUrl()}\n`;
-
-  // Send the email
-  sendMeEmail(subject, emailBody);
 }
 
 function sendEmail(recipient, subject, body, options) {

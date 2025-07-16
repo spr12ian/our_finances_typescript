@@ -395,9 +395,6 @@
   };
 
   // src/onOpen.ts
-  function alert(message) {
-    SpreadsheetApp.getUi().alert(message);
-  }
   function createAccountsMenu() {
     if (accountSheetNames.length === 0) {
       alert("No account sheets found!");
@@ -464,18 +461,18 @@
     menu.addToUi();
   }
   function onOpen() {
-    const spreadsheet2 = activeSpreadsheet;
-    spreadsheet2.toast("Please wait while I do a few tasks", "Please wait!", 500);
+    const spreadsheet = Spreadsheet.from();
+    spreadsheet.toast("Please wait while I do a few tasks", "Please wait!", 500);
     createAccountsMenu();
     createGasMenu();
     createSectionsMenu();
-    spreadsheet2.toast("You can do your thing now.", "I'm finished!", 3);
+    spreadsheet.toast("You can do your thing now.", "I'm finished!", 3);
   }
 
   // src/index.ts
   var LOCALE = "en-GB";
-  var spreadsheet = Spreadsheet.from();
-  var gasSpreadsheetApp2 = spreadsheet.raw;
+  var activeSpreadsheet2 = Spreadsheet.from();
+  var gasSpreadsheetApp2 = activeSpreadsheet2.raw;
   (() => {
     const accountSheetNames2 = getSheetNamesByType("account");
     const helpers = {};

@@ -4,3 +4,5 @@ appengine-generated/
 .clasp.json
 
 node_modules/
+
+.env

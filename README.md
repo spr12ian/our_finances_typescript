@@ -2,30 +2,16 @@
 
 GAS repository
 
-`make install_google_clasp`
+## One-time project setup
 
-`clasp login`
+Ensure environment variable $OUR_FINANCES_SCRIPT_ID is set
 
-`clasp clone <script-id>`
+`make setup`
 
-`npm init -y`
+Adjust tsconfig.json as needed for GAS (e.g., target: "ES2020", module: "ESNext").
 
-`npm install --save-dev typescript @types/google-apps-script`
+## Daily workflow
 
-`npx tsc --init`
+Make changes as required then
 
-`npm install --save-dev tsup`
-
-`npm install --save-dev esbuild # optional, used by tsup under the hood`
-
-`npm install`
-
-`npm run clean`
-
-`npm run build`
-
-`npm run prepare-clasp`
-
-`npm run push`
-
-`clasp push`
+`make gas`

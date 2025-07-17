@@ -6,9 +6,8 @@
   "scripts": {
     "clean": "rm -rf dist build",
     "build": "tsup src/index.ts --format iife --out-dir dist --target es2015 --no-treeshake",
-    "prepare-clasp": "npm run build && rsync -a dist/ build/ && cp appsscript.json build/",
-    "push": "npm run prepare-clasp && clasp push",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "prepare-gas": "rsync -a dist/ build/ && cp appsscript.json build/",
+    "gas": "clasp push"
   },
   "repository": {
     "type": "git",

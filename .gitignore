@@ -1,8 +1,8 @@
 # Google App Engine generated folder
 appengine-generated/
-
-.clasp.json
-
+build/
+dist/
 node_modules/
 
+.clasp.json
 .env

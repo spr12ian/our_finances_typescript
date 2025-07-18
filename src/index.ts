@@ -3,7 +3,7 @@
 import { Spreadsheet } from "./Spreadsheet";
 import { getSheetNamesByType, goToSheetLastRow } from "./functions";
 import { onDateChange } from "./onDateChange";
-import { onOpen } from "./onOpen";
+export { onOpen } from "./onOpen";
 
 /**
  * Application entry point – executed when the script is loaded.
@@ -41,5 +41,5 @@ export const gasSpreadsheetApp = activeSpreadsheet.raw; // escape hatch if neede
 // ────────────────────────────────────────────────────────────
 // Register trigger handlers
 // ────────────────────────────────────────────────────────────
-Object.assign(globalThis, { onDateChange, onOpen });
+Object.assign(globalThis, { onDateChange });
 

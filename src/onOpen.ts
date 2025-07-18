@@ -4,6 +4,7 @@ import { OurFinances } from "./OurFinances";
 import { Sheet } from "./Sheet";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
 import { gasSpreadsheetApp } from "./index";
+import { getSheetNamesByType } from "./functions";
 
 // Function declarations
 
@@ -631,25 +632,6 @@ function getSeasonName(date) {
   return seasons[seasonIndex];
 }
 
-export function getSheetNamesByType(sheetNameType: string): string[] {
-  let sheetNames;
-
-  const spreadsheetSummary = new SpreadsheetSummary();
-  // Process based on sheetNameType
-  switch (sheetNameType) {
-    case "account":
-      sheetNames = getAccountSheetNames();
-      break;
-    case "all":
-      // Return all sheet names
-      sheetNames = spreadsheetSummary.getSheetNames();
-      break;
-    default:
-      throw new Error(`Unexpected sheetNameType: ${sheetNameType}`);
-  }
-  return sheetNames;
-}
-
 function getToday(
   options = { weekday: "long", year: "numeric", month: "long", day: "numeric" }
 ) {
@@ -710,11 +692,6 @@ function goToSheet(sheetName) {
   if (sheet) {
     sheet.activate();
   }
-}
-
-export function goToSheetLastRow(sheetName: string) {
-  const sheet = new Sheet(sheetName);
-  sheet.setActiveRange(sheet.getRange(sheet.getLastRow(), 1));
 }
 
 function goToSheet_AHALIF() {
@@ -888,7 +865,7 @@ function onEdit(event) {
   bankAccounts.updateLastUpdatedBySheet(sheet);
 }
 
-export function onOpen() {
+export function onOpen(): void {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
 

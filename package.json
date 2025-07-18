@@ -4,10 +4,11 @@
   "description": "GAS repository",
   "main": "Code.js",
   "scripts": {
-    "clean": "rm -rf dist build",
     "build": "tsup src/index.ts --format iife --out-dir dist --target es2015 --no-treeshake",
-    "prepare-gas": "rsync -a dist/ build/ && cp appsscript.json build/",
-    "gas": "clasp push"
+    "clean": "rm -rf dist build",
+    "gas": "clasp push",
+    "prepare-gas": "rsync -a dist/ build/ && cp appsscript.json build/ && npm run rename",
+    "rename": "mv build/index.global.js build/Code.gs"
   },
   "repository": {
     "type": "git",

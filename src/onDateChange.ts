@@ -2,7 +2,6 @@
 
 import { OurFinances } from "./OurFinances";
 import { Sheet } from "./Sheet";
-import { Spreadsheet } from "./Spreadsheet";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
 
 // Function declarations
@@ -12,48 +11,12 @@ function allAccounts() {
   ourFinances.showAllAccounts();
 }
 
-function applyDescriptionReplacements() {
-  const activeSheet = activeSpreadsheet.getActiveSheet();
-  const accountSheet = new AccountSheet(activeSheet);
-  if (accountSheet) {
-    accountSheet.applyDescriptionReplacements();
-  }
-}
-
-function balanceSheet() {
-  goToSheet("Balance sheet");
-}
-
-function budget() {
-  goToSheet("Budget");
-}
-
-function budgetAnnualTransactions() {
-  goToSheet(BudgetAnnualTransactions.SHEET.NAME);
-}
-
-function budgetMonthlyTransactions() {
-  goToSheet("Budget monthly transactions");
-}
-
-function budgetAdhocTransactions() {
-  goToSheet("Budget ad hoc transactions");
-}
-
-function budgetPredictedSpend() {
-  goToSheet("Budget predicted spend");
-}
-
-function budgetWeeklyTransactions() {
-  goToSheet("Budget weekly transactions");
-}
-
 function checkDependencies() {
   const dependencies = new Dependencies();
   dependencies.updateAllDependencies();
 }
 
-function columnNumberToLetter(columnNumber) {
+function columnNumberToLetter(columnNumber: number): string {
   let dividend = columnNumber;
   let letter = "";
   while (dividend > 0) {
@@ -80,56 +43,6 @@ function convertCurrentColumnToUppercase() {
   ]);
 
   range.setValues(uppercasedValues);
-}
-
-function createAccountsMenu() {
-  // accountSheetNames is defined as a global
-  //const accountSheetNames = getSheetNamesByType('account');
-
-  // Check if any accounts are found
-  if (accountSheetNames.length === 0) {
-    alert("No account sheets found!");
-    return;
-  }
-
-  const itemArray = [];
-
-  for (const accountSheetName of accountSheetNames) {
-    const funName = "dynamicAccount" + accountSheetName;
-    itemArray.push([accountSheetName, funName]);
-  }
-
-  createUiMenu("Accounts", itemArray);
-}
-
-function createGasMenu() {
-  const itemArray = [
-    ["All accounts", "allAccounts"],
-    ["Apply Description replacements", "applyDescriptionReplacements"],
-    ["Balance sheet", "balanceSheet"],
-    ["Check dependencies", "checkDependencies"],
-    ["Convert current column to uppercase", "convertCurrentColumnToUppercase"],
-    ["Daily update", "dailyUpdate"],
-    ["Format sheet", "formatSheet"],
-    ["Monthly update", "monthlyUpdate"],
-    ["Open accounts", "openAccounts"],
-    ["Sort sheet order", "sortGoogleSheets"],
-    ["Trim all sheets", "trimGoogleSheets"],
-    ["Trim sheet", "trimGoogleSheet"],
-    ["Update spreadsheet summary", "updateSpreadsheetSummary"],
-  ];
-  createUiMenu("GAS Menu", itemArray);
-}
-
-function createUiMenu(menuCaption, menuItemArray) {
-  const ui = gasSpreadsheetApp.getUi();
-  const menu = ui.createMenu(menuCaption);
-
-  menuItemArray.forEach(([itemName, itemFunction]) => {
-    menu.addItem(itemName, itemFunction);
-  });
-
-  menu.addToUi();
 }
 
 function dailySorts() {
@@ -465,25 +378,6 @@ function getSeasonName(date) {
   return seasons[seasonIndex];
 }
 
-export function getSheetNamesByType(sheetNameType: string) {
-  let sheetNames;
-
-  const spreadsheetSummary = new SpreadsheetSummary();
-  // Process based on sheetNameType
-  switch (sheetNameType) {
-    case "account":
-      sheetNames = getAccountSheetNames();
-      break;
-    case "all":
-      // Return all sheet names
-      sheetNames = spreadsheetSummary.getSheetNames();
-      break;
-    default:
-      throw new Error(`Unexpected sheetNameType: ${sheetNameType}`);
-  }
-  return sheetNames;
-}
-
 function getToday(
   options = { weekday: "long", year: "numeric", month: "long", day: "numeric" }
 ) {
@@ -535,101 +429,6 @@ export function getType(value) {
   // At this point there's no robust way to get the type of value,
   // so we use the base implementation.
   return baseType;
-}
-
-function goToSheet(sheetName) {
-  const sheet = new Sheet(sheetName);
-
-  // Check if the sheet exists before trying to activate it.
-  if (sheet) {
-    sheet.activate();
-  }
-}
-
-export function goToSheetLastRow(sheetName: string) {
-  const sheet = new Sheet(sheetName);
-  sheet.setActiveRange(sheet.getRange(sheet.getLastRow(), 1));
-}
-
-function goToSheet_AHALIF() {
-  goToSheet("_AHALIF");
-}
-
-function goToSheet_CVITRA() {
-  goToSheet("_CVITRA");
-}
-
-function goToSheet_SVI2TJ() {
-  goToSheet("_SVI2TJ");
-}
-
-function goToSheet_SVIGBL() {
-  goToSheet("_SVIGBL");
-}
-
-function goToSheet_SVIIRF() {
-  goToSheet("_SVIIRF");
-}
-
-function goToSheetCategories() {
-  goToSheet("Categories");
-}
-
-function goToSheetCategoryClash() {
-  goToSheet("Category clash");
-}
-
-function goToSheetHMRC_B() {
-  goToSheet(HMRC_B.SHEET_NAME);
-}
-
-function goToSheetHMRC_S() {
-  goToSheet(HMRC_S.SHEET.NAME);
-}
-
-function goToSheetHMRCTransactionsSummary() {
-  goToSheet("HMRC Transactions Summary");
-}
-
-function goToSheetLoanGlenburnie() {
-  goToSheet("Loan Glenburnie");
-}
-
-function goToSheetNotInTransactionCategories() {
-  goToSheet("Not in transaction categories");
-}
-
-function goToSheetPeople() {
-  goToSheet("People");
-}
-
-function goToSheetSW183PTInventory() {
-  goToSheet("SW18 3PT inventory");
-}
-
-function goToSheetTransactionsBuilder() {
-  goToSheet("Transactions builder");
-}
-
-function goToSheetTransactionsByDate() {
-  goToSheet("Transactions by date");
-}
-
-function goToSheetTransactionsCategories() {
-  goToSheet("Transactions categories");
-}
-
-function goToSheetUnlabelledByDate() {
-  goToSheet("Uncategorised by date");
-}
-
-function goToSheetXfersMismatch() {
-  goToSheet("Xfers mismatch");
-}
-
-function isAccountSheet(sheet) {
-  if (sheet.getSheetName().startsWith("_")) return true;
-  return false;
 }
 
 function isCellAccountBalance(sheet, column) {
@@ -712,20 +511,6 @@ function monthlyUpdate() {
 export function onDateChange() {
   sendDailyEmail();
   dailySorts();
-}
-
-function onEdit(event) {
-  const trigger = new Trigger(event);
-  const sheet = trigger.getSheet();
-  const sheetName = trigger.getSheetName();
-
-  if (sheetName == HMRC_S.SHEET.NAME) {
-    const hmrcS = new HMRC_S();
-    hmrcS.handleEdit(trigger);
-  }
-
-  const bankAccounts = new BankAccounts();
-  bankAccounts.updateLastUpdatedBySheet(sheet);
 }
 
 function openAccounts() {

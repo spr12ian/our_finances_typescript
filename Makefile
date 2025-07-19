@@ -56,5 +56,26 @@ push: appsscript ## Push to Google Apps Script using clasp
 typecheck: ## Run TypeScript without emitting output
 	npm run typecheck
 
+verify-env: ## Check for WSL + Linux-native toolchain
+	@echo "🔍 Verifying environment..."
+	@if ! grep -qiE 'microsoft|wsl' /proc/version; then \
+		echo "❌ Not running inside WSL."; \
+		exit 1; \
+	fi
+	@echo "✅ Running inside WSL."
+
+	@echo "🔍 Checking tools are WSL-native..."
+
+	@which node | grep -vE '^/mnt/' > /dev/null || { \
+		echo "❌ node is from Windows: $$(which node)"; exit 1; }
+
+	@which npm | grep -vE '^/mnt/' > /dev/null || { \
+		echo "❌ npm is from Windows: $$(which npm)"; exit 1; }
+
+	@which make | grep -vE '^/mnt/' > /dev/null || { \
+		echo "❌ make is from Windows: $$(which make)"; exit 1; }
+
+	@echo "✅ All required tools are Linux-native (WSL)"
+
 watch: ## Watch for file changes and auto-push to GAS
 	npm run watch

@@ -3,7 +3,7 @@
 import { BankAccounts } from "./BankAccounts";
 import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
 import { OurFinances } from "./OurFinances";
-import { activeSpreadsheet } from "./index";
+import { activeSpreadsheet } from "./context";
 
 // Function declarations
 

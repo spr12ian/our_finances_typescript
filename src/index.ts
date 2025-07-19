@@ -16,12 +16,6 @@ import { onOpen } from "./onOpen";
 export const LOCALE = "en-GB" as const;
 
 // ────────────────────────────────────────────────────────────
-//  Spreadsheet context
-// ────────────────────────────────────────────────────────────
-export const activeSpreadsheet = Spreadsheet.from(); // active spreadsheet
-export const gasSpreadsheetApp = activeSpreadsheet.raw; // escape hatch if needed
-
-// ────────────────────────────────────────────────────────────
 //  Dynamically create helper functions
 // ────────────────────────────────────────────────────────────
 (() => {

@@ -3,7 +3,7 @@
 import { OurFinances } from "./OurFinances";
 import { Sheet } from "./Sheet";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
-import { gasSpreadsheetApp } from "./index";
+import { gasSpreadsheetApp } from "./context";
 import { getSheetNamesByType } from "./functions";
 
 // Function declarations
@@ -52,17 +52,6 @@ function budgetWeeklyTransactions() {
 function checkDependencies() {
   const dependencies = new Dependencies();
   dependencies.updateAllDependencies();
-}
-
-function columnNumberToLetter(columnNumber) {
-  let dividend = columnNumber;
-  let letter = "";
-  while (dividend > 0) {
-    const modulo = (dividend - 1) % 26;
-    letter = String.fromCharCode(65 + modulo) + letter;
-    dividend = Math.floor((dividend - modulo) / 26);
-  }
-  return letter;
 }
 
 function convertCurrentColumnToUppercase() {

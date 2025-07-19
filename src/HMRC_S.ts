@@ -1,5 +1,6 @@
 /// <reference types="google-apps-script" />
 
+import { columnNumberToLetter } from "./functions";
 export class HMRC_S {
   // Column definitions using static getters
   static get COLUMNS() {
@@ -31,10 +32,10 @@ export class HMRC_S {
       // Check if the edit occurred in the "CATEGORY" column
       if (column === HMRC_S.COLUMNS.CATEGORY + 1) {
         const sheet = trigger.getSheet();
-        const startColLetter = this.columnNumberToLetter(
+        const startColLetter = columnNumberToLetter(
           HMRC_S.COLUMNS.LATEST_TAX_YEAR + 1
         );
-        const lastColLetter = this.columnNumberToLetter(sheet.getLastColumn());
+        const lastColLetter = columnNumberToLetter(sheet.getLastColumn());
 
         // Construct QUERY formulas
         const queries = this.buildQueries(
@@ -64,17 +65,6 @@ export class HMRC_S {
       queries.push(query);
     }
     return queries;
-  }
-
-  // Convert column number to letter (e.g., 1 -> A)
-  columnNumberToLetter(colNum) {
-    let letter = "";
-    while (colNum > 0) {
-      const mod = (colNum - 1) % 26;
-      letter = String.fromCharCode(65 + mod) + letter;
-      colNum = Math.floor((colNum - 1) / 26);
-    }
-    return letter;
   }
 
   // Calculate the next column letter (e.g., A -> B)

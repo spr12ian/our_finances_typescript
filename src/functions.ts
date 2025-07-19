@@ -24,7 +24,7 @@ function cloneDate(date) {
   return new Date(date.getTime());
 }
 
-function columnNumberToLetter(columnNumber: number): string {
+export function columnNumberToLetter(columnNumber: number): string {
   let dividend = columnNumber;
   let letter = "";
   while (dividend > 0) {

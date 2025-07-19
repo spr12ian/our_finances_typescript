@@ -30,7 +30,7 @@ export class CheckFixedAmounts {
    */
   constructor() {
     try {
-      this.sheet = new Sheet(CheckFixedAmounts.SHEET.NAME);
+      this.sheet = Sheet.from(CheckFixedAmounts.SHEET.NAME);
       this.validateSheetStructure();
     } catch (error) {
       throw new Error(`Sheet initialization failed: ${error.message}`);

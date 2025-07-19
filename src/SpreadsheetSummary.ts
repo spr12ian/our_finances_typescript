@@ -3,6 +3,7 @@
 import { Sheet } from "./Sheet";
 
 export class SpreadsheetSummary {
+  private sheet: Sheet;
   static get COLUMNS() {
     return {
       SHEET_NAME: 0,
@@ -22,7 +23,7 @@ export class SpreadsheetSummary {
   }
 
   constructor() {
-    this.sheet = new Sheet(SpreadsheetSummary.SHEET.NAME);
+    this.sheet = Sheet.from(SpreadsheetSummary.SHEET.NAME);
     this.data = this.sheet.getDataRange().offset(1, 0).getValues();
   }
 

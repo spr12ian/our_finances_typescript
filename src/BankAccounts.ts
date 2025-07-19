@@ -1,8 +1,7 @@
-
 import { Sheet } from "./Sheet";
 
 export class BankAccounts {
-  private sheet:Sheet
+  private sheet: Sheet;
   static get COLUMNS() {
     return {
       KEY: 1,
@@ -24,7 +23,7 @@ export class BankAccounts {
   }
 
   constructor() {
-    this.sheet = new Sheet(BankAccounts.SHEET.NAME);
+    this.sheet = Sheet.from(BankAccounts.SHEET.NAME);
 
     if (!this.sheet) {
       throw new Error(`Sheet '${BankAccounts.SHEET.NAME}' not found.`);

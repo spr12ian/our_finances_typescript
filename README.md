@@ -20,7 +20,7 @@ Adjust tsconfig.json as needed for GAS e.g.
     "target": "ES2015",
     "module": "none",
     "rootDir": "src",
-    "outDir": "dist",
+    "outDir": "build",
     "strict": true,
     "types": ["google-apps-script"],
     "moduleResolution": "node",
@@ -39,9 +39,9 @@ Ensure node npm package scripts are consistent with the Makefile.
   "description": "GAS repository",
   "main": "Code.js",
   "scripts": {
-    "clean": "rm -rf dist build",
-    "build": "tsup src/index.ts --format iife --out-dir dist --target es2015 --no-treeshake",
-    "prepare-gas": "rsync -a dist/ build/ && cp appsscript.json build/",
+    "clean": "rm -rf build",
+    "build": "tsup src/index.ts --format iife --out-dir build --target es2015 --no-treeshake",
+    "prepare-gas": "cp appsscript.json build/",
     "gas": "clasp push"
   },
   "repository": {

@@ -1,49 +1,11 @@
 /// <reference types="google-apps-script" />
 
+import { BankAccounts } from "./BankAccounts";
+import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
 import { OurFinances } from "./OurFinances";
-import { Sheet } from "./Sheet";
-import { SpreadsheetSummary } from "./SpreadsheetSummary";
+import { activeSpreadsheet } from "./index";
 
 // Function declarations
-
-function allAccounts() {
-  const ourFinances = new OurFinances();
-  ourFinances.showAllAccounts();
-}
-
-function checkDependencies() {
-  const dependencies = new Dependencies();
-  dependencies.updateAllDependencies();
-}
-
-function columnNumberToLetter(columnNumber: number): string {
-  let dividend = columnNumber;
-  let letter = "";
-  while (dividend > 0) {
-    const modulo = (dividend - 1) % 26;
-    letter = String.fromCharCode(65 + modulo) + letter;
-    dividend = Math.floor((dividend - modulo) / 26);
-  }
-  return letter;
-}
-
-function convertCurrentColumnToUppercase() {
-  const sheet = gasSpreadsheetApp.getActiveSheet();
-  const activeRange = sheet.getActiveRange();
-  const START_ROW = 2;
-  const column = activeRange.getColumn();
-
-  const lastRow = sheet.getLastRow();
-  const numRows = lastRow + 1 - START_ROW;
-
-  const range = sheet.getRange(START_ROW, column, numRows, 1);
-  const values = range.getValues();
-  const uppercasedValues = values.map((row) => [
-    row[0].toString().toUpperCase(),
-  ]);
-
-  range.setValues(uppercasedValues);
-}
 
 function dailySorts() {
   const sheetsToSort = [
@@ -55,18 +17,13 @@ function dailySorts() {
     "Transactions categories",
   ];
   sheetsToSort.forEach((sheetName) => {
-    const sheet = activeSpreadsheet.getSheetByName(sheetName);
+    const sheet = activeSpreadsheet.name;
     if (sheet) {
       sortSheetByFirstColumnOmittingHeader(sheet);
     } else {
       throw new Error(`${sheetName} not found`);
     }
   });
-}
-
-function dailyUpdate() {
-  const bankAccounts = new BankAccounts();
-  bankAccounts.showDaily();
 }
 
 function dynamicQuery(rangeString, queryString) {
@@ -87,11 +44,6 @@ function dynamicQuery(rangeString, queryString) {
   }
 }
 
-function emailUpcomingPayments() {
-  const ourFinances = new OurFinances();
-  ourFinances.emailUpcomingPayments();
-}
-
 function examineObject(object, name = "anonymous value") {
   if (typeof object === "object" && object !== null) {
     const keys = Object.keys(object);
@@ -106,45 +58,6 @@ function examineObject(object, name = "anonymous value") {
       Object.getPrototypeOf(object)
     );
   }
-}
-
-function findAllNamedRangeUsage() {
-  const sheets = activeSpreadsheet.getSheets();
-  const namedRanges = activeSpreadsheet.getNamedRanges();
-  const rangeUsage = [];
-
-  if (!namedRanges.length) {
-    return;
-  }
-
-  // Extract the named range names
-  const namedRangeNames = namedRanges.map((range) => range.getName());
-
-  sheets.forEach((sheet) => {
-    const formulas = sheet.getDataRange().getFormulas();
-
-    formulas.forEach((rowFormulas, rowIndex) => {
-      rowFormulas.forEach((formula, colIndex) => {
-        // Only track cells containing named ranges
-        if (formula) {
-          namedRangeNames.forEach((name) => {
-            if (formula.includes(name)) {
-              const cellRef = sheet
-                .getRange(rowIndex + 1, colIndex)
-                .getA1Notation();
-              rangeUsage.push(
-                `Sheet: ${sheet.getName()} - Cell: ${cellRef} - Name: ${name}`
-              );
-            }
-          });
-        }
-      });
-    });
-  });
-}
-
-function findNamedRangeUsage() {
-  findUsageByNamedRange("BRIAN_HALIFAX_BALANCE");
 }
 
 function findRowByKey(sheetName, keyColumn, keyValue) {
@@ -175,17 +88,6 @@ function findUsageByNamedRange(namedRange) {
       });
     });
   });
-}
-
-function formatSheet() {
-  const activeSheet = activeSpreadsheet.getActiveSheet();
-
-  if (!activeSheet) {
-    return;
-  }
-
-  const accountSheet = new AccountSheet(activeSheet);
-  accountSheet.formatSheet();
 }
 
 /**
@@ -608,97 +510,4 @@ function sortSheetByFirstColumnOmittingHeader(sheet) {
 
   // Sort the range by the first column (column 1) in ascending order
   rangeToSort.sort({ column: 1, ascending: true });
-}
-
-function toValidFunctionName(str) {
-  // Remove non-alphanumeric characters, except for letters and digits, replace them with underscores
-  let validName = str.trim().replace(/[^a-zA-Z0-9]/g, "_");
-
-  // Ensure the name starts with a letter or underscore
-  return /^[a-zA-Z_]/.test(validName) ? validName : `_${validName}`;
-}
-
-function trimGoogleSheet(iswSheet) {
-  let sheet;
-  if (iswSheet) {
-    sheet = iswSheet;
-  } else {
-    sheet = activeSpreadsheet.getActiveSheet();
-  }
-
-  sheet.trimSheet();
-}
-
-function trimGoogleSheets() {
-  const sheets = activeSpreadsheet.getSheets();
-  sheets.forEach((sheet) => {
-    sheet.trimSheet();
-  });
-}
-
-function updateSpreadsheetSummary() {
-  const spreadsheetSummary = new SpreadsheetSummary();
-  const sheets = activeSpreadsheet.getSheets();
-  const sheetData = sheets.map((sheet) => [
-    sheet.getSheetName(),
-    sheet.getLastRow(),
-    sheet.getLastColumn(),
-    sheet.getMaxRows(),
-    sheet.getMaxColumns(),
-    sheet.getSheetName().startsWith("_"),
-    sheet.getSheetName().startsWith("Budget"),
-  ]);
-
-  // Add headers
-  sheetData.unshift([
-    "Sheet name",
-    "Last row",
-    "Last column",
-    "Max rows",
-    "Max columns",
-    "Is an account file (starts with underscore)?",
-    "Is a budget file (starts with Budget)?",
-  ]);
-
-  const maxWidth = sheetData[0].length;
-
-  // Minimize calls to Google Sheets API by using clearContent instead of clear() if possible.
-  const summarySheet = spreadsheetSummary.getSheet();
-  summarySheet.clearContents();
-  summarySheet.getRange(1, 1, sheetData.length, maxWidth).setValues(sheetData);
-
-  trimGoogleSheet(summarySheet);
-}
-
-/**
- * Custom XLOOKUP function for Google Apps Script
- *
- * @param {string|number} searchValue - The value you are searching for.
- * @param {Sheet} sheet - The sheet where the lookup is performed.
- * @param {string} searchCol - The column letter to search in (e.g., 'A').
- * @param {string} resultCol - The column letter for the result (e.g., 'B').
- * @param {boolean} [exactMatch=true] - Whether to look for exact matches.
- * @returns {string|number|null} The result of the lookup or null if not found.
- */
-function xLookup(searchValue, sheet, searchCol, resultCol, exactMatch = true) {
-  const searchRange = sheet.getRange(`${searchCol}1:${searchCol}`).getValues();
-  const resultRange = sheet.getRange(`${resultCol}1:${resultCol}`).getValues();
-
-  for (let i = 0; i < searchRange.length; i++) {
-    const cellValue = searchRange[i][0];
-
-    // Handle exact or approximate match cases
-    if (
-      (exactMatch && cellValue === searchValue) ||
-      (!exactMatch &&
-        cellValue
-          .toString()
-          .toLowerCase()
-          .includes(searchValue.toString().toLowerCase()))
-    ) {
-      return resultRange[i][0]; // Return the corresponding result value
-    }
-  }
-
-  return null; // Return null if no match is found
 }

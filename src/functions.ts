@@ -6,6 +6,11 @@ import { SpreadsheetSummary } from "./SpreadsheetSummary";
 
 // Function declarations
 
+// Eagerly compute once for performance
+export const accountSheetNames: string[] = new SpreadsheetSummary()
+  .getSheetNames()
+  .filter((name:string) => name.startsWith("_"));
+
 function alert(message: string) {
   SpreadsheetApp.getUi().alert(message);
 }
@@ -369,7 +374,7 @@ export function getSheetNamesByType(sheetNameType: string) {
   // Process based on sheetNameType
   switch (sheetNameType) {
     case "account":
-      sheetNames = getAccountSheetNames();
+      sheetNames = accountSheetNames;
       break;
     case "all":
       // Return all sheet names

@@ -9,7 +9,7 @@ export class DescriptionReplacements {
   }
 
   constructor() {
-    this.sheet = new Sheet(DescriptionReplacements.SHEET_NAME);
+    this.sheet = Sheet.from(DescriptionReplacements.SHEET_NAME);
   }
 
   applyReplacements(accountSheet) {

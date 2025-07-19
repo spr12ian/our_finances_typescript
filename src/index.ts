@@ -1,9 +1,10 @@
 /// <reference types="google-apps-script" />
 
 import { Spreadsheet } from "./Spreadsheet";
-import { getSheetNamesByType, goToSheetLastRow } from "./functions";
+import { exportToGlobal } from "./exportToGlobal";
+import { accountSheetNames, goToSheetLastRow } from "./functions";
 import { onDateChange } from "./onDateChange";
-export { onOpen } from "./onOpen";
+import { onOpen } from "./onOpen";
 
 /**
  * Application entry point – executed when the script is loaded.
@@ -24,8 +25,6 @@ export const gasSpreadsheetApp = activeSpreadsheet.raw; // escape hatch if neede
 //  Dynamically create helper functions
 // ────────────────────────────────────────────────────────────
 (() => {
-  const accountSheetNames = getSheetNamesByType("account");
-
   // Produce a map like { dynamicAccountCash: () => void, … }
   const helpers: Record<string, () => void> = {};
 
@@ -35,11 +34,13 @@ export const gasSpreadsheetApp = activeSpreadsheet.raw; // escape hatch if neede
   }
 
   // Attach to global scope so they can be invoked directly from GAS
-  Object.assign(globalThis, { accountSheetNames, helpers });
+  exportToGlobal({ helpers });
 })();
 
 // ────────────────────────────────────────────────────────────
 // Register trigger handlers
 // ────────────────────────────────────────────────────────────
-Object.assign(globalThis, { onDateChange });
-
+exportToGlobal({
+  onDateChange,
+  onOpen,
+});

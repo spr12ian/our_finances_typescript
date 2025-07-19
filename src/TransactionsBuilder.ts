@@ -10,7 +10,7 @@ export class TransactionsBuilder {
   }
 
   constructor() {
-    this.sheet = new Sheet(TransactionsBuilder.SHEET.NAME);
+    this.sheet = Sheet.from(TransactionsBuilder.SHEET.NAME);
   }
 
   copyIfSheetExists() {

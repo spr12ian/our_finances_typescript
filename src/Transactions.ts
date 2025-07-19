@@ -10,7 +10,7 @@ export class Transactions {
   }
 
   constructor() {
-    this.sheet = new Sheet(Transactions.SHEET.NAME);
+    this.sheet = Sheet.from(Transactions.SHEET.NAME);
   }
 
   activate() {

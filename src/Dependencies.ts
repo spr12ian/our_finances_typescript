@@ -7,7 +7,7 @@ export class Dependencies {
     return "Dependencies";
   }
   constructor() {
-    this.sheet = new Sheet(Dependencies.SHEET_NAME);
+    this.sheet = Sheet.from(Dependencies.SHEET_NAME);
   }
 
   getAllDependencies() {

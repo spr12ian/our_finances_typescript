@@ -8,12 +8,12 @@ import { getSheetNamesByType } from "./functions";
 
 // Function declarations
 
-function allAccounts() {
+export function allAccounts() {
   const ourFinances = new OurFinances();
   ourFinances.showAllAccounts();
 }
 
-function applyDescriptionReplacements() {
+export function applyDescriptionReplacements() {
   const activeSheet = activeSpreadsheet.getActiveSheet();
   const accountSheet = new AccountSheet(activeSheet);
   if (accountSheet) {
@@ -21,40 +21,40 @@ function applyDescriptionReplacements() {
   }
 }
 
-function balanceSheet() {
+export function balanceSheet() {
   goToSheet("Balance sheet");
 }
 
-function budget() {
+export function budget() {
   goToSheet("Budget");
 }
 
-function budgetAnnualTransactions() {
+export function budgetAnnualTransactions() {
   goToSheet(BudgetAnnualTransactions.SHEET.NAME);
 }
 
-function budgetMonthlyTransactions() {
+export function budgetMonthlyTransactions() {
   goToSheet("Budget monthly transactions");
 }
 
-function budgetAdhocTransactions() {
+export function budgetAdhocTransactions() {
   goToSheet("Budget ad hoc transactions");
 }
 
-function budgetPredictedSpend() {
+export function budgetPredictedSpend() {
   goToSheet("Budget predicted spend");
 }
 
-function budgetWeeklyTransactions() {
+export function budgetWeeklyTransactions() {
   goToSheet("Budget weekly transactions");
 }
 
-function checkDependencies() {
+export function checkDependencies() {
   const dependencies = new Dependencies();
   dependencies.updateAllDependencies();
 }
 
-function convertCurrentColumnToUppercase() {
+export function convertCurrentColumnToUppercase() {
   const sheet = gasSpreadsheetApp.getActiveSheet();
   const activeRange = sheet.getActiveRange();
   const START_ROW = 2;
@@ -531,18 +531,6 @@ function getMyEmailAddress() {
   }
 }
 
-// The getDate() method of Date instances returns the day of the month for this date according to local time.
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDate
-function getNewDate(date) {
-  let newDate;
-  if (date) {
-    newDate = new Date(date);
-  } else {
-    newDate = new Date();
-  }
-  return newDate;
-}
-
 function getOrdinal(number) {
   let selector;
 
@@ -635,43 +623,6 @@ function getToday(
   }
 
   return today;
-}
-
-export function getType(value) {
-  if (value === null) {
-    return "null";
-  }
-  const baseType = typeof value;
-  // Primitive types
-  if (!["object", "function"].includes(baseType)) {
-    return baseType;
-  }
-
-  // Symbol.toStringTag often specifies the "display name" of the
-  // object's class. It's used in Object.prototype.toString().
-  const tag = value[Symbol.toStringTag];
-  if (typeof tag === "string") {
-    return tag;
-  }
-
-  // If it's a function whose source code starts with the "class" keyword
-  if (
-    baseType === "function" &&
-    Function.prototype.toString.call(value).startsWith("class")
-  ) {
-    return "class";
-  }
-
-  // The name of the constructor; for example `Array`, `GeneratorFunction`,
-  // `Number`, `String`, `Boolean` or `MyCustomClass`
-  const className = value.constructor.name;
-  if (typeof className === "string" && className !== "") {
-    return className;
-  }
-
-  // At this point there's no robust way to get the type of value,
-  // so we use the base implementation.
-  return baseType;
 }
 
 function goToSheet(sheetName) {

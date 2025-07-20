@@ -1,6 +1,7 @@
 /// <reference types="google-apps-script" />
 
-import { Sheet } from "./Sheet";
+import { createSheet } from "./Sheet";
+import type { Sheet } from "./Sheet";
 
 export class DescriptionReplacements {
   private sheet: Sheet;
@@ -9,10 +10,10 @@ export class DescriptionReplacements {
   }
 
   constructor() {
-    this.sheet = Sheet.from(DescriptionReplacements.SHEET_NAME);
+    this.sheet = createSheet(DescriptionReplacements.SHEET_NAME);
   }
 
-  applyReplacements(accountSheet) {
+  applyReplacements(accountSheet:Sheet) {
     const accountSheetName = accountSheet.sheetName;
     if (accountSheetName === this.getSheetName()) {
       throw new Error(

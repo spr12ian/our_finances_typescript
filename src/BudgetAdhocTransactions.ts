@@ -1,5 +1,5 @@
 /// <reference types="google-apps-script" />
-
+import { getNewDate } from './functions';
 export class BudgetAdhocTransactions {
   static get COL_CHANGE_AMOUNT() {
     return 3;

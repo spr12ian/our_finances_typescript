@@ -1,50 +1,26 @@
 /// <reference types="google-apps-script" />
 
-import { getType } from "./functions";
-import { Spreadsheet } from "./Spreadsheet";
+import { getType } from "./TypeUtils";
+import { isGasSheet } from "./GasSheetUtils";
+import type { Spreadsheet } from "./Spreadsheet"; // type-only import avoids circular deps
 
 export class Sheet {
   private readonly sheet: GoogleAppsScript.Spreadsheet.Sheet;
   private _spreadsheet?: Spreadsheet;
   private _spreadsheetName?: string;
 
-  private constructor(sheet: GoogleAppsScript.Spreadsheet.Sheet) {
+  /**
+   * ⚠️ Internal constructor – prefer `createSheet(...)` for safety.
+   */
+  public constructor(sheet: GoogleAppsScript.Spreadsheet.Sheet) {
     this.sheet = sheet;
-  }
-
-  static from(input: unknown): Sheet {
-    const xType = getType(input);
-
-    if (xType === "string") {
-      const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(input as string);
-      if (!sheet) {
-        throw new Error(`Sheet with name "${input}" not found`);
-      }
-      return new Sheet(sheet);
-    }
-
-    if (xType === "object" && input instanceof Sheet) {
-      return input;
-    }
-
-    if (xType === "object" && input instanceof GoogleAppsScript.Spreadsheet.Sheet) {
-      return new Sheet(input as GoogleAppsScript.Spreadsheet.Sheet);
-    }
-
-    if (input === null) {
-      const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-      if (!sheet) {
-        throw new Error("No active sheet found");
-      }
-      return new Sheet(sheet);
-    }
-
-    throw new TypeError(`Unexpected input type: ${xType}`);
   }
 
   get spreadsheet(): Spreadsheet {
     if (!this._spreadsheet) {
-      this._spreadsheet = Spreadsheet.from(this.sheet.getParent().getId());
+      this._spreadsheet = SpreadsheetApp.openById(
+        this.sheet.getParent().getId()
+      ) as unknown as Spreadsheet;
     }
     return this._spreadsheet;
   }
@@ -125,15 +101,6 @@ export class Sheet {
     this.sheet.setColumnWidth(column, width);
   }
 
-  setActiveCell(range: GoogleAppsScript.Spreadsheet.Range | string): void {
-    if (typeof range === "string") {
-      this.sheet.setActiveCell(this.sheet.getRange(range));
-    } else {
-      this.sheet.setActiveCell(range);
-    }
-  }
-
-
   setActiveRange(range: GoogleAppsScript.Spreadsheet.Range): void {
     this.sheet.setActiveRange(range);
   }
@@ -152,8 +119,38 @@ export class Sheet {
     return this;
   }
 
-  // Expose raw GAS sheet when necessary
   get raw(): GoogleAppsScript.Spreadsheet.Sheet {
     return this.sheet;
   }
+}
+
+/**
+ * Creates a `Sheet` instance from flexible input:
+ *   • string → sheet name
+ *   • Sheet → returned as-is
+ *   • GAS Sheet → wrapped
+ *   • null → active sheet
+ */
+export function createSheet(input: unknown): Sheet {
+  const xType = getType(input);
+
+  if (xType === "string") {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(input as string);
+    if (!sheet) throw new Error(`Sheet with name "${input}" not found`);
+    return new Sheet(sheet);
+  }
+
+  if (xType === "object" && input instanceof Sheet) return input;
+
+  if (isGasSheet(input)) {
+    return new Sheet(input as GoogleAppsScript.Spreadsheet.Sheet);
+  }
+
+  if (input === null) {
+    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+    if (!sheet) throw new Error("No active sheet found");
+    return new Sheet(sheet);
+  }
+
+  throw new TypeError(`Unexpected input type: ${xType}`);
 }

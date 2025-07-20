@@ -1,9 +1,12 @@
 /// <reference types="google-apps-script" />
 
-import { Sheet } from "./Sheet";
+import { activeSpreadsheet } from "./context";
+import { createSheet } from "./Sheet";
+import type { Sheet } from "./Sheet";
 
 export class SpreadsheetSummary {
   private sheet: Sheet;
+  private data: any[][];
   static get COLUMNS() {
     return {
       SHEET_NAME: 0,
@@ -23,7 +26,7 @@ export class SpreadsheetSummary {
   }
 
   constructor() {
-    this.sheet = Sheet.from(SpreadsheetSummary.SHEET.NAME);
+    this.sheet = createSheet(SpreadsheetSummary.SHEET.NAME);
     this.data = this.sheet.getDataRange().offset(1, 0).getValues();
   }
 
@@ -38,7 +41,7 @@ export class SpreadsheetSummary {
   }
 
   update() {
-    const sheetData = activeSpreadsheet.getSheets().map((iswSheet) => ({
+    const sheetData = activeSpreadsheet.getSheets().map((iswSheet:Sheet) => ({
       sheetName: iswSheet.getSheetName(),
       lastRow: iswSheet.getLastRow(),
       lastColumn: iswSheet.getLastColumn(),

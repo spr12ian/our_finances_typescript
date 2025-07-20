@@ -1,6 +1,13 @@
 /// <reference types="google-apps-script" />
 
+import  { activeSpreadsheet } from './context';
+import type { OurFinances } from './OurFinances';
+import  { createSheet } from './Sheet';
+import type { Sheet } from './Sheet';
+import { getNewDate } from './functions';
 export class BudgetAnnualTransactions {
+  private howManyDaysAhead:number;
+  private sheet:Sheet;
   static get COLUMNS() {
     return {
       DATE: 0,
@@ -16,16 +23,16 @@ export class BudgetAnnualTransactions {
     };
   }
 
-  constructor(ourFinances) {
-    this.spreadsheet = ourFinances.spreadsheet;
-    this.sheet = this.spreadsheet.getSheetByName(
+  constructor(ourFinances:OurFinances) {
+    const sheet = activeSpreadsheet.raw.getSheetByName(
       BudgetAnnualTransactions.SHEET.NAME
     );
-    this.howManyDaysAhead = ourFinances.howManyDaysAhead;
 
-    if (!this.sheet) {
-      throw new Error(`Sheet "${this.getSheetName()}" not found.`);
+    if (!sheet) {
+      throw new Error(`Sheet "${BudgetAnnualTransactions.SHEET.NAME}" not found.`);
     }
+    this.howManyDaysAhead = ourFinances.howManyDaysAhead;
+    this.sheet=createSheet(sheet);
   }
 
   // Get all scheduled transactions from the sheet

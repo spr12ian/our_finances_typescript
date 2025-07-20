@@ -1,8 +1,10 @@
 /// <reference types="google-apps-script" />
 
-import { Sheet } from "./Sheet";
+import { createSheet } from "./Sheet";
+import type { Sheet } from "./Sheet";
 
 export class TransactionsBuilder {
+  private sheet:Sheet
   static get SHEET() {
     return {
       NAME: "Transactions builder",
@@ -10,7 +12,7 @@ export class TransactionsBuilder {
   }
 
   constructor() {
-    this.sheet = Sheet.from(TransactionsBuilder.SHEET.NAME);
+    this.sheet = createSheet(TransactionsBuilder.SHEET.NAME);
   }
 
   copyIfSheetExists() {

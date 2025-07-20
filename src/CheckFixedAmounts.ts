@@ -1,8 +1,10 @@
 /// <reference types="google-apps-script" />
 
-import { Sheet } from "./Sheet";
+import {type  Sheet } from "./Sheet";
+import { createSheet } from "./Sheet";
 
 export class CheckFixedAmounts {
+  private sheet:Sheet;
   // Column definitions using static getters
   static get COLUMNS() {
     return {
@@ -30,7 +32,7 @@ export class CheckFixedAmounts {
    */
   constructor() {
     try {
-      this.sheet = Sheet.from(CheckFixedAmounts.SHEET.NAME);
+      this.sheet = createSheet(CheckFixedAmounts.SHEET.NAME);
       this.validateSheetStructure();
     } catch (error) {
       throw new Error(`Sheet initialization failed: ${error.message}`);

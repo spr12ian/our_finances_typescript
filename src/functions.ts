@@ -9,7 +9,7 @@ import { SpreadsheetSummary } from "./SpreadsheetSummary";
 // Eagerly compute once for performance
 export const accountSheetNames: string[] = new SpreadsheetSummary()
   .getSheetNames()
-  .filter((name:string) => name.startsWith("_"));
+  .filter((name: string) => name.startsWith("_"));
 
 function alert(message: string) {
   SpreadsheetApp.getUi().alert(message);
@@ -279,7 +279,7 @@ function getMyEmailAddress() {
 
 // The getDate() method of Date instances returns the day of the month for this date according to local time.
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDate
-function getNewDate(date) {
+export function getNewDate(date: string): Date {
   let newDate;
   if (date) {
     newDate = new Date(date);
@@ -400,43 +400,6 @@ function getToday(
   }
 
   return today;
-}
-
-export function getType(value) {
-  if (value === null) {
-    return "null";
-  }
-  const baseType = typeof value;
-  // Primitive types
-  if (!["object", "function"].includes(baseType)) {
-    return baseType;
-  }
-
-  // Symbol.toStringTag often specifies the "display name" of the
-  // object's class. It's used in Object.prototype.toString().
-  const tag = value[Symbol.toStringTag];
-  if (typeof tag === "string") {
-    return tag;
-  }
-
-  // If it's a function whose source code starts with the "class" keyword
-  if (
-    baseType === "function" &&
-    Function.prototype.toString.call(value).startsWith("class")
-  ) {
-    return "class";
-  }
-
-  // The name of the constructor; for example `Array`, `GeneratorFunction`,
-  // `Number`, `String`, `Boolean` or `MyCustomClass`
-  const className = value.constructor.name;
-  if (typeof className === "string" && className !== "") {
-    return className;
-  }
-
-  // At this point there's no robust way to get the type of value,
-  // so we use the base implementation.
-  return baseType;
 }
 
 function goToSheet(sheetName) {
@@ -609,8 +572,6 @@ function monthlyUpdate() {
   const ourFinances = new OurFinances();
   ourFinances.bankAccounts.showMonthly();
 }
-
-
 
 function onEdit(event) {
   const trigger = new Trigger(event);

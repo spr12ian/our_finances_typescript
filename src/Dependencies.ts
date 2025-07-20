@@ -1,13 +1,15 @@
 /// <reference types="google-apps-script" />
 
-import { Sheet } from "./Sheet";
+import type { Sheet } from "./Sheet";
+import { createSheet } from "./Sheet";
 
 export class Dependencies {
+  private sheet: Sheet;
   static get SHEET_NAME() {
     return "Dependencies";
   }
   constructor() {
-    this.sheet = Sheet.from(Dependencies.SHEET_NAME);
+    this.sheet = createSheet(Dependencies.SHEET_NAME);
   }
 
   getAllDependencies() {

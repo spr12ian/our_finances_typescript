@@ -1,6 +1,6 @@
 /// <reference types="google-apps-script" />
 
-import { Sheet } from "./Sheet";
+import { createSheet, Sheet } from "./Sheet";
 
 /**
  * Thin, type‑safe wrapper around a GAS `Spreadsheet`.
@@ -25,9 +25,10 @@ export class Spreadsheet {
    * Factory: open by ID or fall back to the active spreadsheet.
    */
   static from(id?: string): Spreadsheet {
-    const ss = typeof id === "string" && id.trim()
-      ? SpreadsheetApp.openById(id)
-      : SpreadsheetApp.getActiveSpreadsheet();
+    const ss =
+      typeof id === "string" && id.trim()
+        ? SpreadsheetApp.openById(id)
+        : SpreadsheetApp.getActiveSpreadsheet();
 
     if (!ss) {
       throw new Error("Unable to obtain a spreadsheet instance");
@@ -35,7 +36,6 @@ export class Spreadsheet {
 
     return new Spreadsheet(ss);
   }
-
 
   // ────────────────────────────────────────────────────────────
   //  Metadata getters
@@ -52,11 +52,11 @@ export class Spreadsheet {
   //  Sheet access helpers
   // ────────────────────────────────────────────────────────────
   get activeSheet(): Sheet {
-    return Sheet.from(this.ss.getActiveSheet())
+    return createSheet(this.ss.getActiveSheet());
   }
 
   get sheets(): Sheet[] {
-    return this.ss.getSheets().map((s) => Sheet.from(s));
+    return this.ss.getSheets().map((s) => createSheet(s));
   }
 
   sheetByName(name: string): Sheet | null {
@@ -65,7 +65,10 @@ export class Spreadsheet {
 
   private get sheetMap(): Map<string, Sheet> {
     if (!this._sheetCache) {
-      const entries: [string, Sheet][] = this.sheets.map((s) => [s.getSheetName(), s]);
+      const entries: [string, Sheet][] = this.sheets.map((s) => [
+        s.getSheetName(),
+        s,
+      ]);
       this._sheetCache = new Map(entries);
     }
     return this._sheetCache;
@@ -82,7 +85,7 @@ export class Spreadsheet {
     return SpreadsheetApp.newFilterCriteria();
   }
 
-  toast(message: string, title: string = '', timeoutSeconds: number = 5): void {
+  toast(message: string, title: string = "", timeoutSeconds: number = 5): void {
     this.ss.toast(message, title, timeoutSeconds);
   }
 

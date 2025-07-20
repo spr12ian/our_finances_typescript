@@ -1,8 +1,8 @@
 /// <reference types="google-apps-script" />
 
 import type { Sheet } from "./Sheet";
-import { createSheet } from "./Sheet";
-import { getAmountAsGBP } from "./functions";
+import { createSheet } from "./SheetFactory";
+import { getAmountAsGBP } from "./MoneyUtils";
 
 export class CheckFixedAmounts {
   private sheet: Sheet;

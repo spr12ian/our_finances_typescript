@@ -1,10 +1,10 @@
 /// <reference types="google-apps-script" />
 
-import { createSheet } from "./Sheet";
 import type { Sheet } from "./Sheet";
+import { createSheet } from "./SheetFactory";
 
 export class TransactionsBuilder {
-  private sheet:Sheet
+  private sheet: Sheet;
   static get SHEET() {
     return {
       NAME: "Transactions builder",

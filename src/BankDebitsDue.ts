@@ -2,10 +2,10 @@
 
 import { OurFinances } from "./OurFinances";
 import type { Sheet } from "./Sheet";
-import { createSheet } from "./Sheet";
+import { createSheet } from "./SheetFactory";
 import { activeSpreadsheet } from "./context";
 
-import { getAmountAsGBP } from './functions';
+import { getAmountAsGBP } from "./MoneyUtils";
 export class BankDebitsDue {
   private sheet: Sheet;
   private howManyDaysAhead: number;
@@ -16,7 +16,6 @@ export class BankDebitsDue {
   static get COL_CHANGE_AMOUNT() {
     return 1;
   }
-
 
   static get SHEET() {
     return {
@@ -35,8 +34,6 @@ export class BankDebitsDue {
     }
     this.sheet = createSheet(sheet);
     this.howManyDaysAhead = ourFinances.howManyDaysAhead;
-
-
   }
 
   getScheduledTransactions() {

@@ -1,10 +1,10 @@
 /// <reference types="google-apps-script" />
 
-import { createSheet } from "./Sheet";
 import type { Sheet } from "./Sheet";
+import { createSheet } from "./SheetFactory";
 
 export class Transactions {
-  private sheet:Sheet
+  private sheet: Sheet;
   static get SHEET() {
     return {
       NAME: "Transactions",
@@ -19,7 +19,7 @@ export class Transactions {
     this.sheet.activate();
   }
 
-  evaluateQueryFunction(queryString:string) {
+  evaluateQueryFunction(queryString: string) {
     const sheet = this.sheet;
     const dataRange = sheet.getDataRange(); // Adjust the range as needed
     const a1range = `Transactions!${dataRange.getA1Notation()}`;
@@ -40,7 +40,7 @@ export class Transactions {
     return result;
   }
 
-  getTotalByYear(where:string, taxYear:string) {
+  getTotalByYear(where: string, taxYear: string) {
     const queryString = `SELECT SUM(I) WHERE J='${taxYear}' AND ${where} LABEL SUM(I) ''`;
     const result = this.evaluateQueryFunction(queryString);
     return result;

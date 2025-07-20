@@ -1,7 +1,7 @@
 /// <reference types="google-apps-script" />
 
 import type { Sheet } from "./Sheet";
-import { createSheet } from "./Sheet";
+import { createSheet } from "./SheetFactory";
 
 export class Dependencies {
   private sheet: Sheet;

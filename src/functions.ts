@@ -4,7 +4,7 @@ import { OurFinances } from "./OurFinances";
 import { Sheet } from "./Sheet";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
 
-const LOCALE = "en-GB" as const;
+import { LOCALE } from "./constants";
 
 // Function declarations
 
@@ -179,19 +179,7 @@ function formatSheet() {
   accountSheet.formatSheet();
 }
 
-/**
- * Formats an amount for display as GBP
- * @param {number} amount - The amount to format
- * @return {string} Formatted amount
- */
-export function getAmountAsGBP(amount:number):string {
-  const gbPound = new Intl.NumberFormat(LOCALE, {
-    style: "currency",
-    currency: "GBP",
-  });
 
-  return gbPound.format(amount);
-}
 
 function getDayName(date) {
   const dayName = date.toLocaleDateString(LOCALE, { weekday: "long" });

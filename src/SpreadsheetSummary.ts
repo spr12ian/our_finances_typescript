@@ -1,8 +1,8 @@
 /// <reference types="google-apps-script" />
 
 import { activeSpreadsheet } from "./context";
-import { createSheet } from "./Sheet";
 import type { Sheet } from "./Sheet";
+import { createSheet } from "./SheetFactory";
 
 export class SpreadsheetSummary {
   private sheet: Sheet;
@@ -41,7 +41,7 @@ export class SpreadsheetSummary {
   }
 
   update() {
-    const sheetData = activeSpreadsheet.getSheets().map((iswSheet:Sheet) => ({
+    const sheetData = activeSpreadsheet.getSheets().map((iswSheet: Sheet) => ({
       sheetName: iswSheet.getSheetName(),
       lastRow: iswSheet.getLastRow(),
       lastColumn: iswSheet.getLastColumn(),

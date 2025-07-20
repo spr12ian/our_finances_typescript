@@ -2,11 +2,11 @@
 
 import  { activeSpreadsheet } from './context';
 import type { OurFinances } from './OurFinances';
-import  { createSheet } from './Sheet';
+import  { createSheet } from './SheetFactory';
 import type { Sheet } from './Sheet';
 import { getNewDate } from './functions';
 
-import { getAmountAsGBP } from './functions';
+import { getAmountAsGBP } from './MoneyUtils';
 export class BudgetAnnualTransactions {
   private howManyDaysAhead:number;
   private sheet:Sheet;

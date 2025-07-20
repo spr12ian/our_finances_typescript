@@ -1,5 +1,5 @@
-import {type  Sheet } from "./Sheet";
-import { createSheet } from "./Sheet";
+import type { Sheet } from "./Sheet";
+import { createSheet } from "./SheetFactory";
 
 export class BankAccounts {
   private sheet: Sheet;

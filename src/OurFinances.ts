@@ -1,9 +1,15 @@
 /// <reference types="google-apps-script" />
-import { activeSpreadsheet } from './context';
-import { Spreadsheet } from './Spreadsheet';
-import { CheckFixedAmounts } from './CheckFixedAmounts';
+import { BankDebitsDue } from "./BankDebitsDue";
+import { BudgetAdhocTransactions } from "./BudgetAdhocTransactions";
+import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
+import { CheckFixedAmounts } from "./CheckFixedAmounts";
+import { activeSpreadsheet } from "./context";
+import { Spreadsheet } from "./Spreadsheet";
 export class OurFinances {
   private spreadsheet: Spreadsheet;
+  private _budgetAnnualTransactions?: BudgetAnnualTransactions;
+  private _budgetAdhocTransactions ?: BudgetAdhocTransactions;
+  private _howManyDaysAhead?:number;
 
   constructor() {
     this.spreadsheet = activeSpreadsheet;
@@ -87,7 +93,7 @@ export class OurFinances {
     return this.spreadsheet.getName();
   }
 
-  getSheetByName(sheetName) {
+  getSheetByName(sheetName:string) {
     return this.spreadsheet.getSheetByName(sheetName);
   }
 

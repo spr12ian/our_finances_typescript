@@ -5,6 +5,8 @@ import type { OurFinances } from './OurFinances';
 import  { createSheet } from './Sheet';
 import type { Sheet } from './Sheet';
 import { getNewDate } from './functions';
+
+import { getAmountAsGBP } from './functions';
 export class BudgetAnnualTransactions {
   private howManyDaysAhead:number;
   private sheet:Sheet;

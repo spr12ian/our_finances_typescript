@@ -1,6 +1,7 @@
 /// <reference types="google-apps-script" />
 import { activeSpreadsheet } from './context';
 import { Spreadsheet } from './Spreadsheet';
+import { CheckFixedAmounts } from './CheckFixedAmounts';
 export class OurFinances {
   private spreadsheet: Spreadsheet;
 

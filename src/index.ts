@@ -10,10 +10,8 @@ import { onOpen } from "./onOpen";
  * Application entry point – executed when the script is loaded.
  */
 
-// ────────────────────────────────────────────────────────────
-//  Locale (used elsewhere for date/number formatting)
-// ────────────────────────────────────────────────────────────
-export const LOCALE = "en-GB" as const;
+
+
 
 // ────────────────────────────────────────────────────────────
 //  Dynamically create helper functions

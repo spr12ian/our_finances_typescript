@@ -1,10 +1,11 @@
 /// <reference types="google-apps-script" />
 
-import {type  Sheet } from "./Sheet";
+import type { Sheet } from "./Sheet";
 import { createSheet } from "./Sheet";
+import { getAmountAsGBP } from "./functions";
 
 export class CheckFixedAmounts {
-  private sheet:Sheet;
+  private sheet: Sheet;
   // Column definitions using static getters
   static get COLUMNS() {
     return {

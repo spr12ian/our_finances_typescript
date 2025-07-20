@@ -4,6 +4,8 @@ import { OurFinances } from "./OurFinances";
 import { Sheet } from "./Sheet";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
 
+const LOCALE = "en-GB" as const;
+
 // Function declarations
 
 // Eagerly compute once for performance
@@ -182,8 +184,8 @@ function formatSheet() {
  * @param {number} amount - The amount to format
  * @return {string} Formatted amount
  */
-function getAmountAsGBP(amount) {
-  const gbPound = new Intl.NumberFormat(locale, {
+export function getAmountAsGBP(amount:number):string {
+  const gbPound = new Intl.NumberFormat(LOCALE, {
     style: "currency",
     currency: "GBP",
   });
@@ -192,7 +194,7 @@ function getAmountAsGBP(amount) {
 }
 
 function getDayName(date) {
-  const dayName = date.toLocaleDateString(locale, { weekday: "long" });
+  const dayName = date.toLocaleDateString(LOCALE, { weekday: "long" });
   return dayName;
 }
 
@@ -203,7 +205,7 @@ function getDayOfMonth(date) {
 }
 
 function getDtf() {
-  return new Intl.DateTimeFormat(locale);
+  return new Intl.DateTimeFormat(LOCALE);
 }
 
 function getFirstRowRange(sheet) {
@@ -261,7 +263,7 @@ function getMonthIndex(date) {
 }
 
 function getMonthName(date) {
-  return date.toLocaleDateString(locale, { month: "long" });
+  return date.toLocaleDateString(LOCALE, { month: "long" });
 }
 
 function getMyEmailAddress() {
@@ -393,10 +395,10 @@ function getToday(
   let today;
 
   try {
-    const dtf = new Intl.DateTimeFormat(locale, options);
+    const dtf = new Intl.DateTimeFormat(LOCALE, options);
     today = dtf.format(date);
   } catch (error) {
-    today = date.toLocaleDateString(locale, options); // Fallback to toLocaleDateString
+    today = date.toLocaleDateString(LOCALE, options); // Fallback to toLocaleDateString
   }
 
   return today;

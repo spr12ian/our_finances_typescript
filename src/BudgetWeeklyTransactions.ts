@@ -1,5 +1,8 @@
 /// <reference types="google-apps-script" />
-import { getNewDate } from './functions';
+import { getNewDate } from "./functions";
+
+import { getAmountAsGBP } from "./functions";
+
 export class BudgetWeeklyTransactions {
   static get COL_DATE() {
     return 0;

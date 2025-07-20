@@ -90,33 +90,10 @@ function findUsageByNamedRange(namedRange) {
   });
 }
 
-/**
- * Formats an amount for display as GBP
- * @param {number} amount - The amount to format
- * @return {string} Formatted amount
- */
-function getAmountAsGBP(amount) {
-  const gbPound = new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: "GBP",
-  });
-
-  return gbPound.format(amount);
-}
-
-function getDayName(date) {
-  const dayName = date.toLocaleDateString(locale, { weekday: "long" });
-  return dayName;
-}
-
 // The getDate() method of Date instances returns the day of the month for this date according to local time.
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDate
 function getDayOfMonth(date) {
   return date.getDate();
-}
-
-function getDtf() {
-  return new Intl.DateTimeFormat(locale);
 }
 
 function getFirstRowRange(sheet) {
@@ -171,10 +148,6 @@ function getLineNumber() {
 
 function getMonthIndex(date) {
   return date.getMonth();
-}
-
-function getMonthName(date) {
-  return date.toLocaleDateString(locale, { month: "long" });
 }
 
 function getMyEmailAddress() {
@@ -266,22 +239,6 @@ function getSeasonName(date) {
   const seasonIndex = monthSeasons[monthIndex];
 
   return seasons[seasonIndex];
-}
-
-function getToday(
-  options = { weekday: "long", year: "numeric", month: "long", day: "numeric" }
-) {
-  const date = new Date();
-  let today;
-
-  try {
-    const dtf = new Intl.DateTimeFormat(locale, options);
-    today = dtf.format(date);
-  } catch (error) {
-    today = date.toLocaleDateString(locale, options); // Fallback to toLocaleDateString
-  }
-
-  return today;
 }
 
 function isCellAccountBalance(sheet, column) {

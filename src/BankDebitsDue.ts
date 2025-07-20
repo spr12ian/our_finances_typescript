@@ -1,10 +1,12 @@
 /// <reference types="google-apps-script" />
 
 import { OurFinances } from "./OurFinances";
-import { Sheet } from "./Sheet";
+import type { Sheet } from "./Sheet";
+import { createSheet } from "./Sheet";
+import { activeSpreadsheet } from "./context";
 
+import { getAmountAsGBP } from './functions';
 export class BankDebitsDue {
-  private spreadsheet: Spreadsheet;
   private sheet: Sheet;
   private howManyDaysAhead: number;
 
@@ -15,17 +17,26 @@ export class BankDebitsDue {
     return 1;
   }
 
-  constructor(ourFinances: OurFinances) {
-    this.spreadsheet = ourFinances.spreadsheet;
-    this.sheet = this.spreadsheet.getSheetByName("Bank debits due");
-    this.howManyDaysAhead = ourFinances.howManyDaysAhead;
 
-    // Check if the sheet exists
-    if (!this.sheet) {
+  static get SHEET() {
+    return {
+      NAME: "Bank debits due",
+    };
+  }
+  constructor(ourFinances: OurFinances) {
+    const sheet = activeSpreadsheet.raw.getSheetByName(
+      BankDebitsDue.SHEET.NAME
+    );
+
+    if (!sheet) {
       throw new Error(
-        `Sheet "${this.getSheetName()}" not found in the spreadsheet.`
+        `Sheet "${BankDebitsDue.SHEET.NAME}" not found in the spreadsheet.`
       );
     }
+    this.sheet = createSheet(sheet);
+    this.howManyDaysAhead = ourFinances.howManyDaysAhead;
+
+
   }
 
   getScheduledTransactions() {

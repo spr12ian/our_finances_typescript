@@ -431,33 +431,10 @@ function getAccountSheetNames(): string[] {
   ];
 }
 
-/**
- * Formats an amount for display as GBP
- * @param {number} amount - The amount to format
- * @return {string} Formatted amount
- */
-function getAmountAsGBP(amount) {
-  const gbPound = new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: "GBP",
-  });
-
-  return gbPound.format(amount);
-}
-
-function getDayName(date) {
-  const dayName = date.toLocaleDateString(locale, { weekday: "long" });
-  return dayName;
-}
-
 // The getDate() method of Date instances returns the day of the month for this date according to local time.
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDate
 function getDayOfMonth(date) {
   return date.getDate();
-}
-
-function getDtf() {
-  return new Intl.DateTimeFormat(locale);
 }
 
 function getFirstRowRange(sheet) {
@@ -510,94 +487,6 @@ function getLineNumber() {
   }
 }
 
-function getMonthIndex(date) {
-  return date.getMonth();
-}
-
-function getMonthName(date) {
-  return date.toLocaleDateString(locale, { month: "long" });
-}
-
-function getMyEmailAddress() {
-  // Use optional chaining to safely access the email address
-  const myEmailAddress = getPrivateData()?.["MY_EMAIL_ADDRESS"];
-
-  // Check if the email address exists and log accordingly
-  if (myEmailAddress) {
-    return myEmailAddress;
-  } else {
-    console.error("MY_EMAIL_ADDRESS not found in private data");
-    return null; // Return null if the email is not found
-  }
-}
-
-function getOrdinal(number) {
-  let selector;
-
-  if (number <= 0) {
-    selector = 4;
-  } else if ((number > 3 && number < 21) || number % 10 > 3) {
-    selector = 0;
-  } else {
-    selector = number % 10;
-  }
-
-  return number + ["th", "st", "nd", "rd", ""][selector];
-}
-
-function getOrdinalDate(date) {
-  const dayOfMonth = this.getDayOfMonth(date);
-  const ordinal = this.getOrdinal(dayOfMonth);
-  const monthName = this.getMonthName(date);
-  const fullYear = date.getFullYear();
-
-  return `${ordinal} of ${monthName} ${fullYear}`;
-}
-
-function getPrivateData() {
-  const privateDataId = "1hxcINN1seSzn-sLPI25KmV9t4kxLvZlievc0X3EgMhs";
-  const sheet = gasSpreadsheetApp.openById(privateDataId);
-
-  if (!sheet) {
-    return;
-  }
-
-  // Get data from sheet without header row
-  const values = sheet.getDataRange().getValues().slice(1);
-
-  if (values.length === 0) {
-    return;
-  }
-
-  let keyValuePairs = {};
-
-  values.forEach(([key, value]) => {
-    if (key && value) {
-      if (key && value) {
-        keyValuePairs[key] = value; // Store the key-value pair in the object
-      }
-    }
-  });
-
-  return keyValuePairs;
-}
-
-function getReplacementHeadersMap() {
-  const bankAccounts = activeSpreadsheet.getSheetByName(
-    BankAccounts.SHEET.NAME
-  );
-  if (!bankAccounts) {
-    throw new Error(`Sheet named '${BankAccounts.SHEET.NAME}' not found.`);
-  }
-
-  const data = bankAccounts.getDataRange().getValues().slice(1);
-
-  return data.reduce((map, [date, description, credit, debit, note]) => {
-    map[description] = replacement;
-    return map;
-  }, {});
-}
-
 function getSeasonName(date) {
   const seasons = ["Winter", "Spring", "Summer", "Autumn"];
 
@@ -607,22 +496,6 @@ function getSeasonName(date) {
   const seasonIndex = monthSeasons[monthIndex];
 
   return seasons[seasonIndex];
-}
-
-function getToday(
-  options = { weekday: "long", year: "numeric", month: "long", day: "numeric" }
-) {
-  const date = new Date();
-  let today;
-
-  try {
-    const dtf = new Intl.DateTimeFormat(locale, options);
-    today = dtf.format(date);
-  } catch (error) {
-    today = date.toLocaleDateString(locale, options); // Fallback to toLocaleDateString
-  }
-
-  return today;
 }
 
 function goToSheet(sheetName) {

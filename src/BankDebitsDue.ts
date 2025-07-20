@@ -1,10 +1,9 @@
 /// <reference types="google-apps-script" />
 
-import { OurFinances } from "./OurFinances";
+import { activeSpreadsheet } from "./context";
 import type { Sheet } from "./Sheet";
 import { createSheet } from "./SheetFactory";
-import { activeSpreadsheet } from "./context";
-
+import { OurFinances } from "./OurFinances";
 import { getAmountAsGBP } from "./MoneyUtils";
 export class BankDebitsDue {
   private sheet: Sheet;

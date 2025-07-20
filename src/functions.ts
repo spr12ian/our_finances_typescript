@@ -1,10 +1,9 @@
 /// <reference types="google-apps-script" />
 
-import { OurFinances } from "./OurFinances";
+import { gasSpreadsheetApp } from './context';
 import { Sheet } from "./Sheet";
+import { OurFinances } from "./OurFinances";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
-
-import { LOCALE } from "./constants";
 
 // Function declarations
 
@@ -26,27 +25,16 @@ function cloneDate(date) {
   return new Date(date.getTime());
 }
 
-export function columnNumberToLetter(columnNumber: number): string {
-  let dividend = columnNumber;
-  let letter = "";
-  while (dividend > 0) {
-    const modulo = (dividend - 1) % 26;
-    letter = String.fromCharCode(65 + modulo) + letter;
-    dividend = Math.floor((dividend - modulo) / 26);
-  }
-  return letter;
-}
-
 function convertCurrentColumnToUppercase() {
-  const sheet = gasSpreadsheetApp.getActiveSheet();
-  const activeRange = sheet.getActiveRange();
+  const gasSheet = gasSpreadsheetApp.getActiveSheet();
+  const activeRange = gasSheet.getActiveRange();
   const START_ROW = 2;
   const column = activeRange.getColumn();
 
-  const lastRow = sheet.getLastRow();
+  const lastRow = gasSheet.getLastRow();
   const numRows = lastRow + 1 - START_ROW;
 
-  const range = sheet.getRange(START_ROW, column, numRows, 1);
+  const range = gasSheet.getRange(START_ROW, column, numRows, 1);
   const values = range.getValues();
   const uppercasedValues = values.map((row) => [
     row[0].toString().toUpperCase(),
@@ -60,7 +48,7 @@ function dailyUpdate() {
   bankAccounts.showDaily();
 }
 
-function dynamicQuery(rangeString, queryString) {
+export function dynamicQuery(rangeString, queryString) {
   try {
     // Import QUERY function from DataTable
     const dataTable = Charts.newDataTable()
@@ -83,7 +71,7 @@ function emailUpcomingPayments() {
   ourFinances.emailUpcomingPayments();
 }
 
-function examineObject(object, name = "anonymous value") {
+export function examineObject(object, name = "anonymous value") {
   if (typeof object === "object" && object !== null) {
     const keys = Object.keys(object);
 
@@ -179,19 +167,6 @@ function formatSheet() {
   accountSheet.formatSheet();
 }
 
-
-
-function getDayName(date) {
-  const dayName = date.toLocaleDateString(LOCALE, { weekday: "long" });
-  return dayName;
-}
-
-// The getDate() method of Date instances returns the day of the month for this date according to local time.
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDate
-function getDayOfMonth(date) {
-  return date.getDate();
-}
-
 function getDtf() {
   return new Intl.DateTimeFormat(LOCALE);
 }
@@ -246,14 +221,6 @@ function getLineNumber() {
   }
 }
 
-function getMonthIndex(date) {
-  return date.getMonth();
-}
-
-function getMonthName(date) {
-  return date.toLocaleDateString(LOCALE, { month: "long" });
-}
-
 function getMyEmailAddress() {
   // Use optional chaining to safely access the email address
   const myEmailAddress = getPrivateData()?.["MY_EMAIL_ADDRESS"];
@@ -265,41 +232,6 @@ function getMyEmailAddress() {
     console.error("MY_EMAIL_ADDRESS not found in private data");
     return null; // Return null if the email is not found
   }
-}
-
-// The getDate() method of Date instances returns the day of the month for this date according to local time.
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDate
-export function getNewDate(date: string): Date {
-  let newDate;
-  if (date) {
-    newDate = new Date(date);
-  } else {
-    newDate = new Date();
-  }
-  return newDate;
-}
-
-function getOrdinal(number) {
-  let selector;
-
-  if (number <= 0) {
-    selector = 4;
-  } else if ((number > 3 && number < 21) || number % 10 > 3) {
-    selector = 0;
-  } else {
-    selector = number % 10;
-  }
-
-  return number + ["th", "st", "nd", "rd", ""][selector];
-}
-
-function getOrdinalDate(date) {
-  const dayOfMonth = this.getDayOfMonth(date);
-  const ordinal = this.getOrdinal(dayOfMonth);
-  const monthName = this.getMonthName(date);
-  const fullYear = date.getFullYear();
-
-  return `${ordinal} of ${monthName} ${fullYear}`;
 }
 
 function getPrivateData() {
@@ -344,17 +276,6 @@ function getReplacementHeadersMap() {
     map[description] = replacement;
     return map;
   }, {});
-}
-
-function getSeasonName(date) {
-  const seasons = ["Winter", "Spring", "Summer", "Autumn"];
-
-  const monthSeasons = [0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 0];
-
-  const monthIndex = getMonthIndex(date);
-  const seasonIndex = monthSeasons[monthIndex];
-
-  return seasons[seasonIndex];
 }
 
 export function getSheetNamesByType(sheetNameType: string) {
@@ -601,31 +522,6 @@ function setLastUpdatedOnAccountBalanceChange(sheet) {
   }
 }
 
-function setupDaysIterator(startDate) {
-  const getNextResult = (iteratorDate) => {
-    const date = cloneDate(iteratorDate); // Default date in long format
-    const day = getDtf().format(date); // 19/01/1964
-    const dayName = getDayName(date); // Sunday
-    const dayOfMonth = getDayOfMonth(date); // 29
-    const season = getSeasonName(date); // Winter, Spring, Summer, Autumn
-
-    // Return result as an object
-    return { date, day, dayName, dayOfMonth, season };
-  };
-
-  const iteratorDate = new Date(startDate);
-  const first = getNextResult(iteratorDate);
-
-  const iterator = {
-    next: () => {
-      iteratorDate.setDate(iteratorDate.getDate() + 1);
-      return getNextResult(iteratorDate);
-    },
-  };
-
-  return { first, iterator };
-}
-
 function sortGoogleSheets() {
   const ss = activeSpreadsheet;
 
@@ -692,40 +588,6 @@ function trimGoogleSheets() {
   sheets.forEach((sheet) => {
     sheet.trimSheet();
   });
-}
-
-function updateSpreadsheetSummary() {
-  const spreadsheetSummary = new SpreadsheetSummary();
-  const sheets = activeSpreadsheet.getSheets();
-  const sheetData = sheets.map((sheet) => [
-    sheet.getSheetName(),
-    sheet.getLastRow(),
-    sheet.getLastColumn(),
-    sheet.getMaxRows(),
-    sheet.getMaxColumns(),
-    sheet.getSheetName().startsWith("_"),
-    sheet.getSheetName().startsWith("Budget"),
-  ]);
-
-  // Add headers
-  sheetData.unshift([
-    "Sheet name",
-    "Last row",
-    "Last column",
-    "Max rows",
-    "Max columns",
-    "Is an account file (starts with underscore)?",
-    "Is a budget file (starts with Budget)?",
-  ]);
-
-  const maxWidth = sheetData[0].length;
-
-  // Minimize calls to Google Sheets API by using clearContent instead of clear() if possible.
-  const summarySheet = spreadsheetSummary.getSheet();
-  summarySheet.clearContents();
-  summarySheet.getRange(1, 1, sheetData.length, maxWidth).setValues(sheetData);
-
-  trimGoogleSheet(summarySheet);
 }
 
 /**

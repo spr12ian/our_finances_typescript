@@ -1,5 +1,5 @@
 /// <reference types="google-apps-script" />
-import { getNewDate } from './functions';
+import { getNewDate, getOrdinalDate, setupDaysIterator } from "./DateUtils";
 import { getAmountAsGBP } from './MoneyUtils';
 export class BudgetMonthlyTransactions {
   static get COL_DATE() {
@@ -18,6 +18,11 @@ export class BudgetMonthlyTransactions {
     return 9;
   }
 
+  static get SHEET() {
+    return {
+      NAME: "Budget monthly transactions",
+    };
+  }
   constructor(ourFinances) {
     this.spreadsheet = ourFinances.spreadsheet;
     this.sheet = this.spreadsheet.getSheetByName("Budget monthly transactions");

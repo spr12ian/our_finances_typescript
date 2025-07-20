@@ -2,7 +2,11 @@
 
 import { BankAccounts } from "./BankAccounts";
 import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
+import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
+import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
+import { DescriptionReplacements } from "./DescriptionReplacements";
 import { OurFinances } from "./OurFinances";
+import { TransactionsCategories } from "./TransactionsCategories";
 import { activeSpreadsheet } from "./context";
 
 // Function declarations
@@ -11,10 +15,10 @@ function dailySorts() {
   const sheetsToSort = [
     BankAccounts.SHEET.NAME,
     BudgetAnnualTransactions.SHEET.NAME,
-    "Budget monthly transactions",
-    "Budget weekly transactions",
-    "Description replacements",
-    "Transactions categories",
+    BudgetMonthlyTransactions.SHEET.NAME,
+    BudgetWeeklyTransactions.SHEET.NAME,
+    DescriptionReplacements.SHEET.NAME,
+    TransactionsCategories.SHEET.NAME,
   ];
   sheetsToSort.forEach((sheetName) => {
     const sheet = activeSpreadsheet.name;
@@ -24,40 +28,6 @@ function dailySorts() {
       throw new Error(`${sheetName} not found`);
     }
   });
-}
-
-function dynamicQuery(rangeString, queryString) {
-  try {
-    // Import QUERY function from DataTable
-    const dataTable = Charts.newDataTable()
-      .addColumn("Column", "string")
-      .build();
-
-    rangeString = rangeString.trim();
-    queryString = queryString.trim();
-
-    const result = dataTable.applyQuery(rangeString + "," + queryString);
-    return result.toArray();
-  } catch (error) {
-    console.error("Error in dynamicQuery:", error);
-    throw error;
-  }
-}
-
-function examineObject(object, name = "anonymous value") {
-  if (typeof object === "object" && object !== null) {
-    const keys = Object.keys(object);
-
-    const ownPropertyNames = Object.getOwnPropertyNames(object);
-
-    // Get own properties
-    const ownDescriptors = Object.getOwnPropertyDescriptors(object);
-
-    // Get prototype properties (including greet)
-    const prototypeDescriptors = Object.getOwnPropertyDescriptors(
-      Object.getPrototypeOf(object)
-    );
-  }
 }
 
 function findRowByKey(sheetName, keyColumn, keyValue) {
@@ -88,12 +58,6 @@ function findUsageByNamedRange(namedRange) {
       });
     });
   });
-}
-
-// The getDate() method of Date instances returns the day of the month for this date according to local time.
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDate
-function getDayOfMonth(date) {
-  return date.getDate();
 }
 
 function getFirstRowRange(sheet) {
@@ -146,10 +110,6 @@ function getLineNumber() {
   }
 }
 
-function getMonthIndex(date) {
-  return date.getMonth();
-}
-
 function getMyEmailAddress() {
   // Use optional chaining to safely access the email address
   const myEmailAddress = getPrivateData()?.["MY_EMAIL_ADDRESS"];
@@ -161,29 +121,6 @@ function getMyEmailAddress() {
     console.error("MY_EMAIL_ADDRESS not found in private data");
     return null; // Return null if the email is not found
   }
-}
-
-function getOrdinal(number) {
-  let selector;
-
-  if (number <= 0) {
-    selector = 4;
-  } else if ((number > 3 && number < 21) || number % 10 > 3) {
-    selector = 0;
-  } else {
-    selector = number % 10;
-  }
-
-  return number + ["th", "st", "nd", "rd", ""][selector];
-}
-
-function getOrdinalDate(date) {
-  const dayOfMonth = this.getDayOfMonth(date);
-  const ordinal = this.getOrdinal(dayOfMonth);
-  const monthName = this.getMonthName(date);
-  const fullYear = date.getFullYear();
-
-  return `${ordinal} of ${monthName} ${fullYear}`;
 }
 
 function getPrivateData() {
@@ -228,17 +165,6 @@ function getReplacementHeadersMap() {
     map[description] = replacement;
     return map;
   }, {});
-}
-
-function getSeasonName(date) {
-  const seasons = ["Winter", "Spring", "Summer", "Autumn"];
-
-  const monthSeasons = [0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 0];
-
-  const monthIndex = getMonthIndex(date);
-  const seasonIndex = monthSeasons[monthIndex];
-
-  return seasons[seasonIndex];
 }
 
 function isCellAccountBalance(sheet, column) {

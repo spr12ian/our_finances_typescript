@@ -1,9 +1,9 @@
 /// <reference types="google-apps-script" />
 
+import { activeSpreadsheet, gasSpreadsheetApp } from "./context";
 import { OurFinances } from "./OurFinances";
-import { Sheet } from "./Sheet";
+import { createSheet } from "./SheetFactory";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
-import { gasSpreadsheetApp } from "./context";
 import { getSheetNamesByType } from "./functions";
 
 // Function declarations
@@ -211,43 +211,9 @@ function dailyUpdate() {
   bankAccounts.showDaily();
 }
 
-function dynamicQuery(rangeString, queryString) {
-  try {
-    // Import QUERY function from DataTable
-    const dataTable = Charts.newDataTable()
-      .addColumn("Column", "string")
-      .build();
-
-    rangeString = rangeString.trim();
-    queryString = queryString.trim();
-
-    const result = dataTable.applyQuery(rangeString + "," + queryString);
-    return result.toArray();
-  } catch (error) {
-    console.error("Error in dynamicQuery:", error);
-    throw error;
-  }
-}
-
 function emailUpcomingPayments() {
   const ourFinances = new OurFinances();
   ourFinances.emailUpcomingPayments();
-}
-
-function examineObject(object, name = "anonymous value") {
-  if (typeof object === "object" && object !== null) {
-    const keys = Object.keys(object);
-
-    const ownPropertyNames = Object.getOwnPropertyNames(object);
-
-    // Get own properties
-    const ownDescriptors = Object.getOwnPropertyDescriptors(object);
-
-    // Get prototype properties (including greet)
-    const prototypeDescriptors = Object.getOwnPropertyDescriptors(
-      Object.getPrototypeOf(object)
-    );
-  }
 }
 
 function findAllNamedRangeUsage() {
@@ -431,12 +397,6 @@ function getAccountSheetNames(): string[] {
   ];
 }
 
-// The getDate() method of Date instances returns the day of the month for this date according to local time.
-// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDate
-function getDayOfMonth(date) {
-  return date.getDate();
-}
-
 function getFirstRowRange(sheet) {
   const lastColumn = sheet.getLastColumn();
   const firstRowRange = sheet.getRange(1, 1, 1, lastColumn);
@@ -487,19 +447,8 @@ function getLineNumber() {
   }
 }
 
-function getSeasonName(date) {
-  const seasons = ["Winter", "Spring", "Summer", "Autumn"];
-
-  const monthSeasons = [0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 0];
-
-  const monthIndex = getMonthIndex(date);
-  const seasonIndex = monthSeasons[monthIndex];
-
-  return seasons[seasonIndex];
-}
-
-function goToSheet(sheetName) {
-  const sheet = new Sheet(sheetName);
+function goToSheet(sheetName:string) {
+  const sheet = createSheet(sheetName);
 
   // Check if the sheet exists before trying to activate it.
   if (sheet) {

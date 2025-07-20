@@ -1,8 +1,8 @@
 /// <reference types="google-apps-script" />
 
+import type { Sheet } from "./Sheet";
 import { BankAccounts } from "./BankAccounts";
 import { DescriptionReplacements } from "./DescriptionReplacements";
-import { Sheet } from "./Sheet";
 
 export class AccountSheet {
   private sheet: Sheet;
@@ -40,12 +40,12 @@ export class AccountSheet {
     return 8;
   }
 
-  constructor(iswSheet: Sheet) {
-    const sheetName = iswSheet.getSheetName();
+  constructor(sheet: Sheet) {
+    const sheetName = sheet.getSheetName();
     if (sheetName[0] !== "_") {
       throw new Error(`${sheetName} is NOT an account sheet`);
     }
-    this.sheet = iswSheet;
+    this.sheet = sheet;
   }
 
   addDefaultNotes() {
@@ -82,7 +82,7 @@ export class AccountSheet {
 
   convertColumnToUppercase(column: number) {
     const START_ROW = 2;
-    const lastRow = this.sheet.getLastRow();
+    const lastRow = this.sheet.raw.getLastRow();
     const numRows = lastRow - START_ROW + 1;
 
     const range = this.sheet.getRange(START_ROW, column, numRows, 1);

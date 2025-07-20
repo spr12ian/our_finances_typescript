@@ -5,12 +5,14 @@ import { createSheet } from "./SheetFactory";
 
 export class DescriptionReplacements {
   private sheet: Sheet;
-  static get SHEET_NAME() {
-    return "Description replacements";
-  }
 
+  static get SHEET() {
+    return {
+      NAME: "Description replacements",
+    };
+  }
   constructor() {
-    this.sheet = createSheet(DescriptionReplacements.SHEET_NAME);
+    this.sheet = createSheet(DescriptionReplacements.SHEET.NAME);
   }
 
   applyReplacements(accountSheet: Sheet) {
@@ -30,7 +32,7 @@ export class DescriptionReplacements {
       );
     }
 
-    const lastRow = accountSheet.getLastRow();
+    const lastRow = accountSheet.raw.getLastRow();
     const numRows = lastRow + 1 - AccountSheet.ROW_DATA_STARTS;
 
     const range = accountSheet.getRange(

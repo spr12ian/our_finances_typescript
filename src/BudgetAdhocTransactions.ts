@@ -1,6 +1,5 @@
 /// <reference types="google-apps-script" />
-import { getNewDate } from './functions';
-
+import { getNewDate, getOrdinalDate, setupDaysIterator } from "./DateUtils";
 import { getAmountAsGBP } from './MoneyUtils';
 export class BudgetAdhocTransactions {
   static get COL_CHANGE_AMOUNT() {

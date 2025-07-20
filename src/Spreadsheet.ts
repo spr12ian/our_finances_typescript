@@ -1,7 +1,8 @@
 /// <reference types="google-apps-script" />
 
-import { createSheet } from "./SheetFactory";
 import type { Sheet } from "./Sheet";
+
+import { createSheet } from "./SheetFactory";
 
 /**
  * Thin, type‑safe wrapper around a GAS `Spreadsheet`.

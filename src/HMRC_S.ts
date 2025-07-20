@@ -1,6 +1,6 @@
 /// <reference types="google-apps-script" />
 
-import { columnNumberToLetter } from "./functions";
+import { columnNumberToLetter } from "./NumberUtils";
 export class HMRC_S {
   // Column definitions using static getters
   static get COLUMNS() {

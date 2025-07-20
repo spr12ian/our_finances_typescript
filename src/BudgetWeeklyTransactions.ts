@@ -1,6 +1,5 @@
 /// <reference types="google-apps-script" />
-import { getNewDate } from "./functions";
-
+import { getNewDate, getOrdinalDate, setupDaysIterator } from "./DateUtils";
 import { getAmountAsGBP } from "./MoneyUtils";
 
 export class BudgetWeeklyTransactions {
@@ -20,6 +19,11 @@ export class BudgetWeeklyTransactions {
     return 15;
   }
 
+  static get SHEET() {
+    return {
+      NAME: "Budget monthly transactions",
+    };
+  }
   constructor(ourFinances) {
     this.spreadsheet = ourFinances.spreadsheet;
     this.sheet = this.spreadsheet.getSheetByName("Budget weekly transactions");

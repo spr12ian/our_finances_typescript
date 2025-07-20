@@ -1,10 +1,10 @@
 /// <reference types="google-apps-script" />
+import { Spreadsheet } from "./Spreadsheet";
+import { activeSpreadsheet } from "./context";
 import { BankDebitsDue } from "./BankDebitsDue";
 import { BudgetAdhocTransactions } from "./BudgetAdhocTransactions";
 import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
 import { CheckFixedAmounts } from "./CheckFixedAmounts";
-import { activeSpreadsheet } from "./context";
-import { Spreadsheet } from "./Spreadsheet";
 export class OurFinances {
   private spreadsheet: Spreadsheet;
   private _budgetAnnualTransactions?: BudgetAnnualTransactions;

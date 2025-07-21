@@ -1,6 +1,6 @@
 /// <reference types="google-apps-script" />
 
-import { activeSpreadsheet, gasSpreadsheetApp } from "./context";
+
 import { OurFinances } from "./OurFinances";
 import { createSheet } from "./SheetFactory";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
@@ -255,36 +255,6 @@ function findNamedRangeUsage() {
   findUsageByNamedRange("BRIAN_HALIFAX_BALANCE");
 }
 
-function findRowByKey(sheetName, keyColumn, keyValue) {
-  const sheet = activeSpreadsheet.getSheetByName(sheetName);
-  const data = sheet
-    .getRange(`${keyColumn}1:${keyColumn}${sheet.getLastRow()}`)
-    .getValues();
-
-  const rowIndex = data.findIndex((row) => row[0] === keyValue);
-  return rowIndex !== -1 ? rowIndex + 1 : -1; // Add 1 for 1-based indexing, return -1 if not found
-}
-
-function findUsageByNamedRange(namedRange) {
-  const sheets = activeSpreadsheet.getSheets();
-  const rangeUsage = [];
-
-  sheets.forEach((sheet) => {
-    const formulas = sheet.getDataRange().getFormulas();
-
-    formulas.forEach((rowFormulas, rowIndex) => {
-      rowFormulas.forEach((formula, colIndex) => {
-        if (formula.includes(namedRange)) {
-          const cellRef = sheet
-            .getRange(rowIndex + 1, colIndex + 1)
-            .getA1Notation();
-          rangeUsage.push(`Sheet: ${sheet.getName()} - Cell: ${cellRef}`);
-        }
-      });
-    });
-  });
-}
-
 function formatSheet() {
   const activeSheet = activeSpreadsheet.getActiveSheet();
 
@@ -401,11 +371,6 @@ function getFirstRowRange(sheet) {
   const lastColumn = sheet.getLastColumn();
   const firstRowRange = sheet.getRange(1, 1, 1, lastColumn);
   return firstRowRange;
-}
-
-// https://developers.google.com/apps-script/reference/utilities/utilities#formatDate(Date,String,String)
-function getFormattedDate(date, timeZone, format) {
-  return Utilities.formatDate(date, timeZone, format);
 }
 
 function getHMRCTotalByYear(category, year) {
@@ -657,11 +622,6 @@ function sendEmail(recipient, subject, body, options) {
   return GmailApp.sendEmail(recipient, subject, body, options);
 }
 
-function sendMeEmail(subject, emailBody, options) {
-  const body = `${subject}\n\n${emailBody}`;
-  return sendEmail(getMyEmailAddress(), subject, body, options);
-}
-
 function setLastUpdatedOnAccountBalanceChange(sheet) {
   if (isAccountSheet(sheet)) {
     const bankAccounts = new BankAccounts();
@@ -772,37 +732,4 @@ function updateSpreadsheetSummary() {
   summarySheet.getRange(1, 1, sheetData.length, maxWidth).setValues(sheetData);
 
   trimGoogleSheet(summarySheet);
-}
-
-/**
- * Custom XLOOKUP function for Google Apps Script
- *
- * @param {string|number} searchValue - The value you are searching for.
- * @param {Sheet} sheet - The sheet where the lookup is performed.
- * @param {string} searchCol - The column letter to search in (e.g., 'A').
- * @param {string} resultCol - The column letter for the result (e.g., 'B').
- * @param {boolean} [exactMatch=true] - Whether to look for exact matches.
- * @returns {string|number|null} The result of the lookup or null if not found.
- */
-function xLookup(searchValue, sheet, searchCol, resultCol, exactMatch = true) {
-  const searchRange = sheet.getRange(`${searchCol}1:${searchCol}`).getValues();
-  const resultRange = sheet.getRange(`${resultCol}1:${resultCol}`).getValues();
-
-  for (let i = 0; i < searchRange.length; i++) {
-    const cellValue = searchRange[i][0];
-
-    // Handle exact or approximate match cases
-    if (
-      (exactMatch && cellValue === searchValue) ||
-      (!exactMatch &&
-        cellValue
-          .toString()
-          .toLowerCase()
-          .includes(searchValue.toString().toLowerCase()))
-    ) {
-      return resultRange[i][0]; // Return the corresponding result value
-    }
-  }
-
-  return null; // Return null if no match is found
 }

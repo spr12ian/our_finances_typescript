@@ -1,8 +1,7 @@
 /// <reference types="google-apps-script" />
 
-import { activeSpreadsheet } from "./context";
 import type { Sheet } from "./Sheet";
-import { createSheet } from "./SheetFactory";
+import type { Spreadsheet } from "./Spreadsheet";
 
 export class SpreadsheetSummary {
   private sheet: Sheet;
@@ -25,8 +24,8 @@ export class SpreadsheetSummary {
     };
   }
 
-  constructor() {
-    this.sheet = createSheet(SpreadsheetSummary.SHEET.NAME);
+  constructor(spreadsheet:Spreadsheet) {
+    this.sheet = spreadsheet.getSheet(SpreadsheetSummary.SHEET.NAME);
     this.data = this.sheet.getDataRange().offset(1, 0).getValues();
   }
 
@@ -61,7 +60,7 @@ export class SpreadsheetSummary {
       isBudget: "Is a budget file (starts with Budget)?",
     });
 
-    const sheetArray = sheetData.map((sheet) => [
+    const sheetArray = sheetData.map((sheet:Sheet) => [
       sheet.sheetName,
       sheet.lastRow,
       sheet.lastColumn,

@@ -1,100 +1,97 @@
 /// <reference types="google-apps-script" />
-import { Spreadsheet } from "./Spreadsheet";
-import { activeSpreadsheet } from "./context";
+import { BankAccounts } from "./BankAccounts";
 import { BankDebitsDue } from "./BankDebitsDue";
 import { BudgetAdhocTransactions } from "./BudgetAdhocTransactions";
 import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
+import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
+import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
 import { CheckFixedAmounts } from "./CheckFixedAmounts";
+import { Spreadsheet } from "./Spreadsheet";
 export class OurFinances {
-  private spreadsheet: Spreadsheet;
+  private _bankAccounts?: BankAccounts;
+  private _bankDebitsDue?: BankDebitsDue;
   private _budgetAnnualTransactions?: BudgetAnnualTransactions;
-  private _budgetAdhocTransactions ?: BudgetAdhocTransactions;
-  private _howManyDaysAhead?:number;
-
-  constructor() {
-    this.spreadsheet = activeSpreadsheet;
-  }
-
-  getFixedAmountMismatches() {
-    return this.checkFixedAmounts.getMismatchMessages();
-  }
-
-  getUpcomingDebits() {
-    // Collect upcoming debits from different sources
-    return [
-      this.bankDebitsDue.getUpcomingDebits(),
-      this.budgetAdhocTransactions.getUpcomingDebits(),
-      this.budgetAnnualTransactions.getUpcomingDebits(),
-      this.budgetMonthlyTransactions.getUpcomingDebits(),
-      this.budgetWeeklyTransactions.getUpcomingDebits(),
-    ];
-  }
-
-  get budgetAnnualTransactions() {
-    if (typeof this._budgetAnnualTransactions === "undefined") {
-      this._budgetAnnualTransactions = new BudgetAnnualTransactions(this);
-    }
-    return this._budgetAnnualTransactions;
-  }
-
-  get budgetAdhocTransactions() {
-    if (typeof this._budgetAdhocTransactions === "undefined") {
-      this._budgetAdhocTransactions = new BudgetAdhocTransactions(this);
-    }
-    return this._budgetAdhocTransactions;
-  }
+  private _budgetAdhocTransactions?: BudgetAdhocTransactions;
+  private _budgetMonthlyTransactions?: BudgetMonthlyTransactions;
+  private _budgetWeeklyTransactions?: BudgetWeeklyTransactions;
+  private _checkFixedAmounts?: CheckFixedAmounts;
+  private _howManyDaysAhead?: number;
+  private _spreadsheet: Spreadsheet = Spreadsheet.getActive();
 
   get bankAccounts() {
     if (typeof this._bankAccounts === "undefined") {
-      this._bankAccounts = new BankAccounts(this);
+      this._bankAccounts = new BankAccounts(this._spreadsheet);
     }
     return this._bankAccounts;
   }
 
   get bankDebitsDue() {
     if (typeof this._bankDebitsDue === "undefined") {
-      this._bankDebitsDue = new BankDebitsDue(this);
+      this._bankDebitsDue = new BankDebitsDue(this._spreadsheet);
     }
     return this._bankDebitsDue;
   }
 
-  get checkFixedAmounts() {
-    if (typeof this._checkFixedAmounts === "undefined") {
-      this._checkFixedAmounts = new CheckFixedAmounts(this);
+  get budgetAdhocTransactions() {
+    if (typeof this._budgetAdhocTransactions === "undefined") {
+      this._budgetAdhocTransactions = new BudgetAdhocTransactions(this._spreadsheet);
     }
-    return this._checkFixedAmounts;
+    return this._budgetAdhocTransactions;
   }
 
-  get howManyDaysAhead() {
-    if (typeof this._howManyDaysAhead === "undefined") {
-      const sheetName = "Bank debits due";
-      const sheet = this.getSheetByName(sheetName);
-      const searchValue = "Look ahead";
-      this._howManyDaysAhead = xLookup(searchValue, sheet, "F", "G");
+  get budgetAnnualTransactions() {
+    if (typeof this._budgetAnnualTransactions === "undefined") {
+      this._budgetAnnualTransactions = new BudgetAnnualTransactions(this._spreadsheet);
     }
-    return this._howManyDaysAhead;
+    return this._budgetAnnualTransactions;
   }
 
   get budgetMonthlyTransactions() {
     if (typeof this._budgetMonthlyTransactions === "undefined") {
-      this._budgetMonthlyTransactions = new BudgetMonthlyTransactions(this);
+      this._budgetMonthlyTransactions = new BudgetMonthlyTransactions(this._spreadsheet);
     }
     return this._budgetMonthlyTransactions;
   }
 
   get budgetWeeklyTransactions() {
     if (typeof this._budgetWeeklyTransactions === "undefined") {
-      this._budgetWeeklyTransactions = new BudgetWeeklyTransactions(this);
+      this._budgetWeeklyTransactions = new BudgetWeeklyTransactions(this._spreadsheet);
     }
     return this._budgetWeeklyTransactions;
   }
 
-  getName() {
-    return this.spreadsheet.getName();
+  get checkFixedAmounts() {
+    if (typeof this._checkFixedAmounts === "undefined") {
+      this._checkFixedAmounts = new CheckFixedAmounts(this._spreadsheet);
+    }
+    return this._checkFixedAmounts;
   }
 
-  getSheetByName(sheetName:string) {
-    return this.spreadsheet.getSheetByName(sheetName);
+  get fixedAmountMismatches() {
+    return this.checkFixedAmounts.getMismatchMessages();
+  }
+
+  get howManyDaysAhead() {
+    if (typeof this._howManyDaysAhead === "undefined") {
+      this._howManyDaysAhead = this.bankDebitsDue.howManyDaysAhead;
+    }
+    return this._howManyDaysAhead;
+  }
+
+  get upcomingDebits() {
+    const howManyDaysAhead=this.bankDebitsDue.howManyDaysAhead;
+    // Collect upcoming debits from different sources
+    return [
+      this.bankDebitsDue.getUpcomingDebits(howManyDaysAhead),
+      this.budgetAdhocTransactions.getUpcomingDebits(howManyDaysAhead),
+      this.budgetAnnualTransactions.getUpcomingDebits(howManyDaysAhead),
+      this.budgetMonthlyTransactions.getUpcomingDebits(howManyDaysAhead),
+      this.budgetWeeklyTransactions.getUpcomingDebits(howManyDaysAhead),
+    ];
+  }
+
+  get url():string {
+    return this._spreadsheet.url
   }
 
   showAllAccounts() {

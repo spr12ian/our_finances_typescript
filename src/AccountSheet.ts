@@ -1,8 +1,8 @@
 /// <reference types="google-apps-script" />
-
 import type { Sheet } from "./Sheet";
 import { BankAccounts } from "./BankAccounts";
 import { DescriptionReplacements } from "./DescriptionReplacements";
+import { xLookup } from "./xLookup";
 
 export class AccountSheet {
   private sheet: Sheet;
@@ -41,7 +41,7 @@ export class AccountSheet {
   }
 
   constructor(sheet: Sheet) {
-    const sheetName = sheet.getSheetName();
+    const sheetName = sheet.name;
     if (sheetName[0] !== "_") {
       throw new Error(`${sheetName} is NOT an account sheet`);
     }
@@ -126,9 +126,9 @@ export class AccountSheet {
 
   getExpectedHeader(column: number) {
     return column === AccountSheet.COLUMNS.DESCRIPTION
-      ? this.xLookup(
+      ? xLookup(
           this.getSheetName().slice(1),
-          this.sheet.getParent().getSheetByName(BankAccounts.SHEET.NAME),
+          activeSpreadsheet.getSheetByName(BankAccounts.SHEET.NAME),
           "A",
           "AQ"
         )
@@ -243,17 +243,5 @@ export class AccountSheet {
     this.validateMinimumColumns();
     this.validateHeaders();
     this.validateFrozenRows();
-  }
-
-  xLookup(searchValue:string, sheet:Sheet, searchCol:string, resultCol:string) {
-    const searchRange = sheet
-      .getRange(`${searchCol}1:${searchCol}`)
-      .getValues();
-    for (let i = 0; i < searchRange.length; i++) {
-      if (searchRange[i][0] === searchValue) {
-        return sheet.getRange(`${resultCol}${i + 1}`).getValue();
-      }
-    }
-    return null;
   }
 }

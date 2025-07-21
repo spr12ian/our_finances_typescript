@@ -1,14 +1,16 @@
 /// <reference types="google-apps-script" />
 
-import { gasSpreadsheetApp } from './context';
-import { Sheet } from "./Sheet";
+
+import { AccountSheet } from "./AccountSheet";
 import { OurFinances } from "./OurFinances";
+import { Sheet } from "./Sheet";
+import { Spreadsheet } from './Spreadsheet';
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
 
 // Function declarations
 
 // Eagerly compute once for performance
-export const accountSheetNames: string[] = new SpreadsheetSummary()
+export const accountSheetNames: string[] = new SpreadsheetSummary(Spreadsheet.getActive())
   .getSheetNames()
   .filter((name: string) => name.startsWith("_"));
 
@@ -126,7 +128,7 @@ function findNamedRangeUsage() {
   findUsageByNamedRange("BRIAN_HALIFAX_BALANCE");
 }
 
-function findRowByKey(sheetName, keyColumn, keyValue) {
+export function findRowByKey(sheetName, keyColumn, keyValue) {
   const sheet = activeSpreadsheet.getSheetByName(sheetName);
   const data = sheet
     .getRange(`${keyColumn}1:${keyColumn}${sheet.getLastRow()}`)
@@ -136,7 +138,7 @@ function findRowByKey(sheetName, keyColumn, keyValue) {
   return rowIndex !== -1 ? rowIndex + 1 : -1; // Add 1 for 1-based indexing, return -1 if not found
 }
 
-function findUsageByNamedRange(namedRange) {
+export function findUsageByNamedRange(namedRange) {
   const sheets = activeSpreadsheet.getSheets();
   const rangeUsage = [];
 
@@ -177,10 +179,6 @@ function getFirstRowRange(sheet) {
   return firstRowRange;
 }
 
-// https://developers.google.com/apps-script/reference/utilities/utilities#formatDate(Date,String,String)
-function getFormattedDate(date, timeZone, format) {
-  return Utilities.formatDate(date, timeZone, format);
-}
 
 function getHMRCTotalByYear(category, year) {
   return category + "-" + year;
@@ -234,16 +232,16 @@ function getMyEmailAddress() {
   }
 }
 
-function getPrivateData() {
+export function getPrivateData() {
   const privateDataId = "1hxcINN1seSzn-sLPI25KmV9t4kxLvZlievc0X3EgMhs";
-  const sheet = gasSpreadsheetApp.openById(privateDataId);
+  const spreadsheet = Spreadsheet.fromId(privateDataId);
 
-  if (!sheet) {
+  if (!spreadsheet) {
     return;
   }
 
   // Get data from sheet without header row
-  const values = sheet.getDataRange().getValues().slice(1);
+  const values = spreadsheet.raw.getDataRange().getValues().slice(1);
 
   if (values.length === 0) {
     return;
@@ -295,22 +293,6 @@ export function getSheetNamesByType(sheetNameType: string) {
       throw new Error(`Unexpected sheetNameType: ${sheetNameType}`);
   }
   return sheetNames;
-}
-
-function getToday(
-  options = { weekday: "long", year: "numeric", month: "long", day: "numeric" }
-) {
-  const date = new Date();
-  let today;
-
-  try {
-    const dtf = new Intl.DateTimeFormat(LOCALE, options);
-    today = dtf.format(date);
-  } catch (error) {
-    today = date.toLocaleDateString(LOCALE, options); // Fallback to toLocaleDateString
-  }
-
-  return today;
 }
 
 function goToSheet(sheetName) {
@@ -507,7 +489,7 @@ function sendEmail(recipient, subject, body, options) {
   return GmailApp.sendEmail(recipient, subject, body, options);
 }
 
-function sendMeEmail(subject, emailBody, options) {
+export function sendMeEmail(subject:string, emailBody:string, options) {
   const body = `${subject}\n\n${emailBody}`;
   return sendEmail(getMyEmailAddress(), subject, body, options);
 }
@@ -588,37 +570,4 @@ function trimGoogleSheets() {
   sheets.forEach((sheet) => {
     sheet.trimSheet();
   });
-}
-
-/**
- * Custom XLOOKUP function for Google Apps Script
- *
- * @param {string|number} searchValue - The value you are searching for.
- * @param {Sheet} sheet - The sheet where the lookup is performed.
- * @param {string} searchCol - The column letter to search in (e.g., 'A').
- * @param {string} resultCol - The column letter for the result (e.g., 'B').
- * @param {boolean} [exactMatch=true] - Whether to look for exact matches.
- * @returns {string|number|null} The result of the lookup or null if not found.
- */
-function xLookup(searchValue, sheet, searchCol, resultCol, exactMatch = true) {
-  const searchRange = sheet.getRange(`${searchCol}1:${searchCol}`).getValues();
-  const resultRange = sheet.getRange(`${resultCol}1:${resultCol}`).getValues();
-
-  for (let i = 0; i < searchRange.length; i++) {
-    const cellValue = searchRange[i][0];
-
-    // Handle exact or approximate match cases
-    if (
-      (exactMatch && cellValue === searchValue) ||
-      (!exactMatch &&
-        cellValue
-          .toString()
-          .toLowerCase()
-          .includes(searchValue.toString().toLowerCase()))
-    ) {
-      return resultRange[i][0]; // Return the corresponding result value
-    }
-  }
-
-  return null; // Return null if no match is found
 }

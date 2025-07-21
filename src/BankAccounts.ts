@@ -23,7 +23,7 @@ export class BankAccounts {
     return { NAME: "Bank accounts" };
   }
 
-  constructor() {
+  constructor(spreadsheet: Spreadsheet) {
     this.sheet = createSheet(BankAccounts.SHEET.NAME);
 
     if (!this.sheet) {

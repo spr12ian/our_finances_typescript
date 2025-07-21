@@ -1,13 +1,13 @@
 /// <reference types="google-apps-script" />
 
-import { activeSpreadsheet } from "./context";
-import type { Sheet } from "./Sheet";
-import { createSheet } from "./SheetFactory";
-import { OurFinances } from "./OurFinances";
+
+import { xLookup } from "./xLookup";
 import { getAmountAsGBP } from "./MoneyUtils";
+import type { Sheet } from "./Sheet";
+import type { Spreadsheet } from "./Spreadsheet";
 export class BankDebitsDue {
   private sheet: Sheet;
-  private howManyDaysAhead: number;
+  private _howManyDaysAhead?: number;
 
   static get COL_ACCOUNT_KEY() {
     return 0;
@@ -21,25 +21,32 @@ export class BankDebitsDue {
       NAME: "Bank debits due",
     };
   }
-  constructor(ourFinances: OurFinances) {
-    const sheet = activeSpreadsheet.raw.getSheetByName(
-      BankDebitsDue.SHEET.NAME
-    );
-
-    if (!sheet) {
-      throw new Error(
-        `Sheet "${BankDebitsDue.SHEET.NAME}" not found in the spreadsheet.`
-      );
+  constructor(spreadsheet: Spreadsheet) {
+    try {
+      this.sheet = spreadsheet.getSheet(BankDebitsDue.SHEET.NAME);
+    } catch (error) {
+      let message =
+        "Unknown error accessing '" + BankDebitsDue.SHEET.NAME + "'";
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      throw new Error(`Sheet initialization failed: ${message}`);
     }
-    this.sheet = createSheet(sheet);
-    this.howManyDaysAhead = ourFinances.howManyDaysAhead;
+  }
+
+  get howManyDaysAhead():number {
+    if (typeof this._howManyDaysAhead === "undefined") {
+      const searchValue = "Look ahead";
+      this._howManyDaysAhead = xLookup(searchValue, this.sheet, "F", "G");
+    }
+    return this._howManyDaysAhead;
   }
 
   getScheduledTransactions() {
     return this.sheet.getDataRange().getValues();
   }
 
-  getUpcomingDebits() {
+  getUpcomingDebits(howManyDaysAhead:number) {
     let upcomingPayments = `Due in the next ${this.howManyDaysAhead} days:`;
 
     const scheduledTransactions = this.getScheduledTransactions();

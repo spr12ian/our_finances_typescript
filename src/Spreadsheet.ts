@@ -1,47 +1,37 @@
 /// <reference types="google-apps-script" />
 
-import type { Sheet } from "./Sheet";
-
-import { createSheet } from "./SheetFactory";
+import { Sheet } from "./Sheet";
 
 /**
  * Thin, type‑safe wrapper around a GAS `Spreadsheet`.
- *
- * ▼ Why this wrapper?
- *   • Keeps your business logic free of global `SpreadsheetApp.*` calls.
- *   • Gives you strongly‑typed helpers (and IntelliSense) while still
- *     exposing the raw spreadsheet when you need full API surface.
  */
 export class Spreadsheet {
-  /** Cached GAS spreadsheet instance */
   private readonly ss: GoogleAppsScript.Spreadsheet.Spreadsheet;
+  private _sheetCache: Map<string, Sheet> = new Map();
 
-  /** Lazily‑built map: sheet name → `Sheet` wrapper */
-  private _sheetCache?: Map<string, Sheet>;
-
-  private constructor(ss: GoogleAppsScript.Spreadsheet.Spreadsheet) {
+  public constructor(ss: GoogleAppsScript.Spreadsheet.Spreadsheet) {
     this.ss = ss;
   }
 
-  /**
-   * Factory: open by ID or fall back to the active spreadsheet.
-   */
-  static from(id?: string): Spreadsheet {
-    const ss =
-      typeof id === "string" && id.trim()
-        ? SpreadsheetApp.openById(id)
-        : SpreadsheetApp.getActiveSpreadsheet();
+  /** Static factory: open by ID */
+  static fromId(id: string): Spreadsheet {
+    const ss = SpreadsheetApp.openById(id)
 
-    if (!ss) {
-      throw new Error("Unable to obtain a spreadsheet instance");
-    }
+    if (!ss) throw new Error("Unable to obtain a spreadsheet instance");
 
     return new Spreadsheet(ss);
   }
 
-  // ────────────────────────────────────────────────────────────
-  //  Metadata getters
-  // ────────────────────────────────────────────────────────────
+  /** Static factory: open active spreadsheet */
+  static getActive(): Spreadsheet {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    if (!ss) throw new Error("Unable to obtain a spreadsheet instance");
+
+    return new Spreadsheet(ss);
+  }
+
+  // ─── Metadata ────────────────────────────────────────────────
   get name(): string {
     return this.ss.getName();
   }
@@ -50,35 +40,30 @@ export class Spreadsheet {
     return this.ss.getUrl();
   }
 
-  // ────────────────────────────────────────────────────────────
-  //  Sheet access helpers
-  // ────────────────────────────────────────────────────────────
+  // ─── Sheets ───────────────────────────────────────────────────
   get activeSheet(): Sheet {
-    return createSheet(this.ss.getActiveSheet());
+    return new Sheet(this.ss.getActiveSheet());
   }
 
   get sheets(): Sheet[] {
-    return this.ss.getSheets().map((s) => createSheet(s));
+    return this.ss.getSheets().map((s) => new Sheet(s));
   }
 
-  sheetByName(name: string): Sheet | null {
-    return this.sheetMap.get(name) ?? null;
-  }
-
-  private get sheetMap(): Map<string, Sheet> {
-    if (!this._sheetCache) {
-      const entries: [string, Sheet][] = this.sheets.map((s) => [
-        s.getSheetName(),
-        s,
-      ]);
-      this._sheetCache = new Map(entries);
+  /** Get a typed `Sheet` by name (cached) */
+  getSheet(name: string): Sheet {
+    if (this._sheetCache.has(name)) {
+      return this._sheetCache.get(name)!;
     }
-    return this._sheetCache;
+
+    const sheet = this.ss.getSheetByName(name);
+    if (!sheet) throw new Error(`Sheet "${name}" not found`);
+
+    const wrapped = new Sheet(sheet);
+    this._sheetCache.set(name, wrapped);
+    return wrapped;
   }
 
-  // ────────────────────────────────────────────────────────────
-  //  Spreadsheet‑level operations
-  // ────────────────────────────────────────────────────────────
+  // ─── Spreadsheet-level API ────────────────────────────────────
   moveActiveSheetTo(position: number): void {
     this.ss.moveActiveSheet(position);
   }
@@ -87,13 +72,11 @@ export class Spreadsheet {
     return SpreadsheetApp.newFilterCriteria();
   }
 
-  toast(message: string, title: string = "", timeoutSeconds: number = 5): void {
+  toast(message: string, title = "", timeoutSeconds = 5): void {
     this.ss.toast(message, title, timeoutSeconds);
   }
 
-  // ────────────────────────────────────────────────────────────
-  //  Escape hatch – expose the underlying GAS Spreadsheet
-  // ────────────────────────────────────────────────────────────
+  // ─── Escape hatch ─────────────────────────────────────────────
   get raw(): GoogleAppsScript.Spreadsheet.Spreadsheet {
     return this.ss;
   }

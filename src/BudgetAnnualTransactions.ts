@@ -1,14 +1,12 @@
 /// <reference types="google-apps-script" />
 
-import  { activeSpreadsheet } from './context';
-import type { Sheet } from './Sheet';
-import  { createSheet } from './SheetFactory';
-import type { OurFinances } from './OurFinances';
-import { getNewDate, getOrdinalDate, setupDaysIterator } from "./DateUtils";
-import { getAmountAsGBP } from './MoneyUtils';
+import type { Spreadsheet } from "./Spreadsheet";
+import { getFormattedDate, getNewDate, getOrdinalDate, setupDaysIterator } from "./DateUtils";
+import { getAmountAsGBP } from "./MoneyUtils";
+import type { Sheet } from "./Sheet";
+import { createSheet } from "./SheetFactory";
 export class BudgetAnnualTransactions {
-  private howManyDaysAhead:number;
-  private sheet:Sheet;
+  private sheet: Sheet;
   static get COLUMNS() {
     return {
       DATE: 0,
@@ -24,16 +22,17 @@ export class BudgetAnnualTransactions {
     };
   }
 
-  constructor(ourFinances:OurFinances) {
-    const sheet = activeSpreadsheet.raw.getSheetByName(
+  constructor(spreadsheet: Spreadsheet) {
+    const sheet = spreadsheet.getSheet(
       BudgetAnnualTransactions.SHEET.NAME
     );
 
     if (!sheet) {
-      throw new Error(`Sheet "${BudgetAnnualTransactions.SHEET.NAME}" not found.`);
+      throw new Error(
+        `Sheet "${BudgetAnnualTransactions.SHEET.NAME}" not found.`
+      );
     }
-    this.howManyDaysAhead = ourFinances.howManyDaysAhead;
-    this.sheet=createSheet(sheet);
+    this.sheet = createSheet(sheet);
   }
 
   // Get all scheduled transactions from the sheet
@@ -42,8 +41,7 @@ export class BudgetAnnualTransactions {
   }
 
   // Main method to get upcoming debits
-  getUpcomingDebits() {
-    const howManyDaysAhead = this.howManyDaysAhead;
+  getUpcomingDebits(howManyDaysAhead:number) {
     const today = getNewDate();
     let upcomingPayments = "";
 
@@ -101,7 +99,7 @@ export class BudgetAnnualTransactions {
     paymentType,
     description,
     today,
-    howManyDaysAhead
+    howManyDaysAhead:number
   ) {
     const { first, iterator: days } = setupDaysIterator(today);
     let day = first;

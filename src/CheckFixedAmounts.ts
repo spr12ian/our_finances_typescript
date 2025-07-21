@@ -1,8 +1,8 @@
 /// <reference types="google-apps-script" />
 
-import type { Sheet } from "./Sheet";
-import { createSheet } from "./SheetFactory";
 import { getAmountAsGBP } from "./MoneyUtils";
+import type { Sheet } from "./Sheet";
+import { Spreadsheet } from "./Spreadsheet";
 
 export class CheckFixedAmounts {
   private sheet: Sheet;
@@ -31,12 +31,17 @@ export class CheckFixedAmounts {
    * Creates an instance of CheckFixedAmounts.
    * @throws {Error} If sheet cannot be found or initialized
    */
-  constructor() {
+  constructor(spreadsheet: Spreadsheet) {
     try {
-      this.sheet = createSheet(CheckFixedAmounts.SHEET.NAME);
+      this.sheet = spreadsheet.getSheet(CheckFixedAmounts.SHEET.NAME);
       this.validateSheetStructure();
     } catch (error) {
-      throw new Error(`Sheet initialization failed: ${error.message}`);
+      let message =
+        "Unknown error accessing '" + CheckFixedAmounts.SHEET.NAME + "'";
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      throw new Error(`Sheet initialization failed: ${message}`);
     }
   }
 

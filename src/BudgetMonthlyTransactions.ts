@@ -1,7 +1,10 @@
 /// <reference types="google-apps-script" />
 import { getNewDate, getOrdinalDate, setupDaysIterator } from "./DateUtils";
-import { getAmountAsGBP } from './MoneyUtils';
+import { getAmountAsGBP } from "./MoneyUtils";
+import { Sheet } from './Sheet';
+import type { Spreadsheet } from "./Spreadsheet"
 export class BudgetMonthlyTransactions {
+  private sheet:Sheet;
   static get COL_DATE() {
     return 0;
   }
@@ -23,10 +26,8 @@ export class BudgetMonthlyTransactions {
       NAME: "Budget monthly transactions",
     };
   }
-  constructor(ourFinances) {
-    this.spreadsheet = ourFinances.spreadsheet;
-    this.sheet = this.spreadsheet.getSheetByName("Budget monthly transactions");
-    this.howManyDaysAhead = ourFinances.howManyDaysAhead;
+  constructor(spreadsheet: Spreadsheet) {
+    this.sheet = spreadsheet.getSheet("Budget monthly transactions");
 
     if (!this.sheet) {
       throw new Error(`Sheet "${this.getSheetName()}" not found.`);
@@ -37,9 +38,7 @@ export class BudgetMonthlyTransactions {
     return this.sheet.getDataRange().getValues();
   }
 
-  getUpcomingDebits() {
-    const howManyDaysAhead = this.howManyDaysAhead;
-
+  getUpcomingDebits(howManyDaysAhead:number) {
     let upcomingPayments = "";
     const today = getNewDate();
 

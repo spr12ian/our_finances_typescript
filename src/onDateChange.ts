@@ -4,10 +4,13 @@ import { BankAccounts } from "./BankAccounts";
 import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
 import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
 import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
+import { getToday } from "./DateUtils";
 import { DescriptionReplacements } from "./DescriptionReplacements";
 import { OurFinances } from "./OurFinances";
+import { Spreadsheet } from './Spreadsheet';
 import { TransactionsCategories } from "./TransactionsCategories";
-import { activeSpreadsheet } from "./context";
+import type {Sheet} from "./Sheet"
+import { getPrivateData, sendMeEmail } from './functions';
 
 // Function declarations
 
@@ -20,8 +23,9 @@ function dailySorts() {
     DescriptionReplacements.SHEET.NAME,
     TransactionsCategories.SHEET.NAME,
   ];
+  const spreadsheet=Spreadsheet.getActive()
   sheetsToSort.forEach((sheetName) => {
-    const sheet = activeSpreadsheet.name;
+    const sheet = spreadsheet.getSheet(sheetName);
     if (sheet) {
       sortSheetByFirstColumnOmittingHeader(sheet);
     } else {
@@ -30,45 +34,10 @@ function dailySorts() {
   });
 }
 
-function findRowByKey(sheetName, keyColumn, keyValue) {
-  const sheet = activeSpreadsheet.getSheetByName(sheetName);
-  const data = sheet
-    .getRange(`${keyColumn}1:${keyColumn}${sheet.getLastRow()}`)
-    .getValues();
-
-  const rowIndex = data.findIndex((row) => row[0] === keyValue);
-  return rowIndex !== -1 ? rowIndex + 1 : -1; // Add 1 for 1-based indexing, return -1 if not found
-}
-
-function findUsageByNamedRange(namedRange) {
-  const sheets = activeSpreadsheet.getSheets();
-  const rangeUsage = [];
-
-  sheets.forEach((sheet) => {
-    const formulas = sheet.getDataRange().getFormulas();
-
-    formulas.forEach((rowFormulas, rowIndex) => {
-      rowFormulas.forEach((formula, colIndex) => {
-        if (formula.includes(namedRange)) {
-          const cellRef = sheet
-            .getRange(rowIndex + 1, colIndex + 1)
-            .getA1Notation();
-          rangeUsage.push(`Sheet: ${sheet.getName()} - Cell: ${cellRef}`);
-        }
-      });
-    });
-  });
-}
-
-function getFirstRowRange(sheet) {
+function getFirstRowRange(sheet:Sheet) {
   const lastColumn = sheet.getLastColumn();
   const firstRowRange = sheet.getRange(1, 1, 1, lastColumn);
   return firstRowRange;
-}
-
-// https://developers.google.com/apps-script/reference/utilities/utilities#formatDate(Date,String,String)
-function getFormattedDate(date, timeZone, format) {
-  return Utilities.formatDate(date, timeZone, format);
 }
 
 function getHMRCTotalByYear(category, year) {
@@ -121,34 +90,6 @@ function getMyEmailAddress() {
     console.error("MY_EMAIL_ADDRESS not found in private data");
     return null; // Return null if the email is not found
   }
-}
-
-function getPrivateData() {
-  const privateDataId = "1hxcINN1seSzn-sLPI25KmV9t4kxLvZlievc0X3EgMhs";
-  const sheet = gasSpreadsheetApp.openById(privateDataId);
-
-  if (!sheet) {
-    return;
-  }
-
-  // Get data from sheet without header row
-  const values = sheet.getDataRange().getValues().slice(1);
-
-  if (values.length === 0) {
-    return;
-  }
-
-  let keyValuePairs = {};
-
-  values.forEach(([key, value]) => {
-    if (key && value) {
-      if (key && value) {
-        keyValuePairs[key] = value; // Store the key-value pair in the object
-      }
-    }
-  });
-
-  return keyValuePairs;
 }
 
 function getReplacementHeadersMap() {
@@ -249,15 +190,10 @@ export function onDateChange() {
   dailySorts();
 }
 
-function openAccounts() {
-  const ourFinances = new OurFinances();
-  ourFinances.bankAccounts.showOpenAccounts();
-}
-
 function sendDailyEmail() {
   const ourFinances = new OurFinances();
-  const fixedAmountMismatches = ourFinances.getFixedAmountMismatches();
-  const upcomingDebits = ourFinances.getUpcomingDebits();
+  const fixedAmountMismatches = ourFinances.fixedAmountMismatches;
+  const upcomingDebits = ourFinances.upcomingDebits;
 
   const subject = `Our finances daily email: ${getToday()}`;
 
@@ -279,7 +215,7 @@ function sendDailyEmail() {
   }
 
   // Append the spreadsheet URL
-  emailBody += `\n\nSent from (sendDailyEmail): ${ourFinances.spreadsheet.getUrl()}\n`;
+  emailBody += `\n\nSent from (sendDailyEmail): ${ourFinances.url}\n`;
 
   // Send the email
   sendMeEmail(subject, emailBody);
@@ -287,11 +223,6 @@ function sendDailyEmail() {
 
 function sendEmail(recipient, subject, body, options) {
   return GmailApp.sendEmail(recipient, subject, body, options);
-}
-
-function sendMeEmail(subject, emailBody, options) {
-  const body = `${subject}\n\n${emailBody}`;
-  return sendEmail(getMyEmailAddress(), subject, body, options);
 }
 
 function setLastUpdatedOnAccountBalanceChange(sheet) {

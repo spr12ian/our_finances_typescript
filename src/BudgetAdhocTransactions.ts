@@ -1,7 +1,10 @@
 /// <reference types="google-apps-script" />
-import { getNewDate, getOrdinalDate, setupDaysIterator } from "./DateUtils";
-import { getAmountAsGBP } from './MoneyUtils';
+import { getFormattedDate, getNewDate, getOrdinalDate, setupDaysIterator } from "./DateUtils";
+import { getAmountAsGBP } from "./MoneyUtils";
+import type { Sheet } from "./Sheet";
+import type { Spreadsheet } from "./Spreadsheet";
 export class BudgetAdhocTransactions {
+  private sheet: Sheet;
   static get COL_CHANGE_AMOUNT() {
     return 3;
   }
@@ -18,13 +21,19 @@ export class BudgetAdhocTransactions {
     return 7;
   }
 
-  constructor(ourFinances) {
-    this.spreadsheet = ourFinances.spreadsheet;
-    this.sheet = this.spreadsheet.getSheetByName("Budget ad hoc transactions");
-    this.howManyDaysAhead = ourFinances.howManyDaysAhead;
+  static get SHEET() {
+    return {
+      NAME: "Budget ad hoc transactions",
+    };
+  }
+
+  constructor(spreadsheet: Spreadsheet) {
+    this.sheet = spreadsheet.getSheet(BudgetAdhocTransactions.SHEET.NAME);
 
     if (!this.sheet) {
-      throw new Error(`Sheet "${this.getSheetName()}" not found.`);
+      throw new Error(
+        `Sheet "${BudgetAdhocTransactions.SHEET.NAME}" not found.`
+      );
     }
   }
 
@@ -34,7 +43,7 @@ export class BudgetAdhocTransactions {
   }
 
   // Main method to get upcoming debits
-  getUpcomingDebits() {
+  getUpcomingDebits(howManyDaysAhead: number) {
     let upcomingPayments = "";
 
     // Fetch scheduled transactions and remove the header row
@@ -62,7 +71,8 @@ export class BudgetAdhocTransactions {
         const upcomingPayment = this._getPaymentDetails(
           formattedDaySelected,
           changeAmount,
-          transaction
+          transaction,
+          howManyDaysAhead
         );
         if (upcomingPayment) {
           upcomingPayments += upcomingPayment;
@@ -74,11 +84,16 @@ export class BudgetAdhocTransactions {
   }
 
   // Helper function to generate payment details
-  _getPaymentDetails(formattedDaySelected, changeAmount, transaction) {
+  _getPaymentDetails(
+    formattedDaySelected,
+    changeAmount,
+    transaction,
+    howManyDaysAhead: number
+  ) {
     const { first, iterator: days } = setupDaysIterator(getNewDate());
     let day = first;
 
-    for (let index = 0; index <= this.howManyDaysAhead; index++) {
+    for (let index = 0; index <= howManyDaysAhead; index++) {
       if (formattedDaySelected === day.day) {
         // Generate payment detail string
         return `\t${getOrdinalDate(day.date)} ${getAmountAsGBP(

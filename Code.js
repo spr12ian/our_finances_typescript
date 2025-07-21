@@ -12,20 +12,33 @@ class AccountSheet {
       COUNTERPARTY_DATE: 7,
       BALANCE: 8,
     };
-  };
-
-  static get ROW_DATA_STARTS() { return 2; }
-
-  static get HEADERS() {
-    return ['Date', 'Description', 'Credit (£)', 'Debit (£)', 'Note', 'CPTY', 'Date CPTY', 'Balance (£)'];
   }
 
-  static get MINIMUM_COLUMNS() { return 8; }
+  static get ROW_DATA_STARTS() {
+    return 2;
+  }
+
+  static get HEADERS() {
+    return [
+      "Date",
+      "Description",
+      "Credit (£)",
+      "Debit (£)",
+      "Note",
+      "CPTY",
+      "Date CPTY",
+      "Balance (£)",
+    ];
+  }
+
+  static get MINIMUM_COLUMNS() {
+    return 8;
+  }
 
   constructor(iswSheet) {
     if (iswSheet) {
       const sheetName = iswSheet.getSheetName();
-      if (sheetName[0] === '_') {
+      if (sheetName[0] === "_") {
         this.sheet = iswSheet;
       } else {
         throw new Error(`${sheetName} is NOT an account sheet`);
@@ -34,8 +47,8 @@ class AccountSheet {
   }
 
   addDefaultNotes() {
-    this.addNoteToCell('F1', 'Counterparty');
-    this.addNoteToCell('G1', 'Counterparty date');
+    this.addNoteToCell("F1", "Counterparty");
+    this.addNoteToCell("G1", "Counterparty date");
   }
 
   addNoteToCell(a1CellRange, note) {
@@ -43,7 +56,7 @@ class AccountSheet {
   }
 
   alignLeft(a1range) {
-    this.sheet.getRange(a1range).setHorizontalAlignment('left');
+    this.sheet.getRange(a1range).setHorizontalAlignment("left");
   }
 
   formatSheet() {
@@ -71,25 +84,27 @@ class AccountSheet {
     const numRows = lastRow - START_ROW + 1;
 
     const range = this.sheet.getRange(START_ROW, column, numRows, 1);
-    const values = range.getValues().map(row => [row[0]?.toString().toUpperCase()]);
+    const values = range
+      .getValues()
+      .map((row) => [row[0]?.toString().toUpperCase()]);
 
     range.setValues(values);
   }
 
   formatAsBold(a1range) {
-    this.sheet.getRange(a1range).setFontWeight('bold');
+    this.sheet.getRange(a1range).setFontWeight("bold");
   }
 
   formatAsDate(...a1ranges) {
-    a1ranges.forEach(a1range => {
-      this.setNumberFormat(a1range, 'dd/MM/yyyy');
+    a1ranges.forEach((a1range) => {
+      this.setNumberFormat(a1range, "dd/MM/yyyy");
       this.setDateValidation(a1range);
     });
   }
 
   formatAsUKCurrency(...a1ranges) {
-    a1ranges.forEach(a1range => {
-      this.setNumberFormat(a1range, '£#,##0.00');
+    a1ranges.forEach((a1range) => {
+      this.setNumberFormat(a1range, "£#,##0.00");
     });
   }
 
@@ -103,7 +118,12 @@ class AccountSheet {
 
   getExpectedHeader(column) {
     return column === AccountSheet.COLUMNS.DESCRIPTION
-      ? this.xLookup(this.getSheetName().slice(1), this.sheet.getParent().getSheetByName(BankAccounts.SHEET.NAME), 'A', 'AQ')
+      ? this.xLookup(
+          this.getSheetName().slice(1),
+          this.sheet.getParent().getSheetByName(BankAccounts.SHEET.NAME),
+          "A",
+          "AQ"
+        )
       : AccountSheet.HEADERS[column - 1];
   }
 
@@ -111,7 +131,7 @@ class AccountSheet {
     return this.sheet.getSheetName();
   }
 
-  setBackground(a1range, background = '#FFFFFF') {
+  setBackground(a1range, background = "#FFFFFF") {
     this.sheet.getRange(a1range).setBackground(background);
   }
 
@@ -122,10 +142,14 @@ class AccountSheet {
   setCounterpartyValidation(a1range) {
     const range = this.sheet.getRange(a1range);
     const validationRange = `'${BankAccounts.SHEET.NAME}'!$A$2:$A`;
-    const rule = gasSpreadsheetApp.newDataValidation()
-      .requireValueInRange(this.sheet.getParent().getRange(validationRange), true)
+    const rule = gasSpreadsheetApp
+      .newDataValidation()
+      .requireValueInRange(
+        this.sheet.getParent().getRange(validationRange),
+        true
+      )
       .setAllowInvalid(false)
-      .setHelpText('Please select a valid counterparty.')
+      .setHelpText("Please select a valid counterparty.")
       .build();
 
     range.setDataValidation(rule);
@@ -133,10 +157,11 @@ class AccountSheet {
 
   setDateValidation(a1range) {
     const range = this.sheet.getRange(a1range);
-    const rule = gasSpreadsheetApp.newDataValidation()
+    const rule = gasSpreadsheetApp
+      .newDataValidation()
       .requireDate()
       .setAllowInvalid(false)
-      .setHelpText('Please enter a valid date in DD/MM/YYYY format.')
+      .setHelpText("Please enter a valid date in DD/MM/YYYY format.")
       .build();
 
     range.setDataValidation(rule);
@@ -147,7 +172,7 @@ class AccountSheet {
   }
 
   /* Background colour can be cyan */
-  setSheetFont(fontFamily = 'Arial', fontSize = 10, fontColor = '#000000') {
+  setSheetFont(fontFamily = "Arial", fontSize = 10, fontColor = "#000000") {
     const range = this.sheet.getDataRange();
     range
       .setFontFamily(fontFamily)
@@ -163,17 +188,15 @@ class AccountSheet {
 
     // Apply formatting in batches
     const headerRange = sheet.getRange(1, 1, 1, AccountSheet.MINIMUM_COLUMNS);
-    headerRange
-      .setFontWeight('bold')
-      .setHorizontalAlignment('left');
+    headerRange.setFontWeight("bold").setHorizontalAlignment("left");
 
-    this.setCounterpartyValidation('F2:F');
+    this.setCounterpartyValidation("F2:F");
     this.setSheetFont();
-    this.formatAsDate('A2:A', 'G2:G');
-    this.formatAsUKCurrency('C2:D', 'H2:H');
-    this.formatAsBold('A1:H1');
-    this.alignLeft('A1:H1');
-    this.setBackground('A1:H1');
+    this.formatAsDate("A2:A", "G2:G");
+    this.formatAsUKCurrency("C2:D", "H2:H");
+    this.formatAsBold("A1:H1");
+    this.alignLeft("A1:H1");
+    this.setBackground("A1:H1");
   }
 
   validateFrozenRows() {
@@ -184,11 +207,15 @@ class AccountSheet {
   }
 
   validateHeaders() {
-    const headers = this.sheet.getRange(1, 1, 1, AccountSheet.MINIMUM_COLUMNS).getValues()[0];
+    const headers = this.sheet
+      .getRange(1, 1, 1, AccountSheet.MINIMUM_COLUMNS)
+      .getValues()[0];
     headers.forEach((value, index) => {
       const expected = this.getExpectedHeader(index + 1);
       if (value !== expected) {
-        throw new Error(`Column ${index + 1} should be '${expected}' but found '${value}'`);
+        throw new Error(
+          `Column ${index + 1} should be '${expected}' but found '${value}'`
+        );
       }
     });
   }
@@ -196,7 +223,11 @@ class AccountSheet {
   validateMinimumColumns() {
     const lastColumn = this.sheet.getLastColumn();
     if (lastColumn < AccountSheet.MINIMUM_COLUMNS) {
-      throw new Error(`Sheet ${this.getSheetName()} requires at least ${AccountSheet.MINIMUM_COLUMNS} columns, but found ${lastColumn}`);
+      throw new Error(
+        `Sheet ${this.getSheetName()} requires at least ${
+          AccountSheet.MINIMUM_COLUMNS
+        } columns, but found ${lastColumn}`
+      );
     }
   }
 
@@ -207,7 +238,9 @@ class AccountSheet {
   }
 
   xLookup(searchValue, sheet, searchCol, resultCol) {
-    const searchRange = sheet.getRange(`${searchCol}1:${searchCol}`).getValues();
+    const searchRange = sheet
+      .getRange(`${searchCol}1:${searchCol}`)
+      .getValues();
     for (let i = 0; i < searchRange.length; i++) {
       if (searchRange[i][0] === searchValue) {
         return sheet.getRange(`${resultCol}${i + 1}`).getValue();
@@ -224,17 +257,19 @@ class BankAccounts {
       OWNER_CODE: 3,
       CHECK_BALANCE_FREQUENCY: 12,
       BALANCE_UPDATED: 19,
-      KEY_LABEL: 'A'
-    }
-  };
+      KEY_LABEL: "A",
+    };
+  }
   static get OWNER_CODES() {
     return {
-      BRIAN: 'A',
-      CHARLIE: 'C',
-      LINDA: 'L'
-    }
-  };
-  static get SHEET() { return { NAME: 'Bank accounts' } };
+      BRIAN: "A",
+      CHARLIE: "C",
+      LINDA: "L",
+    };
+  }
+  static get SHEET() {
+    return { NAME: "Bank accounts" };
+  }
 
   constructor() {
     this.sheet = new Sheet(BankAccounts.SHEET.NAME);
@@ -252,10 +287,14 @@ class BankAccounts {
 
     const filter = sheet.getDataRange().createFilter();
 
-    filters.forEach(item => {
-      const criteria = item.hideValues === null
-        ? activeSpreadsheet.newFilterCriteria().whenCellEmpty().build()
-        : activeSpreadsheet.newFilterCriteria().setHiddenValues(item.hideValues).build();
+    filters.forEach((item) => {
+      const criteria =
+        item.hideValues === null
+          ? activeSpreadsheet.newFilterCriteria().whenCellEmpty().build()
+          : activeSpreadsheet
+              .newFilterCriteria()
+              .setHiddenValues(item.hideValues)
+              .build();
 
       filter.setColumnFilterCriteria(item.column, criteria);
     });
@@ -281,7 +320,7 @@ class BankAccounts {
     const sheet = this.sheet;
     const ranges = sheet.getRangeList(columnsToHide);
 
-    ranges.getRanges().forEach(range => sheet.hideColumn(range));
+    ranges.getRanges().forEach((range) => sheet.hideColumn(range));
   }
 
   removeFilter() {
@@ -303,7 +342,8 @@ class BankAccounts {
 
   showDaily() {
     this.showAll();
-    const colCheckBalanceFrequency = BankAccounts.COLUMNS.CHECK_BALANCE_FREQUENCY;
+    const colCheckBalanceFrequency =
+      BankAccounts.COLUMNS.CHECK_BALANCE_FREQUENCY;
     const colOwnerCode = BankAccounts.COLUMNS.OWNER_CODE;
     const hideOwnerCodes = [
       BankAccounts.OWNER_CODES.BRIAN,
@@ -312,43 +352,49 @@ class BankAccounts {
     ];
     const filters = [
       { column: colOwnerCode, hideValues: hideOwnerCodes },
-      { column: colCheckBalanceFrequency, hideValues: ["Monthly", "Never"] }
+      { column: colCheckBalanceFrequency, hideValues: ["Monthly", "Never"] },
     ];
 
     this.applyFilters(filters);
 
-    const columnsToHide = ['C:L', 'N:O', 'Q:Q', 'S:AN', 'AQ:AQ'];
+    const columnsToHide = ["C:L", "N:O", "Q:Q", "S:AN", "AQ:AQ"];
     this.hideColumns(columnsToHide);
   }
 
   showMonthly() {
     this.showAll();
     const filters = [
-      { column: 3, hideValues: ["C", "L"] },  // Filter by Owner Code (Column C)
-      { column: 12, hideValues: ["Daily", "Never"] }  // Filter by Check Balance Frequency (Column L)
+      { column: 3, hideValues: ["C", "L"] }, // Filter by Owner Code (Column C)
+      { column: 12, hideValues: ["Daily", "Never"] }, // Filter by Check Balance Frequency (Column L)
     ];
 
     this.applyFilters(filters);
 
-    const columnsToHide = ['C:L', 'N:O', 'Q:Q', 'S:U', 'W:AJ'];
+    const columnsToHide = ["C:L", "N:O", "Q:Q", "S:U", "W:AJ"];
     this.hideColumns(columnsToHide);
   }
 
   showOpenAccounts() {
     this.showAll();
     const filters = [
-      { column: 3, hideValues: ["C", "L"] },  // Filter by Owner Code (Column C)
-      { column: 11, hideValues: null }  // Filter by Date Closed (Column K)
+      { column: 3, hideValues: ["C", "L"] }, // Filter by Owner Code (Column C)
+      { column: 11, hideValues: null }, // Filter by Date Closed (Column K)
     ];
 
     this.applyFilters(filters);
   }
 
   updateLastUpdatedByKey(key) {
-    const row = findRowByKey(BankAccounts.SHEET.NAME, BankAccounts.COLUMNS.KEY_LABEL, key);
+    const row = findRowByKey(
+      BankAccounts.SHEET.NAME,
+      BankAccounts.COLUMNS.KEY_LABEL,
+      key
+    );
 
-
-    const lastUpdateCell = this.sheet.getRange(row, BankAccounts.COLUMNS.BALANCE_UPDATED);
+    const lastUpdateCell = this.sheet.getRange(
+      row,
+      BankAccounts.COLUMNS.BALANCE_UPDATED
+    );
     lastUpdateCell.setValue(new Date());
   }
 
@@ -361,17 +407,23 @@ class BankAccounts {
 }
 
 class BankDebitsDue {
-  static get COL_ACCOUNT_KEY() { return 0; }
-  static get COL_CHANGE_AMOUNT() { return 1; }
+  static get COL_ACCOUNT_KEY() {
+    return 0;
+  }
+  static get COL_CHANGE_AMOUNT() {
+    return 1;
+  }
 
-  constructor(ourFinances) {
+  constructor(spreadsheet: Spreadsheet) {
     this.spreadsheet = ourFinances.spreadsheet;
-    this.sheet = this.spreadsheet.getSheetByName('Bank debits due');
+    this.sheet = this.spreadsheet.getSheetByName("Bank debits due");
     this.howManyDaysAhead = ourFinances.howManyDaysAhead;
 
     // Check if the sheet exists
     if (!this.sheet) {
-      throw new Error(`Sheet "${this.getSheetName()}" not found in the spreadsheet.`);
+      throw new Error(
+        `Sheet "${this.getSheetName()}" not found in the spreadsheet.`
+      );
     }
   }
 
@@ -380,13 +432,13 @@ class BankDebitsDue {
   }
 
   getUpcomingDebits() {
-    let upcomingPayments = `Due in the next ${this.howManyDaysAhead} days:`
+    let upcomingPayments = `Due in the next ${this.howManyDaysAhead} days:`;
 
-    const scheduledTransactions = this.getScheduledTransactions()
+    const scheduledTransactions = this.getScheduledTransactions();
 
     // Filter and format valid upcoming debits
-    scheduledTransactions.forEach(transaction => {
-      const accountKey = transaction[BankDebitsDue.COL_ACCOUNT_KEY]?.trim();  // Optional chaining and trim
+    scheduledTransactions.forEach((transaction) => {
+      const accountKey = transaction[BankDebitsDue.COL_ACCOUNT_KEY]?.trim(); // Optional chaining and trim
       const changeAmount = transaction[BankDebitsDue.COL_CHANGE_AMOUNT];
 
       if (accountKey && Math.abs(changeAmount) > 1) {
@@ -394,7 +446,7 @@ class BankDebitsDue {
       }
     });
 
-    return upcomingPayments
+    return upcomingPayments;
   }
 }
 
@@ -405,18 +457,20 @@ class BudgetAnnualTransactions {
       DESCRIPTION: 1,
       CHANGE_AMOUNT: 3,
       FROM_ACCOUNT: 4,
-      PAYMENT_TYPE: 5
-    }
-  };
+      PAYMENT_TYPE: 5,
+    };
+  }
   static get SHEET() {
     return {
-      NAME: 'Budget annual transactions'
-    }
+      NAME: "Budget annual transactions",
+    };
   }
 
-  constructor(ourFinances) {
+  constructor(spreadsheet: Spreadsheet) {
     this.spreadsheet = ourFinances.spreadsheet;
-    this.sheet = this.spreadsheet.getSheetByName(BudgetAnnualTransactions.SHEET.NAME);
+    this.sheet = this.spreadsheet.getSheetByName(
+      BudgetAnnualTransactions.SHEET.NAME
+    );
     this.howManyDaysAhead = ourFinances.howManyDaysAhead;
 
     if (!this.sheet) {
@@ -433,7 +487,7 @@ class BudgetAnnualTransactions {
   getUpcomingDebits() {
     const howManyDaysAhead = this.howManyDaysAhead;
     const today = getNewDate();
-    let upcomingPayments = '';
+    let upcomingPayments = "";
 
     // Fetch scheduled transactions and remove the header row
     const scheduledTransactions = this.getScheduledTransactions();
@@ -442,20 +496,32 @@ class BudgetAnnualTransactions {
     if (!scheduledTransactions.length) return upcomingPayments;
 
     // Iterate over each transaction and filter the valid ones
-    scheduledTransactions.forEach(transaction => {
+    scheduledTransactions.forEach((transaction) => {
       const {
         [BudgetAnnualTransactions.COLUMNS.DATE]: date,
         [BudgetAnnualTransactions.COLUMNS.CHANGE_AMOUNT]: changeAmount,
         [BudgetAnnualTransactions.COLUMNS.DESCRIPTION]: description,
         [BudgetAnnualTransactions.COLUMNS.FROM_ACCOUNT]: fromAccount,
-        [BudgetAnnualTransactions.COLUMNS.PAYMENT_TYPE]: paymentType
+        [BudgetAnnualTransactions.COLUMNS.PAYMENT_TYPE]: paymentType,
       } = transaction;
 
       if (Math.abs(changeAmount) > 1) {
-        const formattedDaySelected = getFormattedDate(new Date(date), "GMT+1", "dd/MM/yyyy");
+        const formattedDaySelected = getFormattedDate(
+          new Date(date),
+          "GMT+1",
+          "dd/MM/yyyy"
+        );
 
         // Generate payment details if the date falls within the upcoming days
-        const paymentDetails = this._generatePaymentDetails(formattedDaySelected, changeAmount, fromAccount, paymentType, description, today, howManyDaysAhead);
+        const paymentDetails = this._generatePaymentDetails(
+          formattedDaySelected,
+          changeAmount,
+          fromAccount,
+          paymentType,
+          description,
+          today,
+          howManyDaysAhead
+        );
         if (paymentDetails) {
           upcomingPayments += paymentDetails;
         }
@@ -463,20 +529,30 @@ class BudgetAnnualTransactions {
     });
 
     if (upcomingPayments.length) {
-      upcomingPayments = '\nAnnual payment(s) due:\n' + upcomingPayments;
+      upcomingPayments = "\nAnnual payment(s) due:\n" + upcomingPayments;
     }
 
     return upcomingPayments;
   }
 
   // Helper method to generate payment details
-  _generatePaymentDetails(formattedDaySelected, changeAmount, fromAccount, paymentType, description, today, howManyDaysAhead) {
+  _generatePaymentDetails(
+    formattedDaySelected,
+    changeAmount,
+    fromAccount,
+    paymentType,
+    description,
+    today,
+    howManyDaysAhead
+  ) {
     const { first, iterator: days } = setupDaysIterator(today);
     let day = first;
 
     for (let index = 0; index <= howManyDaysAhead; index++) {
       if (formattedDaySelected === day.day) {
-        return `\t${getOrdinalDate(day.date)} ${getAmountAsGBP(changeAmount)} from ${fromAccount} by ${paymentType} ${description}\n`;
+        return `\t${getOrdinalDate(day.date)} ${getAmountAsGBP(
+          changeAmount
+        )} from ${fromAccount} by ${paymentType} ${description}\n`;
       }
       day = days.next();
     }
@@ -486,15 +562,25 @@ class BudgetAnnualTransactions {
 }
 
 class BudgetMonthlyTransactions {
-  static get COL_DATE() { return 0; }
-  static get COL_DEBIT_AMOUNT() { return 3; }
-  static get COL_DESCRIPTION() { return 1; }
-  static get COL_FROM_ACCOUNT() { return 6; }
-  static get COL_PAYMENT_TYPE() { return 9; }
+  static get COL_DATE() {
+    return 0;
+  }
+  static get COL_DEBIT_AMOUNT() {
+    return 3;
+  }
+  static get COL_DESCRIPTION() {
+    return 1;
+  }
+  static get COL_FROM_ACCOUNT() {
+    return 6;
+  }
+  static get COL_PAYMENT_TYPE() {
+    return 9;
+  }
 
-  constructor(ourFinances) {
-    this.spreadsheet = ourFinances.spreadsheet
-    this.sheet = this.spreadsheet.getSheetByName('Budget monthly transactions')
+  constructor(spreadsheet: Spreadsheet) {
+    this.spreadsheet = ourFinances.spreadsheet;
+    this.sheet = this.spreadsheet.getSheetByName("Budget monthly transactions");
     this.howManyDaysAhead = ourFinances.howManyDaysAhead;
 
     if (!this.sheet) {
@@ -503,19 +589,19 @@ class BudgetMonthlyTransactions {
   }
 
   getScheduledTransactions() {
-    return this.sheet.getDataRange().getValues()
+    return this.sheet.getDataRange().getValues();
   }
 
   getUpcomingDebits() {
-    const howManyDaysAhead = this.howManyDaysAhead
+    const howManyDaysAhead = this.howManyDaysAhead;
 
-    let upcomingPayments = ''
-    const today = getNewDate()
+    let upcomingPayments = "";
+    const today = getNewDate();
 
-    const scheduledTransactions = this.getScheduledTransactions()
+    const scheduledTransactions = this.getScheduledTransactions();
 
     // Remove the header row
-    scheduledTransactions.shift()
+    scheduledTransactions.shift();
 
     if (scheduledTransactions.length > 0) {
       upcomingPayments += `\nMonthly payment due:\n`;
@@ -528,36 +614,56 @@ class BudgetMonthlyTransactions {
         day = days.next();
       }
 
-      scheduledTransactions.forEach(transaction => {
-        if (Math.abs(transaction[BudgetMonthlyTransactions.COL_DEBIT_AMOUNT]) > 1) {
-          const transactionDate = new Date(transaction[BudgetMonthlyTransactions.COL_DATE]);
+      scheduledTransactions.forEach((transaction) => {
+        if (
+          Math.abs(transaction[BudgetMonthlyTransactions.COL_DEBIT_AMOUNT]) > 1
+        ) {
+          const transactionDate = new Date(
+            transaction[BudgetMonthlyTransactions.COL_DATE]
+          );
 
-          upcomingDays.forEach(day => {
+          upcomingDays.forEach((day) => {
             if (transactionDate.toDateString() === day.date.toDateString()) {
               upcomingPayments += `\t${getOrdinalDate(day.date)} `;
-              upcomingPayments += `${getAmountAsGBP(transaction[BudgetMonthlyTransactions.COL_DEBIT_AMOUNT])} from `;
-              upcomingPayments += `${transaction[BudgetMonthlyTransactions.COL_FROM_ACCOUNT]} by ${transaction[BudgetMonthlyTransactions.COL_PAYMENT_TYPE]} `;
-              upcomingPayments += `${transaction[BudgetMonthlyTransactions.COL_DESCRIPTION]}\n`;
+              upcomingPayments += `${getAmountAsGBP(
+                transaction[BudgetMonthlyTransactions.COL_DEBIT_AMOUNT]
+              )} from `;
+              upcomingPayments += `${
+                transaction[BudgetMonthlyTransactions.COL_FROM_ACCOUNT]
+              } by ${transaction[BudgetMonthlyTransactions.COL_PAYMENT_TYPE]} `;
+              upcomingPayments += `${
+                transaction[BudgetMonthlyTransactions.COL_DESCRIPTION]
+              }\n`;
             }
           });
         }
       });
     }
 
-    return upcomingPayments
+    return upcomingPayments;
   }
 }
 
 class BudgetAdhocTransactions {
-  static get COL_CHANGE_AMOUNT() { return 3; }
-  static get COL_DATE() { return 0; }
-  static get COL_DESCRIPTION() { return 1; }
-  static get COL_FROM_ACCOUNT() { return 6; }
-  static get COL_PAYMENT_TYPE() { return 7; }
+  static get COL_CHANGE_AMOUNT() {
+    return 3;
+  }
+  static get COL_DATE() {
+    return 0;
+  }
+  static get COL_DESCRIPTION() {
+    return 1;
+  }
+  static get COL_FROM_ACCOUNT() {
+    return 6;
+  }
+  static get COL_PAYMENT_TYPE() {
+    return 7;
+  }
 
-  constructor(ourFinances) {
+  constructor(spreadsheet: Spreadsheet) {
     this.spreadsheet = ourFinances.spreadsheet;
-    this.sheet = this.spreadsheet.getSheetByName('Budget ad hoc transactions');
+    this.sheet = this.spreadsheet.getSheetByName("Budget ad hoc transactions");
     this.howManyDaysAhead = ourFinances.howManyDaysAhead;
 
     if (!this.sheet) {
@@ -572,7 +678,7 @@ class BudgetAdhocTransactions {
 
   // Main method to get upcoming debits
   getUpcomingDebits() {
-    let upcomingPayments = '';
+    let upcomingPayments = "";
 
     // Fetch scheduled transactions and remove the header row
     const scheduledTransactions = this.getScheduledTransactions();
@@ -580,18 +686,27 @@ class BudgetAdhocTransactions {
 
     if (!scheduledTransactions.length) return upcomingPayments;
 
-    upcomingPayments += '\nAd hoc payment(s) due:\n';
+    upcomingPayments += "\nAd hoc payment(s) due:\n";
 
     // Iterate over transactions and filter valid ones
-    scheduledTransactions.forEach(transaction => {
-      const changeAmount = transaction[BudgetAdhocTransactions.COL_CHANGE_AMOUNT];
+    scheduledTransactions.forEach((transaction) => {
+      const changeAmount =
+        transaction[BudgetAdhocTransactions.COL_CHANGE_AMOUNT];
       const transactionDate = transaction[BudgetAdhocTransactions.COL_DATE];
 
       if (Math.abs(changeAmount) > 1) {
-        const formattedDaySelected = getFormattedDate(new Date(transactionDate), "GMT+1", "dd/MM/yyyy");
+        const formattedDaySelected = getFormattedDate(
+          new Date(transactionDate),
+          "GMT+1",
+          "dd/MM/yyyy"
+        );
 
         // Use a helper function for better readability
-        const upcomingPayment = this._getPaymentDetails(formattedDaySelected, changeAmount, transaction);
+        const upcomingPayment = this._getPaymentDetails(
+          formattedDaySelected,
+          changeAmount,
+          transaction
+        );
         if (upcomingPayment) {
           upcomingPayments += upcomingPayment;
         }
@@ -609,7 +724,11 @@ class BudgetAdhocTransactions {
     for (let index = 0; index <= this.howManyDaysAhead; index++) {
       if (formattedDaySelected === day.day) {
         // Generate payment detail string
-        return `\t${getOrdinalDate(day.date)} ${getAmountAsGBP(changeAmount)} from ${transaction[BudgetAdhocTransactions.COL_FROM_ACCOUNT]} by ${transaction[BudgetAdhocTransactions.COL_PAYMENT_TYPE]} ${transaction[BudgetAdhocTransactions.COL_DESCRIPTION]}\n`;
+        return `\t${getOrdinalDate(day.date)} ${getAmountAsGBP(
+          changeAmount
+        )} from ${transaction[BudgetAdhocTransactions.COL_FROM_ACCOUNT]} by ${
+          transaction[BudgetAdhocTransactions.COL_PAYMENT_TYPE]
+        } ${transaction[BudgetAdhocTransactions.COL_DESCRIPTION]}\n`;
       }
       day = days.next();
     }
@@ -619,26 +738,36 @@ class BudgetAdhocTransactions {
 }
 
 class BudgetWeeklyTransactions {
-  static get COL_DATE() { return 0; }
-  static get COL_DEBIT_AMOUNT() { return 3; }
-  static get COL_DESCRIPTION() { return 1; }
-  static get COL_FROM_ACCOUNT() { return 6; }
-  static get COL_PAYMENT_TYPE() { return 15; }
+  static get COL_DATE() {
+    return 0;
+  }
+  static get COL_DEBIT_AMOUNT() {
+    return 3;
+  }
+  static get COL_DESCRIPTION() {
+    return 1;
+  }
+  static get COL_FROM_ACCOUNT() {
+    return 6;
+  }
+  static get COL_PAYMENT_TYPE() {
+    return 15;
+  }
 
-  constructor(ourFinances) {
-    this.spreadsheet = ourFinances.spreadsheet
-    this.sheet = this.spreadsheet.getSheetByName('Budget weekly transactions')
-    this.howManyDaysAhead = ourFinances.howManyDaysAhead
+  constructor(spreadsheet: Spreadsheet) {
+    this.spreadsheet = ourFinances.spreadsheet;
+    this.sheet = this.spreadsheet.getSheetByName("Budget weekly transactions");
+    this.howManyDaysAhead = ourFinances.howManyDaysAhead;
   }
 
   getScheduledTransactions() {
-    return this.sheet.getDataRange().getValues()
+    return this.sheet.getDataRange().getValues();
   }
 
   getUpcomingDebits() {
-    const howManyDaysAhead = this.howManyDaysAhead
+    const howManyDaysAhead = this.howManyDaysAhead;
 
-    let upcomingPayments = ''
+    let upcomingPayments = "";
     const today = getNewDate();
 
     const scheduledTransactions = this.getScheduledTransactions();
@@ -646,37 +775,50 @@ class BudgetWeeklyTransactions {
     // Lose the header row
     scheduledTransactions.shift();
 
-    scheduledTransactions.forEach(transaction => {
-      if (Math.abs(transaction[BudgetWeeklyTransactions.COL_DEBIT_AMOUNT]) > 1) {
+    scheduledTransactions.forEach((transaction) => {
+      if (
+        Math.abs(transaction[BudgetWeeklyTransactions.COL_DEBIT_AMOUNT]) > 1
+      ) {
         const daySelected = transaction[BudgetWeeklyTransactions.COL_DATE];
 
-        const formattedDaySelected = getFormattedDate(new Date(daySelected), "GMT+1", "dd/MM/yyyy")
-
+        const formattedDaySelected = getFormattedDate(
+          new Date(daySelected),
+          "GMT+1",
+          "dd/MM/yyyy"
+        );
 
         // Reset the day iterator
-        const { first, iterator: days } = setupDaysIterator(today)
-        let day = first
+        const { first, iterator: days } = setupDaysIterator(today);
+        let day = first;
         for (let index = 0; index <= howManyDaysAhead; index++) {
           const dayDay = day.day;
 
           if (formattedDaySelected === dayDay) {
-            upcomingPayments += `\t${getOrdinalDate(day.date)}`
-            upcomingPayments += ` ${getAmountAsGBP(transaction[BudgetWeeklyTransactions.COL_DEBIT_AMOUNT])}`
-            upcomingPayments += ` from`
-            upcomingPayments += ` ${transaction[BudgetWeeklyTransactions.COL_FROM_ACCOUNT]}`
-            upcomingPayments += ` by ${transaction[BudgetWeeklyTransactions.COL_PAYMENT_TYPE]}`
-            upcomingPayments += ` ${transaction[BudgetWeeklyTransactions.COL_DESCRIPTION]}\n`
+            upcomingPayments += `\t${getOrdinalDate(day.date)}`;
+            upcomingPayments += ` ${getAmountAsGBP(
+              transaction[BudgetWeeklyTransactions.COL_DEBIT_AMOUNT]
+            )}`;
+            upcomingPayments += ` from`;
+            upcomingPayments += ` ${
+              transaction[BudgetWeeklyTransactions.COL_FROM_ACCOUNT]
+            }`;
+            upcomingPayments += ` by ${
+              transaction[BudgetWeeklyTransactions.COL_PAYMENT_TYPE]
+            }`;
+            upcomingPayments += ` ${
+              transaction[BudgetWeeklyTransactions.COL_DESCRIPTION]
+            }\n`;
           }
-          day = days.next()
+          day = days.next();
         }
       }
-    })
+    });
 
     if (upcomingPayments.length) {
       upcomingPayments = `\nWeekly payment due:\n${upcomingPayments}`;
     }
 
-    return upcomingPayments
+    return upcomingPayments;
   }
 }
 
@@ -689,18 +831,18 @@ class CheckFixedAmounts {
       FIXED_AMOUNT: 2,
       DYNAMIC_AMOUNT: 3,
       TOLERANCE: 4,
-      MISMATCH: 5
+      MISMATCH: 5,
     };
-  };
+  }
 
   // Sheet configuration using static getters
   static get SHEET() {
     return {
-      NAME: 'Check fixed amounts',
-      MIN_COLUMNS: 6,  // Minimum expected columns
-      HEADER_ROW: 1    // Number of header rows to skip
+      NAME: "Check fixed amounts",
+      MIN_COLUMNS: 6, // Minimum expected columns
+      HEADER_ROW: 1, // Number of header rows to skip
     };
-  };
+  }
 
   /**
    * Creates an instance of CheckFixedAmounts.
@@ -716,16 +858,16 @@ class CheckFixedAmounts {
   }
 
   /**
-     * Creates a mismatch message for a row
-     * @private
-     * @param {Array<any>} row - The row data
-     * @return {string} Formatted mismatch message
-     */
+   * Creates a mismatch message for a row
+   * @private
+   * @param {Array<any>} row - The row data
+   * @return {string} Formatted mismatch message
+   */
   createMismatchMessage(row) {
     const columns = CheckFixedAmounts.COLUMNS;
 
     return Utilities.formatString(
-      '%s %s: Dynamic amount (%s) does not match fixed amount (%s)',
+      "%s %s: Dynamic amount (%s) does not match fixed amount (%s)",
       row[columns.TAX_YEAR],
       row[columns.CATEGORY],
       getAmountAsGBP(row[columns.DYNAMIC_AMOUNT]),
@@ -738,18 +880,18 @@ class CheckFixedAmounts {
   }
 
   /**
-     * Retrieves values from the sheet with caching
-     * @private
-     * @return {Array<Array<any>>} Sheet values
-     * @throws {Error} If unable to get sheet values
-     */
+   * Retrieves values from the sheet with caching
+   * @private
+   * @return {Array<Array<any>>} Sheet values
+   * @throws {Error} If unable to get sheet values
+   */
   getValues() {
     try {
       // Cache the values if not already cached
       if (!this.cachedValues) {
         const range = this.sheet.getDataRange();
         if (!range) {
-          throw new Error('Could not get data range from sheet');
+          throw new Error("Could not get data range from sheet");
         }
         this.cachedValues = range.getValues();
       }
@@ -772,42 +914,41 @@ class CheckFixedAmounts {
       if (!this.isValidRow(row)) {
         mismatches.push({
           rowNumber: i + 1,
-          message: `CheckFixedAmounts: Skipping invalid row`
+          message: `CheckFixedAmounts: Skipping invalid row`,
         });
         continue;
       }
 
-      if (row[CheckFixedAmounts.COLUMNS.MISMATCH] === 'Mismatch') {
+      if (row[CheckFixedAmounts.COLUMNS.MISMATCH] === "Mismatch") {
         mismatches.push({
           rowNumber: i + 1,
-          message: this.createMismatchMessage(row)
+          message: this.createMismatchMessage(row),
         });
       }
-    };
+    }
     if (mismatches.length > 0) {
-      mismatchMessages = mismatches
-        .map(function (m) {
-          return 'Row ' + m.rowNumber + ': ' + m.message;
-        })
+      mismatchMessages = mismatches.map(function (m) {
+        return "Row " + m.rowNumber + ": " + m.message;
+      });
     }
     return mismatchMessages;
   }
 
   /**
-     * Validates a single row of data
-     * @private
-     * @param {Array<any>} row - The row to validate
-     * @return {boolean} Whether the row is valid
-     */
+   * Validates a single row of data
+   * @private
+   * @param {Array<any>} row - The row to validate
+   * @return {boolean} Whether the row is valid
+   */
   isValidRow(row) {
     const columns = CheckFixedAmounts.COLUMNS;
 
     return Boolean(
       row &&
-      row.length >= CheckFixedAmounts.SHEET.MIN_COLUMNS &&
-      row[columns.CATEGORY] &&
-      !isNaN(Number(row[columns.DYNAMIC_AMOUNT])) &&
-      !isNaN(Number(row[columns.FIXED_AMOUNT]))
+        row.length >= CheckFixedAmounts.SHEET.MIN_COLUMNS &&
+        row[columns.CATEGORY] &&
+        !isNaN(Number(row[columns.DYNAMIC_AMOUNT])) &&
+        !isNaN(Number(row[columns.FIXED_AMOUNT]))
     );
   }
 
@@ -819,25 +960,32 @@ class CheckFixedAmounts {
   validateSheetStructure() {
     const values = this.getValues();
 
-    if (!values || !Array.isArray(values) || values.length <= CheckFixedAmounts.SHEET.HEADER_ROW) {
-      throw new Error('Sheet is empty or contains insufficient data');
+    if (
+      !values ||
+      !Array.isArray(values) ||
+      values.length <= CheckFixedAmounts.SHEET.HEADER_ROW
+    ) {
+      throw new Error("Sheet is empty or contains insufficient data");
     }
 
     if (values[0].length < CheckFixedAmounts.SHEET.MIN_COLUMNS) {
-      throw new Error(`Sheet must have at least ${CheckFixedAmounts.SHEET.MIN_COLUMNS} columns`);
+      throw new Error(
+        `Sheet must have at least ${CheckFixedAmounts.SHEET.MIN_COLUMNS} columns`
+      );
     }
   }
 }
 
 class Dependencies {
-  static get SHEET_NAME() { return 'Dependencies'; }
+  static get SHEET_NAME() {
+    return "Dependencies";
+  }
   constructor() {
     this.sheet = new Sheet(Dependencies.SHEET_NAME);
   }
 
   getAllDependencies() {
-
-    if (typeof this.allDependencies !== 'undefined') {
+    if (typeof this.allDependencies !== "undefined") {
       return this.allDependencies;
     }
 
@@ -862,7 +1010,7 @@ class Dependencies {
       const spreadsheet = new Spreadsheet(spreadsheetId);
       return spreadsheet.spreadsheetName;
     } catch (error) {
-      return null;  // or handle it accordingly
+      return null; // or handle it accordingly
     }
   }
 
@@ -871,8 +1019,8 @@ class Dependencies {
   }
 
   /**
- * Updates the spreadsheet names for all dependencies in the specified column.
- */
+   * Updates the spreadsheet names for all dependencies in the specified column.
+   */
   updateAllDependencies() {
     const allDependencies = this.getAllDependencies();
     const col = "B";
@@ -891,7 +1039,9 @@ class Dependencies {
 }
 
 class DescriptionReplacements {
-  static get SHEET_NAME() { return 'Description replacements'; }
+  static get SHEET_NAME() {
+    return "Description replacements";
+  }
 
   constructor() {
     this.sheet = new Sheet(DescriptionReplacements.SHEET_NAME);
@@ -900,18 +1050,29 @@ class DescriptionReplacements {
   applyReplacements(accountSheet) {
     const accountSheetName = accountSheet.sheetName;
     if (accountSheetName === this.getSheetName()) {
-      throw new Error(`Cannot applyDescriptionReplacements to '${accountSheetName}'`);
+      throw new Error(
+        `Cannot applyDescriptionReplacements to '${accountSheetName}'`
+      );
     }
 
-    const headerValue = accountSheet.getRange(1, AccountSheet.COLUMNS.DESCRIPTION).getValue();
+    const headerValue = accountSheet
+      .getRange(1, AccountSheet.COLUMNS.DESCRIPTION)
+      .getValue();
     if (!headerValue.startsWith("Description")) {
-      throw new Error(`Unexpected description header '${headerValue}' in sheet: ${accountSheetName}`);
+      throw new Error(
+        `Unexpected description header '${headerValue}' in sheet: ${accountSheetName}`
+      );
     }
 
     const lastRow = accountSheet.getLastRow();
     const numRows = lastRow + 1 - AccountSheet.ROW_DATA_STARTS;
 
-    const range = accountSheet.getRange(AccountSheet.ROW_DATA_STARTS, AccountSheet.COLUMNS.DESCRIPTION, numRows, 1);
+    const range = accountSheet.getRange(
+      AccountSheet.ROW_DATA_STARTS,
+      AccountSheet.COLUMNS.DESCRIPTION,
+      numRows,
+      1
+    );
     const values = range.getValues();
 
     let numReplacements = 0;
@@ -934,11 +1095,10 @@ class DescriptionReplacements {
   getReplacementsMap() {
     const replacements = this.sheet.getDataRange().getValues().slice(1);
 
-    return replacements
-      .reduce((map, [description, replacement]) => {
-        map[description] = replacement;
-        return map;
-      }, {});
+    return replacements.reduce((map, [description, replacement]) => {
+      map[description] = replacement;
+      return map;
+    }, {});
   }
 
   getSheetName() {
@@ -963,7 +1123,7 @@ class HMRC_S {
   // Sheet configuration using static getters
   static get SHEET() {
     return {
-      NAME: 'HMRC S',
+      NAME: "HMRC S",
       HEADER_ROW: 1, // Number of header rows to skip
     };
   }
@@ -981,18 +1141,25 @@ class HMRC_S {
       // Check if the edit occurred in the "CATEGORY" column
       if (column === HMRC_S.COLUMNS.CATEGORY + 1) {
         const sheet = trigger.getSheet();
-        const startColLetter = this.columnNumberToLetter(HMRC_S.COLUMNS.LATEST_TAX_YEAR + 1);
+        const startColLetter = this.columnNumberToLetter(
+          HMRC_S.COLUMNS.LATEST_TAX_YEAR + 1
+        );
         const lastColLetter = this.columnNumberToLetter(sheet.getLastColumn());
 
         // Construct QUERY formulas
-        const queries = this.buildQueries(value, startColLetter, lastColLetter, row);
+        const queries = this.buildQueries(
+          value,
+          startColLetter,
+          lastColLetter,
+          row
+        );
 
         // Set the formulas in the target range
         const targetRange = `${startColLetter}${row}:${lastColLetter}${row}`;
         sheet.getRange(targetRange).setValues([queries]);
       }
     } catch (error) {
-      console.error('Error handling handleEdit:', error);
+      console.error("Error handling handleEdit:", error);
     }
   }
 
@@ -1011,7 +1178,7 @@ class HMRC_S {
 
   // Convert column number to letter (e.g., 1 -> A)
   columnNumberToLetter(colNum) {
-    let letter = '';
+    let letter = "";
     while (colNum > 0) {
       const mod = (colNum - 1) % 26;
       letter = String.fromCharCode(65 + mod) + letter;
@@ -1023,18 +1190,18 @@ class HMRC_S {
   // Calculate the next column letter (e.g., A -> B)
   nextColumnLetter(col) {
     let carry = 1;
-    let result = '';
+    let result = "";
     for (let i = col.length - 1; i >= 0; i--) {
       const code = col.charCodeAt(i) + carry;
       if (code > 90) {
-        result = 'A' + result;
+        result = "A" + result;
         carry = 1;
       } else {
         result = String.fromCharCode(code) + result;
         carry = 0;
       }
     }
-    return carry ? 'A' + result : result;
+    return carry ? "A" + result : result;
   }
 }
 
@@ -1054,67 +1221,67 @@ class OurFinances {
       this.budgetAdhocTransactions.getUpcomingDebits(),
       this.budgetAnnualTransactions.getUpcomingDebits(),
       this.budgetMonthlyTransactions.getUpcomingDebits(),
-      this.budgetWeeklyTransactions.getUpcomingDebits()
+      this.budgetWeeklyTransactions.getUpcomingDebits(),
     ];
   }
 
   get budgetAnnualTransactions() {
-    if (typeof this._budgetAnnualTransactions === 'undefined') {
-      this._budgetAnnualTransactions = new BudgetAnnualTransactions(this)
+    if (typeof this._budgetAnnualTransactions === "undefined") {
+      this._budgetAnnualTransactions = new BudgetAnnualTransactions(this);
     }
-    return this._budgetAnnualTransactions
+    return this._budgetAnnualTransactions;
   }
 
   get budgetAdhocTransactions() {
-    if (typeof this._budgetAdhocTransactions === 'undefined') {
-      this._budgetAdhocTransactions = new BudgetAdhocTransactions(this)
+    if (typeof this._budgetAdhocTransactions === "undefined") {
+      this._budgetAdhocTransactions = new BudgetAdhocTransactions(this);
     }
-    return this._budgetAdhocTransactions
+    return this._budgetAdhocTransactions;
   }
 
   get bankAccounts() {
-    if (typeof this._bankAccounts === 'undefined') {
-      this._bankAccounts = new BankAccounts(this)
+    if (typeof this._bankAccounts === "undefined") {
+      this._bankAccounts = new BankAccounts(this);
     }
-    return this._bankAccounts
+    return this._bankAccounts;
   }
 
   get bankDebitsDue() {
-    if (typeof this._bankDebitsDue === 'undefined') {
-      this._bankDebitsDue = new BankDebitsDue(this)
+    if (typeof this._bankDebitsDue === "undefined") {
+      this._bankDebitsDue = new BankDebitsDue(this);
     }
-    return this._bankDebitsDue
+    return this._bankDebitsDue;
   }
 
   get checkFixedAmounts() {
-    if (typeof this._checkFixedAmounts === 'undefined') {
-      this._checkFixedAmounts = new CheckFixedAmounts(this)
+    if (typeof this._checkFixedAmounts === "undefined") {
+      this._checkFixedAmounts = new CheckFixedAmounts(this);
     }
     return this._checkFixedAmounts;
   }
 
   get howManyDaysAhead() {
-    if (typeof this._howManyDaysAhead === 'undefined') {
-      const sheetName = 'Bank debits due';
+    if (typeof this._howManyDaysAhead === "undefined") {
+      const sheetName = "Bank debits due";
       const sheet = this.getSheetByName(sheetName);
-      const searchValue = 'Look ahead';
-      this._howManyDaysAhead = xLookup(searchValue, sheet, 'F', 'G');
+      const searchValue = "Look ahead";
+      this._howManyDaysAhead = xLookup(searchValue, sheet, "F", "G");
     }
     return this._howManyDaysAhead;
   }
 
   get budgetMonthlyTransactions() {
-    if (typeof this._budgetMonthlyTransactions === 'undefined') {
+    if (typeof this._budgetMonthlyTransactions === "undefined") {
       this._budgetMonthlyTransactions = new BudgetMonthlyTransactions(this);
     }
-    return this._budgetMonthlyTransactions
+    return this._budgetMonthlyTransactions;
   }
 
   get budgetWeeklyTransactions() {
-    if (typeof this._budgetWeeklyTransactions === 'undefined') {
-      this._budgetWeeklyTransactions = new BudgetWeeklyTransactions(this)
+    if (typeof this._budgetWeeklyTransactions === "undefined") {
+      this._budgetWeeklyTransactions = new BudgetWeeklyTransactions(this);
     }
-    return this._budgetWeeklyTransactions
+    return this._budgetWeeklyTransactions;
   }
 
   getName() {
@@ -1122,30 +1289,29 @@ class OurFinances {
   }
 
   getSheetByName(sheetName) {
-    return this.spreadsheet.getSheetByName(sheetName)
+    return this.spreadsheet.getSheetByName(sheetName);
   }
 
   showAllAccounts() {
-    this.bankAccounts.showAll()
+    this.bankAccounts.showAll();
   }
 }
 
 class Sheet {
   constructor(x = null) {
-    
     const xType = getType(x);
 
-    if (xType === 'string') {
+    if (xType === "string") {
       const sheetName = x;
-      
+
       this.sheet = activeSpreadsheet.getSheetByName(sheetName);
       if (!this.sheet) {
         throw new Error(`Sheet with name "${sheetName}" not found`);
       }
       return;
     }
-    
-    if (xType === 'Object') {
+
+    if (xType === "Object") {
       const gasSheet = x;
       this.sheet = gasSheet;
       return;
@@ -1205,14 +1371,14 @@ class Sheet {
   }
 
   deleteExcessRows() {
-    const frozenRows = this.sheet.getFrozenRows()
+    const frozenRows = this.sheet.getFrozenRows();
     const lastRow = this.sheet.getLastRow();
-    let startRow = lastRow + 1
+    let startRow = lastRow + 1;
     if (lastRow <= frozenRows) {
       startRow = frozenRows + 2;
     }
-    const maxRows = this.sheet.getMaxRows()
-    const howManyRowsToDelete = 1 + maxRows - startRow
+    const maxRows = this.sheet.getMaxRows();
+    const howManyRowsToDelete = 1 + maxRows - startRow;
 
     if (maxRows > startRow) {
       this.sheet.deleteRows(startRow, howManyRowsToDelete);
@@ -1222,21 +1388,21 @@ class Sheet {
   deleteRows(startRow, howManyRowsToDelete) {
     this.sheet.deleteRows(startRow, howManyRowsToDelete);
   }
-  
+
   getDataRange() {
     return this.sheet.getDataRange();
   }
 
   getFilter() {
-    return this.sheet.getFilter()
+    return this.sheet.getFilter();
   }
 
   getFrozenColumns() {
-    return this.sheet.getFrozenColumns()
+    return this.sheet.getFrozenColumns();
   }
 
   getFrozenRows() {
-    return this.sheet.getFrozenRows()
+    return this.sheet.getFrozenRows();
   }
 
   getLastColumn() {
@@ -1284,11 +1450,11 @@ class Sheet {
   }
 
   hideColumn(...args) {
-    return this.sheet.hideColumn(...args)
+    return this.sheet.hideColumn(...args);
   }
 
   setActiveCell(...args) {
-    this.sheet.setActiveCell(...args)
+    this.sheet.setActiveCell(...args);
   }
 
   setActiveRange(range) {
@@ -1296,7 +1462,7 @@ class Sheet {
   }
 
   setColumnWidth(column, width) {
-    return this.sheet.setColumnWidth(column, width)
+    return this.sheet.setColumnWidth(column, width);
   }
 
   setSheetByName(sheetName) {
@@ -1334,7 +1500,6 @@ class Spreadsheet {
     } else {
       try {
         this.spreadsheet = this.getActiveSpreadsheet();
-        
       } catch (error) {
         throw error;
       }
@@ -1350,10 +1515,10 @@ class Spreadsheet {
 
   getActiveSheet() {
     const activeSheet = this.spreadsheet.getActiveSheet();
-    examineObject(activeSheet, 'activeSheet');
+    examineObject(activeSheet, "activeSheet");
 
     const iswActiveSheet = new Sheet(activeSheet);
-    examineObject(iswActiveSheet, 'iswActiveSheet');
+    examineObject(iswActiveSheet, "iswActiveSheet");
 
     return iswActiveSheet;
   }
@@ -1372,9 +1537,9 @@ class Spreadsheet {
     try {
       const sheetMap = this.getSheetMap();
       const sheetCount = Object.keys(sheetMap).length;
-      
+
       sheet = sheetMap[sheetName];
-      
+
       if (!sheet) {
         return null; // Explicitly return null for missing sheets
       }
@@ -1397,7 +1562,7 @@ class Spreadsheet {
 
       // Create the sheet map efficiently using Object.fromEntries
       this._sheetMap = Object.fromEntries(
-        sheets.map(sheet => [sheet.getName(), sheet])
+        sheets.map((sheet) => [sheet.getName(), sheet])
       );
     }
 
@@ -1406,7 +1571,7 @@ class Spreadsheet {
 
   getSheets() {
     if (!this._sheets) {
-      this._sheets = this.getGasSheets().map(sheet => new Sheet(sheet));
+      this._sheets = this.getGasSheets().map((sheet) => new Sheet(sheet));
     }
     return this._sheets;
   }
@@ -1453,13 +1618,13 @@ class SpreadsheetSummary {
       MAX_ROWS: 3,
       MAX_COLS: 4,
       IS_ACCOUNT: 5,
-      IS_BUDGET: 6
+      IS_BUDGET: 6,
     };
   }
 
   static get SHEET() {
     return {
-      NAME: 'Spreadsheet summary'
+      NAME: "Spreadsheet summary",
     };
   }
 
@@ -1470,50 +1635,52 @@ class SpreadsheetSummary {
 
   getBudgetSheetNames() {
     return this.data
-      .filter(row => row[SpreadsheetSummary.COLUMNS.IS_BUDGET])
-      .map(row => row[SpreadsheetSummary.COLUMNS.SHEET_NAME]);
+      .filter((row) => row[SpreadsheetSummary.COLUMNS.IS_BUDGET])
+      .map((row) => row[SpreadsheetSummary.COLUMNS.SHEET_NAME]);
   }
 
   getSheetNames() {
-    return this.data.map(row => row[SpreadsheetSummary.COLUMNS.SHEET_NAME]);
+    return this.data.map((row) => row[SpreadsheetSummary.COLUMNS.SHEET_NAME]);
   }
 
   update() {
-    const sheetData = activeSpreadsheet.getSheets().map(iswSheet => ({
+    const sheetData = activeSpreadsheet.getSheets().map((iswSheet) => ({
       sheetName: iswSheet.getSheetName(),
       lastRow: iswSheet.getLastRow(),
       lastColumn: iswSheet.getLastColumn(),
       maxRows: iswSheet.getMaxRows(),
       maxColumns: iswSheet.getMaxColumns(),
-      isAccount: iswSheet.getSheetName().startsWith('_'),
-      isBudget: iswSheet.getSheetName().startsWith('Budget')
+      isAccount: iswSheet.getSheetName().startsWith("_"),
+      isBudget: iswSheet.getSheetName().startsWith("Budget"),
     }));
 
     sheetData.unshift({
-      sheetName: 'Sheet name',
-      lastRow: 'Last row',
-      lastColumn: 'Last column',
-      maxRows: 'Max rows',
-      maxColumns: 'Max columns',
-      isAccount: 'Is an account file (starts with underscore)?',
-      isBudget: 'Is a budget file (starts with Budget)?'
+      sheetName: "Sheet name",
+      lastRow: "Last row",
+      lastColumn: "Last column",
+      maxRows: "Max rows",
+      maxColumns: "Max columns",
+      isAccount: "Is an account file (starts with underscore)?",
+      isBudget: "Is a budget file (starts with Budget)?",
     });
 
-    const sheetArray = sheetData.map(sheet => [
+    const sheetArray = sheetData.map((sheet) => [
       sheet.sheetName,
       sheet.lastRow,
       sheet.lastColumn,
       sheet.maxRows,
       sheet.maxColumns,
       sheet.isAccount,
-      sheet.isBudget
+      sheet.isBudget,
     ]);
 
     const maxWidth = sheetArray[0].length;
 
     // Minimize calls to Google Sheets API by using clearContent instead of clear() if possible.
     this.sheet.clearContents();
-    this.sheet.getRange(1, 1, sheetArray.length, maxWidth).setValues(sheetArray);
+    this.sheet
+      .getRange(1, 1, sheetArray.length, maxWidth)
+      .setValues(sheetArray);
   }
 
   getSheet() {
@@ -1528,7 +1695,7 @@ class SpreadsheetSummary {
 class Transactions {
   static get SHEET() {
     return {
-      NAME: 'Transactions'
+      NAME: "Transactions",
     };
   }
 
@@ -1573,7 +1740,9 @@ class Transactions {
       typeof transactionFormulas.keyFormula !== "string" ||
       typeof transactionFormulas.valuesFormula !== "string"
     ) {
-      throw new Error("Invalid transactionFormulas: Expected an object with 'keyFormula' and 'valuesFormula' as strings.");
+      throw new Error(
+        "Invalid transactionFormulas: Expected an object with 'keyFormula' and 'valuesFormula' as strings."
+      );
     }
 
     const { keyFormula, valuesFormula } = transactionFormulas;
@@ -1584,11 +1753,9 @@ class Transactions {
 
     try {
       // Set formulas in a single batch operation
-      this.sheet.getRange("A1:B1").setFormulas([
-        [`=${safeKeyFormula}`, `=${safeValuesFormula}`]
-      ]);
-
-      
+      this.sheet
+        .getRange("A1:B1")
+        .setFormulas([[`=${safeKeyFormula}`, `=${safeValuesFormula}`]]);
     } catch (error) {
       throw error;
     }
@@ -1598,7 +1765,7 @@ class Transactions {
 class TransactionsBuilder {
   static get SHEET() {
     return {
-      NAME: 'Transactions builder'
+      NAME: "Transactions builder",
     };
   }
 
@@ -1629,18 +1796,24 @@ class TransactionsBuilder {
       const values = range.getValues();
 
       // Validate the retrieved values
-      if (!Array.isArray(values) || values.length !== 2 || values[0].length === 0 || values[1].length === 0) {
-        throw new Error("Invalid range data: Expected a 2x1 array with formulas in G3 and G4.");
+      if (
+        !Array.isArray(values) ||
+        values.length !== 2 ||
+        values[0].length === 0 ||
+        values[1].length === 0
+      ) {
+        throw new Error(
+          "Invalid range data: Expected a 2x1 array with formulas in G3 and G4."
+        );
       }
 
       const [keyFormulaRow, valuesFormulaRow] = values;
       const keyFormula = keyFormulaRow[0];
       const valuesFormula = valuesFormulaRow[0];
 
-
       return {
         keyFormula,
-        valuesFormula
+        valuesFormula,
       };
     } catch (error) {
       throw error;
@@ -1703,8 +1876,8 @@ function alert(message) {
 }
 
 function allAccounts() {
-  const ourFinances = new OurFinances()
-  ourFinances.showAllAccounts()
+  const ourFinances = new OurFinances();
+  ourFinances.showAllAccounts();
 }
 
 function applyDescriptionReplacements() {
@@ -1716,31 +1889,31 @@ function applyDescriptionReplacements() {
 }
 
 function balanceSheet() {
-  goToSheet('Balance sheet');
+  goToSheet("Balance sheet");
 }
 
 function budget() {
-  goToSheet('Budget')
+  goToSheet("Budget");
 }
 
 function budgetAnnualTransactions() {
-  goToSheet(BudgetAnnualTransactions.SHEET.NAME)
+  goToSheet(BudgetAnnualTransactions.SHEET.NAME);
 }
 
 function budgetMonthlyTransactions() {
-  goToSheet('Budget monthly transactions')
+  goToSheet("Budget monthly transactions");
 }
 
 function budgetAdhocTransactions() {
-  goToSheet('Budget ad hoc transactions')
+  goToSheet("Budget ad hoc transactions");
 }
 
 function budgetPredictedSpend() {
-  goToSheet('Budget predicted spend');
+  goToSheet("Budget predicted spend");
 }
 
 function budgetWeeklyTransactions() {
-  goToSheet('Budget weekly transactions');
+  goToSheet("Budget weekly transactions");
 }
 
 function checkDependencies() {
@@ -1749,7 +1922,7 @@ function checkDependencies() {
 }
 
 function cloneDate(date) {
-  return new Date(date.getTime())
+  return new Date(date.getTime());
 }
 
 function columnNumberToLetter(columnNumber) {
@@ -1774,7 +1947,9 @@ function convertCurrentColumnToUppercase() {
 
   const range = sheet.getRange(START_ROW, column, numRows, 1);
   const values = range.getValues();
-  const uppercasedValues = values.map(row => [row[0].toString().toUpperCase()]);
+  const uppercasedValues = values.map((row) => [
+    row[0].toString().toUpperCase(),
+  ]);
 
   range.setValues(uppercasedValues);
 }
@@ -1785,7 +1960,7 @@ function createAccountsMenu() {
 
   // Check if any accounts are found
   if (accountSheetNames.length === 0) {
-    alert('No account sheets found!');
+    alert("No account sheets found!");
     return;
   }
 
@@ -1796,84 +1971,108 @@ function createAccountsMenu() {
     itemArray.push([accountSheetName, funName]);
   }
 
-  createUiMenu('Accounts', itemArray);
+  createUiMenu("Accounts", itemArray);
 }
 
 function createGasMenu() {
   const itemArray = [
-    ['All accounts', 'allAccounts'],
-    ['Apply Description replacements', 'applyDescriptionReplacements'],
-    ['Balance sheet', 'balanceSheet'],
-    ['Check dependencies', 'checkDependencies'],
-    ['Convert current column to uppercase', 'convertCurrentColumnToUppercase'],
-    ['Daily update', 'dailyUpdate'],
-    ['Format sheet', 'formatSheet'],
-    ['Monthly update', 'monthlyUpdate'],
-    ['Open accounts', 'openAccounts'],
-    ['Sort sheet order', 'sortGoogleSheets'],
-    ['Trim all sheets', 'trimGoogleSheets'],
-    ['Trim sheet', 'trimGoogleSheet'],
-    ['Update spreadsheet summary', 'updateSpreadsheetSummary'],
-  ]
-  createUiMenu('GAS Menu', itemArray)
+    ["All accounts", "allAccounts"],
+    ["Apply Description replacements", "applyDescriptionReplacements"],
+    ["Balance sheet", "balanceSheet"],
+    ["Check dependencies", "checkDependencies"],
+    ["Convert current column to uppercase", "convertCurrentColumnToUppercase"],
+    ["Daily update", "dailyUpdate"],
+    ["Format sheet", "formatSheet"],
+    ["Monthly update", "monthlyUpdate"],
+    ["Open accounts", "openAccounts"],
+    ["Sort sheet order", "sortGoogleSheets"],
+    ["Trim all sheets", "trimGoogleSheets"],
+    ["Trim sheet", "trimGoogleSheet"],
+    ["Update spreadsheet summary", "updateSpreadsheetSummary"],
+  ];
+  createUiMenu("GAS Menu", itemArray);
 }
 
 function createSectionsMenu() {
   const ui = gasSpreadsheetApp.getUi();
-  const menu = ui.createMenu('Sections')
-    .addSubMenu(ui.createMenu('Budget')
-      .addItem('Budget', 'budget')
-      .addItem(BudgetAnnualTransactions.SHEET.NAME, 'budgetAnnualTransactions')
-      .addItem('Budget monthly transactions', 'budgetMonthlyTransactions')
-      .addItem('Budget ad hoc transactions', 'budgetAdhocTransactions')
-      .addItem('Budget predicted spend', 'budgetPredictedSpend')
-      .addItem('Budget weekly transactions', 'budgetWeeklyTransactions')
+  const menu = ui
+    .createMenu("Sections")
+    .addSubMenu(
+      ui
+        .createMenu("Budget")
+        .addItem("Budget", "budget")
+        .addItem(
+          BudgetAnnualTransactions.SHEET.NAME,
+          "budgetAnnualTransactions"
+        )
+        .addItem("Budget monthly transactions", "budgetMonthlyTransactions")
+        .addItem("Budget ad hoc transactions", "budgetAdhocTransactions")
+        .addItem("Budget predicted spend", "budgetPredictedSpend")
+        .addItem("Budget weekly transactions", "budgetWeeklyTransactions")
     )
     .addSeparator()
-    .addSubMenu(ui.createMenu('Categories')
-      .addItem('4 All transactions by date', 'goToSheetTransactionsByDate')
-      .addItem('5 Assign categories', 'goToSheetTransactionsCategories')
-      .addItem('1 Categories', 'goToSheetCategories')
-      .addItem('Category clash', 'goToSheetCategoryClash')
-      .addItem('7 Merge transactions', 'mergeTransactions')
-      .addItem('8 Copy keys', 'copyKeys')
-      .addItem('2 Not in transaction categories', 'goToSheetNotInTransactionCategories')
-      .addItem('6 Transactions builder', 'goToSheetTransactionsBuilder')
-      .addItem('3 Uncategorised by date', 'goToSheetUnlabelledByDate')
+    .addSubMenu(
+      ui
+        .createMenu("Categories")
+        .addItem("4 All transactions by date", "goToSheetTransactionsByDate")
+        .addItem("5 Assign categories", "goToSheetTransactionsCategories")
+        .addItem("1 Categories", "goToSheetCategories")
+        .addItem("Category clash", "goToSheetCategoryClash")
+        .addItem("7 Merge transactions", "mergeTransactions")
+        .addItem("8 Copy keys", "copyKeys")
+        .addItem(
+          "2 Not in transaction categories",
+          "goToSheetNotInTransactionCategories"
+        )
+        .addItem("6 Transactions builder", "goToSheetTransactionsBuilder")
+        .addItem("3 Uncategorised by date", "goToSheetUnlabelledByDate")
     )
     .addSeparator()
-    .addSubMenu(ui.createMenu('Charlie')
-      .addItem('Charlie\'s transactions', 'goToSheet_CVITRA')
+    .addSubMenu(
+      ui
+        .createMenu("Charlie")
+        .addItem("Charlie's transactions", "goToSheet_CVITRA")
     )
     .addSeparator()
-    .addSubMenu(ui.createMenu('Fownes Street')
-      .addItem('Fownes Street Halifax account', 'goToSheet_AHALIF')
-      .addItem('Fownes Street Ian B HMRC records', 'goToSheet_SVI2TJ')
-      .addItem('Fownes Street IRF transactions', 'goToSheet_SVIIRF')
+    .addSubMenu(
+      ui
+        .createMenu("Fownes Street")
+        .addItem("Fownes Street Halifax account", "goToSheet_AHALIF")
+        .addItem("Fownes Street Ian B HMRC records", "goToSheet_SVI2TJ")
+        .addItem("Fownes Street IRF transactions", "goToSheet_SVIIRF")
     )
     .addSeparator()
-    .addSubMenu(ui.createMenu('Glenburnie')
-      .addItem('Glenburnie investment loan', 'goToSheet_SVIGBL')
-      .addItem('Glenburnie loan', 'goToSheetLoanGlenburnie')
+    .addSubMenu(
+      ui
+        .createMenu("Glenburnie")
+        .addItem("Glenburnie investment loan", "goToSheet_SVIGBL")
+        .addItem("Glenburnie loan", "goToSheetLoanGlenburnie")
     )
     .addSeparator()
-    .addSubMenu(ui.createMenu('HMRC')
-      .addItem('HMRC Transactions summary', 'goToSheetHMRCTransactionsSummary')
-      .addItem('Self Assessment Ian Bernard', 'goToSheetHMRC_B')
-      .addItem('Self Assessment Ian Sweeney', 'goToSheetHMRC_S')
-      .addItem('SES Childcare', 'goToSheetHMRCTransactionsSummary')
-      .addItem('SES Property management', 'goToSheetHMRCTransactionsSummary')
-      .addItem('TR People', 'goToSheetPeople')
-      .addItem('UKP Fownes Street', 'goToSheetHMRCTransactionsSummary')
-      .addItem('UKP One Park West', 'goToSheetHMRCTransactionsSummary')
+    .addSubMenu(
+      ui
+        .createMenu("HMRC")
+        .addItem(
+          "HMRC Transactions summary",
+          "goToSheetHMRCTransactionsSummary"
+        )
+        .addItem("Self Assessment Ian Bernard", "goToSheetHMRC_B")
+        .addItem("Self Assessment Ian Sweeney", "goToSheetHMRC_S")
+        .addItem("SES Childcare", "goToSheetHMRCTransactionsSummary")
+        .addItem("SES Property management", "goToSheetHMRCTransactionsSummary")
+        .addItem("TR People", "goToSheetPeople")
+        .addItem("UKP Fownes Street", "goToSheetHMRCTransactionsSummary")
+        .addItem("UKP One Park West", "goToSheetHMRCTransactionsSummary")
     )
     .addSeparator()
-    .addSubMenu(ui.createMenu('SW18 3PT')
-      .addItem('Home Assistant inventory', 'goToSheetSW183PTInventory')
-      .addItem('Inventory', 'goToSheetSW183PTInventory')
+    .addSubMenu(
+      ui
+        .createMenu("SW18 3PT")
+        .addItem("Home Assistant inventory", "goToSheetSW183PTInventory")
+        .addItem("Inventory", "goToSheetSW183PTInventory")
     )
     .addSeparator()
-    .addItem('Xfers mismatch', 'goToSheetXfersMismatch')
+    .addItem("Xfers mismatch", "goToSheetXfersMismatch")
     .addToUi();
 }
 
@@ -1897,7 +2096,7 @@ function dailySorts() {
     "Description replacements",
     "Transactions categories",
   ];
-  sheetsToSort.forEach(sheetName => {
+  sheetsToSort.forEach((sheetName) => {
     const sheet = activeSpreadsheet.getSheetByName(sheetName);
     if (sheet) {
       sortSheetByFirstColumnOmittingHeader(sheet);
@@ -1916,16 +2115,16 @@ function dynamicQuery(rangeString, queryString) {
   try {
     // Import QUERY function from DataTable
     const dataTable = Charts.newDataTable()
-      .addColumn('Column', 'string')
+      .addColumn("Column", "string")
       .build();
 
     rangeString = rangeString.trim();
     queryString = queryString.trim();
 
-    const result = dataTable.applyQuery(rangeString + ',' + queryString);
+    const result = dataTable.applyQuery(rangeString + "," + queryString);
     return result.toArray();
   } catch (error) {
-    console.error('Error in dynamicQuery:', error);
+    console.error("Error in dynamicQuery:", error);
     throw error;
   }
 }
@@ -1935,9 +2134,8 @@ function emailUpcomingPayments() {
   ourFinances.emailUpcomingPayments();
 }
 
-function examineObject(object, name = 'anonymous value') {
-
-  if (typeof object === 'object' && object !== null) {
+function examineObject(object, name = "anonymous value") {
+  if (typeof object === "object" && object !== null) {
     const keys = Object.keys(object);
 
     const ownPropertyNames = Object.getOwnPropertyNames(object);
@@ -1946,8 +2144,9 @@ function examineObject(object, name = 'anonymous value') {
     const ownDescriptors = Object.getOwnPropertyDescriptors(object);
 
     // Get prototype properties (including greet)
-    const prototypeDescriptors = Object.getOwnPropertyDescriptors(Object.getPrototypeOf(object));
-
+    const prototypeDescriptors = Object.getOwnPropertyDescriptors(
+      Object.getPrototypeOf(object)
+    );
   }
 }
 
@@ -1961,19 +2160,23 @@ function findAllNamedRangeUsage() {
   }
 
   // Extract the named range names
-  const namedRangeNames = namedRanges.map(range => range.getName());
+  const namedRangeNames = namedRanges.map((range) => range.getName());
 
-  sheets.forEach(sheet => {
+  sheets.forEach((sheet) => {
     const formulas = sheet.getDataRange().getFormulas();
 
     formulas.forEach((rowFormulas, rowIndex) => {
       rowFormulas.forEach((formula, colIndex) => {
         // Only track cells containing named ranges
         if (formula) {
-          namedRangeNames.forEach(name => {
+          namedRangeNames.forEach((name) => {
             if (formula.includes(name)) {
-              const cellRef = sheet.getRange(rowIndex + 1, colIndex).getA1Notation();
-              rangeUsage.push(`Sheet: ${sheet.getName()} - Cell: ${cellRef} - Name: ${name}`);
+              const cellRef = sheet
+                .getRange(rowIndex + 1, colIndex)
+                .getA1Notation();
+              rangeUsage.push(
+                `Sheet: ${sheet.getName()} - Cell: ${cellRef} - Name: ${name}`
+              );
             }
           });
         }
@@ -1983,14 +2186,16 @@ function findAllNamedRangeUsage() {
 }
 
 function findNamedRangeUsage() {
-  findUsageByNamedRange("BRIAN_HALIFAX_BALANCE")
+  findUsageByNamedRange("BRIAN_HALIFAX_BALANCE");
 }
 
 function findRowByKey(sheetName, keyColumn, keyValue) {
   const sheet = activeSpreadsheet.getSheetByName(sheetName);
-  const data = sheet.getRange(`${keyColumn}1:${keyColumn}${sheet.getLastRow()}`).getValues();
+  const data = sheet
+    .getRange(`${keyColumn}1:${keyColumn}${sheet.getLastRow()}`)
+    .getValues();
 
-  const rowIndex = data.findIndex(row => row[0] === keyValue);
+  const rowIndex = data.findIndex((row) => row[0] === keyValue);
   return rowIndex !== -1 ? rowIndex + 1 : -1; // Add 1 for 1-based indexing, return -1 if not found
 }
 
@@ -1998,13 +2203,15 @@ function findUsageByNamedRange(namedRange) {
   const sheets = activeSpreadsheet.getSheets();
   const rangeUsage = [];
 
-  sheets.forEach(sheet => {
+  sheets.forEach((sheet) => {
     const formulas = sheet.getDataRange().getFormulas();
 
     formulas.forEach((rowFormulas, rowIndex) => {
       rowFormulas.forEach((formula, colIndex) => {
         if (formula.includes(namedRange)) {
-          const cellRef = sheet.getRange(rowIndex + 1, colIndex + 1).getA1Notation();
+          const cellRef = sheet
+            .getRange(rowIndex + 1, colIndex + 1)
+            .getA1Notation();
           rangeUsage.push(`Sheet: ${sheet.getName()} - Cell: ${cellRef}`);
         }
       });
@@ -2021,12 +2228,107 @@ function formatSheet() {
 
   const accountSheet = new AccountSheet(activeSheet);
   accountSheet.formatSheet();
-
 }
 
 function getAccountSheetNames() {
   // Generated via Python
-  return ['_AHALIF', '_ASANTA', '_BCHASE', '_BCHRND', '_BCHSAV', '_BCOISA', '_BCOLOY', '_BCYNER', '_BFAMIL', '_BGOLDM', '_BHASAV', '_BHAULT', '_BMETRO', '_BMOCHA', '_BMOFWN', '_BMOKID', '_BMONZO', '_BMOPAR', '_BMOSAV', '_BNSPBZ', '_BOAISA', '_BOAKNO', '_BOXBUR', '_BPAYPA', '_BPOSTO', '_BSAISA', '_BSANTA', '_BSASA2', '_BSASA3', '_BSASAV', '_BSATAX', '_BTES01', '_BTESCO', '_BTRISA', '_BVANGA', '_BVMISA', '_BVMSAV', '_BWALLE', '_CLLOYD', '_CMETRO', '_CVITRA', '_JFIXES', '_JSANTA', '_JWALEU', '_SAMAZO', '_SCHASE', '_SCHBST', '_SCHRND', '_SCHSAV', '_SCOIS2', '_SCOISA', '_SCOLOY', '_SFAMIL', '_SGOLDM', '_SJL3BH', '_SKI3BH', '_SKROOO', '_SMETRO', '_SMONZ1', '_SMONZO', '_SNSPBZ', '_SOAISA', '_SOAKNO', '_SOXBUR', '_SPAYPA', '_SPOSTO', '_SREVOL', '_SSACR1', '_SSACRD', '_SSAISA', '_SSANT1', '_SSANTA', '_SSAPRM', '_SSAZ01', '_SSAZ02', '_SSAZ03', '_SSTARB', '_SSTARL', '_STAFIX', '_STASAV', '_STES01', '_STES02', '_STES03', '_STESCO', '_STRISA', '_SVANGA', '_SVI2TJ', '_SVI3BH', '_SVIGB2', '_SVIGBL', '_SVIIRF', '_SVMISA', '_SVMSAV', '_SWALLE', '_SZOPA1'];
+  return [
+    "_AHALIF",
+    "_ASANTA",
+    "_BCHASE",
+    "_BCHRND",
+    "_BCHSAV",
+    "_BCOISA",
+    "_BCOLOY",
+    "_BCYNER",
+    "_BFAMIL",
+    "_BGOLDM",
+    "_BHASAV",
+    "_BHAULT",
+    "_BMETRO",
+    "_BMOCHA",
+    "_BMOFWN",
+    "_BMOKID",
+    "_BMONZO",
+    "_BMOPAR",
+    "_BMOSAV",
+    "_BNSPBZ",
+    "_BOAISA",
+    "_BOAKNO",
+    "_BOXBUR",
+    "_BPAYPA",
+    "_BPOSTO",
+    "_BSAISA",
+    "_BSANTA",
+    "_BSASA2",
+    "_BSASA3",
+    "_BSASAV",
+    "_BSATAX",
+    "_BTES01",
+    "_BTESCO",
+    "_BTRISA",
+    "_BVANGA",
+    "_BVMISA",
+    "_BVMSAV",
+    "_BWALLE",
+    "_CLLOYD",
+    "_CMETRO",
+    "_CVITRA",
+    "_JFIXES",
+    "_JSANTA",
+    "_JWALEU",
+    "_SAMAZO",
+    "_SCHASE",
+    "_SCHBST",
+    "_SCHRND",
+    "_SCHSAV",
+    "_SCOIS2",
+    "_SCOISA",
+    "_SCOLOY",
+    "_SFAMIL",
+    "_SGOLDM",
+    "_SJL3BH",
+    "_SKI3BH",
+    "_SKROOO",
+    "_SMETRO",
+    "_SMONZ1",
+    "_SMONZO",
+    "_SNSPBZ",
+    "_SOAISA",
+    "_SOAKNO",
+    "_SOXBUR",
+    "_SPAYPA",
+    "_SPOSTO",
+    "_SREVOL",
+    "_SSACR1",
+    "_SSACRD",
+    "_SSAISA",
+    "_SSANT1",
+    "_SSANTA",
+    "_SSAPRM",
+    "_SSAZ01",
+    "_SSAZ02",
+    "_SSAZ03",
+    "_SSTARB",
+    "_SSTARL",
+    "_STAFIX",
+    "_STASAV",
+    "_STES01",
+    "_STES02",
+    "_STES03",
+    "_STESCO",
+    "_STRISA",
+    "_SVANGA",
+    "_SVI2TJ",
+    "_SVI3BH",
+    "_SVIGB2",
+    "_SVIGBL",
+    "_SVIIRF",
+    "_SVMISA",
+    "_SVMSAV",
+    "_SWALLE",
+    "_SZOPA1",
+  ];
 }
 
 /**
@@ -2036,22 +2338,22 @@ function getAccountSheetNames() {
  */
 function getAmountAsGBP(amount) {
   const gbPound = new Intl.NumberFormat(locale, {
-    style: 'currency',
-    currency: 'GBP',
+    style: "currency",
+    currency: "GBP",
   });
 
-  return gbPound.format(amount)
+  return gbPound.format(amount);
 }
 
 function getDayName(date) {
-  const dayName = date.toLocaleDateString(locale, { weekday: 'long' })
-  return dayName
+  const dayName = date.toLocaleDateString(locale, { weekday: "long" });
+  return dayName;
 }
 
 // The getDate() method of Date instances returns the day of the month for this date according to local time.
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Date/getDate
 function getDayOfMonth(date) {
-  return date.getDate()
+  return date.getDate();
 }
 
 function getDtf() {
@@ -2060,35 +2362,35 @@ function getDtf() {
 
 function getFirstRowRange(sheet) {
   const lastColumn = sheet.getLastColumn();
-  const firstRowRange = sheet.getRange(1, 1, 1, lastColumn); 
+  const firstRowRange = sheet.getRange(1, 1, 1, lastColumn);
   return firstRowRange;
 }
 
 // https://developers.google.com/apps-script/reference/utilities/utilities#formatDate(Date,String,String)
 function getFormattedDate(date, timeZone, format) {
-  return Utilities.formatDate(date, timeZone, format)
+  return Utilities.formatDate(date, timeZone, format);
 }
 
 function getHMRCTotalByYear(category, year) {
-  return category + '-' + year;
+  return category + "-" + year;
 }
 
 function getLastUpdatedColumn(sheet) {
-  const lastUpdated = "Last Updated"
-  let lastUpdatedColumn
-  const firstRowRange = getFirstRowRange(sheet)
-  const values = firstRowRange.getValues()
+  const lastUpdated = "Last Updated";
+  let lastUpdatedColumn;
+  const firstRowRange = getFirstRowRange(sheet);
+  const values = firstRowRange.getValues();
   for (let row in values) {
     for (let col in values[row]) {
-      const cell = values[row][col]
+      const cell = values[row][col];
 
-      newCell = cell.replace(/\n/g, " ")
+      newCell = cell.replace(/\n/g, " ");
 
       if (newCell == lastUpdated) {
-        const lastUpdatedColumnNbr = 1 + parseInt(col, 10)
-        const lastUpdatedCell = firstRowRange.getCell(1, lastUpdatedColumnNbr)
-        const lastUpdatedColumnA1 = lastUpdatedCell.getA1Notation()
-        lastUpdatedColumn = lastUpdatedColumnA1.replace(/[0-9]/g, '')
+        const lastUpdatedColumnNbr = 1 + parseInt(col, 10);
+        const lastUpdatedCell = firstRowRange.getCell(1, lastUpdatedColumnNbr);
+        const lastUpdatedColumnA1 = lastUpdatedCell.getA1Notation();
+        lastUpdatedColumn = lastUpdatedColumnA1.replace(/[0-9]/g, "");
         break;
       }
     }
@@ -2102,9 +2404,9 @@ function getLineNumber() {
     throw new Error();
   } catch (e) {
     // Extract line number from the stack trace
-    const stack = e.stack.split('\n');
+    const stack = e.stack.split("\n");
     const line = stack[2].match(/:(\d+):\d+\)?$/);
-    return line ? line[1] : 'unknown';
+    return line ? line[1] : "unknown";
   }
 }
 
@@ -2113,18 +2415,18 @@ function getMonthIndex(date) {
 }
 
 function getMonthName(date) {
-  return date.toLocaleDateString(locale, { month: 'long' });
+  return date.toLocaleDateString(locale, { month: "long" });
 }
 
 function getMyEmailAddress() {
   // Use optional chaining to safely access the email address
-  const myEmailAddress = getPrivateData()?.['MY_EMAIL_ADDRESS'];
+  const myEmailAddress = getPrivateData()?.["MY_EMAIL_ADDRESS"];
 
   // Check if the email address exists and log accordingly
   if (myEmailAddress) {
     return myEmailAddress;
   } else {
-    console.error('MY_EMAIL_ADDRESS not found in private data');
+    console.error("MY_EMAIL_ADDRESS not found in private data");
     return null; // Return null if the email is not found
   }
 }
@@ -2152,7 +2454,7 @@ function getOrdinal(number) {
     selector = number % 10;
   }
 
-  return number + ['th', 'st', 'nd', 'rd', ''][selector];
+  return number + ["th", "st", "nd", "rd", ""][selector];
 }
 
 function getOrdinalDate(date) {
@@ -2165,8 +2467,7 @@ function getOrdinalDate(date) {
 }
 
 function getPrivateData() {
-
-  const privateDataId = '1hxcINN1seSzn-sLPI25KmV9t4kxLvZlievc0X3EgMhs';
+  const privateDataId = "1hxcINN1seSzn-sLPI25KmV9t4kxLvZlievc0X3EgMhs";
   const sheet = gasSpreadsheetApp.openById(privateDataId);
 
   if (!sheet) {
@@ -2194,22 +2495,23 @@ function getPrivateData() {
 }
 
 function getReplacementHeadersMap() {
-  const bankAccounts = activeSpreadsheet.getSheetByName(BankAccounts.SHEET.NAME);
+  const bankAccounts = activeSpreadsheet.getSheetByName(
+    BankAccounts.SHEET.NAME
+  );
   if (!bankAccounts) {
     throw new Error(`Sheet named '${BankAccounts.SHEET.NAME}' not found.`);
   }
 
   const data = bankAccounts.getDataRange().getValues().slice(1);
 
-  return data
-    .reduce((map, [date, description, credit, debit, note]) => {
-      map[description] = replacement;
-      return map;
-    }, {});
+  return data.reduce((map, [date, description, credit, debit, note]) => {
+    map[description] = replacement;
+    return map;
+  }, {});
 }
 
 function getSeasonName(date) {
-  const seasons = ['Winter', 'Spring', 'Summer', 'Autumn'];
+  const seasons = ["Winter", "Spring", "Summer", "Autumn"];
 
   const monthSeasons = [0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 0];
 
@@ -2221,14 +2523,14 @@ function getSeasonName(date) {
 
 function getSheetNamesByType(sheetNameType) {
   let sheetNames;
-  
+
   const spreadsheetSummary = new SpreadsheetSummary();
   // Process based on sheetNameType
   switch (sheetNameType) {
-    case 'account':
+    case "account":
       sheetNames = getAccountSheetNames();
       break;
-    case 'all':
+    case "all":
       // Return all sheet names
       sheetNames = spreadsheetSummary.getSheetNames();
       break;
@@ -2238,7 +2540,9 @@ function getSheetNamesByType(sheetNameType) {
   return sheetNames;
 }
 
-function getToday(options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) {
+function getToday(
+  options = { weekday: "long", year: "numeric", month: "long", day: "numeric" }
+) {
   const date = new Date();
   let today;
 
@@ -2304,83 +2608,83 @@ function goToSheetLastRow(sheetName) {
 }
 
 function goToSheet_AHALIF() {
-  goToSheet('_AHALIF')
+  goToSheet("_AHALIF");
 }
 
 function goToSheet_CVITRA() {
-  goToSheet('_CVITRA')
+  goToSheet("_CVITRA");
 }
 
 function goToSheet_SVI2TJ() {
-  goToSheet('_SVI2TJ')
+  goToSheet("_SVI2TJ");
 }
 
 function goToSheet_SVIGBL() {
-  goToSheet('_SVIGBL')
+  goToSheet("_SVIGBL");
 }
 
 function goToSheet_SVIIRF() {
-  goToSheet('_SVIIRF')
+  goToSheet("_SVIIRF");
 }
 
 function goToSheetCategories() {
-  goToSheet('Categories')
+  goToSheet("Categories");
 }
 
 function goToSheetCategoryClash() {
-  goToSheet('Category clash')
+  goToSheet("Category clash");
 }
 
 function goToSheetHMRC_B() {
-  goToSheet(HMRC_B.SHEET_NAME)
+  goToSheet(HMRC_B.SHEET_NAME);
 }
 
 function goToSheetHMRC_S() {
-  goToSheet(HMRC_S.SHEET.NAME)
+  goToSheet(HMRC_S.SHEET.NAME);
 }
 
 function goToSheetHMRCTransactionsSummary() {
-  goToSheet('HMRC Transactions Summary')
+  goToSheet("HMRC Transactions Summary");
 }
 
 function goToSheetLoanGlenburnie() {
-  goToSheet('Loan Glenburnie')
+  goToSheet("Loan Glenburnie");
 }
 
 function goToSheetNotInTransactionCategories() {
-  goToSheet('Not in transaction categories')
+  goToSheet("Not in transaction categories");
 }
 
 function goToSheetPeople() {
-  goToSheet('People')
+  goToSheet("People");
 }
 
 function goToSheetSW183PTInventory() {
-  goToSheet('SW18 3PT inventory')
+  goToSheet("SW18 3PT inventory");
 }
 
 function goToSheetTransactionsBuilder() {
-  goToSheet('Transactions builder')
+  goToSheet("Transactions builder");
 }
 
 function goToSheetTransactionsByDate() {
-  goToSheet('Transactions by date')
+  goToSheet("Transactions by date");
 }
 
 function goToSheetTransactionsCategories() {
-  goToSheet('Transactions categories')
+  goToSheet("Transactions categories");
 }
 
 function goToSheetUnlabelledByDate() {
-  goToSheet('Uncategorised by date')
+  goToSheet("Uncategorised by date");
 }
 
 function goToSheetXfersMismatch() {
-  goToSheet('Xfers mismatch')
+  goToSheet("Xfers mismatch");
 }
 
 function isAccountSheet(sheet) {
-  if (sheet.getSheetName().startsWith('_')) return true;
+  if (sheet.getSheetName().startsWith("_")) return true;
   return false;
 }
 
@@ -2391,7 +2695,7 @@ function isCellAccountBalance(sheet, column) {
 
   const firstRowRange = getFirstRowRange(sheet);
 
-  const values = firstRowRange.getValues()
+  const values = firstRowRange.getValues();
   for (const row in values) {
     const cell = values[row][column - 1];
 
@@ -2411,41 +2715,43 @@ function isCellADate(cell) {
   const cellValue = cell.getValue();
 
   // Check if the value is a Date object
-  if (Object.prototype.toString.call(cellValue) === '[object Date]' && !isNaN(cellValue.getTime())) {
-
+  if (
+    Object.prototype.toString.call(cellValue) === "[object Date]" &&
+    !isNaN(cellValue.getTime())
+  ) {
     return true;
   } else {
-
     return false;
   }
 }
 
 /**
  * Checks if the given range represents a single cell.
- * 
+ *
  * @param {Range} range - The range to check.
  * @returns {boolean} - Returns true if the range contains only one cell, otherwise false.
  */
 function isSingleCell(range) {
-  if (!range || typeof range.getNumColumns !== 'function' || typeof range.getNumRows !== 'function') {
-    throw new Error('Invalid input: Expected a Range object.');
+  if (
+    !range ||
+    typeof range.getNumColumns !== "function" ||
+    typeof range.getNumRows !== "function"
+  ) {
+    throw new Error("Invalid input: Expected a Range object.");
   }
 
   return range.getNumColumns() === 1 && range.getNumRows() === 1;
 }
 
-
-
 function copyKeys() {
   const transactionsBuilder = new TransactionsBuilder();
-  transactionsBuilder.copyIfSheetExists()
+  transactionsBuilder.copyIfSheetExists();
 }
-
 
 function mergeTransactions() {
   const transactions = new Transactions();
   const transactionsBuilder = new TransactionsBuilder();
-  transactionsBuilder.copyIfSheetExists()
+  transactionsBuilder.copyIfSheetExists();
   const transactionFormulas = transactionsBuilder.getTransactionFormulas();
 
   transactions.updateBuilderFormulas(transactionFormulas);
@@ -2527,7 +2833,7 @@ function sendDailyEmail() {
 
   // Send the email
   sendMeEmail(subject, emailBody);
-};
+}
 
 function sendEmail(recipient, subject, body, options) {
   return GmailApp.sendEmail(recipient, subject, body, options);
@@ -2550,11 +2856,11 @@ function setLastUpdatedOnAccountBalanceChange(sheet) {
 
 function setupDaysIterator(startDate) {
   const getNextResult = (iteratorDate) => {
-    const date = cloneDate(iteratorDate);  // Default date in long format
-    const day = getDtf().format(date);     // 19/01/1964
-    const dayName = getDayName(date);      // Sunday
-    const dayOfMonth = getDayOfMonth(date);  // 29
-    const season = getSeasonName(date);  // Winter, Spring, Summer, Autumn
+    const date = cloneDate(iteratorDate); // Default date in long format
+    const day = getDtf().format(date); // 19/01/1964
+    const dayName = getDayName(date); // Sunday
+    const dayOfMonth = getDayOfMonth(date); // 29
+    const season = getSeasonName(date); // Winter, Spring, Summer, Autumn
 
     // Return result as an object
     return { date, day, dayName, dayOfMonth, season };
@@ -2567,7 +2873,7 @@ function setupDaysIterator(startDate) {
     next: () => {
       iteratorDate.setDate(iteratorDate.getDate() + 1);
       return getNextResult(iteratorDate);
-    }
+    },
   };
 
   return { first, iterator };
@@ -2579,9 +2885,9 @@ function sortGoogleSheets() {
   // Store all the worksheets in this array
   const sheetNameArray = [];
   const sheets = ss.getSheets();
-  sheets.forEach(sheet => {
-    sheetNameArray.push(sheet.getName())
-  })
+  sheets.forEach((sheet) => {
+    sheetNameArray.push(sheet.getName());
+  });
 
   sheetNameArray.sort();
 
@@ -2617,11 +2923,11 @@ function sortSheetByFirstColumnOmittingHeader(sheet) {
 
 function toValidFunctionName(str) {
   // Remove non-alphanumeric characters, except for letters and digits, replace them with underscores
-  let validName = str.trim().replace(/[^a-zA-Z0-9]/g, '_');
+  let validName = str.trim().replace(/[^a-zA-Z0-9]/g, "_");
 
   // Ensure the name starts with a letter or underscore
   return /^[a-zA-Z_]/.test(validName) ? validName : `_${validName}`;
-};
+}
 
 function trimGoogleSheet(iswSheet) {
   let sheet;
@@ -2636,7 +2942,7 @@ function trimGoogleSheet(iswSheet) {
 
 function trimGoogleSheets() {
   const sheets = activeSpreadsheet.getSheets();
-  sheets.forEach(sheet => {
+  sheets.forEach((sheet) => {
     sheet.trimSheet();
   });
 }
@@ -2644,25 +2950,25 @@ function trimGoogleSheets() {
 function updateSpreadsheetSummary() {
   const spreadsheetSummary = new SpreadsheetSummary();
   const sheets = activeSpreadsheet.getSheets();
-  const sheetData = sheets.map(sheet => [
+  const sheetData = sheets.map((sheet) => [
     sheet.getSheetName(),
     sheet.getLastRow(),
     sheet.getLastColumn(),
     sheet.getMaxRows(),
     sheet.getMaxColumns(),
-    sheet.getSheetName().startsWith('_'),
-    sheet.getSheetName().startsWith('Budget')
+    sheet.getSheetName().startsWith("_"),
+    sheet.getSheetName().startsWith("Budget"),
   ]);
 
   // Add headers
   sheetData.unshift([
-    'Sheet name',
-    'Last row',
-    'Last column',
-    'Max rows',
-    'Max columns',
-    'Is an account file (starts with underscore)?',
-    'Is a budget file (starts with Budget)?'
+    "Sheet name",
+    "Last row",
+    "Last column",
+    "Max rows",
+    "Max columns",
+    "Is an account file (starts with underscore)?",
+    "Is a budget file (starts with Budget)?",
   ]);
 
   const maxWidth = sheetData[0].length;
@@ -2677,7 +2983,7 @@ function updateSpreadsheetSummary() {
 
 /**
  * Custom XLOOKUP function for Google Apps Script
- * 
+ *
  * @param {string|number} searchValue - The value you are searching for.
  * @param {Sheet} sheet - The sheet where the lookup is performed.
  * @param {string} searchCol - The column letter to search in (e.g., 'A').
@@ -2693,24 +2999,30 @@ function xLookup(searchValue, sheet, searchCol, resultCol, exactMatch = true) {
     const cellValue = searchRange[i][0];
 
     // Handle exact or approximate match cases
-    if ((exactMatch && cellValue === searchValue) ||
-      (!exactMatch && cellValue.toString().toLowerCase().includes(searchValue.toString().toLowerCase()))) {
-      return resultRange[i][0];  // Return the corresponding result value
+    if (
+      (exactMatch && cellValue === searchValue) ||
+      (!exactMatch &&
+        cellValue
+          .toString()
+          .toLowerCase()
+          .includes(searchValue.toString().toLowerCase()))
+    ) {
+      return resultRange[i][0]; // Return the corresponding result value
     }
   }
 
-  return null;  // Return null if no match is found
+  return null; // Return null if no match is found
 }
 
 // Main program starts here
 
-const locale = 'en-GB';
+const locale = "en-GB";
 
 const activeSpreadsheet = new Spreadsheet();
 
 const gasSpreadsheetApp = SpreadsheetApp;
 
-const accountSheetNames = getSheetNamesByType('account');
+const accountSheetNames = getSheetNamesByType("account");
 const dynamicFunctions = accountSheetNames.reduce((acc, sheetName) => {
   const funName = `dynamicAccount${sheetName}`;
   acc[funName] = () => goToSheetLastRow(sheetName);

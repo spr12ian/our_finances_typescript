@@ -1,12 +1,11 @@
 /// <reference types="google-apps-script" />
 
-
-import { Spreadsheet } from "./Spreadsheet"; // type-only import avoids circular deps
-
+/**
+ * Thin wrapper around a GAS Sheet.
+ * Prefer using `createSheet(...)` to instantiate.
+ */
 export class Sheet {
   private readonly gasSheet: GoogleAppsScript.Spreadsheet.Sheet;
-  private _spreadsheet?: Spreadsheet;
-  private _spreadsheetName?: string;
 
   /**
    * ⚠️ Internal constructor – prefer `createSheet(...)` for safety.
@@ -15,21 +14,11 @@ export class Sheet {
     this.gasSheet = gasSheet;
   }
 
-  get spreadsheet(): Spreadsheet {
-    if (!this._spreadsheet) {
-      this._spreadsheet = Spreadsheet.from(
-        this.gasSheet.getParent().getId()
-      );
-    }
-    return this._spreadsheet;
+  get name(): string {
+    return this.gasSheet.getName();
   }
 
-  get spreadsheetName(): string {
-    if (!this._spreadsheetName) {
-      this._spreadsheetName = this.spreadsheet.name;
-    }
-    return this._spreadsheetName;
-  }
+  // ─── Sheet passthroughs ───────────────────────────────────────
 
   activate(): void {
     this.gasSheet.activate();
@@ -47,10 +36,8 @@ export class Sheet {
     const frozenColumns = this.gasSheet.getFrozenColumns();
     const lastColumn = this.gasSheet.getLastColumn();
     const maxColumns = this.gasSheet.getMaxColumns();
-
     const startColumn = Math.max(lastColumn + 1, frozenColumns + 2);
     const howMany = maxColumns - startColumn + 1;
-
     if (howMany > 0) {
       this.gasSheet.deleteColumns(startColumn, howMany);
     }
@@ -62,7 +49,6 @@ export class Sheet {
     const startRow = lastRow <= frozenRows ? frozenRows + 2 : lastRow + 1;
     const maxRows = this.gasSheet.getMaxRows();
     const howMany = maxRows - startRow + 1;
-
     if (howMany > 0) {
       this.gasSheet.deleteRows(startRow, howMany);
     }

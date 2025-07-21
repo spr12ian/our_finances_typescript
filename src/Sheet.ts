@@ -98,6 +98,21 @@ export class Sheet {
     this.gasSheet.hideColumn(column);
   }
 
+  sortByFirstColumnOmittingHeader() {
+    // Get the range that contains data
+    const dataRange = this.gasSheet.getDataRange();
+
+    // Get the number of rows and columns
+    const numRows = dataRange.getNumRows();
+    const numCols = dataRange.getNumColumns();
+
+    // Get the range excluding the first row
+    const rangeToSort = this.gasSheet.getRange(2, 1, numRows - 1, numCols);
+
+    // Sort the range by the first column (column 1) in ascending order
+    rangeToSort.sort({ column: 1, ascending: true });
+  }
+
   trimSheet(): Sheet {
     this.deleteExcessColumns();
     this.deleteExcessRows();

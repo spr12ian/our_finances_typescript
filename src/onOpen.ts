@@ -659,21 +659,6 @@ function sortSheetByFirstColumn(sheet) {
   dataRange.sort({ column: 1, ascending: true });
 }
 
-function sortSheetByFirstColumnOmittingHeader(sheet) {
-  // Get the range that contains data
-  const dataRange = sheet.getDataRange();
-
-  // Get the number of rows and columns
-  const numRows = dataRange.getNumRows();
-  const numCols = dataRange.getNumColumns();
-
-  // Get the range excluding the first row
-  const rangeToSort = sheet.getRange(2, 1, numRows - 1, numCols);
-
-  // Sort the range by the first column (column 1) in ascending order
-  rangeToSort.sort({ column: 1, ascending: true });
-}
-
 function toValidFunctionName(str) {
   // Remove non-alphanumeric characters, except for letters and digits, replace them with underscores
   let validName = str.trim().replace(/[^a-zA-Z0-9]/g, "_");

@@ -7,10 +7,10 @@ import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
 import { getToday } from "./DateUtils";
 import { DescriptionReplacements } from "./DescriptionReplacements";
 import { OurFinances } from "./OurFinances";
-import { Spreadsheet } from './Spreadsheet';
+import type { Sheet } from "./Sheet";
+import { Spreadsheet } from "./Spreadsheet";
 import { TransactionsCategories } from "./TransactionsCategories";
-import type {Sheet} from "./Sheet"
-import { getPrivateData, sendMeEmail } from './functions';
+import { getPrivateData, sendMeEmail } from "./functions";
 
 // Function declarations
 
@@ -23,18 +23,18 @@ function dailySorts() {
     DescriptionReplacements.SHEET.NAME,
     TransactionsCategories.SHEET.NAME,
   ];
-  const spreadsheet=Spreadsheet.getActive()
+  const spreadsheet = Spreadsheet.getActive();
   sheetsToSort.forEach((sheetName) => {
     const sheet = spreadsheet.getSheet(sheetName);
     if (sheet) {
-      sortSheetByFirstColumnOmittingHeader(sheet);
+      sheet.sortByFirstColumnOmittingHeader();
     } else {
       throw new Error(`${sheetName} not found`);
     }
   });
 }
 
-function getFirstRowRange(sheet:Sheet) {
+function getFirstRowRange(sheet: Sheet) {
   const lastColumn = sheet.getLastColumn();
   const firstRowRange = sheet.getRange(1, 1, 1, lastColumn);
   return firstRowRange;
@@ -260,19 +260,4 @@ function sortSheetByFirstColumn(sheet) {
 
   // Sort the range by the first column (column 1) in ascending order
   dataRange.sort({ column: 1, ascending: true });
-}
-
-function sortSheetByFirstColumnOmittingHeader(sheet) {
-  // Get the range that contains data
-  const dataRange = sheet.getDataRange();
-
-  // Get the number of rows and columns
-  const numRows = dataRange.getNumRows();
-  const numCols = dataRange.getNumColumns();
-
-  // Get the range excluding the first row
-  const rangeToSort = sheet.getRange(2, 1, numRows - 1, numCols);
-
-  // Sort the range by the first column (column 1) in ascending order
-  rangeToSort.sort({ column: 1, ascending: true });
 }

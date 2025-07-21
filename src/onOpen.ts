@@ -5,6 +5,7 @@ import { OurFinances } from "./OurFinances";
 import { createSheet } from "./SheetFactory";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
 import { getSheetNamesByType } from "./functions";
+import type {Sheet} from "./Sheet"
 
 // Function declarations
 
@@ -367,38 +368,8 @@ function getAccountSheetNames(): string[] {
   ];
 }
 
-function getFirstRowRange(sheet) {
-  const lastColumn = sheet.getLastColumn();
-  const firstRowRange = sheet.getRange(1, 1, 1, lastColumn);
-  return firstRowRange;
-}
-
-function getHMRCTotalByYear(category, year) {
+export function getHMRCTotalByYear(category, year) {
   return category + "-" + year;
-}
-
-function getLastUpdatedColumn(sheet) {
-  const lastUpdated = "Last Updated";
-  let lastUpdatedColumn;
-  const firstRowRange = getFirstRowRange(sheet);
-  const values = firstRowRange.getValues();
-  for (let row in values) {
-    for (let col in values[row]) {
-      const cell = values[row][col];
-
-      newCell = cell.replace(/\n/g, " ");
-
-      if (newCell == lastUpdated) {
-        const lastUpdatedColumnNbr = 1 + parseInt(col, 10);
-        const lastUpdatedCell = firstRowRange.getCell(1, lastUpdatedColumnNbr);
-        const lastUpdatedColumnA1 = lastUpdatedCell.getA1Notation();
-        lastUpdatedColumn = lastUpdatedColumnA1.replace(/[0-9]/g, "");
-        break;
-      }
-    }
-  }
-
-  return lastUpdatedColumn;
 }
 
 function getLineNumber() {
@@ -502,12 +473,12 @@ function isAccountSheet(sheet) {
   return false;
 }
 
-function isCellAccountBalance(sheet, column) {
+function isCellAccountBalance(sheet:Sheet, column) {
   const accountBalance = "Account Balance";
 
   let isCellAccountBalance = false;
 
-  const firstRowRange = getFirstRowRange(sheet);
+  const firstRowRange = sheet.firstRowRange();
 
   const values = firstRowRange.getValues();
   for (const row in values) {
@@ -571,25 +542,6 @@ function mergeTransactions() {
   transactions.updateBuilderFormulas(transactionFormulas);
 
   transactions.activate();
-}
-
-function monthlyUpdate() {
-  const ourFinances = new OurFinances();
-  ourFinances.bankAccounts.showMonthly();
-}
-
-function onEdit(event) {
-  const trigger = new Trigger(event);
-  const sheet = trigger.getSheet();
-  const sheetName = trigger.getSheetName();
-
-  if (sheetName == HMRC_S.SHEET.NAME) {
-    const hmrcS = new HMRC_S();
-    hmrcS.handleEdit(trigger);
-  }
-
-  const bankAccounts = new BankAccounts();
-  bankAccounts.updateLastUpdatedBySheet(sheet);
 }
 
 export function onOpen(): void {

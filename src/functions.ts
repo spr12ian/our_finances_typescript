@@ -1,16 +1,17 @@
 /// <reference types="google-apps-script" />
 
-
 import { AccountSheet } from "./AccountSheet";
 import { OurFinances } from "./OurFinances";
 import { Sheet } from "./Sheet";
-import { Spreadsheet } from './Spreadsheet';
+import { Spreadsheet } from "./Spreadsheet";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
 
 // Function declarations
 
 // Eagerly compute once for performance
-export const accountSheetNames: string[] = new SpreadsheetSummary(Spreadsheet.getActive())
+export const accountSheetNames: string[] = new SpreadsheetSummary(
+  Spreadsheet.getActive()
+)
   .getSheetNames()
   .filter((name: string) => name.startsWith("_"));
 
@@ -173,21 +174,10 @@ function getDtf() {
   return new Intl.DateTimeFormat(LOCALE);
 }
 
-function getFirstRowRange(sheet) {
-  const lastColumn = sheet.getLastColumn();
-  const firstRowRange = sheet.getRange(1, 1, 1, lastColumn);
-  return firstRowRange;
-}
-
-
-function getHMRCTotalByYear(category, year) {
-  return category + "-" + year;
-}
-
-function getLastUpdatedColumn(sheet) {
+export function getLastUpdatedColumn(sheet: Sheet) {
   const lastUpdated = "Last Updated";
   let lastUpdatedColumn;
-  const firstRowRange = getFirstRowRange(sheet);
+  const firstRowRange = sheet.firstRowRange;
   const values = firstRowRange.getValues();
   for (let row in values) {
     for (let col in values[row]) {
@@ -295,8 +285,10 @@ export function getSheetNamesByType(sheetNameType: string) {
   return sheetNames;
 }
 
-function goToSheet(sheetName) {
-  const sheet = new Sheet(sheetName);
+export function goToSheet(sheetName: string) {
+  const spreadsheet = Spreadsheet.getActive();
+
+  const sheet = spreadsheet.getSheet(sheetName);
 
   // Check if the sheet exists before trying to activate it.
   if (sheet) {
@@ -309,93 +301,17 @@ export function goToSheetLastRow(sheetName: string) {
   sheet.setActiveRange(sheet.getRange(sheet.getLastRow(), 1));
 }
 
-function goToSheet_AHALIF() {
-  goToSheet("_AHALIF");
-}
-
-function goToSheet_CVITRA() {
-  goToSheet("_CVITRA");
-}
-
-function goToSheet_SVI2TJ() {
-  goToSheet("_SVI2TJ");
-}
-
-function goToSheet_SVIGBL() {
-  goToSheet("_SVIGBL");
-}
-
-function goToSheet_SVIIRF() {
-  goToSheet("_SVIIRF");
-}
-
-function goToSheetCategories() {
-  goToSheet("Categories");
-}
-
-function goToSheetCategoryClash() {
-  goToSheet("Category clash");
-}
-
-function goToSheetHMRC_B() {
-  goToSheet(HMRC_B.SHEET_NAME);
-}
-
-function goToSheetHMRC_S() {
-  goToSheet(HMRC_S.SHEET.NAME);
-}
-
-function goToSheetHMRCTransactionsSummary() {
-  goToSheet("HMRC Transactions Summary");
-}
-
-function goToSheetLoanGlenburnie() {
-  goToSheet("Loan Glenburnie");
-}
-
-function goToSheetNotInTransactionCategories() {
-  goToSheet("Not in transaction categories");
-}
-
-function goToSheetPeople() {
-  goToSheet("People");
-}
-
-function goToSheetSW183PTInventory() {
-  goToSheet("SW18 3PT inventory");
-}
-
-function goToSheetTransactionsBuilder() {
-  goToSheet("Transactions builder");
-}
-
-function goToSheetTransactionsByDate() {
-  goToSheet("Transactions by date");
-}
-
-function goToSheetTransactionsCategories() {
-  goToSheet("Transactions categories");
-}
-
-function goToSheetUnlabelledByDate() {
-  goToSheet("Uncategorised by date");
-}
-
-function goToSheetXfersMismatch() {
-  goToSheet("Xfers mismatch");
-}
-
 function isAccountSheet(sheet) {
   if (sheet.getSheetName().startsWith("_")) return true;
   return false;
 }
 
-function isCellAccountBalance(sheet, column) {
+function isCellAccountBalance(sheet: Sheet, column) {
   const accountBalance = "Account Balance";
 
   let isCellAccountBalance = false;
 
-  const firstRowRange = getFirstRowRange(sheet);
+  const firstRowRange = sheet.firstRowRange;
 
   const values = firstRowRange.getValues();
   for (const row in values) {
@@ -489,7 +405,7 @@ function sendEmail(recipient, subject, body, options) {
   return GmailApp.sendEmail(recipient, subject, body, options);
 }
 
-export function sendMeEmail(subject:string, emailBody:string, options) {
+export function sendMeEmail(subject: string, emailBody: string, options) {
   const body = `${subject}\n\n${emailBody}`;
   return sendEmail(getMyEmailAddress(), subject, body, options);
 }

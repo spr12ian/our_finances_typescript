@@ -14,6 +14,12 @@ export class Sheet {
     this.gasSheet = gasSheet;
   }
 
+  get firstRowRange() {
+    const lastColumn = this.gasSheet.getLastColumn();
+    const firstRowRange = this.gasSheet.getRange(1, 1, 1, lastColumn);
+    return firstRowRange;
+  }
+
   get name(): string {
     return this.gasSheet.getName();
   }

@@ -1,5 +1,5 @@
 import type { Sheet } from "./Sheet";
-import { createSheet } from "./SheetFactory";
+import { Spreadsheet } from "./Spreadsheet";
 
 export class BankAccounts {
   private sheet: Sheet;
@@ -24,7 +24,7 @@ export class BankAccounts {
   }
 
   constructor(spreadsheet: Spreadsheet) {
-    this.sheet = createSheet(BankAccounts.SHEET.NAME);
+    this.sheet = spreadsheet.getSheet(BankAccounts.SHEET.NAME);
 
     if (!this.sheet) {
       throw new Error(`Sheet '${BankAccounts.SHEET.NAME}' not found.`);

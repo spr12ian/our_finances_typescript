@@ -31,9 +31,10 @@
     "url": "git+https://github.com/spr12ian/our_finances_typescript.git"
   },
   "scripts": {
-    "copy-appsscript": "cp appsscript.json build/",
     "build": "rollup -c && npx tsx scripts/generateShim.ts",
     "clean": "rm -rf build",
+    "copy-appsscript": "cp appsscript.json build/",
+    "extract-gas-functions": "npx tsx scripts/extractGASFunctionsFromSrc.ts",
     "dev": "concurrently \"rollup -c -w\" \"npm run watch\"",
     "lint": "eslint . --ext .ts",
     "push": "clasp push",

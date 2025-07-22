@@ -1,5 +1,5 @@
 /// <reference types="google-apps-script" />
-
+import * as GAS from "./gasExports";
 import { exportToGlobal } from "./exportToGlobal";
 import { accountSheetNames, goToSheetLastRow } from "./functions";
 import { shimGlobals } from "./shimGlobals";
@@ -29,12 +29,14 @@ import { shimGlobals } from "./shimGlobals";
 const globalsToExport: Record<string, unknown> = {};
 
 for (const name of shimGlobals) {
-  const globalKey = `GAS${name}`;
-  const fn = (globalThis as any)[globalKey];
+  const key = `GAS_${name}`;
+  const fn = (GAS as Record<string, unknown>)[key];
   if (typeof fn === "function") {
+    // @ts-expect-error: dynamic assignment to globalThis
+    globalThis[key] = fn;
     globalsToExport[name] = fn;
   } else {
-    console.warn(`⚠️ Skipping export: ${globalKey} is not a function`);
+    console.warn(`⚠️ GAS function not found: ${key}`);
   }
 }
 exportToGlobal(globalsToExport);
@@ -42,4 +44,4 @@ exportToGlobal(globalsToExport);
 console.log("✅ Global functions registered.");
 
 // Export this list for the shim generator
-(globalThis as any).__exportedGlobals__ = Object.keys(globalsToExport);
+(globalThis as any).__exportedGlobals__ = Object.keys(globalsToExport).sort();

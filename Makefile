@@ -21,7 +21,7 @@ SCRIPT_ID := $(OUR_FINANCES_SCRIPT_ID)
 # Targets
 # ─────────────────────────────────────────────
 
-build: clean ## Bundle TypeScript files with Rollup and generate shim
+build: extract-gas-functions ## Bundle TypeScript files with Rollup and generate shim
 	mkdir $(BUILD_DIR)
 	npm run build
 
@@ -33,6 +33,9 @@ copy-appsscript: build ## Copy appsscript.json into $(BUILD_DIR)
 
 dev: ## Run rollup watch and GAS auto-deploy concurrently
 	npm run dev
+
+extract-gas-functions: clean ## Extract GAS_ functions from src
+	npm run extract-gas-functions
 
 install: ## Ensure clasp and dependencies are ready
 	@echo "📦 Installing dev dependencies..."

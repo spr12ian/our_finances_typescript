@@ -547,7 +547,7 @@ function mergeTransactions() {
   transactions.activate();
 }
 
-export function GASonOpen(): void {
+export function GAS_onOpen(): void {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
 

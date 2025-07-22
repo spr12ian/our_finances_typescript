@@ -34,7 +34,7 @@ function dailySorts() {
 }
 
 // onDateChange is not a Google trigger; it must be created under Triggers (time based)!!!
-export function onDateChange() {
+export function GAS_onDateChange() {
   sendDailyEmail();
   dailySorts();
 }

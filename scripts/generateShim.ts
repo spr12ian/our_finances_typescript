@@ -8,7 +8,7 @@ const shimFile = path.resolve(__dirname, "../build/shim.gs");
 const lines = [
   "// Auto-generated shim.gs — do not edit manually",
   ...shimGlobals.map(
-    (name) => `function ${name}() { return globalThis.GAS${name}(); }`
+    (name) => `function ${name}() { return globalThis.GAS_${name}(); }`
   ),
 ];
 

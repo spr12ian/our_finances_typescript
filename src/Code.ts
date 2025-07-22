@@ -1,12 +1,8 @@
 /// <reference types="google-apps-script" />
 
 import { exportToGlobal } from "./exportToGlobal";
-import { accountSheetNames, goToSheetLastRow, logTime } from "./functions";
-import { onDateChange } from "./onDateChange";
-import { onOpen } from "./onOpen";
-function myScheduledTask():void {
-  logTime("Hello!");
-}
+import { accountSheetNames, goToSheetLastRow } from "./functions";
+import { shimGlobals } from "./shimGlobals";
 /**
  * Application entry point – executed when the script is loaded.
  */
@@ -27,17 +23,23 @@ function myScheduledTask():void {
   exportToGlobal({ helpers });
 })();
 
-const exportedGlobals = {
-  myScheduledTask,
-  onDateChange,
-  onOpen,
-};
 // ────────────────────────────────────────────────────────────
 // Register trigger handlers
 // ────────────────────────────────────────────────────────────
-exportToGlobal(exportedGlobals);
+const globalsToExport: Record<string, unknown> = {};
+
+for (const name of shimGlobals) {
+  const globalKey = `GAS${name}`;
+  const fn = (globalThis as any)[globalKey];
+  if (typeof fn === "function") {
+    globalsToExport[name] = fn;
+  } else {
+    console.warn(`⚠️ Skipping export: ${globalKey} is not a function`);
+  }
+}
+exportToGlobal(globalsToExport);
 
 console.log("✅ Global functions registered.");
 
 // Export this list for the shim generator
-(globalThis as any).__exportedGlobals__ = Object.keys(exportedGlobals);
+(globalThis as any).__exportedGlobals__ = Object.keys(globalsToExport);

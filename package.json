@@ -5,7 +5,7 @@
   },
   "description": "GAS repository",
   "devDependencies": {
-    "@google/clasp": "^2.4.2",
+    "@google/clasp": "^3.0.6-alpha",
     "@rollup/plugin-commonjs": "^25.0.0",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@rollup/plugin-typescript": "^11.1.2",
@@ -31,8 +31,8 @@
     "url": "git+https://github.com/spr12ian/our_finances_typescript.git"
   },
   "scripts": {
-    "copy-files": "cp appsscript.json shim.js build/",
-    "build": "rollup -c && node scripts/generateShim.js",
+    "copy-appsscript": "cp appsscript.json build/",
+    "build": "rollup -c && npx tsx scripts/generateShim.ts",
     "clean": "rm -rf build",
     "dev": "concurrently \"rollup -c -w\" \"npm run watch\"",
     "lint": "eslint . --ext .ts",

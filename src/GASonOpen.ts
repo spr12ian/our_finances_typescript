@@ -1,11 +1,10 @@
 /// <reference types="google-apps-script" />
 
-
+import { getSheetNamesByType } from "./functions";
 import { OurFinances } from "./OurFinances";
+import type { Sheet } from "./Sheet";
 import { createSheet } from "./SheetFactory";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
-import { getSheetNamesByType } from "./functions";
-import type {Sheet} from "./Sheet"
 
 // Function declarations
 
@@ -197,7 +196,11 @@ function buildSectionsMenu_(ui: GoogleAppsScript.Base.Ui) {
     .addToUi();
 }
 
-function createMenu(ui: GoogleAppsScript.Base.Ui, menuCaption:string, menuItemArray) {
+function createMenu(
+  ui: GoogleAppsScript.Base.Ui,
+  menuCaption: string,
+  menuItemArray
+) {
   const menu = ui.createMenu(menuCaption);
 
   menuItemArray.forEach(([itemName, itemFunction]) => {
@@ -383,7 +386,7 @@ function getLineNumber() {
   }
 }
 
-function goToSheet(sheetName:string) {
+function goToSheet(sheetName: string) {
   const sheet = createSheet(sheetName);
 
   // Check if the sheet exists before trying to activate it.
@@ -473,7 +476,7 @@ function isAccountSheet(sheet) {
   return false;
 }
 
-function isCellAccountBalance(sheet:Sheet, column) {
+function isCellAccountBalance(sheet: Sheet, column) {
   const accountBalance = "Account Balance";
 
   let isCellAccountBalance = false;
@@ -544,7 +547,7 @@ function mergeTransactions() {
   transactions.activate();
 }
 
-export function onOpen(): void {
+export function GASonOpen(): void {
   try {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
 

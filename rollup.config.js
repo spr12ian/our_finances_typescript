@@ -15,7 +15,7 @@ export default {
     resolve(),
     commonjs(),
     typescript({
-      tsconfig: './tsconfig.json',
+      tsconfig: 'config/tsconfig.clasp.json',
     }),
   ],
   treeshake: false

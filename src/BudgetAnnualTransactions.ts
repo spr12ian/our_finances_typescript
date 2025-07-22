@@ -37,7 +37,9 @@ export class BudgetAnnualTransactions {
 
   // Get all scheduled transactions from the sheet
   getScheduledTransactions() {
-    return this.sheet.getDataRange().getValues();
+    const values = this.sheet.getDataRange().getValues();
+    // Lose the header row
+    return values.slice(1);
   }
 
   // Main method to get upcoming debits
@@ -47,7 +49,6 @@ export class BudgetAnnualTransactions {
 
     // Fetch scheduled transactions and remove the header row
     const scheduledTransactions = this.getScheduledTransactions();
-    scheduledTransactions.shift(); // Remove header row
 
     if (!scheduledTransactions.length) return upcomingPayments;
 

@@ -35,7 +35,9 @@ export class BudgetMonthlyTransactions {
   }
 
   getScheduledTransactions() {
-    return this.sheet.getDataRange().getValues();
+    const values = this.sheet.getDataRange().getValues();
+    // Lose the header row
+    return values.slice(1);
   }
 
   getUpcomingDebits(howManyDaysAhead:number) {
@@ -43,9 +45,6 @@ export class BudgetMonthlyTransactions {
     const today = getNewDate();
 
     const scheduledTransactions = this.getScheduledTransactions();
-
-    // Remove the header row
-    scheduledTransactions.shift();
 
     if (scheduledTransactions.length > 0) {
       upcomingPayments += `\nMonthly payment due:\n`;

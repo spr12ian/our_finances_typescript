@@ -32,7 +32,9 @@ export class BudgetWeeklyTransactions {
   }
 
   getScheduledTransactions() {
-    return this.sheet.getDataRange().getValues();
+    const values = this.sheet.getDataRange().getValues();
+    // Lose the header row
+    return values.slice(1);
   }
 
   getUpcomingDebits(howManyDaysAhead:number) {
@@ -40,9 +42,6 @@ export class BudgetWeeklyTransactions {
     const today = getNewDate();
 
     const scheduledTransactions = this.getScheduledTransactions();
-
-    // Lose the header row
-    scheduledTransactions.shift();
 
     scheduledTransactions.forEach((transaction) => {
       if (

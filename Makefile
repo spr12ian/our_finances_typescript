@@ -21,15 +21,15 @@ SCRIPT_ID := $(OUR_FINANCES_SCRIPT_ID)
 # Targets
 # ─────────────────────────────────────────────
 
-appsscript: build ## Copy appsscript.json into $(BUILD_DIR)
-	npm run appsscript
-
 build: clean ## Bundle TypeScript files with Rollup
 	mkdir $(BUILD_DIR)
 	npm run build
 
 clean: ## Remove build output directories
 	npm run clean
+
+copy-files: build ## Copy appsscript.json and shim.gs into $(BUILD_DIR)
+	npm run copy-files
 
 dev: ## Run rollup watch and GAS auto-deploy concurrently
 	npm run dev
@@ -50,7 +50,7 @@ install: ## Ensure clasp and dependencies are ready
 lint: ## Run ESLint on .ts files
 	npm run lint
 
-push: appsscript ## Push to Google Apps Script using clasp
+push: copy-files ## Push to Google Apps Script using clasp
 	npm run push
 
 typecheck: ## Run TypeScript without emitting output

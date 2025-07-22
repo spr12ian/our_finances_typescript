@@ -1,21 +1,20 @@
 {
   "compilerOptions": {
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
     "experimentalDecorators": true,
-    "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "lib": ["ES2021", "DOM", "DOM.Iterable"],
     "module": "ES2020",
     "moduleResolution": "Node",
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "outDir": "build",
+    "outDir": "../build",
+    "rootDir": "../",
     "skipLibCheck": true,
-    "strict": true,
     "target": "ES2021",
+    "types": ["node"],
     "useDefineForClassFields": false
-  }
+  },
+  "exclude": ["../build"],
+  "extends": "../tsconfig.json",
+  "include": ["../scripts/**/*.ts"]
 }

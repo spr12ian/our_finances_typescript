@@ -1,17 +1,15 @@
 /// <reference types="google-apps-script" />
 
-import { Spreadsheet } from "./Spreadsheet";
 import { exportToGlobal } from "./exportToGlobal";
-import { accountSheetNames, goToSheetLastRow } from "./functions";
+import { accountSheetNames, goToSheetLastRow, logTime } from "./functions";
 import { onDateChange } from "./onDateChange";
 import { onOpen } from "./onOpen";
-
+function myScheduledTask():void {
+  logTime("Hello!");
+}
 /**
  * Application entry point – executed when the script is loaded.
  */
-
-
-
 
 // ────────────────────────────────────────────────────────────
 //  Dynamically create helper functions
@@ -29,10 +27,17 @@ import { onOpen } from "./onOpen";
   exportToGlobal({ helpers });
 })();
 
+const exportedGlobals = {
+  myScheduledTask,
+  onDateChange,
+  onOpen,
+};
 // ────────────────────────────────────────────────────────────
 // Register trigger handlers
 // ────────────────────────────────────────────────────────────
-exportToGlobal({
-  onDateChange,
-  onOpen,
-});
+exportToGlobal(exportedGlobals);
+
+console.log("✅ Global functions registered.");
+
+// Export this list for the shim generator
+(globalThis as any).__exportedGlobals__ = Object.keys(exportedGlobals);

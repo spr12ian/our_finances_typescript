@@ -361,6 +361,10 @@ function isSingleCell(range) {
   return range.getNumColumns() === 1 && range.getNumRows() === 1;
 }
 
+export function logTime(label: string) {
+  console.log(`${label}: ${new Date().toISOString()}`);
+}
+
 function copyKeys() {
   const transactionsBuilder = new TransactionsBuilder();
   transactionsBuilder.copyIfSheetExists();

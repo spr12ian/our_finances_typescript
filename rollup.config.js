@@ -4,7 +4,7 @@ import resolve from '@rollup/plugin-node-resolve';
 
 
 export default {
-  input: 'src/index.ts',
+  input: 'src/Code.ts',
   output: {
     file: 'build/Code.gs',
     format: 'iife',

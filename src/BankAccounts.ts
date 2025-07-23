@@ -70,14 +70,14 @@ export class BankAccounts {
 
   hideColumns(columnsToHide) {
     const sheet = this.sheet;
-    const ranges = sheet.getRangeList(columnsToHide);
+    const ranges = sheet.raw.getRangeList(columnsToHide);
 
     ranges.getRanges().forEach((range) => sheet.hideColumn(range));
   }
 
   removeFilter() {
     const sheet = this.sheet;
-    const existingFilter = sheet.getFilter();
+    const existingFilter = sheet.raw.getFilter();
     if (existingFilter) {
       existingFilter.remove();
     }
@@ -88,7 +88,7 @@ export class BankAccounts {
     const sheet = this.sheet;
 
     this.removeFilter();
-    sheet.showColumns(1, sheet.getLastColumn());
+    sheet.showColumns(1, sheet.raw.getLastColumn());
     sheet.activate();
   }
 
@@ -143,7 +143,7 @@ export class BankAccounts {
       key
     );
 
-    const lastUpdateCell = this.sheet.getRange(
+    const lastUpdateCell = this.sheet.raw.getRange(
       row,
       BankAccounts.COLUMNS.BALANCE_UPDATED
     );

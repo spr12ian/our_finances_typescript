@@ -6,4 +6,5 @@ export { GAS_myScheduledTask } from "./GAS_myScheduledTask";
 export { GAS_onEdit } from "./GAS_onEdit";
 export { GAS_onOpen } from "./GAS_onOpen";
 export { GAS_sendDailyEmail } from "./GAS_sendDailyEmail";
+export { GAS_showAllAccounts } from "./GAS_showAllAccounts";
 export { GAS_sortSheets } from "./GAS_sortSheets";

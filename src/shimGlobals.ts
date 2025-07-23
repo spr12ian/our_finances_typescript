@@ -7,6 +7,7 @@ export const shimGlobals = [
   "onEdit",
   "onOpen",
   "sendDailyEmail",
+  "showAllAccounts",
   "sortSheets",
 ] as const;
 

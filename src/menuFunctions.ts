@@ -101,11 +101,6 @@ export function monthlyUpdate() {
   ourFinances.bankAccounts.showMonthly();
 }
 
-export function showAllAccounts() {
-  const ourFinances = new OurFinances();
-  ourFinances.showAllAccounts();
-}
-
 export function trimGoogleSheets() {
   const spreadsheet: Spreadsheet = Spreadsheet.getActive();
   const sheets = spreadsheet.sheets;

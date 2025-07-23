@@ -1,4 +1,5 @@
 /// <reference types="google-apps-script" />
+import { AccountSheet } from "./AccountSheet";
 import { BankAccounts } from "./BankAccounts";
 import { BankDebitsDue } from "./BankDebitsDue";
 import { BudgetAdhocTransactions } from "./BudgetAdhocTransactions";
@@ -34,28 +35,36 @@ export class OurFinances {
 
   get budgetAdhocTransactions() {
     if (typeof this._budgetAdhocTransactions === "undefined") {
-      this._budgetAdhocTransactions = new BudgetAdhocTransactions(this._spreadsheet);
+      this._budgetAdhocTransactions = new BudgetAdhocTransactions(
+        this._spreadsheet
+      );
     }
     return this._budgetAdhocTransactions;
   }
 
   get budgetAnnualTransactions() {
     if (typeof this._budgetAnnualTransactions === "undefined") {
-      this._budgetAnnualTransactions = new BudgetAnnualTransactions(this._spreadsheet);
+      this._budgetAnnualTransactions = new BudgetAnnualTransactions(
+        this._spreadsheet
+      );
     }
     return this._budgetAnnualTransactions;
   }
 
   get budgetMonthlyTransactions() {
     if (typeof this._budgetMonthlyTransactions === "undefined") {
-      this._budgetMonthlyTransactions = new BudgetMonthlyTransactions(this._spreadsheet);
+      this._budgetMonthlyTransactions = new BudgetMonthlyTransactions(
+        this._spreadsheet
+      );
     }
     return this._budgetMonthlyTransactions;
   }
 
   get budgetWeeklyTransactions() {
     if (typeof this._budgetWeeklyTransactions === "undefined") {
-      this._budgetWeeklyTransactions = new BudgetWeeklyTransactions(this._spreadsheet);
+      this._budgetWeeklyTransactions = new BudgetWeeklyTransactions(
+        this._spreadsheet
+      );
     }
     return this._budgetWeeklyTransactions;
   }
@@ -79,7 +88,7 @@ export class OurFinances {
   }
 
   get upcomingDebits() {
-    const howManyDaysAhead=this.bankDebitsDue.howManyDaysAhead;
+    const howManyDaysAhead = this.bankDebitsDue.howManyDaysAhead;
     // Collect upcoming debits from different sources
     return [
       this.bankDebitsDue.getUpcomingDebits(howManyDaysAhead),
@@ -90,8 +99,16 @@ export class OurFinances {
     ];
   }
 
-  get url():string {
-    return this._spreadsheet.url
+  get url(): string {
+    return this._spreadsheet.url;
+  }
+
+  applyDescriptionReplacements() {
+    const activeSheet = this._spreadsheet.activeSheet;
+    const accountSheet = new AccountSheet(activeSheet);
+    if (accountSheet) {
+      accountSheet.applyDescriptionReplacements();
+    }
   }
 
   showAllAccounts() {

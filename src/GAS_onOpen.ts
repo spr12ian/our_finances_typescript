@@ -245,7 +245,7 @@ function findNamedRangeUsage() {
   findUsageByNamedRange("BRIAN_HALIFAX_BALANCE");
 }
 
-function formatSheet() {
+export function formatSheet() {
   const activeSheet = activeSpreadsheet.getActiveSheet();
 
   if (!activeSheet) {

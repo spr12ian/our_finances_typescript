@@ -3,7 +3,7 @@
 import { AccountSheet } from "./AccountSheet";
 import { OurFinances } from "./OurFinances";
 import { Sheet } from "./Sheet";
-import { Spreadsheet, Spreadsheet } from './Spreadsheet';
+import { Spreadsheet } from './Spreadsheet';
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
 
 // Function declarations
@@ -367,7 +367,7 @@ export function logTime(label: string) {
   console.log(`${label}: ${new Date().toISOString()}`);
 }
 
-function mergeTransactions() {
+export function mergeTransactions() {
   const transactions = new Transactions();
   const transactionsBuilder = new TransactionsBuilder();
   transactionsBuilder.copyIfSheetExists();
@@ -378,7 +378,7 @@ function mergeTransactions() {
   transactions.activate();
 }
 
-function openAccounts() {
+export function openAccounts() {
   const ourFinances = new OurFinances();
   ourFinances.bankAccounts.showOpenAccounts();
 }

@@ -1,51 +1,20 @@
 /// <reference types="google-apps-script" />
-import type { Sheet } from "./Sheet";
+import { AccountSheetMeta } from "./AccountSheetMeta";
 import { BankAccounts } from "./BankAccounts";
 import { DescriptionReplacements } from "./DescriptionReplacements";
+import type { Sheet } from "./Sheet";
+import { Spreadsheet } from "./Spreadsheet";
 import { xLookup } from "./xLookup";
 
 export class AccountSheet {
-  private sheet: Sheet;
-  static get COLUMNS() {
-    return {
-      DATE: 1,
-      DESCRIPTION: 2,
-      CREDIT: 3,
-      DEBIT: 4,
-      NOTE: 5,
-      COUNTERPARTY: 6,
-      COUNTERPARTY_DATE: 7,
-      BALANCE: 8,
-    };
-  }
-
-  static get ROW_DATA_STARTS() {
-    return 2;
-  }
-
-  static get HEADERS() {
-    return [
-      "Date",
-      "Description",
-      "Credit (£)",
-      "Debit (£)",
-      "Note",
-      "CPTY",
-      "Date CPTY",
-      "Balance (£)",
-    ];
-  }
-
-  static get MINIMUM_COLUMNS() {
-    return 8;
-  }
-
-  constructor(sheet: Sheet) {
-    const sheetName = sheet.name;
-    if (sheetName[0] !== "_") {
-      throw new Error(`${sheetName} is NOT an account sheet`);
+  constructor(
+    private readonly sheet: Sheet,
+    private readonly accountMeta = AccountSheetMeta,
+    private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
+  ) {
+    if (sheet.name[0] !== "_") {
+      throw new Error(`${sheet.name} is NOT an account sheet`);
     }
-    this.sheet = sheet;
   }
 
   addDefaultNotes() {
@@ -66,10 +35,10 @@ export class AccountSheet {
       this.validateSheet();
       this.setSheetFormatting();
       this.addDefaultNotes();
-      this.convertColumnToUppercase(AccountSheet.COLUMNS.DESCRIPTION);
-      this.convertColumnToUppercase(AccountSheet.COLUMNS.NOTE);
-      this.setColumnWidth(AccountSheet.COLUMNS.DESCRIPTION, 500);
-      this.setColumnWidth(AccountSheet.COLUMNS.NOTE, 170);
+      this.convertColumnToUppercase(this.accountMeta.COLUMNS.DESCRIPTION);
+      this.convertColumnToUppercase(this.accountMeta.COLUMNS.NOTE);
+      this.setColumnWidth(this.accountMeta.COLUMNS.DESCRIPTION, 500);
+      this.setColumnWidth(this.accountMeta.COLUMNS.NOTE, 170);
     } catch (error) {
       throw error;
     }
@@ -85,7 +54,7 @@ export class AccountSheet {
     const lastRow = this.sheet.raw.getLastRow();
     const numRows = lastRow - START_ROW + 1;
 
-    const range = this.sheet.getRange(START_ROW, column, numRows, 1);
+    const range = this.sheet.raw.getRange(START_ROW, column, numRows, 1);
     const values = range
       .getValues()
       .map((row: string[]) => [row[0]?.toString().toUpperCase()]);
@@ -116,23 +85,15 @@ export class AccountSheet {
     });
   }
 
-  get spreadsheet() {
-    return this.sheet.spreadsheet;
-  }
-
-  get spreadsheetName() {
-    return this.sheet.spreadsheetName;
-  }
-
   getExpectedHeader(column: number) {
-    return column === AccountSheet.COLUMNS.DESCRIPTION
+    return column === this.accountMeta.COLUMNS.DESCRIPTION
       ? xLookup(
           this.getSheetName().slice(1),
-          activeSpreadsheet.getSheetByName(BankAccounts.SHEET.NAME),
+          this.spreadsheet.getSheet(BankAccounts.SHEET.NAME),
           "A",
           "AQ"
         )
-      : AccountSheet.HEADERS[column - 1];
+      : this.accountMeta.HEADERS[column - 1];
   }
 
   getSheetName() {
@@ -150,10 +111,9 @@ export class AccountSheet {
   setCounterpartyValidation(a1range: string) {
     const range = this.sheet.getRange(a1range);
     const validationRange = `'${BankAccounts.SHEET.NAME}'!$A$2:$A`;
-    const rule = gasSpreadsheetApp
-      .newDataValidation()
+    const rule = SpreadsheetApp.newDataValidation()
       .requireValueInRange(
-        this.sheet.getParent().getRange(validationRange),
+        this.sheet.raw.getParent().getRange(validationRange),
         true
       )
       .setAllowInvalid(false)
@@ -165,8 +125,7 @@ export class AccountSheet {
 
   setDateValidation(a1range: string) {
     const range = this.sheet.getRange(a1range);
-    const rule = gasSpreadsheetApp
-      .newDataValidation()
+    const rule = SpreadsheetApp.newDataValidation()
       .requireDate()
       .setAllowInvalid(false)
       .setHelpText("Please enter a valid date in DD/MM/YYYY format.")
@@ -195,7 +154,12 @@ export class AccountSheet {
     dataRange.clearDataValidations();
 
     // Apply formatting in batches
-    const headerRange = sheet.getRange(1, 1, 1, AccountSheet.MINIMUM_COLUMNS);
+    const headerRange = sheet.raw.getRange(
+      1,
+      1,
+      1,
+      this.accountMeta.MINIMUM_COLUMNS
+    );
     headerRange.setFontWeight("bold").setHorizontalAlignment("left");
 
     this.setCounterpartyValidation("F2:F");
@@ -208,15 +172,15 @@ export class AccountSheet {
   }
 
   validateFrozenRows() {
-    const frozenRows = this.sheet.getFrozenRows();
+    const frozenRows = this.sheet.raw.getFrozenRows();
     if (frozenRows !== 1) {
       throw new Error(`There should be 1 frozen row; found ${frozenRows}`);
     }
   }
 
   validateHeaders() {
-    const headers = this.sheet
-      .getRange(1, 1, 1, AccountSheet.MINIMUM_COLUMNS)
+    const headers = this.sheet.raw
+      .getRange(1, 1, 1, this.accountMeta.MINIMUM_COLUMNS)
       .getValues()[0];
     headers.forEach((value: string, index: number) => {
       const expected = this.getExpectedHeader(index + 1);
@@ -229,11 +193,11 @@ export class AccountSheet {
   }
 
   validateMinimumColumns() {
-    const lastColumn = this.sheet.getLastColumn();
-    if (lastColumn < AccountSheet.MINIMUM_COLUMNS) {
+    const lastColumn = this.sheet.raw.getLastColumn();
+    if (lastColumn < this.accountMeta.MINIMUM_COLUMNS) {
       throw new Error(
         `Sheet ${this.getSheetName()} requires at least ${
-          AccountSheet.MINIMUM_COLUMNS
+          this.accountMeta.MINIMUM_COLUMNS
         } columns, but found ${lastColumn}`
       );
     }

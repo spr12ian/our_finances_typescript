@@ -1,11 +1,6 @@
-import { Spreadsheet } from './Spreadsheet';
-import { AccountSheet } from './AccountSheet';
+import { OurFinances } from "./OurFinances";
 
 export function GAS_applyDescriptionReplacements() {
-  const spreadsheet = Spreadsheet.getActive();
-  const activeSheet = spreadsheet.activeSheet;
-  const accountSheet = new AccountSheet(activeSheet);
-  if (accountSheet) {
-    accountSheet.applyDescriptionReplacements();
-  }
+  const ourFinances = new OurFinances();
+  ourFinances.applyDescriptionReplacements();
 }

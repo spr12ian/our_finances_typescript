@@ -1,31 +1,35 @@
 /// <reference types="google-apps-script" />
-
+import { AccountSheetMeta } from "./AccountSheetMeta";
+import { DescriptionReplacementsMeta } from "./DescriptionReplacementsMeta";
 import type { Sheet } from "./Sheet";
 import { createSheet } from "./SheetFactory";
 
 export class DescriptionReplacements {
-  private sheet: Sheet;
-
   static get SHEET() {
     return {
       NAME: "Description replacements",
     };
   }
-  constructor() {
-    this.sheet = createSheet(DescriptionReplacements.SHEET.NAME);
+  constructor(
+    private readonly sheet: Sheet,
+    private readonly accountMeta = AccountSheetMeta
+  ) {
+    this.sheet = createSheet(DescriptionReplacementsMeta.SHEET.NAME);
   }
 
   applyReplacements(accountSheet: Sheet) {
-    const accountSheetName = accountSheet.sheetName;
-    if (accountSheetName === this.getSheetName()) {
+    const accountSheetName = accountSheet.name;
+    if (accountSheetName === this.name) {
       throw new Error(
         `Cannot applyDescriptionReplacements to '${accountSheetName}'`
       );
     }
 
-    const headerValue = accountSheet
-      .getRange(1, AccountSheet.COLUMNS.DESCRIPTION)
-      .getValue();
+    const DESCRIPTION = this.accountMeta.COLUMNS.DESCRIPTION;
+    const ROW_DATA_STARTS = this.accountMeta.ROW_DATA_STARTS;
+
+    const headerValue = accountSheet.raw.getRange(1, DESCRIPTION).getValue();
+
     if (!headerValue.startsWith("Description")) {
       throw new Error(
         `Unexpected description header '${headerValue}' in sheet: ${accountSheetName}`
@@ -33,11 +37,11 @@ export class DescriptionReplacements {
     }
 
     const lastRow = accountSheet.raw.getLastRow();
-    const numRows = lastRow + 1 - AccountSheet.ROW_DATA_STARTS;
+    const numRows = lastRow + 1 - ROW_DATA_STARTS;
 
-    const range = accountSheet.getRange(
-      AccountSheet.ROW_DATA_STARTS,
-      AccountSheet.COLUMNS.DESCRIPTION,
+    const range = accountSheet.raw.getRange(
+      this.accountMeta.ROW_DATA_STARTS,
+      this.accountMeta.COLUMNS.DESCRIPTION,
       numRows,
       1
     );
@@ -45,7 +49,7 @@ export class DescriptionReplacements {
 
     let numReplacements = 0;
 
-    const replacementsMap = this.getReplacementsMap();
+    const replacementsMap: Record<string, string> = this.getReplacementsMap();
 
     for (let row = 0; row < values.length; row++) {
       const description = values[row][0];
@@ -60,20 +64,18 @@ export class DescriptionReplacements {
     }
   }
 
-  getReplacementsMap() {
+  getReplacementsMap(): Record<string, string> {
     const replacements = this.sheet.getDataRange().getValues().slice(1);
 
     return replacements.reduce((map, [description, replacement]) => {
-      map[description] = replacement;
+      if (description && replacement) {
+        map[String(description)] = String(replacement);
+      }
       return map;
-    }, {});
+    }, {} as Record<string, string>);
   }
 
-  getSheetName() {
-    return this.sheet.getSheetName();
-  }
-
-  getSheet() {
-    return this.sheet;
+  get name() {
+    return this.sheet.name;
   }
 }

@@ -5,7 +5,7 @@
  * Usage:
  *   exportToGlobal({ onOpen, doGet, myFunction });
  */
-export function exportToGlobal(globals: Record<string, unknown>): void {
+export function exportToGlobalThis(globals: Record<string, unknown>): void {
   for (const [key, value] of Object.entries(globals)) {
     if (typeof value === "function") {
       // Functions can be called directly from GAS

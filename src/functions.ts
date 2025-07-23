@@ -424,7 +424,7 @@ function sortGoogleSheets() {
   }
 }
 
-function sortSheetByFirstColumn(sheet) {
+function sortSheetByFirstColumn(sheet:Sheet) {
   // Get the range that contains data
   const dataRange = sheet.getDataRange();
 

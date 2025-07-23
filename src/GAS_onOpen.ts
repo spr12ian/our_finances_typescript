@@ -9,20 +9,10 @@ import { SpreadsheetSummary } from "./SpreadsheetSummary";
 
 // Function declarations
 
-export function applyDescriptionReplacements() {
-  const activeSheet = activeSpreadsheet.getActiveSheet();
-  const accountSheet = new AccountSheet(activeSheet);
-  if (accountSheet) {
-    accountSheet.applyDescriptionReplacements();
-  }
-}
+
 
 export function balanceSheet() {
   goToSheet("Balance sheet");
-}
-
-export function budget() {
-  goToSheet("Budget");
 }
 
 export function budgetAnnualTransactions() {

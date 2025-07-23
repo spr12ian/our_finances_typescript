@@ -1,9 +1,19 @@
+import { AccountSheet } from "./AccountSheet";
 import { goToSheet } from "./functions";
 import { SHEET as HMRC_B_SHEET } from "./HMRC_B_meta";
 import { SHEET as HMRC_S_SHEET } from "./HMRC_S_meta";
 import { OurFinances } from "./OurFinances";
 import { Spreadsheet } from "./Spreadsheet";
 import { TransactionsBuilder } from "./TransactionsBuilder";
+
+export function applyDescriptionReplacements() {
+  const spreadsheet = Spreadsheet.getActive();
+  const activeSheet = spreadsheet.activeSheet;
+  const accountSheet = new AccountSheet(activeSheet);
+  if (accountSheet) {
+    accountSheet.applyDescriptionReplacements();
+  }
+}
 
 export function copyKeys() {
   const transactionsBuilder = new TransactionsBuilder();

@@ -105,19 +105,26 @@ export class Sheet {
   }
 
   sortByFirstColumnOmittingHeader() {
-    // Get the range that contains data
-    const dataRange = this.gasSheet.getDataRange();
+    const sheet = this.gasSheet;
+    const lastRow = sheet.getLastRow();
+    const lastCol = sheet.getLastColumn();
 
-    // Get the number of rows and columns
-    const numRows = dataRange.getNumRows();
-    const numCols = dataRange.getNumColumns();
+    // Skip sheets with no data rows
+    if (lastRow <= 1 || lastCol === 0) {
+      console.log(`${sheet.getSheetName()} skipped: no data to sort`);
+      return;
+    }
 
-    // Get the range excluding the first row
-    const rangeToSort = this.gasSheet.getRange(2, 1, numRows - 1, numCols);
-
-    // Sort the range by the first column (column 1) in ascending order
-    rangeToSort.sort({ column: 1, ascending: true });
+    try {
+      const range = sheet.getRange(2, 1, lastRow - 1, lastCol);
+      const startTime = Date.now();
+      range.sort({ column: 1, ascending: true });
+      console.log(`${sheet.getSheetName()} sorted in ${Date.now() - startTime}ms`);
+    } catch (error) {
+      console.error(`Failed to sort ${sheet.getSheetName()}: ${error.message}`);
+    }
   }
+
 
   trimSheet(): Sheet {
     this.deleteExcessColumns();

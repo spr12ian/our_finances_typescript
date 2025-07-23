@@ -395,7 +395,7 @@ function sendEmail(recipient, subject, body, options) {
   return GmailApp.sendEmail(recipient, subject, body, options);
 }
 
-export function sendMeEmail(subject: string, emailBody: string, options) {
+export function sendMeEmail(subject: string, emailBody: string, options?:GoogleAppsScript.Gmail.GmailAdvancedOptions) {
   const body = `${subject}\n\n${emailBody}`;
   return sendEmail(getMyEmailAddress(), subject, body, options);
 }

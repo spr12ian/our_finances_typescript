@@ -3,24 +3,16 @@ import { exportToGlobalThis } from "./exportToGlobal";
 import { accountSheetNames, goToSheetLastRow } from "./functions";
 import * as GAS from "./gasExports";
 import { shimGlobals } from "./shimGlobals";
+import { registerDynamicAccountFunctions } from "./registerDynamicAccountFunctions";
 /**
  * Application entry point – executed when the script is loaded.
  */
 
 // ────────────────────────────────────────────────────────────
-//  Dynamically create helper functions
+//  Dynamically create account menu functions
 // ────────────────────────────────────────────────────────────
 (() => {
-  // Produce a map like { dynamicAccountCash: () => void, … }
-  const helpers: Record<string, () => void> = {};
-
-  for (const name of accountSheetNames) {
-    const key = `dynamicAccount${name}`;
-    helpers[key] = () => goToSheetLastRow(name);
-  }
-
-  // Attach to global scope so they can be invoked directly from GAS
-  exportToGlobalThis({ helpers });
+  registerDynamicAccountFunctions(accountSheetNames);
 })();
 
 // ────────────────────────────────────────────────────────────

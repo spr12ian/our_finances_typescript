@@ -3,7 +3,7 @@
 import { AccountSheet } from "./AccountSheet";
 import { OurFinances } from "./OurFinances";
 import { Sheet } from "./Sheet";
-import { Spreadsheet } from "./Spreadsheet";
+import { Spreadsheet, Spreadsheet } from './Spreadsheet';
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
 
 // Function declarations
@@ -298,16 +298,17 @@ export function goToSheet(sheetName: string) {
 }
 
 export function goToSheetLastRow(sheetName: string) {
-  const sheet = new Sheet(sheetName);
-  sheet.setActiveRange(sheet.getRange(sheet.getLastRow(), 1));
+  const spreadsheet=Spreadsheet.getActive()
+  const sheet = spreadsheet.getSheet(sheetName);
+  sheet.setActiveRange(sheet.raw.getRange(sheet.raw.getLastRow(), 1));
 }
 
-function isAccountSheet(sheet) {
+function isAccountSheet(sheet:Sheet) {
   if (sheet.getSheetName().startsWith("_")) return true;
   return false;
 }
 
-function isCellAccountBalance(sheet: Sheet, column) {
+function isCellAccountBalance(sheet: Sheet, column:number) {
   const accountBalance = "Account Balance";
 
   let isCellAccountBalance = false;

@@ -3,8 +3,19 @@
 import type { Sheet } from "./Sheet";
 import type { Spreadsheet } from "./Spreadsheet";
 
+interface SheetMetaRow {
+  sheetName: string;
+  lastRow: number;
+  lastColumn: number;
+  maxRows: number;
+  maxColumns: number;
+  isAccount: boolean;
+  isBudget: boolean;
+}
+
 export class SpreadsheetSummary {
   private sheet: Sheet;
+  private spreadsheet: Spreadsheet;
   private data: any[][];
   static get COLUMNS() {
     return {
@@ -24,7 +35,8 @@ export class SpreadsheetSummary {
     };
   }
 
-  constructor(spreadsheet:Spreadsheet) {
+  constructor(spreadsheet: Spreadsheet) {
+    this.spreadsheet = spreadsheet;
     this.sheet = spreadsheet.getSheet(SpreadsheetSummary.SHEET.NAME);
     this.data = this.sheet.getDataRange().offset(1, 0).getValues();
   }
@@ -39,51 +51,56 @@ export class SpreadsheetSummary {
     return this.data.map((row) => row[SpreadsheetSummary.COLUMNS.SHEET_NAME]);
   }
 
-  update() {
-    const sheetData = activeSpreadsheet.getSheets().map((iswSheet: Sheet) => ({
-      sheetName: iswSheet.getSheetName(),
-      lastRow: iswSheet.getLastRow(),
-      lastColumn: iswSheet.getLastColumn(),
-      maxRows: iswSheet.getMaxRows(),
-      maxColumns: iswSheet.getMaxColumns(),
-      isAccount: iswSheet.getSheetName().startsWith("_"),
-      isBudget: iswSheet.getSheetName().startsWith("Budget"),
+  update(): void {
+    const data: SheetMetaRow[] = this.spreadsheet.sheets.map((sheet) => ({
+      sheetName: sheet.getSheetName(),
+      lastRow: sheet.raw.getLastRow(),
+      lastColumn: sheet.raw.getLastColumn(),
+      maxRows: sheet.raw.getMaxRows(),
+      maxColumns: sheet.raw.getMaxColumns(),
+      isAccount: sheet.getSheetName().startsWith("_"),
+      isBudget: sheet.getSheetName().startsWith("Budget"),
     }));
 
-    sheetData.unshift({
-      sheetName: "Sheet name",
-      lastRow: "Last row",
-      lastColumn: "Last column",
-      maxRows: "Max rows",
-      maxColumns: "Max columns",
-      isAccount: "Is an account file (starts with underscore)?",
-      isBudget: "Is a budget file (starts with Budget)?",
-    });
+    // Add header row
+    const header: (keyof SheetMetaRow)[] = [
+      "sheetName",
+      "lastRow",
+      "lastColumn",
+      "maxRows",
+      "maxColumns",
+      "isAccount",
+      "isBudget",
+    ];
 
-    const sheetArray = sheetData.map((sheet:Sheet) => [
-      sheet.sheetName,
-      sheet.lastRow,
-      sheet.lastColumn,
-      sheet.maxRows,
-      sheet.maxColumns,
-      sheet.isAccount,
-      sheet.isBudget,
-    ]);
+    const headerRow: string[] = [
+      "Sheet name",
+      "Last row",
+      "Last column",
+      "Max rows",
+      "Max columns",
+      "Is an account file (starts with underscore)?",
+      "Is a budget file (starts with Budget)?",
+    ];
 
-    const maxWidth = sheetArray[0].length;
+    // Combine header + data
+    const rows: (string | number | boolean)[][] = [
+      headerRow,
+      ...data.map((row) => header.map((key) => row[key])),
+    ];
 
-    // Minimize calls to Google Sheets API by using clearContent instead of clear() if possible.
     this.sheet.clearContents();
-    this.sheet
-      .getRange(1, 1, sheetArray.length, maxWidth)
-      .setValues(sheetArray);
+    this.sheet.raw
+      .getRange(1, 1, rows.length, header.length)
+      .setValues(rows);
   }
 
-  getSheet() {
+
+  getSheet():Sheet {
     return this.sheet;
   }
 
-  getSheetName() {
-    return this.sheet.getSheetName();
+  getSheetName():string {
+    return this.sheet.name;
   }
 }

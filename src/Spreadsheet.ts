@@ -14,8 +14,8 @@ export class Spreadsheet {
   }
 
   /** Static factory: open by ID */
-  static fromId(id: string): Spreadsheet {
-    const ss = SpreadsheetApp.openById(id)
+  static openById(id: string): Spreadsheet {
+    const ss = SpreadsheetApp.openById(id);
 
     if (!ss) throw new Error("Unable to obtain a spreadsheet instance");
 
@@ -46,7 +46,11 @@ export class Spreadsheet {
   }
 
   get sheets(): Sheet[] {
-    return this.ss.getSheets().map((s) => new Sheet(s));
+    return this.ss.getSheets().map((s) => this.getSheet(s.getName()));
+  }
+
+  get sheetNames(): string[] {
+    return this.ss.getSheets().map((s) => s.getName());
   }
 
   /** Get a typed `Sheet` by name (cached) */
@@ -61,6 +65,10 @@ export class Spreadsheet {
     const wrapped = new Sheet(sheet);
     this._sheetCache.set(name, wrapped);
     return wrapped;
+  }
+
+  hasSheet(name: string): boolean {
+    return this.ss.getSheetByName(name) !== null;
   }
 
   // ─── Spreadsheet-level API ────────────────────────────────────

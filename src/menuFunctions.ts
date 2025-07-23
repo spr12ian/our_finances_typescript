@@ -1,4 +1,14 @@
 import { goToSheet } from "./functions";
+import { SHEET as HMRC_B_SHEET } from "./HMRC_B_meta";
+import { SHEET as HMRC_S_SHEET } from "./HMRC_S_meta";
+import { OurFinances } from "./OurFinances";
+import { Spreadsheet } from "./Spreadsheet";
+import { TransactionsBuilder } from "./TransactionsBuilder";
+
+export function copyKeys() {
+  const transactionsBuilder = new TransactionsBuilder();
+  transactionsBuilder.copyIfSheetExists();
+}
 
 export function goToSheet_AHALIF() {
   goToSheet("_AHALIF");
@@ -29,11 +39,11 @@ export function goToSheetCategoryClash() {
 }
 
 export function goToSheetHMRC_B() {
-  goToSheet(HMRC_B.SHEET_NAME);
+  goToSheet(HMRC_B_SHEET.NAME);
 }
 
 export function goToSheetHMRC_S() {
-  goToSheet(HMRC_S.SHEET.NAME);
+  goToSheet(HMRC_S_SHEET.NAME);
 }
 
 export function goToSheetHMRCTransactionsSummary() {
@@ -79,4 +89,17 @@ export function goToSheetXfersMismatch() {
 export function monthlyUpdate() {
   const ourFinances = new OurFinances();
   ourFinances.bankAccounts.showMonthly();
+}
+
+export function showAllAccounts() {
+  const ourFinances = new OurFinances();
+  ourFinances.showAllAccounts();
+}
+
+export function trimGoogleSheets() {
+  const spreadsheet: Spreadsheet = Spreadsheet.getActive();
+  const sheets = spreadsheet.sheets;
+  sheets.forEach((sheet) => {
+    sheet.trimSheet();
+  });
 }

@@ -224,7 +224,7 @@ function getMyEmailAddress() {
 
 export function getPrivateData() {
   const privateDataId = "1hxcINN1seSzn-sLPI25KmV9t4kxLvZlievc0X3EgMhs";
-  const spreadsheet = Spreadsheet.fromId(privateDataId);
+  const spreadsheet = Spreadsheet.openById(privateDataId);
 
   if (!spreadsheet) {
     return;
@@ -268,14 +268,15 @@ function getReplacementHeadersMap() {
 
 export function getSheetNamesByType(sheetNameType: string) {
   let sheetNames;
-
-  const spreadsheetSummary = new SpreadsheetSummary();
   // Process based on sheetNameType
   switch (sheetNameType) {
     case "account":
       sheetNames = accountSheetNames;
       break;
     case "all":
+      const spreadsheet = Spreadsheet.getActive();
+
+      const spreadsheetSummary = new SpreadsheetSummary(spreadsheet);
       // Return all sheet names
       sheetNames = spreadsheetSummary.getSheetNames();
       break;
@@ -365,11 +366,6 @@ export function logTime(label: string) {
   console.log(`${label}: ${new Date().toISOString()}`);
 }
 
-function copyKeys() {
-  const transactionsBuilder = new TransactionsBuilder();
-  transactionsBuilder.copyIfSheetExists();
-}
-
 function mergeTransactions() {
   const transactions = new Transactions();
   const transactionsBuilder = new TransactionsBuilder();
@@ -381,11 +377,6 @@ function mergeTransactions() {
   transactions.activate();
 }
 
-function monthlyUpdate() {
-  const ourFinances = new OurFinances();
-  ourFinances.bankAccounts.showMonthly();
-}
-
 function openAccounts() {
   const ourFinances = new OurFinances();
   ourFinances.bankAccounts.showOpenAccounts();
@@ -395,7 +386,11 @@ function sendEmail(recipient, subject, body, options) {
   return GmailApp.sendEmail(recipient, subject, body, options);
 }
 
-export function sendMeEmail(subject: string, emailBody: string, options?:GoogleAppsScript.Gmail.GmailAdvancedOptions) {
+export function sendMeEmail(
+  subject: string,
+  emailBody: string,
+  options?: GoogleAppsScript.Gmail.GmailAdvancedOptions
+) {
   const body = `${subject}\n\n${emailBody}`;
   return sendEmail(getMyEmailAddress(), subject, body, options);
 }
@@ -437,7 +432,7 @@ function sortSheetByFirstColumn(sheet) {
   dataRange.sort({ column: 1, ascending: true });
 }
 
-function toValidFunctionName(str) {
+export function toValidFunctionName(str:string) {
   // Remove non-alphanumeric characters, except for letters and digits, replace them with underscores
   let validName = str.trim().replace(/[^a-zA-Z0-9]/g, "_");
 
@@ -445,20 +440,14 @@ function toValidFunctionName(str) {
   return /^[a-zA-Z_]/.test(validName) ? validName : `_${validName}`;
 }
 
-function trimGoogleSheet(iswSheet) {
+export function trimGoogleSheet(iswSheet: Sheet) {
   let sheet;
   if (iswSheet) {
     sheet = iswSheet;
   } else {
-    sheet = activeSpreadsheet.getActiveSheet();
+    const spreadsheet = Spreadsheet.getActive();
+    sheet = spreadsheet.activeSheet;
   }
 
   sheet.trimSheet();
-}
-
-function trimGoogleSheets() {
-  const sheets = activeSpreadsheet.getSheets();
-  sheets.forEach((sheet) => {
-    sheet.trimSheet();
-  });
 }

@@ -1,16 +1,27 @@
 /// <reference types="google-apps-script" />
+type AppsScriptEvent =
+  | GoogleAppsScript.Events.SheetsOnEdit
+  | GoogleAppsScript.Events.SheetsOnOpen
+  | GoogleAppsScript.Events.SheetsOnFormSubmit
+  | GoogleAppsScript.Events.TimeDriven
+  | GoogleAppsScript.Events.DoGet
+  | GoogleAppsScript.Events.DoPost
+  | GoogleAppsScript.Events.CalendarEventUpdated;
 
 export class Trigger {
-  constructor(event) {
+  private event:AppsScriptEvent;
+  private _column?:number;
+  private _oldValue?:any;
+  constructor(event:AppsScriptEvent) {
     this.event = event;
   }
-  getColumn() {
+  get column() {
     if (!this._column) {
       this._column = this.getRange().getColumn();
     }
     return this._column;
   }
-  getOldValue() {
+  get oldValue() {
     if (!this._oldValue) {
       this._oldValue = this.event.oldValue;
     }

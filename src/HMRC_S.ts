@@ -1,5 +1,5 @@
 /// <reference types="google-apps-script" />
-
+import { SHEET } from './HMRC_S_meta';
 import { columnNumberToLetter } from "./NumberUtils";
 export class HMRC_S {
   // Column definitions using static getters
@@ -13,10 +13,7 @@ export class HMRC_S {
 
   // Sheet configuration using static getters
   static get SHEET() {
-    return {
-      NAME: "HMRC S",
-      HEADER_ROW: 1, // Number of header rows to skip
-    };
+    return SHEET;
   }
 
   // Handles the edit event

@@ -2,8 +2,8 @@
 
 import { isGasSheet } from "./GasSheetUtils";
 import { Sheet } from "./Sheet";
-import { getType } from "./TypeUtils";
 import { Spreadsheet } from "./Spreadsheet";
+import { getType } from "./TypeUtils";
 
 /**
  * Creates a `Sheet` instance from flexible input:
@@ -17,13 +17,13 @@ export function createSheet(input: unknown): Sheet {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const gasSheet = ss.getSheetByName(input as string);
     if (!gasSheet) throw new Error(`Sheet with name "${input}" not found`);
-    return new Sheet(gasSheet, () => Spreadsheet.fromId(ss.getId()));
+    return new Sheet(gasSheet, () => Spreadsheet.openById(ss.getId()));
   }
 
   if (isGasSheet(input)) {
     const gasSheet = input as GoogleAppsScript.Spreadsheet.Sheet;
     return new Sheet(gasSheet, () =>
-      Spreadsheet.fromId(gasSheet.getParent().getId())
+      Spreadsheet.openById(gasSheet.getParent().getId())
     );
   }
 
@@ -31,7 +31,7 @@ export function createSheet(input: unknown): Sheet {
     const gasSheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     if (!gasSheet) throw new Error("No active sheet found");
     return new Sheet(gasSheet, () =>
-      Spreadsheet.fromId(gasSheet.getParent().getId())
+      Spreadsheet.openById(gasSheet.getParent().getId())
     );
   }
 

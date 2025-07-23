@@ -120,9 +120,14 @@ export class Sheet {
       const startTime = Date.now();
       range.sort({ column: 1, ascending: true });
       console.log(`${sheet.getSheetName()} sorted in ${Date.now() - startTime}ms`);
-    } catch (error) {
-      console.error(`Failed to sort ${sheet.getSheetName()}: ${error.message}`);
+    } catch (error: unknown) {
+      if (error instanceof Error) {
+        console.error(`Failed to sort ${sheet.getSheetName()}: ${error.message}`);
+      } else {
+        console.error(`Failed to sort ${sheet.getSheetName()}: ${String(error)}`);
+      }
     }
+
   }
 
 

@@ -1,5 +1,6 @@
 /// <reference types="google-apps-script" />
 
+import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
 import { getSheetNamesByType } from "./functions";
 import { OurFinances } from "./OurFinances";
 import type { Sheet } from "./Sheet";
@@ -7,11 +8,6 @@ import { createSheet } from "./SheetFactory";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
 
 // Function declarations
-
-export function allAccounts() {
-  const ourFinances = new OurFinances();
-  ourFinances.showAllAccounts();
-}
 
 export function applyDescriptionReplacements() {
   const activeSheet = activeSpreadsheet.getActiveSheet();
@@ -97,7 +93,7 @@ function buildAccountsMenu_(
 
 function buildGasMenu_(ui: GoogleAppsScript.Base.Ui) {
   const itemArray = [
-    ["All accounts", "allAccounts"],
+    ["All accounts", "showAllAccounts"],
     ["Apply Description replacements", "applyDescriptionReplacements"],
     ["Balance sheet", "balanceSheet"],
     ["Check dependencies", "checkDependencies"],
@@ -529,11 +525,6 @@ function isSingleCell(range) {
   }
 
   return range.getNumColumns() === 1 && range.getNumRows() === 1;
-}
-
-function copyKeys() {
-  const transactionsBuilder = new TransactionsBuilder();
-  transactionsBuilder.copyIfSheetExists();
 }
 
 function mergeTransactions() {

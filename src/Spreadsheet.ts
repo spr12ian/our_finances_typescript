@@ -80,6 +80,21 @@ export class Spreadsheet {
     return SpreadsheetApp.newFilterCriteria();
   }
 
+  sortSheets() {
+    const ss = this.ss;
+    const sheetNames = this.sheetNames;
+
+    sheetNames.sort();
+
+    // Reorder the sheets.
+    for (let j = 0; j < sheetNames.length; j++) {
+      const sheetName = sheetNames[j];
+      const sheet = this.getSheet(sheetName).raw;
+      ss.setActiveSheet(sheet);
+      ss.moveActiveSheet(j + 1);
+    }
+  }
+
   toast(message: string, title = "", timeoutSeconds = 5): void {
     this.ss.toast(message, title, timeoutSeconds);
   }

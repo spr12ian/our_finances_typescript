@@ -382,57 +382,34 @@ function openAccounts() {
   ourFinances.bankAccounts.showOpenAccounts();
 }
 
-function sendEmail(recipient, subject, body, options) {
+function sendEmail(
+  recipient: string,
+  subject: string,
+  body: string,
+  options: GoogleAppsScript.Gmail.GmailAdvancedOptions = {}
+) {
   return GmailApp.sendEmail(recipient, subject, body, options);
 }
 
 export function sendMeEmail(
   subject: string,
   emailBody: string,
-  options?: GoogleAppsScript.Gmail.GmailAdvancedOptions
+  options: GoogleAppsScript.Gmail.GmailAdvancedOptions = {}
 ) {
   const body = `${subject}\n\n${emailBody}`;
   return sendEmail(getMyEmailAddress(), subject, body, options);
 }
 
-function setLastUpdatedOnAccountBalanceChange(sheet) {
+export function setLastUpdatedOnAccountBalanceChange(sheet: Sheet) {
   if (isAccountSheet(sheet)) {
-    const bankAccounts = new BankAccounts();
-
     const key = sheet.getSheetName().slice(1);
+    const bankAccounts = new OurFinances().bankAccounts;
 
     bankAccounts.updateLastUpdatedByKey(key);
   }
 }
 
-function sortGoogleSheets() {
-  const ss = activeSpreadsheet;
-
-  // Store all the worksheets in this array
-  const sheetNameArray = [];
-  const sheets = ss.getSheets();
-  sheets.forEach((sheet) => {
-    sheetNameArray.push(sheet.getName());
-  });
-
-  sheetNameArray.sort();
-
-  // Reorder the sheets.
-  for (let j = 0; j < sheets.length; j++) {
-    ss.setActiveSheet(ss.getSheetByName(sheetNameArray[j]));
-    ss.moveActiveSheet(j + 1);
-  }
-}
-
-function sortSheetByFirstColumn(sheet:Sheet) {
-  // Get the range that contains data
-  const dataRange = sheet.getDataRange();
-
-  // Sort the range by the first column (column 1) in ascending order
-  dataRange.sort({ column: 1, ascending: true });
-}
-
-export function toValidFunctionName(str:string) {
+export function toValidFunctionName(str: string) {
   // Remove non-alphanumeric characters, except for letters and digits, replace them with underscores
   let validName = str.trim().replace(/[^a-zA-Z0-9]/g, "_");
 

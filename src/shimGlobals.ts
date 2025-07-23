@@ -7,6 +7,7 @@ export const shimGlobals = [
   "onEdit",
   "onOpen",
   "sendDailyEmail",
+  "sortSheets",
 ] as const;
 
 export type ExportedGlobal = (typeof shimGlobals)[number];

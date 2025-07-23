@@ -104,6 +104,16 @@ export class Sheet {
     this.gasSheet.hideColumn(column);
   }
 
+
+  sortByFirstColumn() {
+    const sheet = this.gasSheet;
+    // Get the range that contains data
+    const dataRange = sheet.getDataRange();
+
+    // Sort the range by the first column (column 1) in ascending order
+    dataRange.sort({ column: 1, ascending: true });
+  }
+
   sortByFirstColumnOmittingHeader() {
     const sheet = this.gasSheet;
     const lastRow = sheet.getLastRow();

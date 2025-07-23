@@ -92,7 +92,7 @@ function buildGasMenu_(ui: GoogleAppsScript.Base.Ui) {
     ["Format sheet", "formatSheet"],
     ["Monthly update", "monthlyUpdate"],
     ["Open accounts", "openAccounts"],
-    ["Sort sheet order", "sortGoogleSheets"],
+    ["Sort sheet order", "sortSheets"],
     ["Trim all sheets", "trimGoogleSheets"],
     ["Trim sheet", "trimGoogleSheet"],
     ["Update spreadsheet summary", "updateSpreadsheetSummary"],
@@ -552,47 +552,6 @@ export function GAS_onOpen(): void {
 function openAccounts() {
   const ourFinances = new OurFinances();
   ourFinances.bankAccounts.showOpenAccounts();
-}
-
-function sendEmail(recipient, subject, body, options) {
-  return GmailApp.sendEmail(recipient, subject, body, options);
-}
-
-function setLastUpdatedOnAccountBalanceChange(sheet) {
-  if (isAccountSheet(sheet)) {
-    const bankAccounts = new BankAccounts();
-
-    const key = sheet.getSheetName().slice(1);
-
-    bankAccounts.updateLastUpdatedByKey(key);
-  }
-}
-
-function sortGoogleSheets() {
-  const ss = activeSpreadsheet;
-
-  // Store all the worksheets in this array
-  const sheetNameArray = [];
-  const sheets = ss.getSheets();
-  sheets.forEach((sheet) => {
-    sheetNameArray.push(sheet.getName());
-  });
-
-  sheetNameArray.sort();
-
-  // Reorder the sheets.
-  for (let j = 0; j < sheets.length; j++) {
-    ss.setActiveSheet(ss.getSheetByName(sheetNameArray[j]));
-    ss.moveActiveSheet(j + 1);
-  }
-}
-
-function sortSheetByFirstColumn(sheet) {
-  // Get the range that contains data
-  const dataRange = sheet.getDataRange();
-
-  // Sort the range by the first column (column 1) in ascending order
-  dataRange.sort({ column: 1, ascending: true });
 }
 
 function toValidFunctionName(str) {

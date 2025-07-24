@@ -2,6 +2,7 @@
 
 import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
 import { getSheetNamesByType } from "./functions";
+import { logTiming } from "./logTiming";
 import { OurFinances } from "./OurFinances";
 import type { Sheet } from "./Sheet";
 import { createSheet } from "./SheetFactory";
@@ -9,7 +10,12 @@ import { SpreadsheetSummary } from "./SpreadsheetSummary";
 
 // Function declarations
 
-
+const logTiming = <T>(label: string, fn: () => T): T => {
+  const t0 = Date.now();
+  const result = fn();
+  console.log(`${label}: ${Date.now() - t0}ms`);
+  return result;
+};
 
 export function balanceSheet() {
   goToSheet("Balance sheet");
@@ -530,20 +536,12 @@ function mergeTransactions() {
 
 export function GAS_onOpen(): void {
   try {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-
-    // Displaying a temporary notification to the user
-    ss.toast("Please wait while I do a few tasks", "Please wait!", 500);
-
     const ui = SpreadsheetApp.getUi();
 
     const accountSheetNames = getSheetNamesByType("account"); // now safe
-    buildAccountsMenu_(ui, accountSheetNames);
-    buildGasMenu_(ui);
-    buildSectionsMenu_(ui);
-
-    // Notifying the user that the tasks are finished
-    ss.toast("You can do your thing now.", "I'm finished!", 3);
+    logTiming("Accounts menu", () => buildAccountsMenu_(ui, accountSheetNames));
+    logTiming("GAS menu", () => buildGasMenu_(ui));
+    logTiming("Sections menu", () => buildSectionsMenu_(ui));
   } catch (err) {
     console.error("onOpen error:", err);
   }

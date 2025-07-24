@@ -1,18 +1,16 @@
 /// <reference types="google-apps-script" />
 
 import type { Sheet } from "./Sheet";
-import { createSheet } from "./SheetFactory";
+import { Spreadsheet } from "./Spreadsheet";
+import { TransactionsMeta as Meta } from "./TransactionsMeta"
 
 export class Transactions {
-  private sheet: Sheet;
-  static get SHEET() {
-    return {
-      NAME: "Transactions",
-    };
-  }
+  private readonly sheet: Sheet;
 
-  constructor() {
-    this.sheet = createSheet(Transactions.SHEET.NAME);
+  constructor(
+    private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
+  ) {
+    this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
   }
 
   activate() {

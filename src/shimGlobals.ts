@@ -4,6 +4,7 @@ export const shimGlobals = [
   "applyDescriptionReplacements",
   "budget",
   "dailySorts",
+  "mergeTransactions",
   "myScheduledTask",
   "onEdit",
   "onOpen",

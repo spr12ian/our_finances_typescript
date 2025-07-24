@@ -1,37 +1,20 @@
+import { BankAccountsMeta as Meta } from "./BankAccountsMeta";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
-
+type FilterSpec = {
+  column: number;
+  hideValues: string[] | null;
+};
 export class BankAccounts {
-  private sheet: Sheet;
-  static get COLUMNS() {
-    return {
-      KEY: 1,
-      OWNER_CODE: 3,
-      CHECK_BALANCE_FREQUENCY: 12,
-      BALANCE_UPDATED: 19,
-      KEY_LABEL: "A",
-    };
-  }
-  static get OWNER_CODES() {
-    return {
-      BRIAN: "A",
-      CHARLIE: "C",
-      LINDA: "L",
-    };
-  }
-  static get SHEET() {
-    return { NAME: "Bank accounts" };
+  private readonly sheet: Sheet;
+
+  constructor(
+    private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
+  ) {
+    this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
   }
 
-  constructor(spreadsheet: Spreadsheet) {
-    this.sheet = spreadsheet.getSheet(BankAccounts.SHEET.NAME);
-
-    if (!this.sheet) {
-      throw new Error(`Sheet '${BankAccounts.SHEET.NAME}' not found.`);
-    }
-  }
-
-  applyFilters(filters) {
+  applyFilters(filters: FilterSpec[]) {
     const sheet = this.sheet;
 
     // Clear any existing filters
@@ -42,8 +25,8 @@ export class BankAccounts {
     filters.forEach((item) => {
       const criteria =
         item.hideValues === null
-          ? activeSpreadsheet.newFilterCriteria().whenCellEmpty().build()
-          : activeSpreadsheet
+          ? this.spreadsheet.newFilterCriteria().whenCellEmpty().build()
+          : this.spreadsheet
               .newFilterCriteria()
               .setHiddenValues(item.hideValues)
               .build();
@@ -68,7 +51,7 @@ export class BankAccounts {
     return this.getDataRange().getValues();
   }
 
-  hideColumns(columnsToHide) {
+  hideColumns(columnsToHide:string[]) {
     const sheet = this.sheet;
     const ranges = sheet.raw.getRangeList(columnsToHide);
 
@@ -95,12 +78,12 @@ export class BankAccounts {
   showDaily() {
     this.showAll();
     const colCheckBalanceFrequency =
-      BankAccounts.COLUMNS.CHECK_BALANCE_FREQUENCY;
-    const colOwnerCode = BankAccounts.COLUMNS.OWNER_CODE;
+      Meta.COLUMNS.CHECK_BALANCE_FREQUENCY;
+    const colOwnerCode = Meta.COLUMNS.OWNER_CODE;
     const hideOwnerCodes = [
-      BankAccounts.OWNER_CODES.BRIAN,
-      BankAccounts.OWNER_CODES.CHARLIE,
-      BankAccounts.OWNER_CODES.LINDA,
+      Meta.OWNER_CODES.BRIAN,
+      Meta.OWNER_CODES.CHARLIE,
+      Meta.OWNER_CODES.LINDA,
     ];
     const filters = [
       { column: colOwnerCode, hideValues: hideOwnerCodes },
@@ -136,22 +119,21 @@ export class BankAccounts {
     this.applyFilters(filters);
   }
 
-  updateLastUpdatedByKey(key) {
-    const row = findRowByKey(
-      BankAccounts.SHEET.NAME,
-      BankAccounts.COLUMNS.KEY_LABEL,
+  updateLastUpdatedByKey(key:string) {
+    const row = this.sheet.findRowByKey(
+      Meta.COLUMNS.KEY_LABEL,
       key
     );
 
     const lastUpdateCell = this.sheet.raw.getRange(
       row,
-      BankAccounts.COLUMNS.BALANCE_UPDATED
+      Meta.COLUMNS.BALANCE_UPDATED
     );
     lastUpdateCell.setValue(new Date());
   }
 
-  updateLastUpdatedBySheet(sheet) {
-    if (isAccountSheet(sheet)) {
+  updateLastUpdatedBySheet(sheet: Sheet) {
+    if (sheet.isAccountSheet()) {
       const key = sheet.getSheetName().slice(1);
       this.updateLastUpdatedByKey(key);
     }

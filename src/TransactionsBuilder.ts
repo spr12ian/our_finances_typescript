@@ -1,18 +1,16 @@
 /// <reference types="google-apps-script" />
 
 import type { Sheet } from "./Sheet";
-import { createSheet } from "./SheetFactory";
+import { Spreadsheet } from "./Spreadsheet";
+import { TransactionsBuilderMeta as Meta } from "./TransactionsBuilderMeta";
 
 export class TransactionsBuilder {
   private sheet: Sheet;
-  static get SHEET() {
-    return {
-      NAME: "Transactions builder",
-    };
-  }
 
-  constructor() {
-    this.sheet = createSheet(TransactionsBuilder.SHEET.NAME);
+  constructor(
+    private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
+  ) {
+    this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
   }
 
   copyIfSheetExists() {

@@ -129,15 +129,7 @@ function findNamedRangeUsage() {
   findUsageByNamedRange("BRIAN_HALIFAX_BALANCE");
 }
 
-export function findRowByKey(sheetName, keyColumn, keyValue) {
-  const sheet = activeSpreadsheet.getSheetByName(sheetName);
-  const data = sheet
-    .getRange(`${keyColumn}1:${keyColumn}${sheet.getLastRow()}`)
-    .getValues();
 
-  const rowIndex = data.findIndex((row) => row[0] === keyValue);
-  return rowIndex !== -1 ? rowIndex + 1 : -1; // Add 1 for 1-based indexing, return -1 if not found
-}
 
 export function findUsageByNamedRange(namedRange) {
   const sheets = activeSpreadsheet.getSheets();
@@ -303,10 +295,7 @@ export function goToSheetLastRow(sheetName: string) {
   sheet.setActiveRange(sheet.raw.getRange(sheet.raw.getLastRow(), 1));
 }
 
-function isAccountSheet(sheet:Sheet) {
-  if (sheet.getSheetName().startsWith("_")) return true;
-  return false;
-}
+
 
 function isCellAccountBalance(sheet: Sheet, column:number) {
   const accountBalance = "Account Balance";
@@ -319,7 +308,7 @@ function isCellAccountBalance(sheet: Sheet, column:number) {
   for (const row in values) {
     const cell = values[row][column - 1];
 
-    newCell = cell.replace(/\n/g, " ");
+    const newCell = cell.replace(/\n/g, " ");
 
     if (newCell == accountBalance) {
       isCellAccountBalance = true;
@@ -367,17 +356,6 @@ export function logTime(label: string) {
   console.log(`${label}: ${new Date().toISOString()}`);
 }
 
-export function mergeTransactions() {
-  const transactions = new Transactions();
-  const transactionsBuilder = new TransactionsBuilder();
-  transactionsBuilder.copyIfSheetExists();
-  const transactionFormulas = transactionsBuilder.getTransactionFormulas();
-
-  transactions.updateBuilderFormulas(transactionFormulas);
-
-  transactions.activate();
-}
-
 export function openAccounts() {
   const ourFinances = new OurFinances();
   ourFinances.bankAccounts.showOpenAccounts();
@@ -402,7 +380,7 @@ export function sendMeEmail(
 }
 
 export function setLastUpdatedOnAccountBalanceChange(sheet: Sheet) {
-  if (isAccountSheet(sheet)) {
+  if (sheet.isAccountSheet()) {
     const key = sheet.getSheetName().slice(1);
     const bankAccounts = new OurFinances().bankAccounts;
 

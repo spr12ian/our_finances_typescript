@@ -463,11 +463,6 @@ function goToSheetXfersMismatch() {
   goToSheet("Xfers mismatch");
 }
 
-function isAccountSheet(sheet) {
-  if (sheet.getSheetName().startsWith("_")) return true;
-  return false;
-}
-
 function isCellAccountBalance(sheet: Sheet, column) {
   const accountBalance = "Account Balance";
 

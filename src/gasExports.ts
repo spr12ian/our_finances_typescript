@@ -3,6 +3,7 @@
 export { GAS_applyDescriptionReplacements } from "./GAS_applyDescriptionReplacements";
 export { GAS_budget } from "./GAS_budget";
 export { GAS_dailySorts } from "./GAS_dailySorts";
+export { GAS_mergeTransactions } from "./GAS_mergeTransactions";
 export { GAS_myScheduledTask } from "./GAS_myScheduledTask";
 export { GAS_onEdit } from "./GAS_onEdit";
 export { GAS_onOpen } from "./GAS_onOpen";

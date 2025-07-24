@@ -7,6 +7,7 @@ import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
 import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
 import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
 import { CheckFixedAmounts } from "./CheckFixedAmounts";
+import { Transactions } from "./Transactions";
 import { Spreadsheet } from "./Spreadsheet";
 export class OurFinances {
   private _bankAccounts?: BankAccounts;
@@ -16,19 +17,20 @@ export class OurFinances {
   private _budgetMonthlyTransactions?: BudgetMonthlyTransactions;
   private _budgetWeeklyTransactions?: BudgetWeeklyTransactions;
   private _checkFixedAmounts?: CheckFixedAmounts;
+  private _transactions?: Transactions;
   private _howManyDaysAhead?: number;
-  private _spreadsheet: Spreadsheet = Spreadsheet.getActive();
 
+  constructor(private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()){}
   get bankAccounts() {
     if (typeof this._bankAccounts === "undefined") {
-      this._bankAccounts = new BankAccounts(this._spreadsheet);
+      this._bankAccounts = new BankAccounts(this.spreadsheet);
     }
     return this._bankAccounts;
   }
 
   get bankDebitsDue() {
     if (typeof this._bankDebitsDue === "undefined") {
-      this._bankDebitsDue = new BankDebitsDue(this._spreadsheet);
+      this._bankDebitsDue = new BankDebitsDue(this.spreadsheet);
     }
     return this._bankDebitsDue;
   }
@@ -36,7 +38,7 @@ export class OurFinances {
   get budgetAdhocTransactions() {
     if (typeof this._budgetAdhocTransactions === "undefined") {
       this._budgetAdhocTransactions = new BudgetAdhocTransactions(
-        this._spreadsheet
+        this.spreadsheet
       );
     }
     return this._budgetAdhocTransactions;
@@ -45,7 +47,7 @@ export class OurFinances {
   get budgetAnnualTransactions() {
     if (typeof this._budgetAnnualTransactions === "undefined") {
       this._budgetAnnualTransactions = new BudgetAnnualTransactions(
-        this._spreadsheet
+        this.spreadsheet
       );
     }
     return this._budgetAnnualTransactions;
@@ -54,7 +56,7 @@ export class OurFinances {
   get budgetMonthlyTransactions() {
     if (typeof this._budgetMonthlyTransactions === "undefined") {
       this._budgetMonthlyTransactions = new BudgetMonthlyTransactions(
-        this._spreadsheet
+        this.spreadsheet
       );
     }
     return this._budgetMonthlyTransactions;
@@ -63,7 +65,7 @@ export class OurFinances {
   get budgetWeeklyTransactions() {
     if (typeof this._budgetWeeklyTransactions === "undefined") {
       this._budgetWeeklyTransactions = new BudgetWeeklyTransactions(
-        this._spreadsheet
+        this.spreadsheet
       );
     }
     return this._budgetWeeklyTransactions;
@@ -71,7 +73,7 @@ export class OurFinances {
 
   get checkFixedAmounts() {
     if (typeof this._checkFixedAmounts === "undefined") {
-      this._checkFixedAmounts = new CheckFixedAmounts(this._spreadsheet);
+      this._checkFixedAmounts = new CheckFixedAmounts(this.spreadsheet);
     }
     return this._checkFixedAmounts;
   }
@@ -87,6 +89,13 @@ export class OurFinances {
     return this._howManyDaysAhead;
   }
 
+  get transactions() {
+    if (typeof this._transactions === "undefined") {
+      this._transactions = new Transactions(this.spreadsheet);
+    }
+    return this._transactions;
+  }
+
   get upcomingDebits() {
     const howManyDaysAhead = this.bankDebitsDue.howManyDaysAhead;
     // Collect upcoming debits from different sources
@@ -100,15 +109,26 @@ export class OurFinances {
   }
 
   get url(): string {
-    return this._spreadsheet.url;
+    return this.spreadsheet.url;
   }
 
   applyDescriptionReplacements() {
-    const activeSheet = this._spreadsheet.activeSheet;
+    const activeSheet = this.spreadsheet.activeSheet;
     const accountSheet = new AccountSheet(activeSheet);
     if (accountSheet) {
       accountSheet.applyDescriptionReplacements();
     }
+  }
+
+  mergeTransactions() {
+    const transactions = new Transactions();
+    const transactionsBuilder = new TransactionsBuilder();
+    transactionsBuilder.copyIfSheetExists();
+    const transactionFormulas = transactionsBuilder.getTransactionFormulas();
+
+    transactions.updateBuilderFormulas(transactionFormulas);
+
+    transactions.activate();
   }
 
   showAllAccounts() {

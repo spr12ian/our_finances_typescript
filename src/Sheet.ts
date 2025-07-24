@@ -1,5 +1,5 @@
 /// <reference types="google-apps-script" />
-
+import { isAccountSheetName } from "./isAccountSheetName";
 /**
  * Thin wrapper around a GAS Sheet.
  * Prefer using `createSheet(...)` to instantiate.
@@ -64,6 +64,15 @@ export class Sheet {
     this.gasSheet.deleteRows(startRow, howMany);
   }
 
+  findRowByKey(searchColumn: string, keyValue: string) {
+    const data = this.gasSheet
+      .getRange(`${searchColumn}1:${searchColumn}${this.gasSheet.getLastRow()}`)
+      .getValues();
+
+    const rowIndex = data.findIndex((row) => row[0] === keyValue);
+    return rowIndex !== -1 ? rowIndex + 1 : -1; // Add 1 for 1-based indexing, return -1 if not found
+  }
+
   getDataRange(): GoogleAppsScript.Spreadsheet.Range {
     return this.gasSheet.getDataRange();
   }
@@ -88,6 +97,10 @@ export class Sheet {
     return this.gasSheet.getSheetId();
   }
 
+  isAccountSheet() {
+    return isAccountSheetName(this.name);
+  }
+
   setColumnWidth(column: number, width: number): void {
     this.gasSheet.setColumnWidth(column, width);
   }
@@ -103,7 +116,6 @@ export class Sheet {
   hideColumn(column: GoogleAppsScript.Spreadsheet.Range): void {
     this.gasSheet.hideColumn(column);
   }
-
 
   sortByFirstColumn() {
     const sheet = this.gasSheet;
@@ -129,17 +141,21 @@ export class Sheet {
       const range = sheet.getRange(2, 1, lastRow - 1, lastCol);
       const startTime = Date.now();
       range.sort({ column: 1, ascending: true });
-      console.log(`${sheet.getSheetName()} sorted in ${Date.now() - startTime}ms`);
+      console.log(
+        `${sheet.getSheetName()} sorted in ${Date.now() - startTime}ms`
+      );
     } catch (error: unknown) {
       if (error instanceof Error) {
-        console.error(`Failed to sort ${sheet.getSheetName()}: ${error.message}`);
+        console.error(
+          `Failed to sort ${sheet.getSheetName()}: ${error.message}`
+        );
       } else {
-        console.error(`Failed to sort ${sheet.getSheetName()}: ${String(error)}`);
+        console.error(
+          `Failed to sort ${sheet.getSheetName()}: ${String(error)}`
+        );
       }
     }
-
   }
-
 
   trimSheet(): Sheet {
     this.deleteExcessColumns();

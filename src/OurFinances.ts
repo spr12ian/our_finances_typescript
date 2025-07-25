@@ -133,6 +133,19 @@ export class OurFinances {
     }
   }
 
+  budget() {
+    this.goToSheet("Budget");
+  }
+
+  goToSheet(sheetName: string) {
+    const sheet = this.spreadsheet.getSheet(sheetName);
+
+    // Check if the sheet exists before trying to activate it.
+    if (sheet) {
+      sheet.activate();
+    }
+  }
+
   mergeTransactions() {
     const transactions = this.transactions;
     const transactionsBuilder = this.transactionsBuilder;
@@ -176,5 +189,9 @@ export class OurFinances {
 
   showAllAccounts() {
     this.bankAccounts.showAll();
+  }
+
+  sortSheets() {
+    this.spreadsheet.sortSheets();
   }
 }

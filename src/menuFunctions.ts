@@ -30,11 +30,9 @@ export function goToSheet_SVIIRF() {
   goToSheet("_SVIIRF");
 }
 
-export function goToSheetCategories() {
-  goToSheet("Categories");
-}
 
-export function goToSheetCategoryClash() {
+
+function GAS_goToSheetCategoryClash() {
   goToSheet("Category clash");
 }
 

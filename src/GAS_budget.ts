@@ -1,4 +1,4 @@
 import { goToSheet } from "./functions";
-export function GAS_budget() {
+export function xGAS_budget() {
   goToSheet("Budget");
 }

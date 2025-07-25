@@ -3,7 +3,7 @@
 import { AccountSheet } from "./AccountSheet";
 import { OurFinances } from "./OurFinances";
 import { Sheet } from "./Sheet";
-import { Spreadsheet } from './Spreadsheet';
+import { Spreadsheet } from "./Spreadsheet";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
 
 // Function declarations
@@ -128,8 +128,6 @@ function findAllNamedRangeUsage() {
 function findNamedRangeUsage() {
   findUsageByNamedRange("BRIAN_HALIFAX_BALANCE");
 }
-
-
 
 export function findUsageByNamedRange(namedRange) {
   const sheets = activeSpreadsheet.getSheets();
@@ -278,26 +276,13 @@ export function getSheetNamesByType(sheetNameType: string) {
   return sheetNames;
 }
 
-export function goToSheet(sheetName: string) {
-  const spreadsheet = Spreadsheet.getActive();
-
-  const sheet = spreadsheet.getSheet(sheetName);
-
-  // Check if the sheet exists before trying to activate it.
-  if (sheet) {
-    sheet.activate();
-  }
-}
-
 export function goToSheetLastRow(sheetName: string) {
-  const spreadsheet=Spreadsheet.getActive()
+  const spreadsheet = Spreadsheet.getActive();
   const sheet = spreadsheet.getSheet(sheetName);
   sheet.setActiveRange(sheet.raw.getRange(sheet.raw.getLastRow(), 1));
 }
 
-
-
-function isCellAccountBalance(sheet: Sheet, column:number) {
+function isCellAccountBalance(sheet: Sheet, column: number) {
   const accountBalance = "Account Balance";
 
   let isCellAccountBalance = false;

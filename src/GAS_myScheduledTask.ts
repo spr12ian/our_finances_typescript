@@ -1,4 +1,4 @@
 import { logTime } from "./functions";
-export function GAS_myScheduledTask(): void {
+export function xGAS_myScheduledTask(): void {
   logTime("Hello!");
 }

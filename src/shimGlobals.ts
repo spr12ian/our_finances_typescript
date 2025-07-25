@@ -3,13 +3,7 @@
 export const shimGlobals = [
   "applyDescriptionReplacements",
   "budget",
-  "dailySorts",
-  "mergeTransactions",
-  "myScheduledTask",
-  "onEdit",
-  "onOpen",
   "sendDailyEmail",
-  "showAllAccounts",
   "sortSheets",
 ] as const;
 

@@ -407,14 +407,6 @@ function goToSheet_SVIIRF() {
   goToSheet("_SVIIRF");
 }
 
-function goToSheetCategories() {
-  goToSheet("Categories");
-}
-
-function goToSheetCategoryClash() {
-  goToSheet("Category clash");
-}
-
 function goToSheetHMRC_B() {
   goToSheet(HMRC_B.SHEET_NAME);
 }
@@ -529,7 +521,7 @@ function mergeTransactions() {
   transactions.activate();
 }
 
-export function GAS_onOpen(): void {
+export function xGAS_onOpen(): void {
   try {
     const ui = SpreadsheetApp.getUi();
 

@@ -8,7 +8,7 @@ import { DescriptionReplacements } from "./DescriptionReplacements";
 import { Spreadsheet } from "./Spreadsheet";
 import { TransactionsCategories } from "./TransactionsCategories";
 
-export function GAS_dailySorts() {
+export function xGAS_dailySorts() {
   const sheetsToSort = [
     BankAccounts.SHEET.NAME,
     BudgetAnnualTransactions.SHEET.NAME,

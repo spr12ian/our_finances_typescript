@@ -1,6 +1,6 @@
 import { OurFinances } from './OurFinances';
 
-export function GAS_showAllAccounts() {
+export function xGAS_showAllAccounts() {
   const ourFinances = new OurFinances();
   ourFinances.showAllAccounts();
 }

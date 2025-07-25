@@ -1,5 +1,5 @@
 import { OurFinances } from "./OurFinances";
 
-export function GAS_applyDescriptionReplacements() {
+export function xGAS_applyDescriptionReplacements() {
   new OurFinances().applyDescriptionReplacements();
 }

@@ -1,6 +1,6 @@
 import { OurFinances } from "./OurFinances";
 
-export function GAS_mergeTransactions() {
+export function xGAS_mergeTransactions() {
   const ourFinances = new OurFinances();
   ourFinances.mergeTransactions();
 }

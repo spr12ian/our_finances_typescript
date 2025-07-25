@@ -1,6 +1,6 @@
 import { Trigger } from "./Trigger";
 
-export function GAS_onEdit(event: GoogleAppsScript.Events.SheetsOnEdit) {
+export function xGAS_onEdit(event: GoogleAppsScript.Events.SheetsOnEdit) {
   const trigger = new Trigger(event);
   const sheet = trigger.getSheet();
   const sheetName = trigger.getSheetName();

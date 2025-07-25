@@ -6,6 +6,7 @@ import { Spreadsheet } from "./Spreadsheet";
 
 export class CheckFixedAmounts {
   private readonly sheet: Sheet;
+  #values?: any[][];
 
   constructor(
     private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
@@ -20,7 +21,7 @@ export class CheckFixedAmounts {
    * @param {Array<any>} row - The row data
    * @return {string} Formatted mismatch message
    */
-  createMismatchMessage(row: any[]) {
+  createMismatchMessage(row: any[]): string {
     const columns = Meta.COLUMNS;
 
     return Utilities.formatString(
@@ -32,32 +33,30 @@ export class CheckFixedAmounts {
     );
   }
 
-  /**
-   * Retrieves values from the sheet with caching
-   * @private
-   * @return {Array<Array<any>>} Sheet values
-   * @throws {Error} If unable to get sheet values
-   */
-  getValues() {
+  private get allValues(): any[][] {
     try {
       // Cache the values if not already cached
-      if (!this.cachedValues) {
+      if (!this.#values) {
         const range = this.sheet.getDataRange();
         if (!range) {
           throw new Error("Could not get data range from sheet");
         }
-        this.cachedValues = range.getValues();
+        this.#values = range.getValues();
       }
-      return this.cachedValues;
+      return this.#values;
     } catch (error) {
-      throw new Error(`Could not retrieve sheet data: ${error.message}`);
+      let message = "Unknown error accessing '" + Meta.SHEET.NAME + "'";
+      if (error instanceof Error) {
+        message = error.message;
+      }
+      throw new Error(`Could not retrieve sheet data: ${message}`);
     }
   }
 
-  getMismatchMessages() {
+  get mismatchMessages(): string[] {
     const mismatches = [];
-    let mismatchMessages:string[] = [];
-    const values = this.getValues();
+    let mismatchMessages: string[] = [];
+    const values = this.allValues;
 
     // Start after header row
     for (let i = Meta.SHEET.HEADER_ROW; i < values.length; i++) {
@@ -93,15 +92,15 @@ export class CheckFixedAmounts {
    * @param {Array<any>} row - The row to validate
    * @return {boolean} Whether the row is valid
    */
-  isValidRow(row:any[]) {
+  isValidRow(row: any[]): boolean {
     const columns = Meta.COLUMNS;
 
-    return Boolean(
+    return !!(
       row &&
-        row.length >= Meta.SHEET.MIN_COLUMNS &&
-        row[columns.CATEGORY] &&
-        !isNaN(Number(row[columns.DYNAMIC_AMOUNT])) &&
-        !isNaN(Number(row[columns.FIXED_AMOUNT]))
+      row.length >= Meta.SHEET.MIN_COLUMNS &&
+      row[columns.CATEGORY] &&
+      !isNaN(Number(row[columns.DYNAMIC_AMOUNT])) &&
+      !isNaN(Number(row[columns.FIXED_AMOUNT]))
     );
   }
 
@@ -110,8 +109,8 @@ export class CheckFixedAmounts {
    * @private
    * @throws {Error} If sheet structure is invalid
    */
-  validateSheetStructure() {
-    const values = this.getValues();
+  validateSheetStructure(): void {
+    const values = this.allValues;
 
     if (
       !values ||

@@ -20,6 +20,7 @@
     "eslint-config-prettier": "^8.5.0",
     "fast-glob": "^3.3.1",
     "rollup": "^4.0.0",
+    "tsup": "^8.5.0",
     "typescript": "^5.8.3"
   },
   "homepage": "https://github.com/spr12ian/our_finances_typescript#readme",

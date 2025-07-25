@@ -7,8 +7,11 @@ import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
 import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
 import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
 import { CheckFixedAmounts } from "./CheckFixedAmounts";
-import { Transactions } from "./Transactions";
+import { getToday } from "./DateUtils";
 import { Spreadsheet } from "./Spreadsheet";
+import { Transactions } from "./Transactions";
+import { TransactionsBuilder } from "./TransactionsBuilder";
+import { sendMeEmail } from "./functions";
 export class OurFinances {
   private _bankAccounts?: BankAccounts;
   private _bankDebitsDue?: BankDebitsDue;
@@ -18,9 +21,12 @@ export class OurFinances {
   private _budgetWeeklyTransactions?: BudgetWeeklyTransactions;
   private _checkFixedAmounts?: CheckFixedAmounts;
   private _transactions?: Transactions;
+  private _transactionsBuilder?: TransactionsBuilder;
   private _howManyDaysAhead?: number;
 
-  constructor(private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()){}
+  constructor(
+    private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
+  ) {}
   get bankAccounts() {
     if (typeof this._bankAccounts === "undefined") {
       this._bankAccounts = new BankAccounts(this.spreadsheet);
@@ -79,7 +85,7 @@ export class OurFinances {
   }
 
   get fixedAmountMismatches() {
-    return this.checkFixedAmounts.getMismatchMessages();
+    return this.checkFixedAmounts.mismatchMessages;
   }
 
   get howManyDaysAhead() {
@@ -94,6 +100,13 @@ export class OurFinances {
       this._transactions = new Transactions(this.spreadsheet);
     }
     return this._transactions;
+  }
+
+  get transactionsBuilder() {
+    if (typeof this._transactionsBuilder === "undefined") {
+      this._transactionsBuilder = new TransactionsBuilder(this.spreadsheet);
+    }
+    return this._transactionsBuilder;
   }
 
   get upcomingDebits() {
@@ -121,14 +134,44 @@ export class OurFinances {
   }
 
   mergeTransactions() {
-    const transactions = new Transactions();
-    const transactionsBuilder = new TransactionsBuilder();
+    const transactions = this.transactions;
+    const transactionsBuilder = this.transactionsBuilder;
     transactionsBuilder.copyIfSheetExists();
     const transactionFormulas = transactionsBuilder.getTransactionFormulas();
 
     transactions.updateBuilderFormulas(transactionFormulas);
 
     transactions.activate();
+  }
+
+  sendDailyEmail(): void {
+    const fixedAmountMismatches = this.fixedAmountMismatches;
+    const upcomingDebits = this.upcomingDebits;
+
+    const subject = `Our finances daily email: ${getToday()}`;
+
+    // Initialize the email body
+    let emailBody = ``;
+
+    if (fixedAmountMismatches.length > 0) {
+      emailBody += `Fixed amount mismatches\n`;
+      // Concatenate the fixedAmountMismatches into the email body
+      emailBody += fixedAmountMismatches.join("\n");
+      emailBody += `\n\n`;
+    }
+
+    if (upcomingDebits.length) {
+      emailBody += `Upcoming debits\n`;
+      // Concatenate the debits into the email body
+      emailBody += upcomingDebits.join("\n");
+      emailBody += `\n\n`;
+    }
+
+    // Append the spreadsheet URL
+    emailBody += `\n\nSent from (sendDailyEmail): ${this.url}\n`;
+
+    // Send the email
+    sendMeEmail(subject, emailBody);
   }
 
   showAllAccounts() {

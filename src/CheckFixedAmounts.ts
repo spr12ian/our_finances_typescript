@@ -1,48 +1,17 @@
 /// <reference types="google-apps-script" />
-
+import { CheckFixedAmountsMeta as Meta } from "./CheckFixedAmountsMeta";
 import { getAmountAsGBP } from "./MoneyUtils";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 
 export class CheckFixedAmounts {
-  private sheet: Sheet;
-  // Column definitions using static getters
-  static get COLUMNS() {
-    return {
-      TAX_YEAR: 0,
-      CATEGORY: 1,
-      FIXED_AMOUNT: 2,
-      DYNAMIC_AMOUNT: 3,
-      TOLERANCE: 4,
-      MISMATCH: 5,
-    };
-  }
+  private readonly sheet: Sheet;
 
-  // Sheet configuration using static getters
-  static get SHEET() {
-    return {
-      NAME: "Check fixed amounts",
-      MIN_COLUMNS: 6, // Minimum expected columns
-      HEADER_ROW: 1, // Number of header rows to skip
-    };
-  }
-
-  /**
-   * Creates an instance of CheckFixedAmounts.
-   * @throws {Error} If sheet cannot be found or initialized
-   */
-  constructor(spreadsheet: Spreadsheet) {
-    try {
-      this.sheet = spreadsheet.getSheet(CheckFixedAmounts.SHEET.NAME);
-      this.validateSheetStructure();
-    } catch (error) {
-      let message =
-        "Unknown error accessing '" + CheckFixedAmounts.SHEET.NAME + "'";
-      if (error instanceof Error) {
-        message = error.message;
-      }
-      throw new Error(`Sheet initialization failed: ${message}`);
-    }
+  constructor(
+    private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
+  ) {
+    this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
+    this.validateSheetStructure();
   }
 
   /**
@@ -51,8 +20,8 @@ export class CheckFixedAmounts {
    * @param {Array<any>} row - The row data
    * @return {string} Formatted mismatch message
    */
-  createMismatchMessage(row) {
-    const columns = CheckFixedAmounts.COLUMNS;
+  createMismatchMessage(row: any[]) {
+    const columns = Meta.COLUMNS;
 
     return Utilities.formatString(
       "%s %s: Dynamic amount (%s) does not match fixed amount (%s)",
@@ -61,10 +30,6 @@ export class CheckFixedAmounts {
       getAmountAsGBP(row[columns.DYNAMIC_AMOUNT]),
       getAmountAsGBP(row[columns.FIXED_AMOUNT])
     );
-  }
-
-  getEmailBody() {
-    return this.getMismatches().join(`\n`);
   }
 
   /**
@@ -91,11 +56,11 @@ export class CheckFixedAmounts {
 
   getMismatchMessages() {
     const mismatches = [];
-    let mismatchMessages = [];
+    let mismatchMessages:string[] = [];
     const values = this.getValues();
 
     // Start after header row
-    for (let i = CheckFixedAmounts.SHEET.HEADER_ROW; i < values.length; i++) {
+    for (let i = Meta.SHEET.HEADER_ROW; i < values.length; i++) {
       const row = values[i];
 
       // Skip invalid rows
@@ -107,7 +72,7 @@ export class CheckFixedAmounts {
         continue;
       }
 
-      if (row[CheckFixedAmounts.COLUMNS.MISMATCH] === "Mismatch") {
+      if (row[Meta.COLUMNS.MISMATCH] === "Mismatch") {
         mismatches.push({
           rowNumber: i + 1,
           message: this.createMismatchMessage(row),
@@ -128,12 +93,12 @@ export class CheckFixedAmounts {
    * @param {Array<any>} row - The row to validate
    * @return {boolean} Whether the row is valid
    */
-  isValidRow(row) {
-    const columns = CheckFixedAmounts.COLUMNS;
+  isValidRow(row:any[]) {
+    const columns = Meta.COLUMNS;
 
     return Boolean(
       row &&
-        row.length >= CheckFixedAmounts.SHEET.MIN_COLUMNS &&
+        row.length >= Meta.SHEET.MIN_COLUMNS &&
         row[columns.CATEGORY] &&
         !isNaN(Number(row[columns.DYNAMIC_AMOUNT])) &&
         !isNaN(Number(row[columns.FIXED_AMOUNT]))
@@ -151,14 +116,14 @@ export class CheckFixedAmounts {
     if (
       !values ||
       !Array.isArray(values) ||
-      values.length <= CheckFixedAmounts.SHEET.HEADER_ROW
+      values.length <= Meta.SHEET.HEADER_ROW
     ) {
       throw new Error("Sheet is empty or contains insufficient data");
     }
 
-    if (values[0].length < CheckFixedAmounts.SHEET.MIN_COLUMNS) {
+    if (values[0].length < Meta.SHEET.MIN_COLUMNS) {
       throw new Error(
-        `Sheet must have at least ${CheckFixedAmounts.SHEET.MIN_COLUMNS} columns`
+        `Sheet must have at least ${Meta.SHEET.MIN_COLUMNS} columns`
       );
     }
   }

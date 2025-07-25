@@ -644,7 +644,7 @@ class BudgetMonthlyTransactions {
   }
 }
 
-class BudgetAdhocTransactions {
+class BudgetAdHocTransactions {
   static get COL_CHANGE_AMOUNT() {
     return 3;
   }
@@ -691,8 +691,8 @@ class BudgetAdhocTransactions {
     // Iterate over transactions and filter valid ones
     scheduledTransactions.forEach((transaction) => {
       const changeAmount =
-        transaction[BudgetAdhocTransactions.COL_CHANGE_AMOUNT];
-      const transactionDate = transaction[BudgetAdhocTransactions.COL_DATE];
+        transaction[BudgetAdHocTransactions.COL_CHANGE_AMOUNT];
+      const transactionDate = transaction[BudgetAdHocTransactions.COL_DATE];
 
       if (Math.abs(changeAmount) > 1) {
         const formattedDaySelected = getFormattedDate(
@@ -726,9 +726,9 @@ class BudgetAdhocTransactions {
         // Generate payment detail string
         return `\t${getOrdinalDate(day.date)} ${getAmountAsGBP(
           changeAmount
-        )} from ${transaction[BudgetAdhocTransactions.COL_FROM_ACCOUNT]} by ${
-          transaction[BudgetAdhocTransactions.COL_PAYMENT_TYPE]
-        } ${transaction[BudgetAdhocTransactions.COL_DESCRIPTION]}\n`;
+        )} from ${transaction[BudgetAdHocTransactions.COL_FROM_ACCOUNT]} by ${
+          transaction[BudgetAdHocTransactions.COL_PAYMENT_TYPE]
+        } ${transaction[BudgetAdHocTransactions.COL_DESCRIPTION]}\n`;
       }
       day = days.next();
     }
@@ -1234,7 +1234,7 @@ class OurFinances {
 
   get budgetAdhocTransactions() {
     if (typeof this._budgetAdhocTransactions === "undefined") {
-      this._budgetAdhocTransactions = new BudgetAdhocTransactions(this);
+      this._budgetAdhocTransactions = new BudgetAdHocTransactions(this);
     }
     return this._budgetAdhocTransactions;
   }

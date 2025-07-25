@@ -3,7 +3,11 @@
 export const shimGlobals = [
   "applyDescriptionReplacements",
   "budget",
+  "categories",
+  "dailySorts",
+  "mergeTransactions",
   "sendDailyEmail",
+  "showAllAccounts",
   "sortSheets",
 ] as const;
 

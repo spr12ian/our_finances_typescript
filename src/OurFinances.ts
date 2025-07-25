@@ -1,8 +1,9 @@
 /// <reference types="google-apps-script" />
 import { AccountSheet } from "./AccountSheet";
 import { BankAccounts } from "./BankAccounts";
+import { BankAccountsMeta } from "./BankAccountsMeta";
 import { BankDebitsDue } from "./BankDebitsDue";
-import { BudgetAdhocTransactions } from "./BudgetAdhocTransactions";
+import { BudgetAdHocTransactions } from "./BudgetAdHocTransactions";
 import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
 import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
 import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
@@ -12,11 +13,17 @@ import { Spreadsheet } from "./Spreadsheet";
 import { Transactions } from "./Transactions";
 import { TransactionsBuilder } from "./TransactionsBuilder";
 import { sendMeEmail } from "./functions";
+const logTiming = <T>(label: string, fn: () => T): T => {
+  const t0 = Date.now();
+  const result = fn();
+  console.log(`${label}: ${Date.now() - t0}ms`);
+  return result;
+};
 export class OurFinances {
   private _bankAccounts?: BankAccounts;
   private _bankDebitsDue?: BankDebitsDue;
   private _budgetAnnualTransactions?: BudgetAnnualTransactions;
-  private _budgetAdhocTransactions?: BudgetAdhocTransactions;
+  private _budgetAdhocTransactions?: BudgetAdHocTransactions;
   private _budgetMonthlyTransactions?: BudgetMonthlyTransactions;
   private _budgetWeeklyTransactions?: BudgetWeeklyTransactions;
   private _checkFixedAmounts?: CheckFixedAmounts;
@@ -43,7 +50,7 @@ export class OurFinances {
 
   get budgetAdhocTransactions() {
     if (typeof this._budgetAdhocTransactions === "undefined") {
-      this._budgetAdhocTransactions = new BudgetAdhocTransactions(
+      this._budgetAdhocTransactions = new BudgetAdHocTransactions(
         this.spreadsheet
       );
     }
@@ -133,8 +140,22 @@ export class OurFinances {
     }
   }
 
-  budget() {
-    this.goToSheet("Budget");
+  dailySorts() {
+    const sheetsToSort = [
+      BankAccountsMeta.SHEET.NAME,
+      BudgetAdHocTransactionsMeta.SHEET.NAME,
+      BudgetAnnualTransactionsMeta.SHEET.NAME,
+      BudgetMonthlyTransactionsMeta.SHEET.NAME,
+      BudgetWeeklyTransactionsMeta.SHEET.NAME,
+      DescriptionReplacementsMeta.SHEET.NAME,
+      TransactionsCategoriesMeta.SHEET.NAME,
+    ];
+    sheetsToSort.forEach((sheetName) => {
+      const sheet = this.spreadsheet.getSheet(sheetName);
+      if (sheet) {
+        sheet.sortByFirstColumnOmittingHeader();
+      }
+    });
   }
 
   goToSheet(sheetName: string) {
@@ -155,6 +176,19 @@ export class OurFinances {
     transactions.updateBuilderFormulas(transactionFormulas);
 
     transactions.activate();
+  }
+
+  onOpen(): void {
+    try {
+      const ui = SpreadsheetApp.getUi();
+
+      const accountSheetNames = getSheetNamesByType("account"); // now safe
+      logTiming("Accounts menu", () => buildAccountsMenu_(ui, accountSheetNames));
+      logTiming("GAS menu", () => buildGasMenu_(ui));
+      logTiming("Sections menu", () => buildSectionsMenu_(ui));
+    } catch (err) {
+      console.error("onOpen error:", err);
+    }
   }
 
   sendDailyEmail(): void {

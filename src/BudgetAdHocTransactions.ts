@@ -1,40 +1,20 @@
 /// <reference types="google-apps-script" />
-import { getFormattedDate, getNewDate, getOrdinalDate, setupDaysIterator } from "./DateUtils";
+import { BudgetAdHocTransactionsMeta as Meta } from "./BudgetAdHocTransactionsMeta";
+import {
+  getFormattedDate,
+  getNewDate,
+  getOrdinalDate,
+  setupDaysIterator,
+} from "./DateUtils";
 import { getAmountAsGBP } from "./MoneyUtils";
 import type { Sheet } from "./Sheet";
-import type { Spreadsheet } from "./Spreadsheet";
-export class BudgetAdhocTransactions {
-  private sheet: Sheet;
-  static get COL_CHANGE_AMOUNT() {
-    return 3;
-  }
-  static get COL_DATE() {
-    return 0;
-  }
-  static get COL_DESCRIPTION() {
-    return 1;
-  }
-  static get COL_FROM_ACCOUNT() {
-    return 6;
-  }
-  static get COL_PAYMENT_TYPE() {
-    return 7;
-  }
-
-  static get SHEET() {
-    return {
-      NAME: "Budget ad hoc transactions",
-    };
-  }
-
-  constructor(spreadsheet: Spreadsheet) {
-    this.sheet = spreadsheet.getSheet(BudgetAdhocTransactions.SHEET.NAME);
-
-    if (!this.sheet) {
-      throw new Error(
-        `Sheet "${BudgetAdhocTransactions.SHEET.NAME}" not found.`
-      );
-    }
+import { Spreadsheet } from "./Spreadsheet";
+export class BudgetAdHocTransactions {
+  private readonly sheet: Sheet;
+  constructor(
+    private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
+  ) {
+    this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
   }
 
   // Get all transactions from the sheet
@@ -58,8 +38,8 @@ export class BudgetAdhocTransactions {
     // Iterate over transactions and filter valid ones
     scheduledTransactions.forEach((transaction) => {
       const changeAmount =
-        transaction[BudgetAdhocTransactions.COL_CHANGE_AMOUNT];
-      const transactionDate = transaction[BudgetAdhocTransactions.COL_DATE];
+        transaction[Meta.COLUMNS.CHANGE_AMOUNT];
+      const transactionDate = transaction[Meta.COLUMNS.DATE];
 
       if (Math.abs(changeAmount) > 1) {
         const formattedDaySelected = getFormattedDate(
@@ -86,9 +66,9 @@ export class BudgetAdhocTransactions {
 
   // Helper function to generate payment details
   _getPaymentDetails(
-    formattedDaySelected,
-    changeAmount,
-    transaction,
+    formattedDaySelected:string,
+    changeAmount:number,
+    transaction:string[],
     howManyDaysAhead: number
   ) {
     const { first, iterator: days } = setupDaysIterator(getNewDate());
@@ -99,9 +79,9 @@ export class BudgetAdhocTransactions {
         // Generate payment detail string
         return `\t${getOrdinalDate(day.date)} ${getAmountAsGBP(
           changeAmount
-        )} from ${transaction[BudgetAdhocTransactions.COL_FROM_ACCOUNT]} by ${
-          transaction[BudgetAdhocTransactions.COL_PAYMENT_TYPE]
-        } ${transaction[BudgetAdhocTransactions.COL_DESCRIPTION]}\n`;
+        )} from ${transaction[Meta.COLUMNS.FROM_ACCOUNT]} by ${
+          transaction[Meta.COLUMNS.PAYMENT_TYPE]
+        } ${transaction[Meta.COLUMNS.DESCRIPTION]}\n`;
       }
       day = days.next();
     }

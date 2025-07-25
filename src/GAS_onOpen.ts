@@ -1,21 +1,10 @@
 /// <reference types="google-apps-script" />
-
 import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
-import { getSheetNamesByType } from "./functions";
-import { logTiming } from "./logTiming";
 import { OurFinances } from "./OurFinances";
 import type { Sheet } from "./Sheet";
-import { createSheet } from "./SheetFactory";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
 
 // Function declarations
-
-const logTiming = <T>(label: string, fn: () => T): T => {
-  const t0 = Date.now();
-  const result = fn();
-  console.log(`${label}: ${Date.now() - t0}ms`);
-  return result;
-};
 
 export function balanceSheet() {
   goToSheet("Balance sheet");
@@ -378,15 +367,6 @@ function getLineNumber() {
   }
 }
 
-function goToSheet(sheetName: string) {
-  const sheet = createSheet(sheetName);
-
-  // Check if the sheet exists before trying to activate it.
-  if (sheet) {
-    sheet.activate();
-  }
-}
-
 function goToSheet_AHALIF() {
   goToSheet("_AHALIF");
 }
@@ -510,28 +490,8 @@ function isSingleCell(range) {
   return range.getNumColumns() === 1 && range.getNumRows() === 1;
 }
 
-function mergeTransactions() {
-  const transactions = new Transactions();
-  const transactionsBuilder = new TransactionsBuilder();
-  transactionsBuilder.copyIfSheetExists();
-  const transactionFormulas = transactionsBuilder.getTransactionFormulas();
-
-  transactions.updateBuilderFormulas(transactionFormulas);
-
-  transactions.activate();
-}
-
-export function xGAS_onOpen(): void {
-  try {
-    const ui = SpreadsheetApp.getUi();
-
-    const accountSheetNames = getSheetNamesByType("account"); // now safe
-    logTiming("Accounts menu", () => buildAccountsMenu_(ui, accountSheetNames));
-    logTiming("GAS menu", () => buildGasMenu_(ui));
-    logTiming("Sections menu", () => buildSectionsMenu_(ui));
-  } catch (err) {
-    console.error("onOpen error:", err);
-  }
+export function GAS_onOpen(): void {
+  new OurFinances.onOpen();
 }
 
 function openAccounts() {

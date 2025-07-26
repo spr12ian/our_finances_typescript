@@ -1,34 +1,16 @@
 /// <reference types="google-apps-script" />
+import { MetaBudgetWeeklyTransactions as Meta } from "./constants";
 import { getFormattedDate, getNewDate, getOrdinalDate, setupDaysIterator } from "./DateUtils";
 import { getAmountAsGBP } from "./MoneyUtils";
 import type { Sheet } from "./Sheet";
-import type { Spreadsheet } from "./Spreadsheet";
+import { Spreadsheet } from "./Spreadsheet";
 
 export class BudgetWeeklyTransactions {
-  private sheet: Sheet;
-  static get COL_DATE() {
-    return 0;
-  }
-  static get COL_DEBIT_AMOUNT() {
-    return 3;
-  }
-  static get COL_DESCRIPTION() {
-    return 1;
-  }
-  static get COL_FROM_ACCOUNT() {
-    return 6;
-  }
-  static get COL_PAYMENT_TYPE() {
-    return 15;
-  }
-
-  static get SHEET() {
-    return {
-      NAME: "Budget monthly transactions",
-    };
-  }
-  constructor(spreadsheet: Spreadsheet) {
-    this.sheet = spreadsheet.getSheet("Budget weekly transactions");
+  private readonly sheet: Sheet;
+  constructor(
+    private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
+  ) {
+    this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
   }
 
   getScheduledTransactions() {
@@ -45,9 +27,9 @@ export class BudgetWeeklyTransactions {
 
     scheduledTransactions.forEach((transaction) => {
       if (
-        Math.abs(transaction[BudgetWeeklyTransactions.COL_DEBIT_AMOUNT]) > 1
+        Math.abs(transaction[Meta.COLUMNS.DEBIT_AMOUNT]) > 1
       ) {
-        const daySelected = transaction[BudgetWeeklyTransactions.COL_DATE];
+        const daySelected = transaction[Meta.COLUMNS.DATE];
 
         const formattedDaySelected = getFormattedDate(
           new Date(daySelected),
@@ -64,17 +46,17 @@ export class BudgetWeeklyTransactions {
           if (formattedDaySelected === dayDay) {
             upcomingPayments += `\t${getOrdinalDate(day.date)}`;
             upcomingPayments += ` ${getAmountAsGBP(
-              transaction[BudgetWeeklyTransactions.COL_DEBIT_AMOUNT]
+              transaction[Meta.COLUMNS.DEBIT_AMOUNT]
             )}`;
             upcomingPayments += ` from`;
             upcomingPayments += ` ${
-              transaction[BudgetWeeklyTransactions.COL_FROM_ACCOUNT]
+              transaction[Meta.COLUMNS.FROM_ACCOUNT]
             }`;
             upcomingPayments += ` by ${
-              transaction[BudgetWeeklyTransactions.COL_PAYMENT_TYPE]
+              transaction[Meta.COLUMNS.PAYMENT_TYPE]
             }`;
             upcomingPayments += ` ${
-              transaction[BudgetWeeklyTransactions.COL_DESCRIPTION]
+              transaction[Meta.COLUMNS.DESCRIPTION]
             }\n`;
           }
           day = days.next();

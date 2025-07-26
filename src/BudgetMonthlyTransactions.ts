@@ -1,37 +1,15 @@
 /// <reference types="google-apps-script" />
+import { MetaBudgetMonthlyTransactions as Meta } from "./constants";
 import { getNewDate, getOrdinalDate, setupDaysIterator } from "./DateUtils";
 import { getAmountAsGBP } from "./MoneyUtils";
 import { Sheet } from './Sheet';
-import type { Spreadsheet } from "./Spreadsheet"
+import { Spreadsheet } from "./Spreadsheet"
 export class BudgetMonthlyTransactions {
-  private sheet:Sheet;
-  static get COL_DATE() {
-    return 0;
-  }
-  static get COL_DEBIT_AMOUNT() {
-    return 3;
-  }
-  static get COL_DESCRIPTION() {
-    return 1;
-  }
-  static get COL_FROM_ACCOUNT() {
-    return 6;
-  }
-  static get COL_PAYMENT_TYPE() {
-    return 9;
-  }
-
-  static get SHEET() {
-    return {
-      NAME: "Budget monthly transactions",
-    };
-  }
-  constructor(spreadsheet: Spreadsheet) {
-    this.sheet = spreadsheet.getSheet("Budget monthly transactions");
-
-    if (!this.sheet) {
-      throw new Error(`Sheet "${this.getSheetName()}" not found.`);
-    }
+  private readonly sheet: Sheet;
+  constructor(
+    private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
+  ) {
+    this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
   }
 
   getScheduledTransactions() {
@@ -59,23 +37,23 @@ export class BudgetMonthlyTransactions {
 
       scheduledTransactions.forEach((transaction) => {
         if (
-          Math.abs(transaction[BudgetMonthlyTransactions.COL_DEBIT_AMOUNT]) > 1
+          Math.abs(transaction[Meta.COLUMNS.DEBIT_AMOUNT]) > 1
         ) {
           const transactionDate = new Date(
-            transaction[BudgetMonthlyTransactions.COL_DATE]
+            transaction[Meta.COLUMNS.DATE]
           );
 
           upcomingDays.forEach((day) => {
             if (transactionDate.toDateString() === day.date.toDateString()) {
               upcomingPayments += `\t${getOrdinalDate(day.date)} `;
               upcomingPayments += `${getAmountAsGBP(
-                transaction[BudgetMonthlyTransactions.COL_DEBIT_AMOUNT]
+                transaction[Meta.COLUMNS.DEBIT_AMOUNT]
               )} from `;
               upcomingPayments += `${
-                transaction[BudgetMonthlyTransactions.COL_FROM_ACCOUNT]
-              } by ${transaction[BudgetMonthlyTransactions.COL_PAYMENT_TYPE]} `;
+                transaction[Meta.COLUMNS.FROM_ACCOUNT]
+              } by ${transaction[Meta.COLUMNS.PAYMENT_TYPE]} `;
               upcomingPayments += `${
-                transaction[BudgetMonthlyTransactions.COL_DESCRIPTION]
+                transaction[Meta.COLUMNS.DESCRIPTION]
               }\n`;
             }
           });

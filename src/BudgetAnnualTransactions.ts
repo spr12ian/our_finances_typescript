@@ -1,38 +1,15 @@
 /// <reference types="google-apps-script" />
-
-import type { Spreadsheet } from "./Spreadsheet";
+import { MetaBudgetAnnualTransactions as Meta } from "./constants";
+import { Spreadsheet } from "./Spreadsheet";
 import { getFormattedDate, getNewDate, getOrdinalDate, setupDaysIterator } from "./DateUtils";
 import { getAmountAsGBP } from "./MoneyUtils";
 import type { Sheet } from "./Sheet";
-import { createSheet } from "./SheetFactory";
 export class BudgetAnnualTransactions {
-  private sheet: Sheet;
-  static get COLUMNS() {
-    return {
-      DATE: 0,
-      DESCRIPTION: 1,
-      CHANGE_AMOUNT: 3,
-      FROM_ACCOUNT: 4,
-      PAYMENT_TYPE: 5,
-    };
-  }
-  static get SHEET() {
-    return {
-      NAME: "Budget annual transactions",
-    };
-  }
-
-  constructor(spreadsheet: Spreadsheet) {
-    const sheet = spreadsheet.getSheet(
-      BudgetAnnualTransactions.SHEET.NAME
-    );
-
-    if (!sheet) {
-      throw new Error(
-        `Sheet "${BudgetAnnualTransactions.SHEET.NAME}" not found.`
-      );
-    }
-    this.sheet = createSheet(sheet);
+  private readonly sheet: Sheet;
+  constructor(
+    private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
+  ) {
+    this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
   }
 
   // Get all scheduled transactions from the sheet
@@ -55,11 +32,11 @@ export class BudgetAnnualTransactions {
     // Iterate over each transaction and filter the valid ones
     scheduledTransactions.forEach((transaction) => {
       const {
-        [BudgetAnnualTransactions.COLUMNS.DATE]: date,
-        [BudgetAnnualTransactions.COLUMNS.CHANGE_AMOUNT]: changeAmount,
-        [BudgetAnnualTransactions.COLUMNS.DESCRIPTION]: description,
-        [BudgetAnnualTransactions.COLUMNS.FROM_ACCOUNT]: fromAccount,
-        [BudgetAnnualTransactions.COLUMNS.PAYMENT_TYPE]: paymentType,
+        [Meta.COLUMNS.DATE]: date,
+        [Meta.COLUMNS.CHANGE_AMOUNT]: changeAmount,
+        [Meta.COLUMNS.DESCRIPTION]: description,
+        [Meta.COLUMNS.FROM_ACCOUNT]: fromAccount,
+        [Meta.COLUMNS.PAYMENT_TYPE]: paymentType,
       } = transaction;
 
       if (Math.abs(changeAmount) > 1) {
@@ -94,12 +71,12 @@ export class BudgetAnnualTransactions {
 
   // Helper method to generate payment details
   _generatePaymentDetails(
-    formattedDaySelected,
-    changeAmount,
-    fromAccount,
-    paymentType,
-    description,
-    today,
+    formattedDaySelected:string,
+    changeAmount:number,
+    fromAccount:string,
+    paymentType:string,
+    description:string,
+    today:Date,
     howManyDaysAhead:number
   ) {
     const { first, iterator: days } = setupDaysIterator(today);

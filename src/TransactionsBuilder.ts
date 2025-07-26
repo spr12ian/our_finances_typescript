@@ -1,6 +1,6 @@
 /// <reference types="google-apps-script" />
 
-import { MetaTransactionsBuilder as Meta } from "./MetaTransactionsBuilder";
+import { MetaTransactionsBuilder as Meta } from "./constants";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 

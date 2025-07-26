@@ -41,17 +41,21 @@ export class SpreadsheetSummary {
     this.data = this.sheet.getDataRange().offset(1, 0).getValues();
   }
 
+  get accountSheetNames() {
+    return this.allSheetNames.filter((name: string) => name.startsWith("_"));
+  }
+
+  get allSheetNames() {
+    return this.data.map((row) => row[SpreadsheetSummary.COLUMNS.SHEET_NAME]);
+  }
+
   get budgetSheetNames() {
     return this.data
       .filter((row) => row[SpreadsheetSummary.COLUMNS.IS_BUDGET])
       .map((row) => row[SpreadsheetSummary.COLUMNS.SHEET_NAME]);
   }
 
-  get allSheetNames() {
-    return this.data.map((row) => row[SpreadsheetSummary.COLUMNS.SHEET_NAME]);
-  }
-  
-  get name():string {
+  get name(): string {
     return this.sheet.name;
   }
 
@@ -94,13 +98,6 @@ export class SpreadsheetSummary {
     ];
 
     this.sheet.clearContents();
-    this.sheet.raw
-      .getRange(1, 1, rows.length, header.length)
-      .setValues(rows);
+    this.sheet.raw.getRange(1, 1, rows.length, header.length).setValues(rows);
   }
-
-
-
-
-
 }

@@ -1,7 +1,7 @@
 /// <reference types="google-apps-script" />
 import { BankAccounts } from "./BankAccounts";
 import { DescriptionReplacements } from "./DescriptionReplacements";
-import { MetaAccountSheet } from "./MetaAccountSheet";
+import { MetaAccountSheet } from "./constants";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 import { xLookup } from "./xLookup";

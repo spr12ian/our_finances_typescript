@@ -1,5 +1,5 @@
 /// <reference types="google-apps-script" />
-import { MetaCheckFixedAmounts as Meta } from "./MetaCheckFixedAmounts";
+import { MetaCheckFixedAmounts as Meta } from "./constants";
 import { getAmountAsGBP } from "./MoneyUtils";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";

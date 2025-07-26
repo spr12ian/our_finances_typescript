@@ -1,6 +1,6 @@
 /// <reference types="google-apps-script" />
-import { MetaAccountSheet } from "./MetaAccountSheet";
-import { MetaDescriptionReplacements } from "./MetaDescriptionReplacements";
+import { MetaAccountSheet } from "./constants";
+import { MetaDescriptionReplacements } from "./constants";
 import type { Sheet } from "./Sheet";
 import { createSheet } from "./SheetFactory";
 

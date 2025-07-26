@@ -7,13 +7,26 @@ import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
 import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
 import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
 import { CheckFixedAmounts } from "./CheckFixedAmounts";
+import {
+  MetaBankAccounts,
+  MetaBudgetAdHocTransactions,
+  MetaBudgetAnnualTransactions,
+  MetaBudgetMonthlyTransactions,
+  MetaBudgetWeeklyTransactions,
+  MetaDescriptionReplacements,
+  MetaTransactionsCategories,
+} from "./constants";
 import { getToday } from "./DateUtils";
-import { MetaBankAccounts } from "./constants";
+import { sendMeEmail } from "./emailFunctions";
 import { Spreadsheet } from "./Spreadsheet";
+import { SpreadsheetSummary } from "./SpreadsheetSummary";
 import { Transactions } from "./Transactions";
 import { TransactionsBuilder } from "./TransactionsBuilder";
-import { sendMeEmail } from "./functions";
-import { MetaBudgetAdHocTransactions } from './constants';
+import {
+  buildAccountsMenu_,
+  buildGasMenu_,
+  buildSectionsMenu_,
+} from "./uiFunctions";
 const logTiming = <T>(label: string, fn: () => T): T => {
   const t0 = Date.now();
   const result = fn();
@@ -28,6 +41,7 @@ export class OurFinances {
   private _budgetMonthlyTransactions?: BudgetMonthlyTransactions;
   private _budgetWeeklyTransactions?: BudgetWeeklyTransactions;
   private _checkFixedAmounts?: CheckFixedAmounts;
+  private _spreadsheetSummary?: SpreadsheetSummary;
   private _transactions?: Transactions;
   private _transactionsBuilder?: TransactionsBuilder;
   private _howManyDaysAhead?: number;
@@ -101,6 +115,13 @@ export class OurFinances {
       this._howManyDaysAhead = this.bankDebitsDue.howManyDaysAhead;
     }
     return this._howManyDaysAhead;
+  }
+
+  get spreadsheetSummary() {
+    if (typeof this._spreadsheetSummary === "undefined") {
+      this._spreadsheetSummary = new SpreadsheetSummary(this.spreadsheet);
+    }
+    return this._spreadsheetSummary;
   }
 
   get transactions() {
@@ -182,8 +203,9 @@ export class OurFinances {
   onOpen(): void {
     try {
       const ui = SpreadsheetApp.getUi();
+      const accountSheetNames: string[] = this.spreadsheetSummary.accountSheetNames
 
-      const accountSheetNames = getSheetNamesByType("account"); // now safe
+
       logTiming("Accounts menu", () =>
         buildAccountsMenu_(ui, accountSheetNames)
       );

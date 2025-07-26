@@ -1,5 +1,5 @@
 import { logTime } from "./logTime";
-import { MetaBudget } from "./MetaBudget";
+import { MetaBudget } from "./constants";
 import { MetaBudgetAdHocTransactions } from "./constants";
 import { OurFinances } from "./OurFinances";
 
@@ -30,7 +30,7 @@ export function GAS_mergeTransactions() {
 }
 
 export function GAS_onOpen(): void {
-  new OurFinances.onOpen();
+  new OurFinances().onOpen();
 }
 
 export function GAS_sendDailyEmail() {

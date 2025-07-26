@@ -490,9 +490,7 @@ function isSingleCell(range) {
   return range.getNumColumns() === 1 && range.getNumRows() === 1;
 }
 
-export function GAS_onOpen(): void {
-  new OurFinances.onOpen();
-}
+
 
 function openAccounts() {
   const ourFinances = new OurFinances();

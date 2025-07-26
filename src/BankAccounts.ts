@@ -1,4 +1,4 @@
-import { MetaBankAccounts as Meta } from "./MetaBankAccounts";
+import { MetaBankAccounts as Meta } from "./constants";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 type FilterSpec = {

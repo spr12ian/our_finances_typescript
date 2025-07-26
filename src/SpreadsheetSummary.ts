@@ -41,14 +41,18 @@ export class SpreadsheetSummary {
     this.data = this.sheet.getDataRange().offset(1, 0).getValues();
   }
 
-  getBudgetSheetNames() {
+  get budgetSheetNames() {
     return this.data
       .filter((row) => row[SpreadsheetSummary.COLUMNS.IS_BUDGET])
       .map((row) => row[SpreadsheetSummary.COLUMNS.SHEET_NAME]);
   }
 
-  getSheetNames() {
+  get allSheetNames() {
     return this.data.map((row) => row[SpreadsheetSummary.COLUMNS.SHEET_NAME]);
+  }
+  
+  get name():string {
+    return this.sheet.name;
   }
 
   update(): void {
@@ -96,11 +100,7 @@ export class SpreadsheetSummary {
   }
 
 
-  getSheet():Sheet {
-    return this.sheet;
-  }
 
-  getSheetName():string {
-    return this.sheet.name;
-  }
+
+
 }

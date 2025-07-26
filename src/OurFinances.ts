@@ -8,7 +8,7 @@ import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
 import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
 import { CheckFixedAmounts } from "./CheckFixedAmounts";
 import { getToday } from "./DateUtils";
-import { MetaBankAccounts } from "./MetaBankAccounts";
+import { MetaBankAccounts } from "./constants";
 import { Spreadsheet } from "./Spreadsheet";
 import { Transactions } from "./Transactions";
 import { TransactionsBuilder } from "./TransactionsBuilder";

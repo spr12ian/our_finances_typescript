@@ -3,9 +3,12 @@
 export const shimGlobals = [
   "applyDescriptionReplacements",
   "budget",
+  "budgetAdHocTransactions",
   "categories",
   "dailySorts",
+  "helloWorld",
   "mergeTransactions",
+  "onOpen",
   "sendDailyEmail",
   "showAllAccounts",
   "sortSheets",

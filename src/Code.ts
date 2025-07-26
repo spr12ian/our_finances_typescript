@@ -33,13 +33,13 @@ for (const name of shimGlobals) {
 }
 exportToGlobalThis(globalsToExport);
 
-console.log("✅ Global functions registered.");
+// console.log("✅ Global functions registered.");
 
 // Export this list for the shim generator
 (globalThis as any).__exportedGlobals__ = Object.keys(globalsToExport).sort();
 
-Object.keys(globalThis)
-  .sort()
-  .forEach((key) => {
-    console.log(key);
-  });
+// Object.keys(globalThis)
+//   .sort()
+//   .forEach((key) => {
+//     console.log(key);
+//   });

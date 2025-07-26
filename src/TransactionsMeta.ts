@@ -1,4 +1,4 @@
-export const TransactionsMeta = {
+export const MetaTransactions = {
   SHEET: {
     NAME: "Transactions",
   },

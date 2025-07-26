@@ -1,7 +1,7 @@
 /// <reference types="google-apps-script" />
-import { AccountSheetMeta } from "./AccountSheetMeta";
 import { BankAccounts } from "./BankAccounts";
 import { DescriptionReplacements } from "./DescriptionReplacements";
+import { MetaAccountSheet } from "./MetaAccountSheet";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 import { xLookup } from "./xLookup";
@@ -9,7 +9,7 @@ import { xLookup } from "./xLookup";
 export class AccountSheet {
   constructor(
     private readonly sheet: Sheet,
-    private readonly accountMeta = AccountSheetMeta,
+    private readonly accountMeta = MetaAccountSheet,
     private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
   ) {
     if (sheet.name[0] !== "_") {

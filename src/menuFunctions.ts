@@ -1,6 +1,6 @@
 import { goToSheet } from "./functions";
-import { SHEET as HMRC_B_SHEET } from "./HMRC_B_meta";
-import { SHEET as HMRC_S_SHEET } from "./HMRC_S_meta";
+import { SHEET as HMRC_B_SHEET } from "./MetaHMRC_B";
+import { SHEET as HMRC_S_SHEET } from "./MetaHMRC_S";
 import { OurFinances } from "./OurFinances";
 import { Spreadsheet } from "./Spreadsheet";
 import { TransactionsBuilder } from "./TransactionsBuilder";
@@ -29,8 +29,6 @@ export function goToSheet_SVIGBL() {
 export function goToSheet_SVIIRF() {
   goToSheet("_SVIIRF");
 }
-
-
 
 function GAS_goToSheetCategoryClash() {
   goToSheet("Category clash");

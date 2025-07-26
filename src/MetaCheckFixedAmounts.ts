@@ -1,4 +1,4 @@
-export const CheckFixedAmountsMeta = {
+export const MetaCheckFixedAmounts = {
   COLUMNS: {
     TAX_YEAR: 0,
     CATEGORY: 1,

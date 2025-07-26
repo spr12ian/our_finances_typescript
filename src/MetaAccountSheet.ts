@@ -1,5 +1,5 @@
 // AccountSheetMeta.ts
-export const AccountSheetMeta = {
+export const MetaAccountSheet = {
   COLUMNS: {
     DATE: 1,
     DESCRIPTION: 2,

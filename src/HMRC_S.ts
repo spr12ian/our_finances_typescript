@@ -1,5 +1,5 @@
 /// <reference types="google-apps-script" />
-import { SHEET } from './HMRC_S_meta';
+import { SHEET } from "./MetaHMRC_S";
 import { columnNumberToLetter } from "./NumberUtils";
 export class HMRC_S {
   // Column definitions using static getters

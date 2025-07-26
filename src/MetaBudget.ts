@@ -1,4 +1,4 @@
-export const BudgetMeta = {
+export const MetaBudget = {
   SHEET: {
     NAME: "Budget",
   },

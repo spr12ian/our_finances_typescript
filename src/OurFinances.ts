@@ -1,7 +1,6 @@
 /// <reference types="google-apps-script" />
 import { AccountSheet } from "./AccountSheet";
 import { BankAccounts } from "./BankAccounts";
-import { BankAccountsMeta } from "./BankAccountsMeta";
 import { BankDebitsDue } from "./BankDebitsDue";
 import { BudgetAdHocTransactions } from "./BudgetAdHocTransactions";
 import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
@@ -9,10 +8,12 @@ import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
 import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
 import { CheckFixedAmounts } from "./CheckFixedAmounts";
 import { getToday } from "./DateUtils";
+import { MetaBankAccounts } from "./MetaBankAccounts";
 import { Spreadsheet } from "./Spreadsheet";
 import { Transactions } from "./Transactions";
 import { TransactionsBuilder } from "./TransactionsBuilder";
 import { sendMeEmail } from "./functions";
+import { MetaBudgetAdHocTransactions } from './constants';
 const logTiming = <T>(label: string, fn: () => T): T => {
   const t0 = Date.now();
   const result = fn();
@@ -142,13 +143,13 @@ export class OurFinances {
 
   dailySorts() {
     const sheetsToSort = [
-      BankAccountsMeta.SHEET.NAME,
-      BudgetAdHocTransactionsMeta.SHEET.NAME,
-      BudgetAnnualTransactionsMeta.SHEET.NAME,
-      BudgetMonthlyTransactionsMeta.SHEET.NAME,
-      BudgetWeeklyTransactionsMeta.SHEET.NAME,
-      DescriptionReplacementsMeta.SHEET.NAME,
-      TransactionsCategoriesMeta.SHEET.NAME,
+      MetaBankAccounts.SHEET.NAME,
+      MetaBudgetAdHocTransactions.SHEET.NAME,
+      MetaBudgetAnnualTransactions.SHEET.NAME,
+      MetaBudgetMonthlyTransactions.SHEET.NAME,
+      MetaBudgetWeeklyTransactions.SHEET.NAME,
+      MetaDescriptionReplacements.SHEET.NAME,
+      MetaTransactionsCategories.SHEET.NAME,
     ];
     sheetsToSort.forEach((sheetName) => {
       const sheet = this.spreadsheet.getSheet(sheetName);
@@ -183,7 +184,9 @@ export class OurFinances {
       const ui = SpreadsheetApp.getUi();
 
       const accountSheetNames = getSheetNamesByType("account"); // now safe
-      logTiming("Accounts menu", () => buildAccountsMenu_(ui, accountSheetNames));
+      logTiming("Accounts menu", () =>
+        buildAccountsMenu_(ui, accountSheetNames)
+      );
       logTiming("GAS menu", () => buildGasMenu_(ui));
       logTiming("Sections menu", () => buildSectionsMenu_(ui));
     } catch (err) {

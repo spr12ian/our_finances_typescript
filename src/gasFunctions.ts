@@ -1,6 +1,6 @@
-import { BudgetMeta } from "./BudgetMeta";
-import { BudgetAdHocTransactionsMeta } from "./BudgetAdHocTransactionsMeta";
 import { logTime } from "./logTime";
+import { MetaBudget } from "./MetaBudget";
+import { MetaBudgetAdHocTransactions } from "./constants";
 import { OurFinances } from "./OurFinances";
 
 export function GAS_applyDescriptionReplacements() {
@@ -8,11 +8,11 @@ export function GAS_applyDescriptionReplacements() {
 }
 
 export function GAS_budget() {
-  new OurFinances().goToSheet(BudgetMeta.SHEET.NAME);
+  new OurFinances().goToSheet(MetaBudget.SHEET.NAME);
 }
 
 export function GAS_budgetAdHocTransactions() {
-  new OurFinances().goToSheet(BudgetAdHocTransactionsMeta.SHEET.NAME);
+  new OurFinances().goToSheet(MetaBudgetAdHocTransactions.SHEET.NAME);
 }
 
 export function GAS_categories() {

@@ -1,8 +1,8 @@
 /// <reference types="google-apps-script" />
 
+import { MetaTransactionsBuilder as Meta } from "./MetaTransactionsBuilder";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
-import { TransactionsBuilderMeta as Meta } from "./TransactionsBuilderMeta";
 
 export class TransactionsBuilder {
   private sheet: Sheet;

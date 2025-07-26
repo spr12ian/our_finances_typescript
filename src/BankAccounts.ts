@@ -1,4 +1,4 @@
-import { BankAccountsMeta as Meta } from "./BankAccountsMeta";
+import { MetaBankAccounts as Meta } from "./MetaBankAccounts";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 type FilterSpec = {
@@ -51,7 +51,7 @@ export class BankAccounts {
     return this.getDataRange().getValues();
   }
 
-  hideColumns(columnsToHide:string[]) {
+  hideColumns(columnsToHide: string[]) {
     const sheet = this.sheet;
     const ranges = sheet.raw.getRangeList(columnsToHide);
 
@@ -77,8 +77,7 @@ export class BankAccounts {
 
   showDaily() {
     this.showAll();
-    const colCheckBalanceFrequency =
-      Meta.COLUMNS.CHECK_BALANCE_FREQUENCY;
+    const colCheckBalanceFrequency = Meta.COLUMNS.CHECK_BALANCE_FREQUENCY;
     const colOwnerCode = Meta.COLUMNS.OWNER_CODE;
     const hideOwnerCodes = [
       Meta.OWNER_CODES.BRIAN,
@@ -119,11 +118,8 @@ export class BankAccounts {
     this.applyFilters(filters);
   }
 
-  updateLastUpdatedByKey(key:string) {
-    const row = this.sheet.findRowByKey(
-      Meta.COLUMNS.KEY_LABEL,
-      key
-    );
+  updateLastUpdatedByKey(key: string) {
+    const row = this.sheet.findRowByKey(Meta.COLUMNS.KEY_LABEL, key);
 
     const lastUpdateCell = this.sheet.raw.getRange(
       row,

@@ -1,11 +1,11 @@
 /// <reference types="google-apps-script" />
-import { BudgetAdHocTransactionsMeta as Meta } from "./BudgetAdHocTransactionsMeta";
 import {
   getFormattedDate,
   getNewDate,
   getOrdinalDate,
   setupDaysIterator,
 } from "./DateUtils";
+import { MetaBudgetAdHocTransactions as Meta } from "./constants";
 import { getAmountAsGBP } from "./MoneyUtils";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
@@ -37,8 +37,7 @@ export class BudgetAdHocTransactions {
 
     // Iterate over transactions and filter valid ones
     scheduledTransactions.forEach((transaction) => {
-      const changeAmount =
-        transaction[Meta.COLUMNS.CHANGE_AMOUNT];
+      const changeAmount = transaction[Meta.COLUMNS.CHANGE_AMOUNT];
       const transactionDate = transaction[Meta.COLUMNS.DATE];
 
       if (Math.abs(changeAmount) > 1) {
@@ -66,9 +65,9 @@ export class BudgetAdHocTransactions {
 
   // Helper function to generate payment details
   _getPaymentDetails(
-    formattedDaySelected:string,
-    changeAmount:number,
-    transaction:string[],
+    formattedDaySelected: string,
+    changeAmount: number,
+    transaction: string[],
     howManyDaysAhead: number
   ) {
     const { first, iterator: days } = setupDaysIterator(getNewDate());

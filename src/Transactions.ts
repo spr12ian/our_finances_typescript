@@ -2,7 +2,7 @@
 
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
-import { TransactionsMeta as Meta } from "./TransactionsMeta"
+import { MetaTransactions as Meta } from "./TransactionsMeta";
 
 export class Transactions {
   private readonly sheet: Sheet;

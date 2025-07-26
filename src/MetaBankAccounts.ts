@@ -1,4 +1,4 @@
-export const BankAccountsMeta = {
+export const MetaBankAccounts = {
   COLUMNS: {
     KEY: 1,
     OWNER_CODE: 3,

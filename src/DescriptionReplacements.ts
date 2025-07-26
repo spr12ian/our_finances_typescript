@@ -1,6 +1,6 @@
 /// <reference types="google-apps-script" />
-import { AccountSheetMeta } from "./AccountSheetMeta";
-import { DescriptionReplacementsMeta } from "./DescriptionReplacementsMeta";
+import { MetaAccountSheet } from "./MetaAccountSheet";
+import { MetaDescriptionReplacements } from "./MetaDescriptionReplacements";
 import type { Sheet } from "./Sheet";
 import { createSheet } from "./SheetFactory";
 
@@ -12,9 +12,9 @@ export class DescriptionReplacements {
   }
   constructor(
     private readonly sheet: Sheet,
-    private readonly accountMeta = AccountSheetMeta
+    private readonly accountMeta = MetaAccountSheet
   ) {
-    this.sheet = createSheet(DescriptionReplacementsMeta.SHEET.NAME);
+    this.sheet = createSheet(MetaDescriptionReplacements.SHEET.NAME);
   }
 
   applyReplacements(accountSheet: Sheet) {

@@ -166,8 +166,21 @@ export const MetaTransactionsBuilder = {
   },
 };
 
+export const MetaTransactionsByDate = {
+  SHEET: {
+    NAME: "Transactions by date",
+  },
+};
+
 export const MetaTransactionsCategories = {
   SHEET: {
     NAME: "Transactions categories",
+  },
+};
+
+
+export const MetaUncategorisedByDate = {
+  SHEET: {
+    NAME: "Uncategorised by date",
   },
 };

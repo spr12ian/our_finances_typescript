@@ -5,6 +5,9 @@ import {
   MetaCategories,
   MetaCategoryClash,
   MetaNotInTransactionCategories,
+  MetaTransactionsByDate,
+  MetaTransactionCategories,
+  MetaUncategorisedByDate,
 } from "./constants";
 import { logTime } from "./logTime";
 import { OurFinances } from "./OurFinances";
@@ -41,6 +44,14 @@ export function GAS_goToSheetCategoryClash() {
   new OurFinances().goToSheet(MetaCategoryClash.SHEET.NAME);
 }
 
+export function GAS_goToSheetTransactionsCategories() {
+  new OurFinances().goToSheet(MetaTransactionCategories.SHEET.NAME);
+}
+
+export function GAS_goToSheetUncategorisedByDate() {
+  new OurFinances().goToSheet(MetaUncategorisedByDate.SHEET.NAME);
+}
+
 export function GAS_helloWorld(): void {
   logTime("Hello world!");
 }
@@ -48,9 +59,15 @@ export function GAS_helloWorld(): void {
 export function GAS_mergeTransactions() {
   new OurFinances().mergeTransactions();
 }
+
 export function GAS_goToSheetNotInTransactionCategories() {
   new OurFinances().goToSheet(MetaNotInTransactionCategories.SHEET.NAME);
 }
+
+export function GAS_goToSheetTransactionsByDate() {
+  new OurFinances().goToSheet(MetaTransactionsByDate.SHEET.NAME);
+}
+
 export function GAS_onOpen(): void {
   new OurFinances().onOpen();
 }

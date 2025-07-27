@@ -277,18 +277,6 @@ function goToSheetTransactionsBuilder() {
   goToSheet("Transactions builder");
 }
 
-function goToSheetTransactionsByDate() {
-  goToSheet("Transactions by date");
-}
-
-function goToSheetTransactionsCategories() {
-  goToSheet("Transactions categories");
-}
-
-function goToSheetUnlabelledByDate() {
-  goToSheet("Uncategorised by date");
-}
-
 function goToSheetXfersMismatch() {
   goToSheet("Xfers mismatch");
 }

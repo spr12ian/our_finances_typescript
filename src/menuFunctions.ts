@@ -60,18 +60,6 @@ export function goToSheetTransactionsBuilder() {
   goToSheet("Transactions builder");
 }
 
-export function goToSheetTransactionsByDate() {
-  goToSheet("Transactions by date");
-}
-
-export function goToSheetTransactionsCategories() {
-  goToSheet("Transactions categories");
-}
-
-export function goToSheetUnlabelledByDate() {
-  goToSheet("Uncategorised by date");
-}
-
 export function goToSheetXfersMismatch() {
   goToSheet("Xfers mismatch");
 }

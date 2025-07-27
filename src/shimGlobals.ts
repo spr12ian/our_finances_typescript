@@ -4,14 +4,17 @@ export const shimGlobals = [
   "applyDescriptionReplacements",
   "budget",
   "budgetAdHocTransactions",
+  "budgetAnnualTransactions",
   "categories",
   "dailySorts",
+  "goToSheetCategoryClash",
   "helloWorld",
   "mergeTransactions",
   "onOpen",
   "sendDailyEmail",
   "showAllAccounts",
   "sortSheets",
+  "validateAllMenuFunctionNames",
 ] as const;
 
 export type ExportedGlobal = (typeof shimGlobals)[number];

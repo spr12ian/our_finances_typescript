@@ -1,20 +1,17 @@
 
-import { MetaBudgetAnnualTransactions } from './constants';
+import { MetaBudgetAdHocTransactions,MetaBudgetAnnualTransactions } from './constants';
 
 export function buildAccountsMenu_(
   ui: GoogleAppsScript.Base.Ui,
   accountSheetNames: string[]
 ): void {
-  // accountSheetNames is defined as a global
-  //const accountSheetNames = getSheetNamesByType('account');
-
   // Check if any accounts are found
   if (accountSheetNames.length === 0) {
     ui.alert("No account sheets found!");
     return;
   }
 
-  const itemArray = [];
+  const itemArray: [string, string][] = [];
 
   for (const accountSheetName of accountSheetNames) {
     const funName = "dynamicAccount" + accountSheetName;
@@ -25,7 +22,7 @@ export function buildAccountsMenu_(
 }
 
 export function buildGasMenu_(ui: GoogleAppsScript.Base.Ui) {
-  const itemArray = [
+  const itemArray: [string, string][] = [
     ["All accounts", "showAllAccounts"],
     ["Apply Description replacements", "applyDescriptionReplacements"],
     ["Balance sheet", "balanceSheet"],
@@ -39,12 +36,13 @@ export function buildGasMenu_(ui: GoogleAppsScript.Base.Ui) {
     ["Trim all sheets", "trimGoogleSheets"],
     ["Trim sheet", "trimGoogleSheet"],
     ["Update spreadsheet summary", "updateSpreadsheetSummary"],
+    ["Validate all menu function names", "validateAllMenuFunctionNames"],
   ];
   createMenu(ui, "GAS Menu", itemArray);
 }
 
 export function buildSectionsMenu_(ui: GoogleAppsScript.Base.Ui) {
-  const menu = ui
+  ui
     .createMenu("Sections")
     .addSubMenu(
       ui
@@ -55,7 +53,7 @@ export function buildSectionsMenu_(ui: GoogleAppsScript.Base.Ui) {
           "budgetAnnualTransactions"
         )
         .addItem("Budget monthly transactions", "budgetMonthlyTransactions")
-        .addItem("Budget ad hoc transactions", "budgetAdhocTransactions")
+        .addItem(MetaBudgetAdHocTransactions.SHEET.NAME, "budgetAdHocTransactions")
         .addItem("Budget predicted spend", "budgetPredictedSpend")
         .addItem("Budget weekly transactions", "budgetWeeklyTransactions")
     )
@@ -128,7 +126,7 @@ export function buildSectionsMenu_(ui: GoogleAppsScript.Base.Ui) {
 function createMenu(
   ui: GoogleAppsScript.Base.Ui,
   menuCaption: string,
-  menuItemArray
+  menuItemArray: [string, string][]
 ) {
   const menu = ui.createMenu(menuCaption);
 

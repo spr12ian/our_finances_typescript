@@ -101,6 +101,12 @@ export const MetaBudgetWeeklyTransactions = {
   },
 };
 
+export const MetaCategoryClash = {
+  SHEET: {
+    NAME: "Category clash",
+  },
+};
+
 export const MetaCheckFixedAmounts = {
   COLUMNS: {
     TAX_YEAR: 0,

@@ -1,9 +1,10 @@
 /// <reference types="google-apps-script" />
 import { exportToGlobalThis } from "./exportToGlobal";
 import * as GAS from "./gasExports";
+import { OurFinances } from "./OurFinances";
 import { registerDynamicAccountFunctions } from "./registerDynamicAccountFunctions";
 import { shimGlobals } from "./shimGlobals";
-import { OurFinances } from "./OurFinances";
+import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
 /**
  * Application entry point – executed when the script is loaded.
  */
@@ -12,7 +13,8 @@ import { OurFinances } from "./OurFinances";
 //  Dynamically create account menu functions
 // ────────────────────────────────────────────────────────────
 (() => {
-  const accountSheetNames=new OurFinances().spreadsheetSummary.accountSheetNames;
+  const accountSheetNames = new OurFinances().spreadsheetSummary
+    .accountSheetNames;
   registerDynamicAccountFunctions(accountSheetNames);
 })();
 
@@ -44,3 +46,5 @@ exportToGlobalThis(globalsToExport);
 //   .forEach((key) => {
 //     console.log(key);
 //   });
+
+validateAllMenuFunctionNames();

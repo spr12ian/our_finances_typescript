@@ -30,10 +30,6 @@ export function goToSheet_SVIIRF() {
   goToSheet("_SVIIRF");
 }
 
-function GAS_goToSheetCategoryClash() {
-  goToSheet("Category clash");
-}
-
 export function goToSheetHMRC_B() {
   goToSheet(HMRC_B_SHEET.NAME);
 }

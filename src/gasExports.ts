@@ -3,11 +3,14 @@
 export { GAS_applyDescriptionReplacements } from "./gasFunctions";
 export { GAS_budget } from "./gasFunctions";
 export { GAS_budgetAdHocTransactions } from "./gasFunctions";
+export { GAS_budgetAnnualTransactions } from "./gasFunctions";
 export { GAS_categories } from "./gasFunctions";
 export { GAS_dailySorts } from "./gasFunctions";
+export { GAS_goToSheetCategoryClash } from "./gasFunctions";
 export { GAS_helloWorld } from "./gasFunctions";
 export { GAS_mergeTransactions } from "./gasFunctions";
 export { GAS_onOpen } from "./gasFunctions";
 export { GAS_sendDailyEmail } from "./gasFunctions";
 export { GAS_showAllAccounts } from "./gasFunctions";
 export { GAS_sortSheets } from "./gasFunctions";
+export { GAS_validateAllMenuFunctionNames } from "./gasFunctions";

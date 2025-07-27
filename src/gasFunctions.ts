@@ -1,7 +1,12 @@
+import {
+  MetaBudget,
+  MetaBudgetAdHocTransactions,
+  MetaBudgetAnnualTransactions,
+  MetaCategoryClash,
+} from "./constants";
 import { logTime } from "./logTime";
-import { MetaBudget } from "./constants";
-import { MetaBudgetAdHocTransactions } from "./constants";
 import { OurFinances } from "./OurFinances";
+import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
 
 export function GAS_applyDescriptionReplacements() {
   new OurFinances().applyDescriptionReplacements();
@@ -15,6 +20,9 @@ export function GAS_budgetAdHocTransactions() {
   new OurFinances().goToSheet(MetaBudgetAdHocTransactions.SHEET.NAME);
 }
 
+export function GAS_budgetAnnualTransactions() {
+  new OurFinances().goToSheet(MetaBudgetAnnualTransactions.SHEET.NAME);
+}
 export function GAS_categories() {
   new OurFinances().goToSheet("Categories");
 }
@@ -22,6 +30,11 @@ export function GAS_categories() {
 export function GAS_dailySorts() {
   new OurFinances().dailySorts();
 }
+
+export function GAS_goToSheetCategoryClash() {
+  new OurFinances().goToSheet(MetaCategoryClash.SHEET.NAME);
+}
+
 export function GAS_helloWorld(): void {
   logTime("Hello world!");
 }
@@ -43,4 +56,8 @@ export function GAS_showAllAccounts() {
 
 export function GAS_sortSheets() {
   new OurFinances().sortSheets();
+}
+
+export function GAS_validateAllMenuFunctionNames() {
+  validateAllMenuFunctionNames();
 }

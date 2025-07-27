@@ -18,9 +18,7 @@ export function budgetMonthlyTransactions() {
   goToSheet("Budget monthly transactions");
 }
 
-export function budgetAdhocTransactions() {
-  goToSheet("Budget ad hoc transactions");
-}
+
 
 export function budgetPredictedSpend() {
   goToSheet("Budget predicted spend");

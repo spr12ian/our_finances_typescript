@@ -46,9 +46,7 @@ export function goToSheetLoanGlenburnie() {
   goToSheet("Loan Glenburnie");
 }
 
-export function goToSheetNotInTransactionCategories() {
-  goToSheet("Not in transaction categories");
-}
+
 
 export function goToSheetPeople() {
   goToSheet("People");

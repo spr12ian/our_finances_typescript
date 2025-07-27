@@ -1,7 +1,7 @@
 /// <reference types="google-apps-script" />
-import { BankAccounts } from "./BankAccounts";
+import { MetaBankAccounts } from "./constants";
 import { DescriptionReplacements } from "./DescriptionReplacements";
-import { MetaAccountSheet } from "./constants";
+import { MetaAccountSheet as Meta} from "./constants";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 import { xLookup } from "./xLookup";
@@ -9,7 +9,6 @@ import { xLookup } from "./xLookup";
 export class AccountSheet {
   constructor(
     private readonly sheet: Sheet,
-    private readonly accountMeta = MetaAccountSheet,
     private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
   ) {
     if (sheet.name[0] !== "_") {
@@ -35,10 +34,10 @@ export class AccountSheet {
       this.validateSheet();
       this.setSheetFormatting();
       this.addDefaultNotes();
-      this.convertColumnToUppercase(this.accountMeta.COLUMNS.DESCRIPTION);
-      this.convertColumnToUppercase(this.accountMeta.COLUMNS.NOTE);
-      this.setColumnWidth(this.accountMeta.COLUMNS.DESCRIPTION, 500);
-      this.setColumnWidth(this.accountMeta.COLUMNS.NOTE, 170);
+      this.convertColumnToUppercase(Meta.COLUMNS.DESCRIPTION);
+      this.convertColumnToUppercase(Meta.COLUMNS.NOTE);
+      this.setColumnWidth(Meta.COLUMNS.DESCRIPTION, 500);
+      this.setColumnWidth(Meta.COLUMNS.NOTE, 170);
     } catch (error) {
       throw error;
     }
@@ -86,14 +85,14 @@ export class AccountSheet {
   }
 
   getExpectedHeader(column: number) {
-    return column === this.accountMeta.COLUMNS.DESCRIPTION
+    return column === Meta.COLUMNS.DESCRIPTION
       ? xLookup(
           this.getSheetName().slice(1),
-          this.spreadsheet.getSheet(BankAccounts.SHEET.NAME),
+          this.spreadsheet.getSheet(MetaBankAccounts.SHEET.NAME),
           "A",
           "AQ"
         )
-      : this.accountMeta.HEADERS[column - 1];
+      : Meta.HEADERS[column - 1];
   }
 
   getSheetName() {
@@ -110,7 +109,7 @@ export class AccountSheet {
 
   setCounterpartyValidation(a1range: string) {
     const range = this.sheet.getRange(a1range);
-    const validationRange = `'${BankAccounts.SHEET.NAME}'!$A$2:$A`;
+    const validationRange = `'${MetaBankAccounts.SHEET.NAME}'!$A$2:$A`;
     const rule = SpreadsheetApp.newDataValidation()
       .requireValueInRange(
         this.sheet.raw.getParent().getRange(validationRange),
@@ -158,7 +157,7 @@ export class AccountSheet {
       1,
       1,
       1,
-      this.accountMeta.MINIMUM_COLUMNS
+      Meta.MINIMUM_COLUMNS
     );
     headerRange.setFontWeight("bold").setHorizontalAlignment("left");
 
@@ -180,7 +179,7 @@ export class AccountSheet {
 
   validateHeaders() {
     const headers = this.sheet.raw
-      .getRange(1, 1, 1, this.accountMeta.MINIMUM_COLUMNS)
+      .getRange(1, 1, 1, Meta.MINIMUM_COLUMNS)
       .getValues()[0];
     headers.forEach((value: string, index: number) => {
       const expected = this.getExpectedHeader(index + 1);
@@ -194,10 +193,10 @@ export class AccountSheet {
 
   validateMinimumColumns() {
     const lastColumn = this.sheet.raw.getLastColumn();
-    if (lastColumn < this.accountMeta.MINIMUM_COLUMNS) {
+    if (lastColumn < Meta.MINIMUM_COLUMNS) {
       throw new Error(
         `Sheet ${this.getSheetName()} requires at least ${
-          this.accountMeta.MINIMUM_COLUMNS
+          Meta.MINIMUM_COLUMNS
         } columns, but found ${lastColumn}`
       );
     }

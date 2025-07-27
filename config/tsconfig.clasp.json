@@ -12,5 +12,5 @@
     "useDefineForClassFields": false
   },
   "extends": "./tsconfig.base.json",
-  "include": ["../src/**/*.ts"]
+  "include": ["../src/**/*.ts", "../types/types.d.ts"]
 }

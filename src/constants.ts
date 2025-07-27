@@ -101,6 +101,12 @@ export const MetaBudgetWeeklyTransactions = {
   },
 };
 
+export const MetaCategories = {
+  SHEET: {
+    NAME: "Categories",
+  },
+};
+
 export const MetaCategoryClash = {
   SHEET: {
     NAME: "Category clash",
@@ -145,6 +151,12 @@ export const MetaHMRC_S = {
   SHEET: {
     NAME: "HMRC S",
     HEADER_ROW: 1, // Number of header rows to skip
+  },
+};
+
+export const MetaNotInTransactionCategories = {
+  SHEET: {
+    NAME: "Not in transaction categories",
   },
 };
 

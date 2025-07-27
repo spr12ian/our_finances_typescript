@@ -263,9 +263,7 @@ function goToSheetLoanGlenburnie() {
   goToSheet("Loan Glenburnie");
 }
 
-function goToSheetNotInTransactionCategories() {
-  goToSheet("Not in transaction categories");
-}
+
 
 function goToSheetPeople() {
   goToSheet("People");

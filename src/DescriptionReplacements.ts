@@ -1,20 +1,16 @@
 /// <reference types="google-apps-script" />
 import { MetaAccountSheet } from "./constants";
-import { MetaDescriptionReplacements } from "./constants";
+import { MetaDescriptionReplacements as Meta} from "./constants";
 import type { Sheet } from "./Sheet";
-import { createSheet } from "./SheetFactory";
+import { Spreadsheet } from "./Spreadsheet";
 
 export class DescriptionReplacements {
-  static get SHEET() {
-    return {
-      NAME: "Description replacements",
-    };
-  }
+  private readonly sheet: Sheet;
+
   constructor(
-    private readonly sheet: Sheet,
-    private readonly accountMeta = MetaAccountSheet
+    private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
   ) {
-    this.sheet = createSheet(MetaDescriptionReplacements.SHEET.NAME);
+    this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
   }
 
   applyReplacements(accountSheet: Sheet) {
@@ -25,8 +21,8 @@ export class DescriptionReplacements {
       );
     }
 
-    const DESCRIPTION = this.accountMeta.COLUMNS.DESCRIPTION;
-    const ROW_DATA_STARTS = this.accountMeta.ROW_DATA_STARTS;
+    const DESCRIPTION = MetaAccountSheet.COLUMNS.DESCRIPTION;
+    const ROW_DATA_STARTS = MetaAccountSheet.ROW_DATA_STARTS;
 
     const headerValue = accountSheet.raw.getRange(1, DESCRIPTION).getValue();
 
@@ -40,8 +36,8 @@ export class DescriptionReplacements {
     const numRows = lastRow + 1 - ROW_DATA_STARTS;
 
     const range = accountSheet.raw.getRange(
-      this.accountMeta.ROW_DATA_STARTS,
-      this.accountMeta.COLUMNS.DESCRIPTION,
+      MetaAccountSheet.ROW_DATA_STARTS,
+      MetaAccountSheet.COLUMNS.DESCRIPTION,
       numRows,
       1
     );

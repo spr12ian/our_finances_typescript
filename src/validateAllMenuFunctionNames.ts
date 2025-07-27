@@ -1,3 +1,5 @@
+
+
 export function validateAllMenuFunctionNames() {
   const registered = new Set(globalThis.__exportedGlobals__ ?? []);
   const knownMissing = ["onEdit", "doGet"];
@@ -9,11 +11,11 @@ export function validateAllMenuFunctionNames() {
   ];
 
   const regex = /\.addItem\(\s*["'][^"']+["']\s*,\s*["']([^"']+)["']\s*\)/g;
-  const usedFunctionNames = new Set();
+  const usedFunctionNames = new Set<string>();
   const missingBuilders: string[] = [];
 
   for (const name of builderFunctionNames) {
-    const fn = globalThis[name];
+    const fn = (globalThis as any)[name];
     if (typeof fn !== "function") {
       missingBuilders.push(name);
       continue;

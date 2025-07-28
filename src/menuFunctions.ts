@@ -5,10 +5,7 @@ import { OurFinances } from "./OurFinances";
 import { Spreadsheet } from "./Spreadsheet";
 import { TransactionsBuilder } from "./TransactionsBuilder";
 
-export function copyKeys() {
-  const transactionsBuilder = new TransactionsBuilder();
-  transactionsBuilder.copyIfSheetExists();
-}
+
 
 export function goToSheet_AHALIF() {
   goToSheet("_AHALIF");
@@ -56,9 +53,7 @@ export function goToSheetSW183PTInventory() {
   goToSheet("SW18 3PT inventory");
 }
 
-export function goToSheetTransactionsBuilder() {
-  goToSheet("Transactions builder");
-}
+
 
 export function goToSheetXfersMismatch() {
   goToSheet("Xfers mismatch");

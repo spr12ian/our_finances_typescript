@@ -273,9 +273,7 @@ function goToSheetSW183PTInventory() {
   goToSheet("SW18 3PT inventory");
 }
 
-function goToSheetTransactionsBuilder() {
-  goToSheet("Transactions builder");
-}
+
 
 function goToSheetXfersMismatch() {
   goToSheet("Xfers mismatch");

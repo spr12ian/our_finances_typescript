@@ -25,6 +25,12 @@ export const MetaAccountSheet = {
   MINIMUM_COLUMNS: 8,
 };
 
+export const MetaAccountsData = {
+  SHEET: {
+    NAME: "Accounts data",
+  },
+};
+
 export const MetaBankAccounts = {
   COLUMNS: {
     KEY: 1,
@@ -160,6 +166,12 @@ export const MetaNotInTransactionCategories = {
   },
 };
 
+export const MetaTransactionCategories = {
+  SHEET: {
+    NAME: "Transaction categories",
+  },
+};
+
 export const MetaTransactionsBuilder = {
   SHEET: {
     NAME: "Transactions builder",
@@ -171,13 +183,6 @@ export const MetaTransactionsByDate = {
     NAME: "Transactions by date",
   },
 };
-
-export const MetaTransactionsCategories = {
-  SHEET: {
-    NAME: "Transactions categories",
-  },
-};
-
 
 export const MetaUncategorisedByDate = {
   SHEET: {

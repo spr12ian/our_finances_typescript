@@ -1,10 +1,10 @@
 /// <reference types="google-apps-script" />
 
-import { TransactionsCategories as Meta } from "./constants";
+import { TransactionCategories as Meta } from "./constants";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 
-export class TransactionsCategories {
+export class TransactionCategories {
   private readonly sheet: Sheet;
   constructor(
     private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()

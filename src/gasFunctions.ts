@@ -5,8 +5,8 @@ import {
   MetaCategories,
   MetaCategoryClash,
   MetaNotInTransactionCategories,
-  MetaTransactionsByDate,
   MetaTransactionCategories,
+  MetaTransactionsByDate,
   MetaUncategorisedByDate,
 } from "./constants";
 import { logTime } from "./logTime";
@@ -28,12 +28,19 @@ export function GAS_budgetAdHocTransactions() {
 export function GAS_budgetAnnualTransactions() {
   new OurFinances().goToSheet(MetaBudgetAnnualTransactions.SHEET.NAME);
 }
+
 export function GAS_categories() {
   new OurFinances().goToSheet("Categories");
 }
 
+export function GAS_copyKeys() {
+  new OurFinances().copyKeys();
+}
 export function GAS_dailySorts() {
   new OurFinances().dailySorts();
+}
+export function GAS_generateAccountsData() {
+  new OurFinances().generateAccountsData();
 }
 
 export function GAS_goToSheetCategories() {
@@ -44,8 +51,12 @@ export function GAS_goToSheetCategoryClash() {
   new OurFinances().goToSheet(MetaCategoryClash.SHEET.NAME);
 }
 
-export function GAS_goToSheetTransactionsCategories() {
+export function GAS_goToSheetTransactionCategories() {
   new OurFinances().goToSheet(MetaTransactionCategories.SHEET.NAME);
+}
+
+export function GAS_goToSheetTransactionsBuilder() {
+  new OurFinances().goToSheet("Transactions builder");
 }
 
 export function GAS_goToSheetUncategorisedByDate() {

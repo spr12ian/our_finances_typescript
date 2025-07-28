@@ -8,13 +8,14 @@ import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
 import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
 import { CheckFixedAmounts } from "./CheckFixedAmounts";
 import {
+  MetaAccountsData,
   MetaBankAccounts,
   MetaBudgetAdHocTransactions,
   MetaBudgetAnnualTransactions,
   MetaBudgetMonthlyTransactions,
   MetaBudgetWeeklyTransactions,
   MetaDescriptionReplacements,
-  MetaTransactionsCategories,
+  MetaTransactionCategories,
 } from "./constants";
 import { getToday } from "./DateUtils";
 import { sendMeEmail } from "./emailFunctions";
@@ -162,6 +163,10 @@ export class OurFinances {
     }
   }
 
+  copyKeys() {
+    this.transactionsBuilder.copyIfSheetExists();
+  }
+
   dailySorts() {
     const sheetsToSort = [
       MetaBankAccounts.SHEET.NAME,
@@ -170,7 +175,7 @@ export class OurFinances {
       MetaBudgetMonthlyTransactions.SHEET.NAME,
       MetaBudgetWeeklyTransactions.SHEET.NAME,
       MetaDescriptionReplacements.SHEET.NAME,
-      MetaTransactionsCategories.SHEET.NAME,
+      MetaTransactionCategories.SHEET.NAME,
     ];
     sheetsToSort.forEach((sheetName) => {
       const sheet = this.spreadsheet.getSheet(sheetName);
@@ -178,6 +183,61 @@ export class OurFinances {
         sheet.sortByFirstColumnOmittingHeader();
       }
     });
+  }
+
+  generateAccountsData() {
+    const ss = SpreadsheetApp.getActive();
+    const accountSheets = ss
+      .getSheets()
+      .filter((sheet) => sheet.getName().startsWith("_"));
+
+    const EXCLUDED_SHEETS = new Set(["_SVI3BH", "_SVIIRF"]);
+
+    const HEADER = [
+      "Date",
+      "Description",
+      "Credit (£)",
+      "Debit (£)",
+      "Note",
+      "CPTY",
+      "Date CPTY",
+      "Source",
+    ];
+    const START_ROW = 2; // Skip headers in each sheet
+    const NUM_COLUMNS = 7;
+
+    const allRows = [HEADER];
+
+    for (const sheet of accountSheets) {
+      const name = sheet.getName();
+      console.log(`Processing sheet: ${name}`);
+
+      if (EXCLUDED_SHEETS.has(name)) continue;
+
+      const lastRow = sheet.getLastRow();
+      if (lastRow < START_ROW) continue; // Skip empty sheets
+
+      const data = sheet
+        .getRange(START_ROW, 1, lastRow - 1, NUM_COLUMNS)
+        .getValues();
+
+      for (const row of data) {
+        if (row.every((cell) => cell === "")) continue; // Skip empty rows
+        allRows.push([...row, name]); // Append column with sheet name (Source)
+      }
+    }
+
+    // Replace or create 'Accounts data'
+    let targetSheet = ss.getSheetByName(MetaAccountsData.SHEET.NAME);
+    if (!targetSheet) {
+      targetSheet = ss.insertSheet(MetaAccountsData.SHEET.NAME);
+    } else {
+      targetSheet.clearContents();
+    }
+
+    targetSheet
+      .getRange(1, 1, allRows.length, allRows[0].length)
+      .setValues(allRows);
   }
 
   goToSheet(sheetName: string) {
@@ -203,8 +263,8 @@ export class OurFinances {
   onOpen(): void {
     try {
       const ui = SpreadsheetApp.getUi();
-      const accountSheetNames: string[] = this.spreadsheetSummary.accountSheetNames
-
+      const accountSheetNames: string[] =
+        this.spreadsheetSummary.accountSheetNames;
 
       logTiming("Accounts menu", () =>
         buildAccountsMenu_(ui, accountSheetNames)

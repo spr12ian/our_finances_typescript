@@ -229,9 +229,7 @@ export class OurFinances {
       return;
     }
 
-    // Clear only the first 8 columns in the target sheet
-    const lastRow = targetSheet.raw.getMaxRows();
-    targetSheet.raw.getRange(1, 1, lastRow, NUM_COLUMNS + 1).clearContent();
+    targetSheet.clearContents();
 
     targetSheet.raw
       .getRange(1, 1, allRows.length, allRows[0].length)

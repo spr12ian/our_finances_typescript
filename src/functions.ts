@@ -289,15 +289,3 @@ export function toValidFunctionName(str: string) {
   // Ensure the name starts with a letter or underscore
   return /^[a-zA-Z_]/.test(validName) ? validName : `_${validName}`;
 }
-
-export function trimGoogleSheet(iswSheet: Sheet) {
-  let sheet;
-  if (iswSheet) {
-    sheet = iswSheet;
-  } else {
-    const spreadsheet = Spreadsheet.getActive();
-    sheet = spreadsheet.activeSheet;
-  }
-
-  sheet.trimSheet();
-}

@@ -18,8 +18,6 @@ export function budgetMonthlyTransactions() {
   goToSheet("Budget monthly transactions");
 }
 
-
-
 export function budgetPredictedSpend() {
   goToSheet("Budget predicted spend");
 }
@@ -162,20 +160,12 @@ function goToSheetLoanGlenburnie() {
   goToSheet("Loan Glenburnie");
 }
 
-
-
 function goToSheetPeople() {
   goToSheet("People");
 }
 
 function goToSheetSW183PTInventory() {
   goToSheet("SW18 3PT inventory");
-}
-
-
-
-function goToSheetXfersMismatch() {
-  goToSheet("Xfers mismatch");
 }
 
 function isCellAccountBalance(sheet: Sheet, column) {
@@ -233,8 +223,6 @@ function isSingleCell(range) {
   return range.getNumColumns() === 1 && range.getNumRows() === 1;
 }
 
-
-
 function openAccounts() {
   const ourFinances = new OurFinances();
   ourFinances.bankAccounts.showOpenAccounts();
@@ -246,24 +234,6 @@ function toValidFunctionName(str) {
 
   // Ensure the name starts with a letter or underscore
   return /^[a-zA-Z_]/.test(validName) ? validName : `_${validName}`;
-}
-
-function trimGoogleSheet(iswSheet) {
-  let sheet;
-  if (iswSheet) {
-    sheet = iswSheet;
-  } else {
-    sheet = activeSpreadsheet.getActiveSheet();
-  }
-
-  sheet.trimSheet();
-}
-
-function trimGoogleSheets() {
-  const sheets = activeSpreadsheet.getSheets();
-  sheets.forEach((sheet) => {
-    sheet.trimSheet();
-  });
 }
 
 function updateSpreadsheetSummary() {
@@ -297,5 +267,5 @@ function updateSpreadsheetSummary() {
   summarySheet.clearContents();
   summarySheet.getRange(1, 1, sheetData.length, maxWidth).setValues(sheetData);
 
-  trimGoogleSheet(summarySheet);
+  trimSheet(summarySheet);
 }

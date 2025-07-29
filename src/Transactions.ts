@@ -13,6 +13,10 @@ export class Transactions {
     this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
   }
 
+  get raw(): Sheet {
+    return this.sheet;
+  }
+
   activate() {
     this.sheet.activate();
   }

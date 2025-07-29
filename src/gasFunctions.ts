@@ -39,9 +39,6 @@ export function GAS_copyKeys() {
 export function GAS_dailySorts() {
   new OurFinances().dailySorts();
 }
-export function GAS_updateAccountsData() {
-  new OurFinances().updateAccountsData();
-}
 
 export function GAS_goToSheetCategories() {
   new OurFinances().goToSheet(MetaCategories.SHEET.NAME);
@@ -61,6 +58,10 @@ export function GAS_goToSheetTransactionsBuilder() {
 
 export function GAS_goToSheetUncategorisedByDate() {
   new OurFinances().goToSheet(MetaUncategorisedByDate.SHEET.NAME);
+}
+
+export function GAS_goToSheetXfersMismatch() {
+  new OurFinances().goToSheet("Xfers mismatch");
 }
 
 export function GAS_helloWorld(): void {
@@ -93,6 +94,23 @@ export function GAS_showAllAccounts() {
 
 export function GAS_sortSheets() {
   new OurFinances().sortSheets();
+}
+
+export function GAS_trimAllSheets() {
+  new OurFinances().trimAllSheets();
+  const spreadsheet: Spreadsheet = Spreadsheet.getActive();
+  const sheets = spreadsheet.sheets;
+  sheets.forEach((sheet) => {
+    sheet.trimSheet();
+  });
+}
+
+export function GAS_trimSheet() {
+  new OurFinances().trimSheet();
+}
+
+export function GAS_updateAccountsData() {
+  new OurFinances().updateAccountsData();
 }
 
 export function GAS_validateAllMenuFunctionNames() {

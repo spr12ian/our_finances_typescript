@@ -24,6 +24,10 @@ export class Sheet {
     return this.gasSheet.getName();
   }
 
+  get raw(): GoogleAppsScript.Spreadsheet.Sheet {
+    return this.gasSheet;
+  }
+
   // ─── Sheet passthroughs ───────────────────────────────────────
 
   activate(): void {
@@ -161,9 +165,5 @@ export class Sheet {
     this.deleteExcessColumns();
     this.deleteExcessRows();
     return this;
-  }
-
-  get raw(): GoogleAppsScript.Spreadsheet.Sheet {
-    return this.gasSheet;
   }
 }

@@ -3,9 +3,6 @@ import { SHEET as HMRC_B_SHEET } from "./MetaHMRC_B";
 import { SHEET as HMRC_S_SHEET } from "./MetaHMRC_S";
 import { OurFinances } from "./OurFinances";
 import { Spreadsheet } from "./Spreadsheet";
-import { TransactionsBuilder } from "./TransactionsBuilder";
-
-
 
 export function goToSheet_AHALIF() {
   goToSheet("_AHALIF");
@@ -43,8 +40,6 @@ export function goToSheetLoanGlenburnie() {
   goToSheet("Loan Glenburnie");
 }
 
-
-
 export function goToSheetPeople() {
   goToSheet("People");
 }
@@ -53,21 +48,7 @@ export function goToSheetSW183PTInventory() {
   goToSheet("SW18 3PT inventory");
 }
 
-
-
-export function goToSheetXfersMismatch() {
-  goToSheet("Xfers mismatch");
-}
-
 export function monthlyUpdate() {
   const ourFinances = new OurFinances();
   ourFinances.bankAccounts.showMonthly();
-}
-
-export function trimGoogleSheets() {
-  const spreadsheet: Spreadsheet = Spreadsheet.getActive();
-  const sheets = spreadsheet.sheets;
-  sheets.forEach((sheet) => {
-    sheet.trimSheet();
-  });
 }

@@ -207,7 +207,6 @@ export class OurFinances {
 
     for (const sheet of accountSheets) {
       const account = sheet.name.slice(1); // Remove leading underscore
-      console.log(`Processing account: ${account}`);
 
       const lastRow = sheet.raw.getLastRow();
       if (lastRow < START_ROW) continue; // Skip empty sheets
@@ -234,6 +233,8 @@ export class OurFinances {
     targetSheet.raw
       .getRange(1, 1, allRows.length, allRows[0].length)
       .setValues(allRows);
+
+    this.transactions.raw.getRange("A1").setFormula("=ARRAYFORMULA('Accounts data'!A1:H)");
   }
 
   goToSheet(sheetName: string) {
@@ -308,5 +309,16 @@ export class OurFinances {
 
   sortSheets() {
     this.spreadsheet.sortSheets();
+  }
+
+
+  trimAllSheets() {
+    this.spreadsheet.sheets.forEach((sheet) => {
+      sheet.trimSheet();
+    });
+  }
+
+  trimSheet() {
+    this.spreadsheet.activeSheet.trimSheet();
   }
 }

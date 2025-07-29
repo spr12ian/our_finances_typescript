@@ -8,7 +8,6 @@ export const shimGlobals = [
   "categories",
   "copyKeys",
   "dailySorts",
-  "generateAccountsData",
   "goToSheetCategories",
   "goToSheetCategoryClash",
   "goToSheetNotInTransactionCategories",
@@ -22,6 +21,7 @@ export const shimGlobals = [
   "sendDailyEmail",
   "showAllAccounts",
   "sortSheets",
+  "updateAccountsData",
   "validateAllMenuFunctionNames",
 ] as const;
 

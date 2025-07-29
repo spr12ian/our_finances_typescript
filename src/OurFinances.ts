@@ -1,5 +1,5 @@
 /// <reference types="google-apps-script" />
-import { getAccountSheets } from './accountsFunctions';
+import { getAccountSheets } from "./accountsFunctions";
 import { AccountSheet } from "./AccountSheet";
 import { BankAccounts } from "./BankAccounts";
 import { BankDebitsDue } from "./BankDebitsDue";
@@ -186,7 +186,7 @@ export class OurFinances {
     });
   }
 
-  generateAccountsData() {
+  updateAccountsData() {
     const spreadsheet = this.spreadsheet;
     const accountSheets = getAccountSheets(spreadsheet);
 
@@ -212,8 +212,7 @@ export class OurFinances {
       const lastRow = sheet.raw.getLastRow();
       if (lastRow < START_ROW) continue; // Skip empty sheets
 
-      const data = sheet
-        .raw
+      const data = sheet.raw
         .getRange(START_ROW, 1, lastRow - 1, NUM_COLUMNS)
         .getValues();
 
@@ -226,18 +225,15 @@ export class OurFinances {
     // Replace 'Accounts data'
     const targetSheet = spreadsheet.getSheet(MetaAccountsData.SHEET.NAME);
     if (!targetSheet) {
-      console.error(
-        `Target sheet '${MetaAccountsData.SHEET.NAME}' not found.`
-      );
+      console.error(`Target sheet '${MetaAccountsData.SHEET.NAME}' not found.`);
       return;
     }
 
     // Clear only the first 8 columns in the target sheet
     const lastRow = targetSheet.raw.getMaxRows();
-    targetSheet.raw.getRange(1, 1, lastRow, NUM_COLUMNS+1).clearContent();
+    targetSheet.raw.getRange(1, 1, lastRow, NUM_COLUMNS + 1).clearContent();
 
-    targetSheet
-      .raw
+    targetSheet.raw
       .getRange(1, 1, allRows.length, allRows[0].length)
       .setValues(allRows);
   }

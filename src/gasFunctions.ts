@@ -39,8 +39,8 @@ export function GAS_copyKeys() {
 export function GAS_dailySorts() {
   new OurFinances().dailySorts();
 }
-export function GAS_generateAccountsData() {
-  new OurFinances().generateAccountsData();
+export function GAS_updateAccountsData() {
+  new OurFinances().updateAccountsData();
 }
 
 export function GAS_goToSheetCategories() {

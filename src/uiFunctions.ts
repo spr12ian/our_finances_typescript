@@ -31,7 +31,6 @@ export function buildGasMenu_(ui: GoogleAppsScript.Base.Ui) {
     ["Check dependencies", "checkDependencies"],
     ["Convert current column to uppercase", "convertCurrentColumnToUppercase"],
     ["Daily update", "dailyUpdate"],
-    ["Generate 'All data'", "generateAccountsData"],
     ["Format sheet", "formatSheet"],
     ["Monthly update", "monthlyUpdate"],
     ["Open accounts", "openAccounts"],
@@ -48,6 +47,21 @@ export function buildSectionsMenu_(ui: GoogleAppsScript.Base.Ui) {
   ui.createMenu("Sections")
     .addSubMenu(
       ui
+        .createMenu("Accounts")
+        .addItem("Update 'Accounts data'", "updateAccountsData")
+        .addItem(
+          "Not in transaction categories",
+          "goToSheetNotInTransactionCategories"
+        )
+        .addItem("Uncategorised by date", "goToSheetUncategorisedByDate")
+        .addItem("Category clash", "goToSheetCategoryClash")
+        .addItem("Categories", "goToSheetCategories")
+        .addItem("Transactions by date", "goToSheetTransactionsByDate")
+        .addItem("Transaction categories", "goToSheetTransactionCategories")
+    )
+    .addSeparator()
+    .addSubMenu(
+      ui
         .createMenu("Budget")
         .addItem("Budget", "budget")
         .addItem(
@@ -61,23 +75,6 @@ export function buildSectionsMenu_(ui: GoogleAppsScript.Base.Ui) {
         )
         .addItem("Budget predicted spend", "budgetPredictedSpend")
         .addItem("Budget weekly transactions", "budgetWeeklyTransactions")
-    )
-    .addSeparator()
-    .addSubMenu(
-      ui
-        .createMenu("Categories")
-        .addItem("1 Categories", "goToSheetCategories")
-        .addItem("Category clash", "goToSheetCategoryClash")
-        .addItem("8 Copy keys", "copyKeys")
-        .addItem("7 Merge transactions", "mergeTransactions")
-        .addItem(
-          "2 Not in transaction categories",
-          "goToSheetNotInTransactionCategories"
-        )
-        .addItem("6 Transactions builder", "goToSheetTransactionsBuilder")
-        .addItem("4 Transactions by date", "goToSheetTransactionsByDate")
-        .addItem("5 Transaction categories", "goToSheetTransactionCategories")
-        .addItem("3 Uncategorised by date", "goToSheetUncategorisedByDate")
     )
     .addSeparator()
     .addSubMenu(

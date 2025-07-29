@@ -98,11 +98,6 @@ export function GAS_sortSheets() {
 
 export function GAS_trimAllSheets() {
   new OurFinances().trimAllSheets();
-  const spreadsheet: Spreadsheet = Spreadsheet.getActive();
-  const sheets = spreadsheet.sheets;
-  sheets.forEach((sheet) => {
-    sheet.trimSheet();
-  });
 }
 
 export function GAS_trimSheet() {

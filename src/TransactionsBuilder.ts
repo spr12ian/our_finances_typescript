@@ -14,49 +14,42 @@ export class TransactionsBuilder {
   }
 
   copyIfSheetExists() {
-    const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
-    const data = sheet.getRange("A1:A" + sheet.getLastRow()).getValues();
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const data = this.sheet.getRange("A1:A" + this.sheet.raw.getLastRow()).getValues();
 
     for (let i = 0; i < data.length; i++) {
       const keyName = data[i][0];
       const sheetName = "_" + keyName;
-      if (keyName && ss.getSheetByName(sheetName)) {
-        sheet.getRange(i + 1, 2).setValue(keyName); // Column B
+      if (keyName && this.spreadsheet.getSheet(sheetName)) {
+        this.sheet.raw.getRange(i + 1, 2).setValue(keyName); // Column B
       } else {
-        sheet.getRange(i + 1, 2).setValue(""); // Optional: clear if not found
+        this.sheet.raw.getRange(i + 1, 2).setValue(""); // Optional: clear if not found
       }
     }
   }
 
-  getTransactionFormulas() {
-    try {
-      // Retrieve the range values
-      const range = this.sheet.getRange("G3:G4");
-      const values = range.getValues();
+  getTransactionFormulas(): { keyFormula: string; valuesFormula: string } {
+    const range = this.sheet.getRange("G3:G4");
+    const values: string[][] = range.getValues();
 
-      // Validate the retrieved values
-      if (
-        !Array.isArray(values) ||
-        values.length !== 2 ||
-        values[0].length === 0 ||
-        values[1].length === 0
-      ) {
-        throw new Error(
-          "Invalid range data: Expected a 2x1 array with formulas in G3 and G4."
-        );
-      }
-
-      const [keyFormulaRow, valuesFormulaRow] = values;
-      const keyFormula = keyFormulaRow[0];
-      const valuesFormula = valuesFormulaRow[0];
-
-      return {
-        keyFormula,
-        valuesFormula,
-      };
-    } catch (error) {
-      throw error;
+    if (
+      !Array.isArray(values) ||
+      values.length !== 2 ||
+      values[0].length < 1 ||
+      values[1].length < 1
+    ) {
+      throw new Error(
+        "Invalid range data: Expected a 2x1 array with formulas in G3 and G4."
+      );
     }
+
+    const [keyFormulaRow, valuesFormulaRow] = values;
+    const keyFormula = keyFormulaRow[0];
+    const valuesFormula = valuesFormulaRow[0];
+
+    return {
+      keyFormula,
+      valuesFormula,
+    };
   }
+
 }

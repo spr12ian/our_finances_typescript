@@ -1,3 +1,5 @@
+export const ACCOUNT_PREFIX = "_";
+
 export const LOCALE = "en-GB" as const;
 
 export const MetaAccountSheet = {

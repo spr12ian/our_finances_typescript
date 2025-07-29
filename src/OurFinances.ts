@@ -1,4 +1,5 @@
 /// <reference types="google-apps-script" />
+import { getAccountSheets } from './accountsFunctions';
 import { AccountSheet } from "./AccountSheet";
 import { BankAccounts } from "./BankAccounts";
 import { BankDebitsDue } from "./BankDebitsDue";
@@ -186,14 +187,11 @@ export class OurFinances {
   }
 
   generateAccountsData() {
-    const ss = SpreadsheetApp.getActive();
-    const accountSheets = ss
-      .getSheets()
-      .filter((sheet) => sheet.getName().startsWith("_"));
-
-    const EXCLUDED_SHEETS = new Set(["_SVI3BH", "_SVIIRF"]);
+    const spreadsheet = this.spreadsheet;
+    const accountSheets = getAccountSheets(spreadsheet);
 
     const HEADER = [
+      "Account",
       "Date",
       "Description",
       "Credit (£)",
@@ -201,7 +199,6 @@ export class OurFinances {
       "Note",
       "CPTY",
       "Date CPTY",
-      "Source",
     ];
     const START_ROW = 2; // Skip headers in each sheet
     const NUM_COLUMNS = 7;
@@ -209,33 +206,38 @@ export class OurFinances {
     const allRows = [HEADER];
 
     for (const sheet of accountSheets) {
-      const name = sheet.getName();
-      console.log(`Processing sheet: ${name}`);
+      const account = sheet.name.slice(1); // Remove leading underscore
+      console.log(`Processing account: ${account}`);
 
-      if (EXCLUDED_SHEETS.has(name)) continue;
-
-      const lastRow = sheet.getLastRow();
+      const lastRow = sheet.raw.getLastRow();
       if (lastRow < START_ROW) continue; // Skip empty sheets
 
       const data = sheet
+        .raw
         .getRange(START_ROW, 1, lastRow - 1, NUM_COLUMNS)
         .getValues();
 
       for (const row of data) {
         if (row.every((cell) => cell === "")) continue; // Skip empty rows
-        allRows.push([...row, name]); // Append column with sheet name (Source)
+        allRows.push([account, ...row]); // Prepend column with sheet name (Account)
       }
     }
 
-    // Replace or create 'Accounts data'
-    let targetSheet = ss.getSheetByName(MetaAccountsData.SHEET.NAME);
+    // Replace 'Accounts data'
+    const targetSheet = spreadsheet.getSheet(MetaAccountsData.SHEET.NAME);
     if (!targetSheet) {
-      targetSheet = ss.insertSheet(MetaAccountsData.SHEET.NAME);
-    } else {
-      targetSheet.clearContents();
+      console.error(
+        `Target sheet '${MetaAccountsData.SHEET.NAME}' not found.`
+      );
+      return;
     }
 
+    // Clear only the first 8 columns in the target sheet
+    const lastRow = targetSheet.raw.getMaxRows();
+    targetSheet.raw.getRange(1, 1, lastRow, NUM_COLUMNS+1).clearContent();
+
     targetSheet
+      .raw
       .getRange(1, 1, allRows.length, allRows[0].length)
       .setValues(allRows);
   }
@@ -252,7 +254,7 @@ export class OurFinances {
   mergeTransactions() {
     const transactions = this.transactions;
     const transactionsBuilder = this.transactionsBuilder;
-    transactionsBuilder.copyIfSheetExists();
+    // transactionsBuilder.copyIfSheetExists();
     const transactionFormulas = transactionsBuilder.getTransactionFormulas();
 
     transactions.updateBuilderFormulas(transactionFormulas);

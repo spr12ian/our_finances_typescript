@@ -44,7 +44,10 @@ export class Transactions {
     return result;
   }
 
-  updateBuilderFormulas(transactionFormulas) {
+  updateBuilderFormulas(transactionFormulas: {
+    keyFormula: string;
+    valuesFormula: string;
+  }) {
     // Validate input and extract formulas
     if (
       !transactionFormulas ||

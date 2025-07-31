@@ -266,6 +266,7 @@ export class OurFinances {
     this.spreadsheet.sheets.forEach((sheet) => {
       sheet.trimSheet();
     });
+    Logger.log("All sheets trimmed.");
   }
 
   trimSheet() {

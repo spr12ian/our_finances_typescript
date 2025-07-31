@@ -162,8 +162,10 @@ export class Sheet {
   }
 
   trimSheet(): Sheet {
+    Logger.log(`Trimming sheet: ${this.name}`);
     this.deleteExcessColumns();
     this.deleteExcessRows();
+    Logger.log(`Trimmed sheet: ${this.name}`);
     return this;
   }
 }

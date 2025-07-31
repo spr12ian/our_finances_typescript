@@ -17,13 +17,13 @@ export class TransactionCategories {
     // The function is kept for reference, but it does nothing now.
     const sheet = this.sheet;
     const lastRow = sheet.raw.getLastRow();
+    const numRows = lastRow - Meta.START_ROW + 1;
 
     // Some sheets may be empty, so we check if there's data to process
-    if (lastRow < Meta.START_ROW) {
+    if (numRows <= 0) {
       console.warn("No data to update in Transaction Categories sheet.");
       return;
     }
-    const numRows = lastRow - Meta.START_ROW + 1;
 
     const FIRST_THREE_COLUMNS = 3; // Exclude the last column for processing
 

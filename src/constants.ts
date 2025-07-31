@@ -181,6 +181,26 @@ export const MetaNotInTransactionCategories = {
   },
 };
 
+export const MetaSSACRD = {
+  FORMULA_CONFIG: [
+    {
+      cell: "E1",
+      formula:
+        '={"Note";ARRAYFORMULA(if(len(I2:I),I2:I&" "&J2:J,J2:J))}',
+    },
+    {
+      cell: "H1",
+      formula:
+        '={"Balance (£)";ArrayFormula(IF(LEN(C2:C)+LEN(D2:D),MMULT(TRANSPOSE(IF(TRANSPOSE(ROW(C2:C))>=ROW(C2:C),C2:C-D2:D,0)),SIGN(ROW(A2:A))),IFERROR(1/0)))} ',
+    },
+  ] as { cell: string; formula: string }[],
+  NUM_COLUMNS: 4, // Number of columns in the Transaction categories sheet
+  SHEET: {
+    NAME: "Transaction categories",
+  },
+  START_ROW: 2, // Skip header row
+};
+
 export const MetaTransactionCategories = {
   FORMULA_CONFIG: [
     {

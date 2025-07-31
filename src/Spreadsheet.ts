@@ -53,6 +53,15 @@ export class Spreadsheet {
     return this.ss.getSheets().map((s) => s.getName());
   }
 
+  deleteSheet(sheet: Sheet): void {
+    const sheetName = sheet.name;
+    if (!this.hasSheet(sheetName)) {
+      throw new Error(`Sheet "${sheetName}" does not exist`);
+    }
+    this.ss.deleteSheet(sheet.raw);
+    this._sheetCache.delete(sheetName);
+  }
+
   /** Get a typed `Sheet` by name (cached) */
   getSheet(name: string): Sheet {
     if (this._sheetCache.has(name)) {
@@ -69,6 +78,16 @@ export class Spreadsheet {
 
   hasSheet(name: string): boolean {
     return this.ss.getSheetByName(name) !== null;
+  }
+
+  insertSheet(name: string): Sheet {
+    if (this.hasSheet(name)) {
+      throw new Error(`Sheet "${name}" already exists`);
+    }
+    const sheet = this.ss.insertSheet(name);
+    const wrapped = new Sheet(sheet);
+    this._sheetCache.set(name, wrapped);
+    return wrapped;
   }
 
   // ─── Spreadsheet-level API ────────────────────────────────────

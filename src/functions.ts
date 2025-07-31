@@ -235,7 +235,7 @@ function isCellAccountBalance(sheet: Sheet, column: number) {
   return isCellAccountBalance;
 }
 
-function isCellADate(cell) {
+export function isCellADate(cell: GoogleAppsScript.Spreadsheet.Range) {
   // Get the value of the specified cell
   const cellValue = cell.getValue();
 

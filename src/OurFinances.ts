@@ -1,5 +1,5 @@
 /// <reference types="google-apps-script" />
-import { getAccountSheets } from "./accountsFunctions";
+import { AccountsData } from "./AccountsData";
 import { AccountSheet } from "./AccountSheet";
 import { BankAccounts } from "./BankAccounts";
 import { BankDebitsDue } from "./BankDebitsDue";
@@ -9,7 +9,6 @@ import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
 import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
 import { CheckFixedAmounts } from "./CheckFixedAmounts";
 import {
-  MetaAccountsData,
   MetaBankAccounts,
   MetaBudgetAdHocTransactions,
   MetaBudgetAnnualTransactions,
@@ -22,6 +21,7 @@ import { getToday } from "./DateUtils";
 import { sendMeEmail } from "./emailFunctions";
 import { Spreadsheet } from "./Spreadsheet";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
+import { TransactionCategories } from "./TransactionCategories";
 import { Transactions } from "./Transactions";
 import { TransactionsBuilder } from "./TransactionsBuilder";
 import {
@@ -36,6 +36,7 @@ const logTiming = <T>(label: string, fn: () => T): T => {
   return result;
 };
 export class OurFinances {
+  private _accountsData?: AccountsData;
   private _bankAccounts?: BankAccounts;
   private _bankDebitsDue?: BankDebitsDue;
   private _budgetAnnualTransactions?: BudgetAnnualTransactions;
@@ -44,6 +45,7 @@ export class OurFinances {
   private _budgetWeeklyTransactions?: BudgetWeeklyTransactions;
   private _checkFixedAmounts?: CheckFixedAmounts;
   private _spreadsheetSummary?: SpreadsheetSummary;
+  private _transactionCategories?: TransactionCategories;
   private _transactions?: Transactions;
   private _transactionsBuilder?: TransactionsBuilder;
   private _howManyDaysAhead?: number;
@@ -51,6 +53,14 @@ export class OurFinances {
   constructor(
     private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
   ) {}
+
+  get accountsData() {
+    if (typeof this._accountsData === "undefined") {
+      this._accountsData = new AccountsData(this.spreadsheet);
+    }
+    return this._accountsData;
+  }
+
   get bankAccounts() {
     if (typeof this._bankAccounts === "undefined") {
       this._bankAccounts = new BankAccounts(this.spreadsheet);
@@ -126,6 +136,13 @@ export class OurFinances {
     return this._spreadsheetSummary;
   }
 
+  get transactionCategories() {
+    if (typeof this._transactionCategories === "undefined") {
+      this._transactionCategories = new TransactionCategories(this.spreadsheet);
+    }
+    return this._transactionCategories;
+  }
+
   get transactions() {
     if (typeof this._transactions === "undefined") {
       this._transactions = new Transactions(this.spreadsheet);
@@ -164,10 +181,6 @@ export class OurFinances {
     }
   }
 
-  copyKeys() {
-    this.transactionsBuilder.copyIfSheetExists();
-  }
-
   dailySorts() {
     const sheetsToSort = [
       MetaBankAccounts.SHEET.NAME,
@@ -186,57 +199,6 @@ export class OurFinances {
     });
   }
 
-  updateAccountsData() {
-    const spreadsheet = this.spreadsheet;
-    const accountSheets = getAccountSheets(spreadsheet);
-
-    const HEADER = [
-      "Account",
-      "Date",
-      "Description",
-      "Credit (£)",
-      "Debit (£)",
-      "Note",
-      "CPTY",
-      "Date CPTY",
-    ];
-    const START_ROW = 2; // Skip headers in each sheet
-    const NUM_COLUMNS = 7;
-
-    const allRows = [HEADER];
-
-    for (const sheet of accountSheets) {
-      const account = sheet.name.slice(1); // Remove leading underscore
-
-      const lastRow = sheet.raw.getLastRow();
-      if (lastRow < START_ROW) continue; // Skip empty sheets
-
-      const data = sheet.raw
-        .getRange(START_ROW, 1, lastRow - 1, NUM_COLUMNS)
-        .getValues();
-
-      for (const row of data) {
-        if (row.every((cell) => cell === "")) continue; // Skip empty rows
-        allRows.push([account, ...row]); // Prepend column with sheet name (Account)
-      }
-    }
-
-    // Replace 'Accounts data'
-    const targetSheet = spreadsheet.getSheet(MetaAccountsData.SHEET.NAME);
-    if (!targetSheet) {
-      console.error(`Target sheet '${MetaAccountsData.SHEET.NAME}' not found.`);
-      return;
-    }
-
-    targetSheet.clearContents();
-
-    targetSheet.raw
-      .getRange(1, 1, allRows.length, allRows[0].length)
-      .setValues(allRows);
-
-    this.transactions.raw.getRange("A1").setFormula("=ARRAYFORMULA('Accounts data'!A1:H)");
-  }
-
   goToSheet(sheetName: string) {
     const sheet = this.spreadsheet.getSheet(sheetName);
 
@@ -244,17 +206,6 @@ export class OurFinances {
     if (sheet) {
       sheet.activate();
     }
-  }
-
-  mergeTransactions() {
-    const transactions = this.transactions;
-    const transactionsBuilder = this.transactionsBuilder;
-    // transactionsBuilder.copyIfSheetExists();
-    const transactionFormulas = transactionsBuilder.getTransactionFormulas();
-
-    transactions.updateBuilderFormulas(transactionFormulas);
-
-    transactions.activate();
   }
 
   onOpen(): void {
@@ -311,7 +262,6 @@ export class OurFinances {
     this.spreadsheet.sortSheets();
   }
 
-
   trimAllSheets() {
     this.spreadsheet.sheets.forEach((sheet) => {
       sheet.trimSheet();
@@ -320,5 +270,13 @@ export class OurFinances {
 
   trimSheet() {
     this.spreadsheet.activeSheet.trimSheet();
+  }
+
+  updateAccountsData() {
+    this.accountsData.update();
+  }
+
+  updateTransactionCategories() {
+    this.transactionCategories.update();
   }
 }

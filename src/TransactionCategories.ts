@@ -1,6 +1,6 @@
 /// <reference types="google-apps-script" />
 
-import { TransactionCategories as Meta } from "./constants";
+import { MetaTransactionCategories as Meta } from "./constants";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 
@@ -12,62 +12,69 @@ export class TransactionCategories {
     this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
   }
 
-  activate() {
-    this.sheet.activate();
-  }
-
-  evaluateQueryFunction(queryString: string) {
+  update() {
+    return; // This was a run once fix that is no longer needed.
+    // The function is kept for reference, but it does nothing now.
     const sheet = this.sheet;
-    const dataRange = sheet.getDataRange(); // Adjust the range as needed
-    const a1range = `Transactions!${dataRange.getA1Notation()}`;
+    const lastRow = sheet.raw.getLastRow();
 
-    // Construct the QUERY formula
-    const formula = `=IFNA(QUERY(${a1range}, "${queryString}"), 0.0)`;
+    // Some sheets may be empty, so we check if there's data to process
+    if (lastRow < Meta.START_ROW) {
+      console.warn("No data to update in Transaction Categories sheet.");
+      return;
+    }
+    const numRows = lastRow - Meta.START_ROW + 1;
 
-    // Add the formula to a temporary cell to evaluate it
-    const tempCell = sheet.getRange("Z1");
-    tempCell.setFormula(formula);
+    const FIRST_THREE_COLUMNS = 3; // Exclude the last column for processing
 
-    // Get the result of the QUERY function
-    const result = tempCell.getValue();
+    // Single read from the sheet
+    const inputRows = sheet.raw
+      .getRange(Meta.START_ROW, 1, numRows, FIRST_THREE_COLUMNS)
+      .getValues();
 
-    // Clear the temporary cell
-    tempCell.clear();
+    const outputColAValues: string[][] = [];
+    const outputColCValues: string[][] = [];
 
-    return result;
-  }
+    for (const row of inputRows) {
+      if (row.every((cell) => cell === "")) continue; // Skip empty rows
 
-  getTotalByYear(where: string, taxYear: string) {
-    const queryString = `SELECT SUM(I) WHERE J='${taxYear}' AND ${where} LABEL SUM(I) ''`;
-    const result = this.evaluateQueryFunction(queryString);
-    return result;
-  }
+      let transactionDescription = row[0] as string; // Column A
+      if (
+        transactionDescription.startsWith("SVI2TJ ") &&
+        transactionDescription.endsWith(" *")
+      ) {
+        continue; // Skip entire rows that match the pattern
+      }
 
-  updateBuilderFormulas(transactionFormulas) {
-    // Validate input and extract formulas
-    if (
-      !transactionFormulas ||
-      typeof transactionFormulas.keyFormula !== "string" ||
-      typeof transactionFormulas.valuesFormula !== "string"
-    ) {
-      throw new Error(
-        "Invalid transactionFormulas: Expected an object with 'keyFormula' and 'valuesFormula' as strings."
-      );
+      if (transactionDescription.startsWith("SVI2TJ ")) {
+        transactionDescription += " *"; // Append " *" to the description
+      }
+
+      outputColAValues.push([transactionDescription]);
+
+      const category = row[2] as string; // Column C
+      outputColCValues.push([category]);
     }
 
-    const { keyFormula, valuesFormula } = transactionFormulas;
+    this.sheet.raw
+      .getRange(Meta.START_ROW, 1, numRows, FIRST_THREE_COLUMNS)
+      .clearContent();
 
-    // Sanitize formulas if needed (basic example, extend as required)
-    const safeKeyFormula = keyFormula.trim();
-    const safeValuesFormula = valuesFormula.trim();
+    // Write back only if we have data
+    if (outputColAValues.length > 0) {
+      sheet.raw
+        .getRange(Meta.START_ROW, 1, outputColAValues.length)
+        .setValues(outputColAValues);
 
-    try {
-      // Set formulas in a single batch operation
-      this.sheet
-        .getRange("A1:B1")
-        .setFormulas([[`=${safeKeyFormula}`, `=${safeValuesFormula}`]]);
-    } catch (error) {
-      throw error;
+      sheet.raw
+        .getRange(Meta.START_ROW, 3, outputColCValues.length)
+        .setValues(outputColCValues);
+    }
+  }
+
+  updateFormulas() {
+    for (const { cell, formula } of Meta.FORMULA_CONFIG) {
+      this.sheet.getRange(cell).setFormula(formula);
     }
   }
 }

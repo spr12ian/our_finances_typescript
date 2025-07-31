@@ -30,7 +30,20 @@ export const MetaAccountSheet = {
 export const MetaAccountsData = {
   SHEET: {
     NAME: "Accounts data",
-  },
+    HEADER_ROW: 1, // Number of header rows to skip
+    HEADER: [
+        "Account",
+        "Date",
+        "Description",
+        "Credit (£)",
+        "Debit (£)",
+        "Note",
+        "CPTY",
+        "Date CPTY",
+      ]
+    },
+  START_ROW: 2, // Skip header row in each account sheet
+  NUM_COLUMNS: 7, // Number of columns to read from each account sheet
 };
 
 export const MetaBankAccounts = {
@@ -169,9 +182,23 @@ export const MetaNotInTransactionCategories = {
 };
 
 export const MetaTransactionCategories = {
+  FORMULA_CONFIG: [
+    {
+      cell: "B1",
+      formula:
+        '={"How Many"; ARRAYFORMULA(IF(LEN(A2:A), COUNTIF(Transactions!$L$1:$L, A2:A), )) }',
+    },
+    {
+      cell: "D1",
+      formula:
+        '={"XLOOKUP category"; ARRAYFORMULA(IF(LEN(A2:A), IF(LEN(C2:C), C2:C, "Uncategorised"), ))}',
+    },
+  ] as { cell: string; formula: string }[],
+  NUM_COLUMNS: 4, // Number of columns in the Transaction categories sheet
   SHEET: {
     NAME: "Transaction categories",
   },
+  START_ROW: 2, // Skip header row
 };
 
 export const MetaTransactionsBuilder = {

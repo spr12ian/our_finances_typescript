@@ -4,6 +4,8 @@ import {
   MetaBudgetAnnualTransactions,
   MetaCategories,
   MetaCategoryClash,
+  MetaHMRC_B,
+  MetaHMRC_S,
   MetaNotInTransactionCategories,
   MetaTransactionCategories,
   MetaTransactionsByDate,
@@ -33,11 +35,55 @@ export function GAS_categories() {
   new OurFinances().goToSheet("Categories");
 }
 
-export function GAS_copyKeys() {
-  new OurFinances().copyKeys();
-}
 export function GAS_dailySorts() {
   new OurFinances().dailySorts();
+}
+export function GAS_goToSheet_AHALIF() {
+  new OurFinances().goToSheet("_AHALIF");
+}
+
+export function GAS_goToSheet_CVITRA() {
+  new OurFinances().goToSheet("_CVITRA");
+}
+
+export function GAS_goToSheet_SVI2TJ() {
+  new OurFinances().goToSheet("_SVI2TJ");
+}
+
+export function GAS_goToSheet_SVIGBL() {
+  new OurFinances().goToSheet("_SVIGBL");
+}
+
+export function GAS_goToSheet_SVIIRF() {
+  new OurFinances().goToSheet("_SVIIRF");
+}
+
+export function GAS_goToSheetHMRC_B() {
+  new OurFinances().goToSheet(MetaHMRC_B.SHEET.NAME);
+}
+
+export function GAS_goToSheetHMRC_S() {
+  new OurFinances().goToSheet(MetaHMRC_S.SHEET.NAME);
+}
+
+export function GAS_goToSheetHMRCTransactionsSummary() {
+  new OurFinances().goToSheet("HMRC Transactions Summary");
+}
+
+export function GAS_goToSheetLoanGlenburnie() {
+  new OurFinances().goToSheet("Loan Glenburnie");
+}
+
+export function GAS_goToSheetPeople() {
+  new OurFinances().goToSheet("People");
+}
+
+export function GAS_goToSheetSW183PTInventory() {
+  new OurFinances().goToSheet("SW18 3PT inventory");
+}
+
+export function GAS_monthlyUpdate() {
+  new OurFinances().bankAccounts.showMonthly();
 }
 
 export function GAS_goToSheetCategories() {
@@ -66,10 +112,6 @@ export function GAS_goToSheetXfersMismatch() {
 
 export function GAS_helloWorld(): void {
   logTime("Hello world!");
-}
-
-export function GAS_mergeTransactions() {
-  new OurFinances().mergeTransactions();
 }
 
 export function GAS_goToSheetNotInTransactionCategories() {
@@ -106,6 +148,10 @@ export function GAS_trimSheet() {
 
 export function GAS_updateAccountsData() {
   new OurFinances().updateAccountsData();
+}
+
+export function GAS_updateTransactionCategories() {
+  new OurFinances().updateTransactionCategories();
 }
 
 export function GAS_validateAllMenuFunctionNames() {

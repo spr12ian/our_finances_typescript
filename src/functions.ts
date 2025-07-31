@@ -256,7 +256,7 @@ function isCellADate(cell) {
  * @param {Range} range - The range to check.
  * @returns {boolean} - Returns true if the range contains only one cell, otherwise false.
  */
-function isSingleCell(range) {
+export function isSingleCell(range: GoogleAppsScript.Spreadsheet.Range) {
   if (
     !range ||
     typeof range.getNumColumns !== "function" ||

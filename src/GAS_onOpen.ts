@@ -205,23 +205,7 @@ function isCellADate(cell) {
   }
 }
 
-/**
- * Checks if the given range represents a single cell.
- *
- * @param {Range} range - The range to check.
- * @returns {boolean} - Returns true if the range contains only one cell, otherwise false.
- */
-function isSingleCell(range) {
-  if (
-    !range ||
-    typeof range.getNumColumns !== "function" ||
-    typeof range.getNumRows !== "function"
-  ) {
-    throw new Error("Invalid input: Expected a Range object.");
-  }
 
-  return range.getNumColumns() === 1 && range.getNumRows() === 1;
-}
 
 function openAccounts() {
   const ourFinances = new OurFinances();

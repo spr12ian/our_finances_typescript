@@ -1,7 +1,5 @@
-
-
 export function validateAllMenuFunctionNames() {
-  const registered = new Set(globalThis.__exportedGlobals__ ?? []);
+  const registered = new Set((globalThis as any).__exportedGlobals__ ?? []);
   const knownMissing = ["onEdit", "doGet"];
 
   const builderFunctionNames = [

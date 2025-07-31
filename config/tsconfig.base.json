@@ -14,9 +14,6 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "paths": {
-      "*": ["types/*"]
-    },
     "skipLibCheck": true,
     "strict": true,
     "target": "ES2022",

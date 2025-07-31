@@ -17,10 +17,6 @@ export class Transactions {
     return this.sheet;
   }
 
-  activate() {
-    this.sheet.activate();
-  }
-
   evaluateQueryFunction(queryString: string) {
     const sheet = this.sheet;
     const dataRange = sheet.getDataRange(); // Adjust the range as needed
@@ -48,34 +44,9 @@ export class Transactions {
     return result;
   }
 
-  updateBuilderFormulas(transactionFormulas: {
-    keyFormula: string;
-    valuesFormula: string;
-  }) {
-    // Validate input and extract formulas
-    if (
-      !transactionFormulas ||
-      typeof transactionFormulas.keyFormula !== "string" ||
-      typeof transactionFormulas.valuesFormula !== "string"
-    ) {
-      throw new Error(
-        "Invalid transactionFormulas: Expected an object with 'keyFormula' and 'valuesFormula' as strings."
-      );
-    }
-
-    const { keyFormula, valuesFormula } = transactionFormulas;
-
-    // Sanitize formulas if needed (basic example, extend as required)
-    const safeKeyFormula = keyFormula.trim();
-    const safeValuesFormula = valuesFormula.trim();
-
-    try {
-      // Set formulas in a single batch operation
-      this.sheet
-        .getRange("A1:B1")
-        .setFormulas([[`=${safeKeyFormula}`, `=${safeValuesFormula}`]]);
-    } catch (error) {
-      throw error;
-    }
+  updateFormulas() {
+    this.sheet
+      .getRange("A1")
+      .setFormula("=ARRAYFORMULA('Accounts data'!A1:H)");
   }
 }

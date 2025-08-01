@@ -8,6 +8,7 @@ import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
 import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
 import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
 import { CheckFixedAmounts } from "./CheckFixedAmounts";
+import { columnToLetter } from './columnToLetter';
 import {
   MetaBankAccounts,
   MetaBudgetAdHocTransactions,
@@ -23,7 +24,6 @@ import { Spreadsheet } from "./Spreadsheet";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
 import { TransactionCategories } from "./TransactionCategories";
 import { Transactions } from "./Transactions";
-import { TransactionsBuilder } from "./TransactionsBuilder";
 import {
   buildAccountsMenu_,
   buildGasMenu_,
@@ -47,7 +47,6 @@ export class OurFinances {
   private _spreadsheetSummary?: SpreadsheetSummary;
   private _transactionCategories?: TransactionCategories;
   private _transactions?: Transactions;
-  private _transactionsBuilder?: TransactionsBuilder;
   private _howManyDaysAhead?: number;
 
   constructor(
@@ -150,13 +149,6 @@ export class OurFinances {
     return this._transactions;
   }
 
-  get transactionsBuilder() {
-    if (typeof this._transactionsBuilder === "undefined") {
-      this._transactionsBuilder = new TransactionsBuilder(this.spreadsheet);
-    }
-    return this._transactionsBuilder;
-  }
-
   get upcomingDebits() {
     const howManyDaysAhead = this.bankDebitsDue.howManyDaysAhead;
     // Collect upcoming debits from different sources
@@ -198,6 +190,48 @@ export class OurFinances {
       }
     });
   }
+
+  exportFormulasToDrive() {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheets = ss.getSheets();
+    let output = "";
+
+    for (const sheet of sheets) {
+      const formulas = sheet.getDataRange().getFormulas();
+      const formulaConfig = [];
+
+      for (let r = 0; r < formulas.length; r++) {
+        for (let c = 0; c < formulas[r].length; c++) {
+          const f = formulas[r][c];
+          if (f) {
+            formulaConfig.push(
+              `  { cell: "${columnToLetter(c + 1)}${r + 1}", formula: '${f.replace(/'/g, "\\'")}' },`
+            );
+          }
+        }
+      }
+
+      if (formulaConfig.length > 0) {
+        output += `// ---- ${sheet.getName()} ----\n`;
+        output += `FORMULA_CONFIG: [\n${formulaConfig.join("\n")}\n] as { cell: string; formula: string }[],\n`;
+        output += `SHEET: { NAME: "${sheet.getName()}", },\n\n`;
+      }
+    }
+
+    // Create file in Drive
+    const fileName = "FormulasExport.ts";
+
+    // Overwrite if it already exists
+    const existing = DriveApp.getFilesByName(fileName);
+    if (existing.hasNext()) {
+      const file = existing.next();
+      file.setTrashed(true); // move old version to bin
+    }
+
+    DriveApp.createFile(fileName, output, "text/plain");
+    SpreadsheetApp.getUi().alert(`Export complete: ${fileName} created in Drive.`);
+  }
+
 
   goToSheet(sheetName: string) {
     const sheet = this.spreadsheet.getSheet(sheetName);
@@ -275,6 +309,14 @@ export class OurFinances {
 
   updateAccountsData() {
     this.accountsData.update();
+  }
+
+  updateSpreadsheetSummary() {
+    this.spreadsheetSummary.update();
+  }
+
+  updateTransactions() {
+    this.transactions.update();
   }
 
   updateTransactionCategories() {

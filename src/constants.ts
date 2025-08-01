@@ -2,6 +2,23 @@ export const ACCOUNT_PREFIX = "_";
 
 export const LOCALE = "en-GB" as const;
 
+export const MetaAccountBalances = {
+  FORMULA_CONFIG: [
+    {
+      cell: "A1",
+      formula:
+        "=QUERY('Accounts data'!A1:E,\"SELECT A,SUM(D),SUM(E) GROUP BY A\")",
+    },
+    {
+      cell: "D1",
+      formula: '={"Balance (£)"; ARRAYFORMULA(IF(A2:A<>"", B2:B - C2:C, ""))}',
+    },
+  ] as { cell: string; formula: string }[],
+  SHEET: {
+    NAME: "Account Balances",
+  },
+};
+
 export const MetaAccountSheet = {
   COLUMNS: {
     DATE: 1,
@@ -32,16 +49,16 @@ export const MetaAccountsData = {
     NAME: "Accounts data",
     HEADER_ROW: 1, // Number of header rows to skip
     HEADER: [
-        "Account",
-        "Date",
-        "Description",
-        "Credit (£)",
-        "Debit (£)",
-        "Note",
-        "CPTY",
-        "Date CPTY",
-      ]
-    },
+      "Account",
+      "Date",
+      "Description",
+      "Credit (£)",
+      "Debit (£)",
+      "Note",
+      "CPTY",
+      "Date CPTY",
+    ],
+  },
   START_ROW: 2, // Skip header row in each account sheet
   NUM_COLUMNS: 7, // Number of columns to read from each account sheet
 };
@@ -185,8 +202,7 @@ export const MetaSSACRD = {
   FORMULA_CONFIG: [
     {
       cell: "E1",
-      formula:
-        '={"Note";ARRAYFORMULA(if(len(I2:I),I2:I&" "&J2:J,J2:J))}',
+      formula: '={"Note";ARRAYFORMULA(if(len(I2:I),I2:I&" "&J2:J,J2:J))}',
     },
     {
       cell: "H1",
@@ -199,6 +215,12 @@ export const MetaSSACRD = {
     NAME: "Transaction categories",
   },
   START_ROW: 2, // Skip header row
+};
+
+export const MetaTransactions = {
+  SHEET: {
+    NAME: "Transactions",
+  },
 };
 
 export const MetaTransactionCategories = {
@@ -219,12 +241,6 @@ export const MetaTransactionCategories = {
     NAME: "Transaction categories",
   },
   START_ROW: 2, // Skip header row
-};
-
-export const MetaTransactionsBuilder = {
-  SHEET: {
-    NAME: "Transactions builder",
-  },
 };
 
 export const MetaTransactionsByDate = {

@@ -38,6 +38,11 @@ export function GAS_categories() {
 export function GAS_dailySorts() {
   new OurFinances().dailySorts();
 }
+
+export function GAS_exportFormulasToDrive() {
+  new OurFinances().exportFormulasToDrive();
+}
+
 export function GAS_goToSheet_AHALIF() {
   new OurFinances().goToSheet("_AHALIF");
 }
@@ -82,10 +87,6 @@ export function GAS_goToSheetSW183PTInventory() {
   new OurFinances().goToSheet("SW18 3PT inventory");
 }
 
-export function GAS_monthlyUpdate() {
-  new OurFinances().bankAccounts.showMonthly();
-}
-
 export function GAS_goToSheetCategories() {
   new OurFinances().goToSheet(MetaCategories.SHEET.NAME);
 }
@@ -98,10 +99,6 @@ export function GAS_goToSheetTransactionCategories() {
   new OurFinances().goToSheet(MetaTransactionCategories.SHEET.NAME);
 }
 
-export function GAS_goToSheetTransactionsBuilder() {
-  new OurFinances().goToSheet("Transactions builder");
-}
-
 export function GAS_goToSheetUncategorisedByDate() {
   new OurFinances().goToSheet(MetaUncategorisedByDate.SHEET.NAME);
 }
@@ -110,16 +107,20 @@ export function GAS_goToSheetXfersMismatch() {
   new OurFinances().goToSheet("Xfers mismatch");
 }
 
-export function GAS_helloWorld(): void {
-  logTime("Hello world!");
-}
-
 export function GAS_goToSheetNotInTransactionCategories() {
   new OurFinances().goToSheet(MetaNotInTransactionCategories.SHEET.NAME);
 }
 
 export function GAS_goToSheetTransactionsByDate() {
   new OurFinances().goToSheet(MetaTransactionsByDate.SHEET.NAME);
+}
+
+export function GAS_helloWorld(): void {
+  logTime("Hello world!");
+}
+
+export function GAS_monthlyUpdate() {
+  new OurFinances().bankAccounts.showMonthly();
 }
 
 export function GAS_onOpen(): void {
@@ -148,6 +149,14 @@ export function GAS_trimSheet() {
 
 export function GAS_updateAccountsData() {
   new OurFinances().updateAccountsData();
+}
+
+export function GAS_updateSpreadsheetSummary() {
+  new OurFinances().updateSpreadsheetSummary();
+}
+
+export function GAS_updateTransactions() {
+  new OurFinances().updateTransactions();
 }
 
 export function GAS_updateTransactionCategories() {

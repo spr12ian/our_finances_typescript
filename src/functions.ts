@@ -165,7 +165,7 @@ export function getLastUpdatedColumn(sheet: Sheet) {
     for (let col in values[row]) {
       const cell = values[row][col];
 
-      newCell = cell.replace(/\n/g, " ");
+      const newCell = cell.replace(/\n/g, " ");
 
       if (newCell == lastUpdated) {
         const lastUpdatedColumnNbr = 1 + parseInt(col, 10);
@@ -180,31 +180,18 @@ export function getLastUpdatedColumn(sheet: Sheet) {
   return lastUpdatedColumn;
 }
 
-function getLineNumber() {
+export function getLineNumber(): string {
   try {
     throw new Error();
-  } catch (e) {
-    // Extract line number from the stack trace
-    const stack = e.stack.split("\n");
-    const line = stack[2].match(/:(\d+):\d+\)?$/);
-    return line ? line[1] : "unknown";
+  } catch (e: unknown) {
+    if (e instanceof Error && e.stack) {
+      // Extract line number from the stack trace
+      const stack = e.stack.split("\n");
+      const line = stack[2]?.match(/:(\d+):\d+\)?$/);
+      return line ? line[1] : "unknown";
+    }
+    return "unknown";
   }
-}
-
-function getReplacementHeadersMap() {
-  const bankAccounts = activeSpreadsheet.getSheetByName(
-    BankAccounts.SHEET.NAME
-  );
-  if (!bankAccounts) {
-    throw new Error(`Sheet named '${BankAccounts.SHEET.NAME}' not found.`);
-  }
-
-  const data = bankAccounts.getDataRange().getValues().slice(1);
-
-  return data.reduce((map, [date, description, credit, debit, note]) => {
-    map[description] = replacement;
-    return map;
-  }, {});
 }
 
 export function goToSheetLastRow(sheetName: string) {
@@ -213,7 +200,7 @@ export function goToSheetLastRow(sheetName: string) {
   sheet.setActiveRange(sheet.raw.getRange(sheet.raw.getLastRow(), 1));
 }
 
-function isCellAccountBalance(sheet: Sheet, column: number) {
+export function isCellAccountBalance(sheet: Sheet, column: number) {
   const accountBalance = "Account Balance";
 
   let isCellAccountBalance = false;

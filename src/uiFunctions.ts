@@ -48,6 +48,7 @@ export function buildSectionsMenu_(ui: GoogleAppsScript.Base.Ui) {
     .addSubMenu(
       ui
         .createMenu("Accounts")
+        .addItem("Update 'Transactions'", "updateTransactions")
         .addItem("Update 'Accounts data'", "updateAccountsData")
         .addItem(
           "Not in transaction categories",

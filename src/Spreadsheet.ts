@@ -101,18 +101,15 @@ export class Spreadsheet {
 
   sortSheets() {
     const ss = this.ss;
-    const sheetNames = this.sheetNames;
+    const sheetNames = this.sheetNames.sort();
 
-    sheetNames.sort();
-
-    // Reorder the sheets.
     for (let j = 0; j < sheetNames.length; j++) {
-      const sheetName = sheetNames[j];
-      const sheet = this.getSheet(sheetName).raw;
+      const sheet = this.getSheet(sheetNames[j]).raw;
       ss.setActiveSheet(sheet);
       ss.moveActiveSheet(j + 1);
     }
   }
+
 
   toast(message: string, title = "", timeoutSeconds = 5): void {
     this.ss.toast(message, title, timeoutSeconds);

@@ -43,6 +43,10 @@ export function GAS_exportFormulasToDrive() {
   new OurFinances().exportFormulasToDrive();
 }
 
+export function GAS_formatAccountSheet() {
+  new OurFinances().formatAccountSheet();
+}
+
 export function GAS_goToSheet_AHALIF() {
   new OurFinances().goToSheet("_AHALIF");
 }
@@ -161,6 +165,10 @@ export function GAS_updateTransactions() {
 
 export function GAS_updateTransactionCategories() {
   new OurFinances().updateTransactionCategories();
+}
+
+export function GAS_validateAccountsData() {
+  new OurFinances().validateAccountsData();
 }
 
 export function GAS_validateAllMenuFunctionNames() {

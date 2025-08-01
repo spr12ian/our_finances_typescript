@@ -98,17 +98,6 @@ function findNamedRangeUsage() {
   findUsageByNamedRange("BRIAN_HALIFAX_BALANCE");
 }
 
-export function formatSheet() {
-  const activeSheet = activeSpreadsheet.getActiveSheet();
-
-  if (!activeSheet) {
-    return;
-  }
-
-  const accountSheet = new AccountSheet(activeSheet);
-  accountSheet.formatSheet();
-}
-
 export function getHMRCTotalByYear(category, year) {
   return category + "-" + year;
 }

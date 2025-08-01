@@ -31,7 +31,6 @@ export function buildGasMenu_(ui: GoogleAppsScript.Base.Ui) {
     ["Check dependencies", "checkDependencies"],
     ["Convert current column to uppercase", "convertCurrentColumnToUppercase"],
     ["Daily update", "dailyUpdate"],
-    ["Format sheet", "formatSheet"],
     ["Monthly update", "monthlyUpdate"],
     ["Open accounts", "openAccounts"],
     ["Sort sheet order", "sortSheets"],
@@ -59,6 +58,7 @@ export function buildSectionsMenu_(ui: GoogleAppsScript.Base.Ui) {
         .addItem("Categories", "goToSheetCategories")
         .addItem("Transactions by date", "goToSheetTransactionsByDate")
         .addItem("Transaction categories", "goToSheetTransactionCategories")
+        .addItem("Format account sheet", "formatAccountSheet")
     )
     .addSeparator()
     .addSubMenu(

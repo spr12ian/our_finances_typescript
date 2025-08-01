@@ -8,6 +8,7 @@ export const shimGlobals = [
   "categories",
   "dailySorts",
   "exportFormulasToDrive",
+  "formatAccountSheet",
   "goToSheetCategories",
   "goToSheetCategoryClash",
   "goToSheetHMRCTransactionsSummary",
@@ -38,6 +39,7 @@ export const shimGlobals = [
   "updateSpreadsheetSummary",
   "updateTransactionCategories",
   "updateTransactions",
+  "validateAccountsData",
   "validateAllMenuFunctionNames",
 ] as const;
 

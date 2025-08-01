@@ -2,6 +2,15 @@ import { getAccountSheets } from "./accountsFunctions";
 import { MetaAccountsData as Meta } from "./constants";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
+
+
+interface SheetMetaRow {
+  sheetName: string;
+  lastRow: number;
+  lastColumn: number;
+  maxRows: number;
+  maxColumns: number;
+}
 /**
  * Class to handle accounts data in the "Accounts data" sheet.
  * It reads data from individual account sheets and compiles it into a single sheet.
@@ -76,5 +85,41 @@ export class AccountsData {
     }
 
     this.recreateSheet(outputRows);
+  }
+
+  validate() {
+    const accountSheets = this._getAccountSheets();
+    const data: SheetMetaRow[] = accountSheets.map((sheet) => ({
+      sheetName: sheet.getSheetName(),
+      lastRow: sheet.raw.getLastRow(),
+      lastColumn: sheet.raw.getLastColumn(),
+      maxRows: sheet.raw.getMaxRows(),
+      maxColumns: sheet.raw.getMaxColumns(),
+    }));
+
+    // Add header row
+    const header: (keyof SheetMetaRow)[] = [
+      "sheetName",
+      "lastRow",
+      "lastColumn",
+      "maxRows",
+      "maxColumns",
+    ];
+
+    const headerRow: string[] = [
+      "Sheet name",
+      "Last row",
+      "Last column",
+      "Max rows",
+      "Max columns",
+    ];
+
+    // Combine header + data
+    const rows: (string | number | boolean)[][] = [
+      headerRow,
+      ...data.map((row) => header.map((key) => row[key])),
+    ];
+    Logger.log("Validating Accounts Data:");
+    Logger.log(rows.map((row) => row.join(", ")).join("\n"));
   }
 }

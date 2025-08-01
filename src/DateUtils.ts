@@ -9,8 +9,12 @@ export function getDayOfMonth(date: Date): number {
   return date.getDate();
 }
 
+export function getDtf() {
+  return new Intl.DateTimeFormat(LOCALE);
+}
+
 // https://developers.google.com/apps-script/reference/utilities/utilities#formatDate(Date,String,String)
-export function getFormattedDate(date: Date, timeZone:string, format:string) {
+export function getFormattedDate(date: Date, timeZone: string, format: string) {
   return Utilities.formatDate(date, timeZone, format);
 }
 

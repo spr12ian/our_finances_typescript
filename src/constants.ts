@@ -15,7 +15,7 @@ export const MetaAccountBalances = {
     },
   ] as { cell: string; formula: string }[],
   SHEET: {
-    NAME: "Account Balances",
+    NAME: "Account balances",
   },
 };
 
@@ -61,6 +61,41 @@ export const MetaAccountsData = {
   },
   START_ROW: 2, // Skip header row in each account sheet
   NUM_COLUMNS: 7, // Number of columns to read from each account sheet
+};
+
+export const MetaAssets = {
+  FORMULA_CONFIG: [
+    {
+      cell: "B2",
+      formula:
+        "=QUERY('Bank accounts'!$M$1:$AL,\"SELECT SUM(M) WHERE M > 1 AND AL = TRUE LABEL SUM(M) ''\")",
+    },
+    { cell: "B3", formula: "=Shares!F4" },
+    { cell: "B4", formula: "='Money owed to us'!B2" },
+    {
+      cell: "B5",
+      formula:
+        "=XLOOKUP(\"Institution Total\",'Pension Vanguard'!A2:A,'Pension Vanguard'!D2:D)",
+    },
+    {
+      cell: "B6",
+      formula:
+        "=XLOOKUP(\"Fund value\",'Pension Zurich'!A2:A,'Pension Zurich'!B2:B)",
+    },
+    { cell: "B7", formula: "=Property!C2" },
+  ] as { cell: string; formula: string }[],
+  SHEET: { NAME: "Assets" },
+};
+
+export const MetaBMONZO = {
+  FORMULA_CONFIG: [
+    {
+      cell: "A1",
+      formula:
+        '=IMPORTRANGE("https://docs.google.com/spreadsheets/d/11EkOxSPkTAUi4fbbBe2gsieHvkKWO8MiFKlT35LRQEw/edit?usp=drive_link","A1:R")',
+    },
+  ] as { cell: string; formula: string }[],
+  SHEET: { NAME: "BMONZO" },
 };
 
 export const MetaBankAccounts = {

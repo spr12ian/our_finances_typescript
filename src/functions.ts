@@ -129,7 +129,7 @@ export function findUsageByNamedRange(namedRange) {
     const formulas = sheet.getDataRange().getFormulas();
 
     formulas.forEach((rowFormulas, rowIndex) => {
-      rowFormulas.forEach((formula, colIndex) => {
+      rowFormulas.forEach((formula, colIndex: number) => {
         if (formula.includes(namedRange)) {
           const cellRef = sheet
             .getRange(rowIndex + 1, colIndex + 1)
@@ -139,21 +139,6 @@ export function findUsageByNamedRange(namedRange) {
       });
     });
   });
-}
-
-function formatSheet() {
-  const activeSheet = activeSpreadsheet.getActiveSheet();
-
-  if (!activeSheet) {
-    return;
-  }
-
-  const accountSheet = new AccountSheet(activeSheet);
-  accountSheet.formatSheet();
-}
-
-function getDtf() {
-  return new Intl.DateTimeFormat(LOCALE);
 }
 
 export function getLastUpdatedColumn(sheet: Sheet) {

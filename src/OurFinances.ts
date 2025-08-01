@@ -8,7 +8,7 @@ import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
 import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
 import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
 import { CheckFixedAmounts } from "./CheckFixedAmounts";
-import { columnToLetter } from './columnToLetter';
+import { columnToLetter } from "./columnToLetter";
 import {
   MetaBankAccounts,
   MetaBudgetAdHocTransactions,
@@ -193,7 +193,8 @@ export class OurFinances {
 
   exportFormulasToDrive() {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheets = ss.getSheets();
+    const sheets = ss.getSheets().filter((s) => s.getName() > "BMONZO");
+    const fileName = "FormulasExport.ts";
     let output = "";
 
     for (const sheet of sheets) {
@@ -205,7 +206,9 @@ export class OurFinances {
           const f = formulas[r][c];
           if (f) {
             formulaConfig.push(
-              `  { cell: "${columnToLetter(c + 1)}${r + 1}", formula: '${f.replace(/'/g, "\\'")}' },`
+              `  { cell: "${columnToLetter(c + 1)}${
+                r + 1
+              }", formula: '${f.replace(/'/g, "\\'")}' },`
             );
           }
         }
@@ -213,25 +216,28 @@ export class OurFinances {
 
       if (formulaConfig.length > 0) {
         output += `// ---- ${sheet.getName()} ----\n`;
-        output += `FORMULA_CONFIG: [\n${formulaConfig.join("\n")}\n] as { cell: string; formula: string }[],\n`;
+        output += `FORMULA_CONFIG: [\n${formulaConfig.join(
+          "\n"
+        )}\n] as { cell: string; formula: string }[],\n`;
         output += `SHEET: { NAME: "${sheet.getName()}", },\n\n`;
+        Logger.log(`// ---- ${sheet.getName()} ----\n`);
       }
     }
 
     // Create file in Drive
-    const fileName = "FormulasExport.ts";
-
-    // Overwrite if it already exists
-    const existing = DriveApp.getFilesByName(fileName);
-    if (existing.hasNext()) {
-      const file = existing.next();
-      file.setTrashed(true); // move old version to bin
-    }
-
-    DriveApp.createFile(fileName, output, "text/plain");
-    SpreadsheetApp.getUi().alert(`Export complete: ${fileName} created in Drive.`);
+    outputToDrive(fileName, output);
   }
 
+  formatAccountSheet() {
+    const activeSheet = this.spreadsheet.activeSheet;
+
+    if (!activeSheet) {
+      return;
+    }
+
+    const accountSheet = new AccountSheet(activeSheet);
+    accountSheet.formatSheet();
+  }
 
   goToSheet(sheetName: string) {
     const sheet = this.spreadsheet.getSheet(sheetName);
@@ -322,4 +328,19 @@ export class OurFinances {
   updateTransactionCategories() {
     this.transactionCategories.update();
   }
+
+  validateAccountsData() {
+    this.accountsData.validate();
+  }
+}
+function outputToDrive(fileName: string, output: string) {
+  // Overwrite if it already exists
+  const existing = DriveApp.getFilesByName(fileName);
+  if (existing.hasNext()) {
+    const file = existing.next();
+    file.setTrashed(true); // move old version to bin
+  }
+
+  DriveApp.createFile(fileName, output, "text/plain");
+  Logger.log(`Export complete: ${fileName} created in Drive.`);
 }

@@ -51,8 +51,8 @@ export class Transactions {
     const HEADER = MetaAccountsData.SHEET.HEADER; // ["Account", "Date", ... , "Date CPTY"]
     const START_ROW = MetaAccountsData.START_ROW; // 2
 
-    //const exclude = new Set(["_CVITRA", "_SVI2TJ", "_SVI3BH", "_SVIIRF"]);
-    const exclude = new Set(["_CVITRA", "_SVI3BH", "_SVIIRF"]);
+    //const exclude = new Set(["_CVITRA", "_SVI3BH", "_SVIIRF"]);
+    const exclude = new Set(["_CVITRA", "_SVIIRF"]);
 
     // Collect account sheets
     const accountSheets = allSheets
@@ -69,7 +69,7 @@ export class Transactions {
     // Build ranges: first column is sheet name, then A:G
     const ranges = accountSheets.map((sheetName) => {
       const accountName = sheetName.substring(1); // remove leading "_"
-      
+
       return `{ARRAYFORMULA(IF(LEN('${sheetName}'!A2:A),"${accountName}","")), '${sheetName}'!A${START_ROW}:G}`;
     });
 

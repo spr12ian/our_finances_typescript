@@ -39,15 +39,15 @@ export class TransactionCategories {
       if (row.every((cell) => cell === "")) continue; // Skip empty rows
 
       let transactionDescription = row[0] as string; // Column A
-      if (
-        transactionDescription.startsWith("SVI2TJ ") &&
-        transactionDescription.endsWith(" *")
-      ) {
-        continue; // Skip entire rows that match the pattern
-      }
+      // if (
+      //   transactionDescription.startsWith("SVI3BH ") &&
+      //   transactionDescription.endsWith(" *")
+      // ) {
+      //   continue; // Skip entire rows that match the pattern
+      // }
 
-      if (transactionDescription.startsWith("SVI2TJ ")) {
-        transactionDescription += " *"; // Append " *" to the description
+      if (transactionDescription.startsWith("SVI3BH ")) {
+        transactionDescription += " N.B.  *"; // Append " N.B.  *" to the description
       }
 
       outputColAValues.push([transactionDescription]);

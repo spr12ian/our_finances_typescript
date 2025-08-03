@@ -1,4 +1,5 @@
 /// <reference types="google-apps-script" />
+import { AccountBalances } from "./AccountBalances";
 import { AccountsData } from "./AccountsData";
 import { AccountSheet } from "./AccountSheet";
 import { BankAccounts } from "./BankAccounts";
@@ -10,6 +11,7 @@ import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
 import { CheckFixedAmounts } from "./CheckFixedAmounts";
 import { columnToLetter } from "./columnToLetter";
 import {
+  MetaAccountBalances,
   MetaBankAccounts,
   MetaBudgetAdHocTransactions,
   MetaBudgetAnnualTransactions,
@@ -19,6 +21,7 @@ import {
   MetaTransactionCategories,
 } from "./constants";
 import { getToday } from "./DateUtils";
+import { outputToDrive } from "./driveFunctions";
 import { sendMeEmail } from "./emailFunctions";
 import { Spreadsheet } from "./Spreadsheet";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
@@ -36,6 +39,7 @@ const logTiming = <T>(label: string, fn: () => T): T => {
   return result;
 };
 export class OurFinances {
+  private _accountBalances?: AccountBalances;
   private _accountsData?: AccountsData;
   private _bankAccounts?: BankAccounts;
   private _bankDebitsDue?: BankDebitsDue;
@@ -52,6 +56,13 @@ export class OurFinances {
   constructor(
     private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
   ) {}
+
+  get accountBalances() {
+    if (typeof this._accountBalances === "undefined") {
+      this._accountBalances = new AccountBalances(this.spreadsheet);
+    }
+    return this._accountBalances;
+  }
 
   get accountsData() {
     if (typeof this._accountsData === "undefined") {
@@ -228,6 +239,40 @@ export class OurFinances {
     outputToDrive(fileName, output);
   }
 
+  fixSheet() {
+    const activeSheet = this.spreadsheet.activeSheet;
+    if (!activeSheet) {
+      Logger.log("No active sheet found.");
+      return;
+    }
+
+    Logger.log(`Checking activeSheet: ${activeSheet.name}`);
+
+    // Define a strongly typed mapping from sheet name to action
+    const sheetActions: Record<string, () => void> = {
+      [MetaAccountBalances.SHEET.NAME]: () => this.accountBalances.fixSheet(),
+      // [MetaBankAccounts.SHEET.NAME]: () => this.bankAccounts.fixSheet(),
+      // [MetaBudgetAdHocTransactions.SHEET.NAME]: () => this.budgetAdhocTransactions.fixSheet(),
+      // [MetaBudgetAnnualTransactions.SHEET.NAME]: () => this.budgetAnnualTransactions.fixSheet(),
+      // [MetaBudgetMonthlyTransactions.SHEET.NAME]: () => this.budgetMonthlyTransactions.fixSheet(),
+      // [MetaBudgetWeeklyTransactions.SHEET.NAME]: () => this.budgetWeeklyTransactions.fixSheet(),
+      // [MetaDescriptionReplacements.SHEET.NAME]: () => this.descriptionReplacements.fixSheet(),
+      // [MetaTransactionCategories.SHEET.NAME]: () => this.transactionCategories.fixSheet(),
+    } as const;
+
+    // Look up the action based on sheet name
+    const action = sheetActions[activeSheet.name as keyof typeof sheetActions];
+
+    if (action) {
+      action();
+    } else {
+      activeSheet.fixSheet();
+    }
+
+    activeSheet.trimSheet();
+    Spreadsheet.alert(`Sheet ${activeSheet.name} checked and trimmed.`);
+  }
+
   formatAccountSheet() {
     const activeSheet = this.spreadsheet.activeSheet;
 
@@ -332,15 +377,4 @@ export class OurFinances {
   validateAccountsData() {
     this.accountsData.validate();
   }
-}
-function outputToDrive(fileName: string, output: string) {
-  // Overwrite if it already exists
-  const existing = DriveApp.getFilesByName(fileName);
-  if (existing.hasNext()) {
-    const file = existing.next();
-    file.setTrashed(true); // move old version to bin
-  }
-
-  DriveApp.createFile(fileName, output, "text/plain");
-  Logger.log(`Export complete: ${fileName} created in Drive.`);
 }

@@ -43,12 +43,24 @@ export function GAS_exportFormulasToDrive() {
   new OurFinances().exportFormulasToDrive();
 }
 
+export function GAS_fixSheet() {
+  new OurFinances().fixSheet();
+}
+
 export function GAS_formatAccountSheet() {
   new OurFinances().formatAccountSheet();
 }
 
 export function GAS_goToSheet_AHALIF() {
   new OurFinances().goToSheet("_AHALIF");
+}
+
+export function GAS_goToSheetCategories() {
+  new OurFinances().goToSheet(MetaCategories.SHEET.NAME);
+}
+
+export function GAS_goToSheetCategoryClash() {
+  new OurFinances().goToSheet(MetaCategoryClash.SHEET.NAME);
 }
 
 export function GAS_goToSheet_CVITRA() {
@@ -89,14 +101,6 @@ export function GAS_goToSheetPeople() {
 
 export function GAS_goToSheetSW183PTInventory() {
   new OurFinances().goToSheet("SW18 3PT inventory");
-}
-
-export function GAS_goToSheetCategories() {
-  new OurFinances().goToSheet(MetaCategories.SHEET.NAME);
-}
-
-export function GAS_goToSheetCategoryClash() {
-  new OurFinances().goToSheet(MetaCategoryClash.SHEET.NAME);
 }
 
 export function GAS_goToSheetTransactionCategories() {

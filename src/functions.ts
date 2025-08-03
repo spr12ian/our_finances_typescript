@@ -1,15 +1,10 @@
 /// <reference types="google-apps-script" />
 
-import { AccountSheet } from "./AccountSheet";
 import { OurFinances } from "./OurFinances";
 import { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 
 // Function declarations
-
-function alert(message: string) {
-  SpreadsheetApp.getUi().alert(message);
-}
 
 function checkDependencies() {
   const dependencies = new Dependencies();

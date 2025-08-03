@@ -6,6 +6,7 @@ import { isAccountSheetName } from "./isAccountSheetName";
  */
 export class Sheet {
   private readonly gasSheet: GoogleAppsScript.Spreadsheet.Sheet;
+  private meta: { SHEET: { NAME: string } } | null = null;
 
   /**
    * ⚠️ Internal constructor – prefer `createSheet(...)` for safety.
@@ -77,6 +78,35 @@ export class Sheet {
     return rowIndex !== -1 ? rowIndex + 1 : -1; // Add 1 for 1-based indexing, return -1 if not found
   }
 
+  fixSheet(): void {
+    Logger.log(`Checking Sheet: ${this.name}`);
+
+    const lastRow = this.gasSheet.getLastRow();
+    Logger.log(`Last row: ${lastRow}`);
+    if (lastRow === 0) {
+      Logger.log(`Sheet ${this.name} is empty.`);
+      return;
+    }
+
+    const lastColumn = this.gasSheet.getLastColumn();
+    Logger.log(`Last column: ${lastColumn}`);
+    if (lastColumn === 0) {
+      Logger.log(`Sheet ${this.name} is empty.`);
+      return;
+    }
+
+    const maxRows = this.gasSheet.getMaxRows();
+    Logger.log(`Max rows: ${maxRows}`);
+    const maxColumns = this.gasSheet.getMaxColumns();
+    Logger.log(`Max columns: ${maxColumns}`);
+    // Clean up excess rows and columns
+    // this.gasSheet.setFrozenRows(1);
+    // this.gasSheet.setFrozenColumns(1);
+    // Delete excess rows and columns if they exist
+    this.trimSheet();
+    Logger.log(`Checked Sheet: ${this.name}`);
+  }
+
   getDataRange(): GoogleAppsScript.Spreadsheet.Range {
     return this.gasSheet.getDataRange();
   }
@@ -111,6 +141,10 @@ export class Sheet {
 
   setActiveRange(range: GoogleAppsScript.Spreadsheet.Range): void {
     this.gasSheet.setActiveRange(range);
+  }
+
+  setMeta(meta: { SHEET: { NAME: string } }): void {
+    this.meta = meta;
   }
 
   showColumns(start: number, num: number): void {
@@ -162,10 +196,48 @@ export class Sheet {
   }
 
   trimSheet(): Sheet {
-    Logger.log(`Trimming sheet: ${this.name}`);
-    this.deleteExcessColumns();
-    this.deleteExcessRows();
-    Logger.log(`Trimmed sheet: ${this.name}`);
+    const sheet = this.gasSheet;
+    const maxRows = sheet.getMaxRows();
+    const maxCols = sheet.getMaxColumns();
+
+    // --- 1. Find the "anchor column" (the one with the deepest non‑empty row) ---
+    let bestCol = 1;
+    let deepestRow = 0;
+    for (let c = 1; c <= maxCols; c++) {
+      const colLast = sheet.getRange(1, c, maxRows).getLastRow();
+      if (colLast > deepestRow) {
+        deepestRow = colLast;
+        bestCol = c;
+      }
+    }
+
+    // --- 2. Trim trailing rows after the real last row ---
+    if (deepestRow < maxRows) {
+      sheet.deleteRows(deepestRow + 1, maxRows - deepestRow);
+    }
+
+    // --- 3. Trim trailing columns after the last column with data ---
+    const lastCol = sheet.getLastColumn();
+    if (lastCol < maxCols) {
+      sheet.deleteColumns(lastCol + 1, maxCols - lastCol);
+    }
+
+    // --- 4. Clean ghost strings (spaces, invisible junk) ---
+    const dataRange = sheet.getRange(1, 1, deepestRow, lastCol);
+    const values = dataRange.getValues();
+    for (let r = 0; r < values.length; r++) {
+      for (let c = 0; c < values[r].length; c++) {
+        if (typeof values[r][c] === "string") {
+          values[r][c] = values[r][c].trim();
+        }
+      }
+    }
+    dataRange.setValues(values);
+
+    Logger.log(
+      `Sheet "${sheet.getName()}" cleaned. Rows = ${deepestRow}, Cols = ${lastCol}, AnchorCol = ${bestCol}`
+    );
+
     return this;
   }
 }

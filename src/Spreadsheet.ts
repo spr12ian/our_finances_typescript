@@ -13,6 +13,10 @@ export class Spreadsheet {
     this.ss = ss;
   }
 
+  static alert(message: string): void {
+    SpreadsheetApp.getUi().alert(message);
+  }
+
   /** Static factory: open by ID */
   static openById(id: string): Spreadsheet {
     const ss = SpreadsheetApp.openById(id);
@@ -76,6 +80,12 @@ export class Spreadsheet {
     return wrapped;
   }
 
+  getSheetByMeta(meta: { SHEET: { NAME: string } }): Sheet {
+    const sheet = this.getSheet(meta.SHEET.NAME);
+    sheet.setMeta(meta);
+    return sheet;
+  }
+
   hasSheet(name: string): boolean {
     return this.ss.getSheetByName(name) !== null;
   }
@@ -109,7 +119,6 @@ export class Spreadsheet {
       ss.moveActiveSheet(j + 1);
     }
   }
-
 
   toast(message: string, title = "", timeoutSeconds = 5): void {
     this.ss.toast(message, title, timeoutSeconds);

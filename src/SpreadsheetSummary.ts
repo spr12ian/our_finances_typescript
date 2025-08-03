@@ -2,16 +2,7 @@
 
 import type { Sheet } from "./Sheet";
 import type { Spreadsheet } from "./Spreadsheet";
-
-interface SheetMetaRow {
-  sheetName: string;
-  lastRow: number;
-  lastColumn: number;
-  maxRows: number;
-  maxColumns: number;
-  isAccount: boolean;
-  isBudget: boolean;
-}
+import type { SpreadsheetSummaryRow } from "./interfaces";
 
 export class SpreadsheetSummary {
   private sheet: Sheet;
@@ -60,18 +51,20 @@ export class SpreadsheetSummary {
   }
 
   update(): void {
-    const data: SheetMetaRow[] = this.spreadsheet.sheets.map((sheet) => ({
-      sheetName: sheet.getSheetName(),
-      lastRow: sheet.raw.getLastRow(),
-      lastColumn: sheet.raw.getLastColumn(),
-      maxRows: sheet.raw.getMaxRows(),
-      maxColumns: sheet.raw.getMaxColumns(),
-      isAccount: sheet.getSheetName().startsWith("_"),
-      isBudget: sheet.getSheetName().startsWith("Budget"),
-    }));
+    const data: SpreadsheetSummaryRow[] = this.spreadsheet.sheets.map(
+      (sheet) => ({
+        sheetName: sheet.getSheetName(),
+        lastRow: sheet.raw.getLastRow(),
+        lastColumn: sheet.raw.getLastColumn(),
+        maxRows: sheet.raw.getMaxRows(),
+        maxColumns: sheet.raw.getMaxColumns(),
+        isAccount: sheet.getSheetName().startsWith("_"),
+        isBudget: sheet.getSheetName().startsWith("Budget"),
+      })
+    );
 
     // Add header row
-    const header: (keyof SheetMetaRow)[] = [
+    const header: (keyof SpreadsheetSummaryRow)[] = [
       "sheetName",
       "lastRow",
       "lastColumn",

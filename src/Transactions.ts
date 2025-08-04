@@ -44,7 +44,7 @@ export class Transactions {
     return result;
   }
 
-  update() {
+  updateX() {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const allSheets = ss.getSheets();
 
@@ -83,9 +83,36 @@ export class Transactions {
     SpreadsheetApp.flush();
   }
 
+  update() {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+    const sheets = ss.getSheets();
+    const transactionSheet = this.sheet.raw;
+    const exclude = new Set(["_CVITRA", "_SVIIRF"]);
+    // 1. Collect account sheet names (start with "_")
+    const accountSheets = sheets
+      .map((s) => s.getName())
+      .filter((name) => name.startsWith("_") && !exclude.has(name))
+      .sort(); // optional: consistent order
 
+    // 2. Build array parts
+    const header =
+      '{"Account","Date","Description","Credit (£)","Debit (£)","Note","CPTY","Date CPTY"}';
 
-  updateFormulas() {
-    this.sheet.getRange("A1").setFormula("=ARRAYFORMULA('Accounts data'!A1:H)");
+    const parts = [header];
+    for (const name of accountSheets) {
+      const account = name.substring(1); // strip leading "_"
+      parts.push(
+        `{ARRAYFORMULA(IF(LEN('${name}'!A2:A),"${account}","")), '${name}'!A2:G}`
+      );
+    }
+
+    const bigArray = `{${parts.join(";")}}`;
+
+    // 3. Build QUERY + FILTER wrapper
+    const query = `QUERY(${bigArray}, "select Col1,Col2,Col3,Col4,Col5,Col6,Col7,Col8 where Col2 is not null", 1)`;
+    const filterCondition = `INDEX(${query}, , 2) <> ""`;
+    const fullFormula = `=FILTER(${query}, ${filterCondition})`;
+    // 4. Insert formula in Transactions!A1
+    transactionSheet.getRange("A1").setFormula(fullFormula);
   }
 }

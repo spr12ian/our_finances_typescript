@@ -222,20 +222,8 @@ export class Sheet {
       sheet.deleteColumns(lastCol + 1, maxCols - lastCol);
     }
 
-    // --- 4. Clean ghost strings (spaces, invisible junk) ---
-    const dataRange = sheet.getRange(1, 1, deepestRow, lastCol);
-    const values = dataRange.getValues();
-    for (let r = 0; r < values.length; r++) {
-      for (let c = 0; c < values[r].length; c++) {
-        if (typeof values[r][c] === "string") {
-          values[r][c] = values[r][c].trim();
-        }
-      }
-    }
-    dataRange.setValues(values);
-
     Logger.log(
-      `Sheet "${sheet.getName()}" cleaned. Rows = ${deepestRow}, Cols = ${lastCol}, AnchorCol = ${bestCol}`
+      `Sheet "${sheet.getName()}" trimmed. Rows = ${deepestRow}, Cols = ${lastCol}, AnchorCol = ${bestCol}`
     );
 
     return this;

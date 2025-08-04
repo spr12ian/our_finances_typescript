@@ -7,7 +7,7 @@ export const MetaAccountBalances = {
     {
       cell: "A1",
       formula:
-        "=QUERY('Accounts data'!A1:E,\"SELECT A,SUM(D),SUM(E) GROUP BY A\")",
+        "=QUERY('Transactions'!A1:E,\"SELECT A,SUM(D),SUM(E) GROUP BY A\")",
     },
     {
       cell: "D1",

@@ -54,15 +54,25 @@ export class SpreadsheetSummary {
 
   update(): void {
     const data: SpreadsheetSummaryRow[] = this.spreadsheet.sheets.map(
-      (sheet) => ({
-        sheetName: sheet.getSheetName(),
-        lastRow: sheet.raw.getLastRow(),
-        lastColumn: sheet.raw.getLastColumn(),
-        maxRows: sheet.raw.getMaxRows(),
-        maxColumns: sheet.raw.getMaxColumns(),
-        isAccount: sheet.getSheetName().startsWith("_"),
-        isBudget: sheet.getSheetName().startsWith("Budget"),
-      })
+      (sheet) => {
+        const raw = sheet.raw;
+
+        // Single scan for both lastRow + lastColumn
+        const range = raw.getDataRange();
+        const lastRow = range.getLastRow();
+        const lastColumn = range.getLastColumn();
+        const sheetName = sheet.getSheetName();
+
+        return {
+          sheetName: sheetName,
+          lastRow,
+          lastColumn,
+          maxRows: raw.getMaxRows(), // cheap metadata
+          maxColumns: raw.getMaxColumns(), // cheap metadata
+          isAccount: sheetName.startsWith("_"),
+          isBudget: sheetName.startsWith("Budget"),
+        };
+      }
     );
 
     // Add header row

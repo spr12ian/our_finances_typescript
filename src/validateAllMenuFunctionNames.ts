@@ -1,5 +1,9 @@
 export function validateAllMenuFunctionNames() {
   const registered = new Set((globalThis as any).__exportedGlobals__ ?? []);
+
+  // Logger.log("🧩 Registered functions:");
+  // Logger.log([...registered].sort().join(", "));
+  
   const knownMissing = ["onEdit", "doGet"];
 
   const builderFunctionNames = [
@@ -46,7 +50,4 @@ export function validateAllMenuFunctionNames() {
 
   Logger.log("🧩 Used function names:");
   Logger.log([...usedFunctionNames].sort().join(", "));
-
-  Logger.log("🧩 Registered functions:");
-  Logger.log([...registered].sort().join(", "));
 }

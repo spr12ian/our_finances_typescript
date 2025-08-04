@@ -1,8 +1,22 @@
-import fs from "fs";
-import path from "path";
+/**
+ * Script to extract GAS-prefixed function names from TypeScript source files
+ * and generate shimGlobals.ts and gasExports.ts files.
+ *
+ * This script scans all .ts files in the src directory, collects functions
+ * that are exported with the prefix "GAS_", and generates two files:
+ * - shimGlobals.ts: Contains an array of function names without the "GAS_" prefix.
+ * - gasExports.ts: Re-exports the GAS-prefixed functions for use in other modules.
+ */
 
 // Config
+import fs from "fs";
+import path from "node:path";
+import { getDirname } from "./utils/esmPath";
+
+const __dirname = getDirname(import.meta.url);
+
 const GAS_EXPORTS = path.resolve(__dirname, "../src/gasExports.ts");
+
 const SHIM_GLOBALS = path.resolve(__dirname, "../src/shimGlobals.ts");
 const SRC_DIR = path.resolve(__dirname, "../src");
 

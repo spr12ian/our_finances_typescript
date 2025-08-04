@@ -42,5 +42,6 @@
     "typecheck": "tsc --noEmit",
     "watch": "chokidar 'src/**/*.ts' -c 'npm run build && npm run prepare-gas && npm run gas'"
   },
+  "type": "module",
   "version": "1.0.0"
 }

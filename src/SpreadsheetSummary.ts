@@ -7,7 +7,7 @@ import type { SpreadsheetSummaryRow } from "./interfaces";
 export class SpreadsheetSummary {
   private sheet: Sheet;
   private spreadsheet: Spreadsheet;
-  private data: [][];
+  private dataRows: any[][];
   static get COLUMNS() {
     return {
       SHEET_NAME: 0,
@@ -29,7 +29,7 @@ export class SpreadsheetSummary {
   constructor(spreadsheet: Spreadsheet) {
     this.spreadsheet = spreadsheet;
     this.sheet = spreadsheet.getSheet(SpreadsheetSummary.SHEET.NAME);
-    this.data = this.sheet.getDataRange().offset(1, 0).getValues();
+    this.dataRows = this.sheet.getDataRange().offset(1, 0).getValues();
   }
 
   get accountSheetNames() {
@@ -37,11 +37,13 @@ export class SpreadsheetSummary {
   }
 
   get allSheetNames() {
-    return this.data.map((row) => row[SpreadsheetSummary.COLUMNS.SHEET_NAME]);
+    return this.dataRows.map(
+      (row) => row[SpreadsheetSummary.COLUMNS.SHEET_NAME]
+    );
   }
 
   get budgetSheetNames() {
-    return this.data
+    return this.dataRows
       .filter((row) => row[SpreadsheetSummary.COLUMNS.IS_BUDGET])
       .map((row) => row[SpreadsheetSummary.COLUMNS.SHEET_NAME]);
   }

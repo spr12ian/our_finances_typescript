@@ -2,13 +2,6 @@ import { MetaAccountBalances as Meta } from "./constants";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 
-interface SheetMetaRow {
-  sheetName: string;
-  lastRow: number;
-  lastColumn: number;
-  maxRows: number;
-  maxColumns: number;
-}
 /**
  * Class to handle the "Account balances" sheet.
  */

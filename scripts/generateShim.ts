@@ -2,6 +2,9 @@
 import fs from "fs";
 import path from "path";
 import { shimGlobals } from "../src/shimGlobals";
+import { getDirname } from "./utils/esmPath";
+
+const __dirname = getDirname(import.meta.url);
 
 const shimFile = path.resolve(__dirname, "../build/shim.gs");
 

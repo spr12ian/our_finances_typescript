@@ -7,7 +7,7 @@ import type { SpreadsheetSummaryRow } from "./interfaces";
 export class SpreadsheetSummary {
   private sheet: Sheet;
   private spreadsheet: Spreadsheet;
-  private data: any[][];
+  private data: [][];
   static get COLUMNS() {
     return {
       SHEET_NAME: 0,

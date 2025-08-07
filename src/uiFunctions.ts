@@ -35,7 +35,7 @@ export function buildGasMenu_(ui: GoogleAppsScript.Base.Ui) {
     ["Open accounts", "openAccounts"],
     ["Sort sheet order", "sortSheets"],
     ["Trim all sheets", "trimAllSheets"],
-    ["Trim sheet", "trimSheet"],
+    ["Fix sheet", "fixSheet"],
     ["Update spreadsheet summary", "updateSpreadsheetSummary"],
     ["Validate all menu function names", "validateAllMenuFunctionNames"],
   ];

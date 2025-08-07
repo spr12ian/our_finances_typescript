@@ -79,32 +79,39 @@ export class Sheet {
   }
 
   fixSheet(): void {
-    Logger.log(`Checking Sheet: ${this.name}`);
+    Logger.log(`Fixing Sheet: ${this.name}`);
 
-    const lastRow = this.gasSheet.getLastRow();
+    const { lastRow, lastColumn } = this.getTrueDataBounds();
+
     Logger.log(`Last row: ${lastRow}`);
     if (lastRow === 0) {
       Logger.log(`Sheet ${this.name} is empty.`);
       return;
     }
 
-    const lastColumn = this.gasSheet.getLastColumn();
     Logger.log(`Last column: ${lastColumn}`);
     if (lastColumn === 0) {
       Logger.log(`Sheet ${this.name} is empty.`);
       return;
     }
 
-    const maxRows = this.gasSheet.getMaxRows();
+    const gasSheet = this.gasSheet;
+    const maxRows = gasSheet.getMaxRows();
     Logger.log(`Max rows: ${maxRows}`);
-    const maxColumns = this.gasSheet.getMaxColumns();
+    const maxColumns = gasSheet.getMaxColumns();
     Logger.log(`Max columns: ${maxColumns}`);
-    // Clean up excess rows and columns
-    // this.gasSheet.setFrozenRows(1);
-    // this.gasSheet.setFrozenColumns(1);
-    // Delete excess rows and columns if they exist
-    this.trimSheet();
-    Logger.log(`Checked Sheet: ${this.name}`);
+
+    if (lastColumn < maxColumns) {
+      gasSheet.deleteColumns(lastColumn + 1, maxColumns - lastColumn);
+    }
+
+    if (lastRow < maxRows) {
+      gasSheet.deleteRows(lastRow + 1, maxRows - lastRow);
+    }
+
+    Logger.log(`Trimmed "${gasSheet.getName()}" to ${lastRow} rows × ${lastColumn} columns from ${maxRows} rows × ${maxColumns} columns`);
+
+    Logger.log(`Fixed Sheet: ${this.name}`);
   }
 
   getDataRange(): GoogleAppsScript.Spreadsheet.Range {
@@ -129,6 +136,68 @@ export class Sheet {
 
   getSheetId(): number {
     return this.gasSheet.getSheetId();
+  }
+
+  /**
+   * Returns the true last row and column with actual data (ignores formatting, formulas returning "").
+   * @returns {{ lastRow: number, lastColumn: number }}
+   */
+  getTrueDataBounds(): { lastRow: number; lastColumn: number } {
+    const values = this.gasSheet.getDataRange().getValues();
+    const rowMax = values.length;
+    const colMax = values[0]?.length || 0;
+
+    let lastRow = 0;
+    let lastColumn = 0;
+
+    for (let r = 0; r < rowMax; r++) {
+      for (let c = 0; c < colMax; c++) {
+        if (values[r][c] !== "") {
+          if (r + 1 > lastRow) lastRow = r + 1;
+          if (c + 1 > lastColumn) lastColumn = c + 1;
+        }
+      }
+    }
+
+    return { lastRow, lastColumn };
+  }
+
+  /**
+   * Returns the last column that contains actual data (ignores formatting and empty formulas).
+   * @returns {number} The last column index with data (1-based).
+   */
+  getTrueLastColumn() {
+    const range = this.gasSheet.getDataRange();
+    const values = range.getValues();
+
+    const rowMax = values.length;
+    const colCount = values[0]?.length || 0;
+
+    for (let c = colCount - 1; c >= 0; c--) {
+      for (let r = 0; r < rowMax; r++) {
+        if (values[r][c] !== "") return c + 1;
+      }
+    }
+    return 0;
+  }
+
+  /**
+   * Returns the last row that contains actual data (ignores formatting and empty formulas).
+   * @returns {number} The last row index with data (1-based).
+   */
+  getTrueLastRow(): number {
+    const range = this.gasSheet.getDataRange();
+    const values = range.getValues();
+
+    const colLimit = values[0].length;
+
+    for (let r = values.length - 1; r >= 0; r--) {
+      for (let c = 0; c < colLimit; c++) {
+        const cell = values[r][c];
+        if (cell !== "") return r + 1; // +1 because Apps Script is 1-based
+      }
+    }
+    return 0; // all blank
   }
 
   isAccountSheet() {

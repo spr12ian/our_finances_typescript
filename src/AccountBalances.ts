@@ -15,7 +15,7 @@ export class AccountBalances {
   }
 
   fixSheet() {
-    Logger.log(`Checking : ${this.sheet.name}`);
+    Logger.log(`Fixing : ${this.sheet.name}`);
     this.sheet.fixSheet();
   }
 }

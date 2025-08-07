@@ -269,8 +269,8 @@ export class OurFinances {
       activeSheet.fixSheet();
     }
 
-    activeSheet.trimSheet();
-    Spreadsheet.alert(`Sheet ${activeSheet.name} checked and trimmed.`);
+    //activeSheet.trimSheet();
+    Logger.log(`Sheet ${activeSheet.name} checked and trimmed.`);
   }
 
   formatAccountSheet() {

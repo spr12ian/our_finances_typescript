@@ -52,7 +52,7 @@ export class Transactions {
     const START_ROW = MetaAccountsData.START_ROW; // 2
 
     //const exclude = new Set(["_CVITRA", "_SVI3BH", "_SVIIRF"]);
-    const exclude = new Set(["_CVITRA", "_SVIIRF"]);
+    const exclude = new Set(["_SVIIRF"]);
 
     // Collect account sheets
     const accountSheets = allSheets

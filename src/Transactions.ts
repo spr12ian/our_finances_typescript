@@ -87,7 +87,8 @@ export class Transactions {
     const ss = SpreadsheetApp.getActiveSpreadsheet();
     const sheets = ss.getSheets();
     const transactionSheet = this.sheet.raw;
-    const exclude = new Set(["_CVITRA", "_SVIIRF"]);
+    // const exclude = new Set(["_CVITRA", "_SVIIRF"]);
+    const exclude = new Set(["_SVIIRF"]);
     // 1. Collect account sheet names (start with "_")
     const accountSheets = sheets
       .map((s) => s.getName())

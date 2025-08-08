@@ -289,9 +289,13 @@ export class Sheet {
       gasSheet.deleteRows(targetRows + 1, maxRows - targetRows);
     }
 
-    Logger.log(
-      `Trimmed from ${maxRows} rows × ${maxColumns} columns to ${targetRows} rows × ${targetCols} columns`
-    );
+    if (maxRows === targetRows && maxColumns === targetCols) {
+      Logger.log(`No trimming needed for ${this.name}`);
+    } else {
+      Logger.log(
+        `Trimmed from ${maxRows} rows × ${maxColumns} columns to ${targetRows} rows × ${targetCols} columns`
+      );
+    }
     Logger.log(`Sheet.trimSheet finished: ${this.name}`);
   }
 }

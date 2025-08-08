@@ -79,11 +79,11 @@ export class Sheet {
   }
 
   fixSheet(): void {
-    Logger.log(`Sheet.fixSheet started: ${this.name}`);
+    Logger.log(`Started Sheet.fixSheet: ${this.name}`);
 
     this.trimSheet();
 
-    Logger.log(`Sheet.fixSheet finished: ${this.name}`);
+    Logger.log(`Finished Sheet.fixSheet: ${this.name}`);
   }
 
   getDataRange(): GoogleAppsScript.Spreadsheet.Range {
@@ -264,7 +264,7 @@ export class Sheet {
   }
 
   trimSheet(): void {
-    Logger.log(`Sheet.trimSheet started: ${this.name}`);
+    Logger.log(`Started Sheet.trimSheet: ${this.name}`);
 
     const { lastRow, lastColumn } = this.getTrueDataBounds();
     const gasSheet = this.gasSheet;
@@ -296,6 +296,6 @@ export class Sheet {
         `Trimmed from ${maxRows} rows × ${maxColumns} columns to ${targetRows} rows × ${targetCols} columns`
       );
     }
-    Logger.log(`Sheet.trimSheet finished: ${this.name}`);
+    Logger.log(`Finished Sheet.trimSheet: ${this.name}`);
   }
 }

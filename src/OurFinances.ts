@@ -231,13 +231,13 @@ export class OurFinances {
   }
 
   fixSheet() {
+    Logger.log(`Started OurFinances.fixSheet`);
+
     const activeSheet = this.spreadsheet.activeSheet;
     if (!activeSheet) {
       Logger.log("No active sheet found.");
       return;
     }
-
-    Logger.log(`Checking activeSheet: ${activeSheet.name}`);
 
     // Define a strongly typed mapping from sheet name to action
     const sheetActions: Record<string, () => void> = {
@@ -260,8 +260,7 @@ export class OurFinances {
       activeSheet.fixSheet();
     }
 
-    //activeSheet.trimSheet();
-    Logger.log(`Sheet ${activeSheet.name} checked and trimmed.`);
+    Logger.log(`Finished OurFinances.fixSheet`);
   }
 
   formatAccountSheet() {

@@ -79,34 +79,11 @@ export class Sheet {
   }
 
   fixSheet(): void {
-    Logger.log(`Fixing Sheet: ${this.name}`);
+    Logger.log(`Sheet.fixSheet started: ${this.name}`);
 
-    const { lastRow, lastColumn } = this.getTrueDataBounds();
-    const gasSheet = this.gasSheet;
+    this.trimSheet();
 
-    const maxRows = gasSheet.getMaxRows();
-    const maxColumns = gasSheet.getMaxColumns();
-    const frozenRows = gasSheet.getFrozenRows();
-    const frozenCols = gasSheet.getFrozenColumns();
-
-    // Must keep at least one unfrozen row/col
-    const minRows = frozenRows + 1;
-    const minCols = frozenCols + 1;
-
-    // When no data beyond frozen panes, trim to exactly one unfrozen row/col
-    const targetRows = Math.max(lastRow, minRows);
-    const targetCols = Math.max(lastColumn, minCols);
-
-    if (targetCols < maxColumns) {
-      gasSheet.deleteColumns(targetCols + 1, maxColumns - targetCols);
-    }
-    if (targetRows < maxRows) {
-      gasSheet.deleteRows(targetRows + 1, maxRows - targetRows);
-    }
-
-    Logger.log(
-      `Trimmed "${gasSheet.getName()}" to ${targetRows} rows × ${targetCols} columns from ${maxRows} rows × ${maxColumns} columns`
-    );
+    Logger.log(`Sheet.fixSheet finished: ${this.name}`);
   }
 
   getDataRange(): GoogleAppsScript.Spreadsheet.Range {
@@ -286,37 +263,35 @@ export class Sheet {
     }
   }
 
-  trimSheet(): Sheet {
-    const sheet = this.gasSheet;
-    const maxRows = sheet.getMaxRows();
-    const maxCols = sheet.getMaxColumns();
+  trimSheet(): void {
+    Logger.log(`Sheet.trimSheet started: ${this.name}`);
 
-    // --- 1. Find the "anchor column" (the one with the deepest non‑empty row) ---
-    let bestCol = 1;
-    let deepestRow = 0;
-    for (let c = 1; c <= maxCols; c++) {
-      const colLast = sheet.getRange(1, c, maxRows).getLastRow();
-      if (colLast > deepestRow) {
-        deepestRow = colLast;
-        bestCol = c;
-      }
+    const { lastRow, lastColumn } = this.getTrueDataBounds();
+    const gasSheet = this.gasSheet;
+
+    const maxRows = gasSheet.getMaxRows();
+    const maxColumns = gasSheet.getMaxColumns();
+    const frozenRows = gasSheet.getFrozenRows();
+    const frozenCols = gasSheet.getFrozenColumns();
+
+    // Must keep at least one unfrozen row/col
+    const minRows = frozenRows + 1;
+    const minCols = frozenCols + 1;
+
+    // When no data beyond frozen panes, trim to exactly one unfrozen row/col
+    const targetRows = Math.max(lastRow, minRows);
+    const targetCols = Math.max(lastColumn, minCols);
+
+    if (targetCols < maxColumns) {
+      gasSheet.deleteColumns(targetCols + 1, maxColumns - targetCols);
     }
-
-    // --- 2. Trim trailing rows after the real last row ---
-    if (deepestRow < maxRows) {
-      sheet.deleteRows(deepestRow + 1, maxRows - deepestRow);
-    }
-
-    // --- 3. Trim trailing columns after the last column with data ---
-    const lastCol = sheet.getLastColumn();
-    if (lastCol < maxCols) {
-      sheet.deleteColumns(lastCol + 1, maxCols - lastCol);
+    if (targetRows < maxRows) {
+      gasSheet.deleteRows(targetRows + 1, maxRows - targetRows);
     }
 
     Logger.log(
-      `Sheet "${sheet.getName()}" trimmed. Rows = ${deepestRow}, Cols = ${lastCol}, AnchorCol = ${bestCol}`
+      `Trimmed from ${maxRows} rows × ${maxColumns} columns to ${targetRows} rows × ${targetCols} columns`
     );
-
-    return this;
+    Logger.log(`Sheet.trimSheet finished: ${this.name}`);
   }
 }

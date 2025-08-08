@@ -31,11 +31,11 @@ export function buildGasMenu_(ui: GoogleAppsScript.Base.Ui) {
     ["Check dependencies", "checkDependencies"],
     ["Convert current column to uppercase", "convertCurrentColumnToUppercase"],
     ["Daily update", "dailyUpdate"],
+    ["Fix sheet", "fixSheet"],
     ["Monthly update", "monthlyUpdate"],
     ["Open accounts", "openAccounts"],
     ["Sort sheet order", "sortSheets"],
     ["Trim all sheets", "trimAllSheets"],
-    ["Fix sheet", "fixSheet"],
     ["Update spreadsheet summary", "updateSpreadsheetSummary"],
     ["Validate all menu function names", "validateAllMenuFunctionNames"],
   ];
@@ -48,7 +48,6 @@ export function buildSectionsMenu_(ui: GoogleAppsScript.Base.Ui) {
       ui
         .createMenu("Accounts")
         .addItem("Update 'Transactions'", "updateTransactions")
-        .addItem("Update 'Accounts data'", "updateAccountsData")
         .addItem(
           "Not in transaction categories",
           "goToSheetNotInTransactionCategories"

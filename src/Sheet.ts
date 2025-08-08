@@ -82,36 +82,31 @@ export class Sheet {
     Logger.log(`Fixing Sheet: ${this.name}`);
 
     const { lastRow, lastColumn } = this.getTrueDataBounds();
-
-    Logger.log(`Last row: ${lastRow}`);
-    if (lastRow === 0) {
-      Logger.log(`Sheet ${this.name} is empty.`);
-      return;
-    }
-
-    Logger.log(`Last column: ${lastColumn}`);
-    if (lastColumn === 0) {
-      Logger.log(`Sheet ${this.name} is empty.`);
-      return;
-    }
-
     const gasSheet = this.gasSheet;
+
     const maxRows = gasSheet.getMaxRows();
-    Logger.log(`Max rows: ${maxRows}`);
     const maxColumns = gasSheet.getMaxColumns();
-    Logger.log(`Max columns: ${maxColumns}`);
+    const frozenRows = gasSheet.getFrozenRows();
+    const frozenCols = gasSheet.getFrozenColumns();
 
-    if (lastColumn < maxColumns) {
-      gasSheet.deleteColumns(lastColumn + 1, maxColumns - lastColumn);
+    // Must keep at least one unfrozen row/col
+    const minRows = frozenRows + 1;
+    const minCols = frozenCols + 1;
+
+    // When no data beyond frozen panes, trim to exactly one unfrozen row/col
+    const targetRows = Math.max(lastRow, minRows);
+    const targetCols = Math.max(lastColumn, minCols);
+
+    if (targetCols < maxColumns) {
+      gasSheet.deleteColumns(targetCols + 1, maxColumns - targetCols);
+    }
+    if (targetRows < maxRows) {
+      gasSheet.deleteRows(targetRows + 1, maxRows - targetRows);
     }
 
-    if (lastRow < maxRows) {
-      gasSheet.deleteRows(lastRow + 1, maxRows - lastRow);
-    }
-
-    Logger.log(`Trimmed "${gasSheet.getName()}" to ${lastRow} rows × ${lastColumn} columns from ${maxRows} rows × ${maxColumns} columns`);
-
-    Logger.log(`Fixed Sheet: ${this.name}`);
+    Logger.log(
+      `Trimmed "${gasSheet.getName()}" to ${targetRows} rows × ${targetCols} columns from ${maxRows} rows × ${maxColumns} columns`
+    );
   }
 
   getDataRange(): GoogleAppsScript.Spreadsheet.Range {
@@ -143,18 +138,45 @@ export class Sheet {
    * @returns {{ lastRow: number, lastColumn: number }}
    */
   getTrueDataBounds(): { lastRow: number; lastColumn: number } {
-    const values = this.gasSheet.getDataRange().getValues();
-    const rowMax = values.length;
-    const colMax = values[0]?.length || 0;
+    const sheet = this.gasSheet;
+    const frozenRows = sheet.getFrozenRows();
+    const frozenCols = sheet.getFrozenColumns();
 
-    let lastRow = 0;
-    let lastColumn = 0;
+    // --- Last Row ---
+    const maxRows = sheet.getMaxRows();
+    const lastCol = sheet.getLastColumn();
+    let lastRow = frozenRows; // if only frozen rows contain data
 
-    for (let r = 0; r < rowMax; r++) {
-      for (let c = 0; c < colMax; c++) {
-        if (values[r][c] !== "") {
-          if (r + 1 > lastRow) lastRow = r + 1;
-          if (c + 1 > lastColumn) lastColumn = c + 1;
+    if (maxRows > frozenRows) {
+      const height = maxRows - frozenRows;
+      const values = sheet
+        .getRange(frozenRows + 1, 1, height, lastCol)
+        .getDisplayValues();
+      for (let i = values.length - 1; i >= 0; i--) {
+        if (values[i].some((v) => v !== "")) {
+          lastRow = frozenRows + i + 1;
+          break;
+        }
+      }
+    }
+
+    // --- Last Column ---
+    const maxCols = sheet.getMaxColumns();
+    const lastRowForCols = sheet.getLastRow();
+    let lastColumn = frozenCols; // if only frozen cols contain data
+
+    if (maxCols > frozenCols && lastRowForCols > 0) {
+      const width = maxCols - frozenCols;
+      const values = sheet
+        .getRange(1, frozenCols + 1, lastRowForCols, width)
+        .getDisplayValues();
+      for (let c = values[0].length - 1; c >= 0; c--) {
+        for (let r = 0; r < values.length; r++) {
+          if (values[r][c] !== "") {
+            lastColumn = frozenCols + c + 1;
+            c = -1; // break outer loop
+            break;
+          }
         }
       }
     }

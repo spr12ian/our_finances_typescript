@@ -44,25 +44,6 @@ export const MetaAccountSheet = {
   MINIMUM_COLUMNS: 8,
 };
 
-export const MetaAccountsData = {
-  SHEET: {
-    NAME: "Accounts data",
-    HEADER_ROW: 1, // Number of header rows to skip
-    HEADER: [
-      "Account",
-      "Date",
-      "Description",
-      "Credit (£)",
-      "Debit (£)",
-      "Note",
-      "CPTY",
-      "Date CPTY",
-    ],
-  },
-  START_ROW: 2, // Skip header row in each account sheet
-  NUM_COLUMNS: 7, // Number of columns to read from each account sheet
-};
-
 export const MetaAssets = {
   FORMULA_CONFIG: [
     {

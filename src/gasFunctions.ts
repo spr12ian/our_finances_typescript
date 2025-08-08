@@ -155,10 +155,6 @@ export function GAS_trimSheet() {
   new OurFinances().trimSheet();
 }
 
-export function GAS_updateAccountsData() {
-  new OurFinances().updateAccountsData();
-}
-
 export function GAS_updateSpreadsheetSummary() {
   new OurFinances().updateSpreadsheetSummary();
 }
@@ -169,10 +165,6 @@ export function GAS_updateTransactions() {
 
 export function GAS_updateTransactionCategories() {
   new OurFinances().updateTransactionCategories();
-}
-
-export function GAS_validateAccountsData() {
-  new OurFinances().validateAccountsData();
 }
 
 export function GAS_validateAllMenuFunctionNames() {

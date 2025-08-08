@@ -1,6 +1,5 @@
 /// <reference types="google-apps-script" />
 import { AccountBalances } from "./AccountBalances";
-import { AccountsData } from "./AccountsData";
 import { AccountSheet } from "./AccountSheet";
 import { BankAccounts } from "./BankAccounts";
 import { BankDebitsDue } from "./BankDebitsDue";
@@ -40,7 +39,6 @@ const logTiming = <T>(label: string, fn: () => T): T => {
 };
 export class OurFinances {
   private _accountBalances?: AccountBalances;
-  private _accountsData?: AccountsData;
   private _bankAccounts?: BankAccounts;
   private _bankDebitsDue?: BankDebitsDue;
   private _budgetAnnualTransactions?: BudgetAnnualTransactions;
@@ -62,13 +60,6 @@ export class OurFinances {
       this._accountBalances = new AccountBalances(this.spreadsheet);
     }
     return this._accountBalances;
-  }
-
-  get accountsData() {
-    if (typeof this._accountsData === "undefined") {
-      this._accountsData = new AccountsData(this.spreadsheet);
-    }
-    return this._accountsData;
   }
 
   get bankAccounts() {
@@ -358,10 +349,6 @@ export class OurFinances {
     this.spreadsheet.activeSheet.trimSheet();
   }
 
-  updateAccountsData() {
-    this.accountsData.update();
-  }
-
   updateSpreadsheetSummary() {
     this.spreadsheetSummary.update();
   }
@@ -372,9 +359,5 @@ export class OurFinances {
 
   updateTransactionCategories() {
     this.transactionCategories.update();
-  }
-
-  validateAccountsData() {
-    this.accountsData.validate();
   }
 }

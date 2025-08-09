@@ -79,10 +79,13 @@ export class AccountSheet {
       this.validateSheet();
       this.setSheetFormatting();
       this.addDefaultNotes();
-      this.convertColumnToUppercase(Meta.COLUMNS.DESCRIPTION);
-      this.convertColumnToUppercase(Meta.COLUMNS.NOTE);
+      if (this.sheet.name !== "_SVI2TJ" && this.sheet.name !== "_SVIIRF") {
+        this.convertColumnToUppercase(Meta.COLUMNS.DESCRIPTION);
+        this.convertColumnToUppercase(Meta.COLUMNS.NOTE);
+      }
       this.sheet.raw.setColumnWidth(Meta.COLUMNS.DESCRIPTION, 500);
       this.sheet.raw.setColumnWidth(Meta.COLUMNS.NOTE, 170);
+      this.sheet.raw.setColumnWidth(Meta.COLUMNS.COUNTERPARTY, 99);
     } catch (error) {
       throw error;
     }

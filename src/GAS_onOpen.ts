@@ -73,10 +73,6 @@ function findAllNamedRangeUsage() {
   });
 }
 
-function findNamedRangeUsage() {
-  findUsageByNamedRange("BRIAN_HALIFAX_BALANCE");
-}
-
 export function getHMRCTotalByYear(category, year) {
   return category + "-" + year;
 }

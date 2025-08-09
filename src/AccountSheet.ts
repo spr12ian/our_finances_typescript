@@ -119,10 +119,10 @@ export class AccountSheet {
     let balance = 0;
 
     const allValues = this.sheet.dataRange.getValues();
-    const dataRows = allValues.slice(start - 1);
+    const dataRows = allValues.slice(start - 1); // Slice the data starting from the defined row
     if (dataRows.length === 0) return;
 
-    const output: number[][] = new Array(dataRows.length);
+    const output: number[][] = []; // Initialize output as an empty array to hold balance values
 
     let different = false;
     for (const row of dataRows) {
@@ -131,18 +131,22 @@ export class AccountSheet {
       const current_balance = Number(row[Meta.COLUMNS.BALANCE - 1]) || 0;
 
       balance += credit - debit;
-      if (balance !== current_balance) {
+      output.push([balance]); // Store the updated balance
+
+      // If the balance doesn't match, mark it as different
+      if (Math.abs(balance - current_balance) > 0.01) {
+        // Using a tolerance to avoid floating point precision issues
         different = true;
       }
-      output.push([balance]);
     }
 
+    // If there are no changes in the balance, log the result and return early
     if (!different) {
       Logger.log(`No changes to balance for ${this.accountName}`);
       return;
     }
 
-    // Write back just the balance column
+    // Write back the updated balance column
     this.sheet.raw
       .getRange(start, Meta.COLUMNS.BALANCE, output.length, 1)
       .setValues(output);

@@ -89,24 +89,20 @@ function findAllNamedRangeUsage() {
   });
 }
 
-function findNamedRangeUsage() {
-  findUsageByNamedRange("BRIAN_HALIFAX_BALANCE");
-}
-
-export function findUsageByNamedRange(namedRange) {
-  const sheets = activeSpreadsheet.getSheets();
+export function findUsageByNamedRange(namedRange:string) {
+  const sheets = Spreadsheet.getActive().sheets;
   const rangeUsage = [];
 
   sheets.forEach((sheet) => {
-    const formulas = sheet.getDataRange().getFormulas();
+    const formulas = sheet.raw.getDataRange().getFormulas();
 
     formulas.forEach((rowFormulas, rowIndex) => {
       rowFormulas.forEach((formula, colIndex: number) => {
         if (formula.includes(namedRange)) {
-          const cellRef = sheet
+          const cellRef = sheet.raw
             .getRange(rowIndex + 1, colIndex + 1)
             .getA1Notation();
-          rangeUsage.push(`Sheet: ${sheet.getName()} - Cell: ${cellRef}`);
+          rangeUsage.push(`Sheet: ${sheet.name} - Cell: ${cellRef}`);
         }
       });
     });

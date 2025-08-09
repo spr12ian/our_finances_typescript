@@ -2,8 +2,8 @@
 import { MetaBudgetMonthlyTransactions as Meta } from "./constants";
 import { getNewDate, getOrdinalDate, setupDaysIterator } from "./DateUtils";
 import { getAmountAsGBP } from "./MoneyUtils";
-import { Sheet } from './Sheet';
-import { Spreadsheet } from "./Spreadsheet"
+import { Sheet } from "./Sheet";
+import { Spreadsheet } from "./Spreadsheet";
 export class BudgetMonthlyTransactions {
   private readonly sheet: Sheet;
   constructor(
@@ -13,12 +13,12 @@ export class BudgetMonthlyTransactions {
   }
 
   getScheduledTransactions() {
-    const values = this.sheet.getDataRange().getValues();
+    const values = this.sheet.dataRange.getValues();
     // Lose the header row
     return values.slice(1);
   }
 
-  getUpcomingDebits(howManyDaysAhead:number) {
+  getUpcomingDebits(howManyDaysAhead: number) {
     let upcomingPayments = "";
     const today = getNewDate();
 
@@ -36,12 +36,8 @@ export class BudgetMonthlyTransactions {
       }
 
       scheduledTransactions.forEach((transaction) => {
-        if (
-          Math.abs(transaction[Meta.COLUMNS.DEBIT_AMOUNT]) > 1
-        ) {
-          const transactionDate = new Date(
-            transaction[Meta.COLUMNS.DATE]
-          );
+        if (Math.abs(transaction[Meta.COLUMNS.DEBIT_AMOUNT]) > 1) {
+          const transactionDate = new Date(transaction[Meta.COLUMNS.DATE]);
 
           upcomingDays.forEach((day) => {
             if (transactionDate.toDateString() === day.date.toDateString()) {
@@ -52,9 +48,7 @@ export class BudgetMonthlyTransactions {
               upcomingPayments += `${
                 transaction[Meta.COLUMNS.FROM_ACCOUNT]
               } by ${transaction[Meta.COLUMNS.PAYMENT_TYPE]} `;
-              upcomingPayments += `${
-                transaction[Meta.COLUMNS.DESCRIPTION]
-              }\n`;
+              upcomingPayments += `${transaction[Meta.COLUMNS.DESCRIPTION]}\n`;
             }
           });
         }

@@ -1,6 +1,11 @@
 /// <reference types="google-apps-script" />
 import { MetaBudgetWeeklyTransactions as Meta } from "./constants";
-import { getFormattedDate, getNewDate, getOrdinalDate, setupDaysIterator } from "./DateUtils";
+import {
+  getFormattedDate,
+  getNewDate,
+  getOrdinalDate,
+  setupDaysIterator,
+} from "./DateUtils";
 import { getAmountAsGBP } from "./MoneyUtils";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
@@ -14,21 +19,19 @@ export class BudgetWeeklyTransactions {
   }
 
   getScheduledTransactions() {
-    const values = this.sheet.getDataRange().getValues();
+    const values = this.sheet.dataRange.getValues();
     // Lose the header row
     return values.slice(1);
   }
 
-  getUpcomingDebits(howManyDaysAhead:number) {
+  getUpcomingDebits(howManyDaysAhead: number) {
     let upcomingPayments = "";
     const today = getNewDate();
 
     const scheduledTransactions = this.getScheduledTransactions();
 
     scheduledTransactions.forEach((transaction) => {
-      if (
-        Math.abs(transaction[Meta.COLUMNS.DEBIT_AMOUNT]) > 1
-      ) {
+      if (Math.abs(transaction[Meta.COLUMNS.DEBIT_AMOUNT]) > 1) {
         const daySelected = transaction[Meta.COLUMNS.DATE];
 
         const formattedDaySelected = getFormattedDate(
@@ -49,15 +52,9 @@ export class BudgetWeeklyTransactions {
               transaction[Meta.COLUMNS.DEBIT_AMOUNT]
             )}`;
             upcomingPayments += ` from`;
-            upcomingPayments += ` ${
-              transaction[Meta.COLUMNS.FROM_ACCOUNT]
-            }`;
-            upcomingPayments += ` by ${
-              transaction[Meta.COLUMNS.PAYMENT_TYPE]
-            }`;
-            upcomingPayments += ` ${
-              transaction[Meta.COLUMNS.DESCRIPTION]
-            }\n`;
+            upcomingPayments += ` ${transaction[Meta.COLUMNS.FROM_ACCOUNT]}`;
+            upcomingPayments += ` by ${transaction[Meta.COLUMNS.PAYMENT_TYPE]}`;
+            upcomingPayments += ` ${transaction[Meta.COLUMNS.DESCRIPTION]}\n`;
           }
           day = days.next();
         }

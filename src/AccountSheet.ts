@@ -1,7 +1,6 @@
 /// <reference types="google-apps-script" />
-import { MetaBankAccounts } from "./constants";
+import { MetaAccountSheet as Meta, MetaBankAccounts } from "./constants";
 import { DescriptionReplacements } from "./DescriptionReplacements";
-import { MetaAccountSheet as Meta} from "./constants";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 import { xLookup } from "./xLookup";
@@ -139,7 +138,7 @@ export class AccountSheet {
 
   /* Background colour can be cyan */
   setSheetFont(fontFamily = "Arial", fontSize = 10, fontColor = "#000000") {
-    const range = this.sheet.getDataRange();
+    const range = this.sheet.dataRange;
     range
       .setFontFamily(fontFamily)
       .setFontSize(fontSize)
@@ -153,12 +152,7 @@ export class AccountSheet {
     dataRange.clearDataValidations();
 
     // Apply formatting in batches
-    const headerRange = sheet.raw.getRange(
-      1,
-      1,
-      1,
-      Meta.MINIMUM_COLUMNS
-    );
+    const headerRange = sheet.raw.getRange(1, 1, 1, Meta.MINIMUM_COLUMNS);
     headerRange.setFontWeight("bold").setHorizontalAlignment("left");
 
     this.setCounterpartyValidation("F2:F");

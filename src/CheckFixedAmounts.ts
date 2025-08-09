@@ -37,7 +37,7 @@ export class CheckFixedAmounts {
     try {
       // Cache the values if not already cached
       if (!this.#values) {
-        const range = this.sheet.getDataRange();
+        const range = this.sheet.dataRange;
         if (!range) {
           throw new Error("Could not get data range from sheet");
         }

@@ -1,9 +1,14 @@
 /// <reference types="google-apps-script" />
 import { MetaBudgetAnnualTransactions as Meta } from "./constants";
-import { Spreadsheet } from "./Spreadsheet";
-import { getFormattedDate, getNewDate, getOrdinalDate, setupDaysIterator } from "./DateUtils";
+import {
+  getFormattedDate,
+  getNewDate,
+  getOrdinalDate,
+  setupDaysIterator,
+} from "./DateUtils";
 import { getAmountAsGBP } from "./MoneyUtils";
 import type { Sheet } from "./Sheet";
+import { Spreadsheet } from "./Spreadsheet";
 export class BudgetAnnualTransactions {
   private readonly sheet: Sheet;
   constructor(
@@ -14,13 +19,13 @@ export class BudgetAnnualTransactions {
 
   // Get all scheduled transactions from the sheet
   getScheduledTransactions() {
-    const values = this.sheet.getDataRange().getValues();
+    const values = this.sheet.dataRange.getValues();
     // Lose the header row
     return values.slice(1);
   }
 
   // Main method to get upcoming debits
-  getUpcomingDebits(howManyDaysAhead:number) {
+  getUpcomingDebits(howManyDaysAhead: number) {
     const today = getNewDate();
     let upcomingPayments = "";
 
@@ -71,13 +76,13 @@ export class BudgetAnnualTransactions {
 
   // Helper method to generate payment details
   _generatePaymentDetails(
-    formattedDaySelected:string,
-    changeAmount:number,
-    fromAccount:string,
-    paymentType:string,
-    description:string,
-    today:Date,
-    howManyDaysAhead:number
+    formattedDaySelected: string,
+    changeAmount: number,
+    fromAccount: string,
+    paymentType: string,
+    description: string,
+    today: Date,
+    howManyDaysAhead: number
   ) {
     const { first, iterator: days } = setupDaysIterator(today);
     let day = first;

@@ -29,7 +29,7 @@ export class SpreadsheetSummary {
   constructor(spreadsheet: Spreadsheet) {
     this.spreadsheet = spreadsheet;
     this.sheet = spreadsheet.getSheet(SpreadsheetSummary.SHEET.NAME);
-    this.dataRows = this.sheet.getDataRange().offset(1, 0).getValues();
+    this.dataRows = this.sheet.dataRange.offset(1, 0).getValues();
   }
 
   get accountSheetNames() {

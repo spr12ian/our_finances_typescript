@@ -1,6 +1,8 @@
 /// <reference types="google-apps-script" />
-import { MetaAccountSheet } from "./constants";
-import { MetaDescriptionReplacements as Meta} from "./constants";
+import {
+  MetaDescriptionReplacements as Meta,
+  MetaAccountSheet,
+} from "./constants";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 
@@ -61,7 +63,7 @@ export class DescriptionReplacements {
   }
 
   getReplacementsMap(): Record<string, string> {
-    const replacements = this.sheet.getDataRange().getValues().slice(1);
+    const replacements = this.sheet.dataRange.getValues().slice(1);
 
     return replacements.reduce((map, [description, replacement]) => {
       if (description && replacement) {

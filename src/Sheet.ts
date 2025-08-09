@@ -5,6 +5,7 @@ import { isAccountSheetName } from "./isAccountSheetName";
  * Prefer using `createSheet(...)` to instantiate.
  */
 export class Sheet {
+  #dataRange?: GoogleAppsScript.Spreadsheet.Range;
   private readonly gasSheet: GoogleAppsScript.Spreadsheet.Sheet;
   private meta: { SHEET: { NAME: string } } | null = null;
 
@@ -15,10 +16,31 @@ export class Sheet {
     this.gasSheet = gasSheet;
   }
 
-  get firstRowRange() {
+  get dataRange(): GoogleAppsScript.Spreadsheet.Range {
+    if (!this.#dataRange) {
+      this.#dataRange = this.gasSheet.getDataRange();
+    }
+    return this.#dataRange;
+  }
+
+  get firstRowRange(): GoogleAppsScript.Spreadsheet.Range {
     const lastColumn = this.gasSheet.getLastColumn();
     const firstRowRange = this.gasSheet.getRange(1, 1, 1, lastColumn);
     return firstRowRange;
+  }
+
+  get headerRange(): GoogleAppsScript.Spreadsheet.Range {
+    const lastColumn = this.getTrueLastColumn();
+    let frozenRows = this.gasSheet.getFrozenRows();
+    if (frozenRows === 0) {
+      Logger.log(
+        `No frozen rows found in sheet: ${this.name}. Treating first row as header.`
+      );
+      frozenRows = 1; // If no frozen rows, treat first row as header
+    }
+
+    const headerRange = this.gasSheet.getRange(1, 1, frozenRows, lastColumn);
+    return headerRange;
   }
 
   get name(): string {
@@ -82,13 +104,40 @@ export class Sheet {
     Logger.log(`Started Sheet.fixSheet: ${this.name}`);
 
     this.trimSheet();
+    this.formatSheet()
 
     Logger.log(`Finished Sheet.fixSheet: ${this.name}`);
   }
 
-  getDataRange(): GoogleAppsScript.Spreadsheet.Range {
-    return this.gasSheet.getDataRange();
+  formatHeader(): void {
+    Logger.log(`Started Sheet.formatHeader: ${this.name}`);
+
+    let headerRange = this.headerRange;
+    headerRange.setFontWeight("bold");
+    headerRange.setBackground("#f0f0f0");
+
+    Logger.log(`Finished Sheet.formatHeader: ${this.name}`);
   }
+
+  formatSheet(): void {
+    Logger.log(`Started Sheet.formatSheet: ${this.name}`);
+
+    this.dataRange.setFontSize(10);
+    this.dataRange.setHorizontalAlignment("left");
+    this.dataRange.setVerticalAlignment("top");
+    this.dataRange.setWrap(true);
+    this.dataRange.setFontFamily("Arial");
+
+    this.formatHeader();
+
+    Logger.log(`Finished Sheet.formatSheet: ${this.name}`);
+  }
+
+  getAllValues(): any[][] {
+    return this.dataRange.getValues();
+  }
+
+
 
   getValue(range: string): any {
     return this.gasSheet.getRange(range).getValue();
@@ -166,7 +215,7 @@ export class Sheet {
    * @returns {number} The last column index with data (1-based).
    */
   getTrueLastColumn() {
-    const range = this.gasSheet.getDataRange();
+    const range = this.dataRange;
     const values = range.getValues();
 
     const rowMax = values.length;
@@ -185,7 +234,7 @@ export class Sheet {
    * @returns {number} The last row index with data (1-based).
    */
   getTrueLastRow(): number {
-    const range = this.gasSheet.getDataRange();
+    const range = this.dataRange;
     const values = range.getValues();
 
     const colLimit = values[0].length;
@@ -224,9 +273,8 @@ export class Sheet {
   }
 
   sortByFirstColumn() {
-    const sheet = this.gasSheet;
     // Get the range that contains data
-    const dataRange = sheet.getDataRange();
+    const dataRange = this.dataRange;
 
     // Sort the range by the first column (column 1) in ascending order
     dataRange.sort({ column: 1, ascending: true });

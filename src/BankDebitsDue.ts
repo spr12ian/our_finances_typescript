@@ -1,10 +1,9 @@
 /// <reference types="google-apps-script" />
 
-
-import { xLookup } from "./xLookup";
 import { getAmountAsGBP } from "./MoneyUtils";
 import type { Sheet } from "./Sheet";
 import type { Spreadsheet } from "./Spreadsheet";
+import { xLookup } from "./xLookup";
 export class BankDebitsDue {
   private sheet: Sheet;
   private _howManyDaysAhead?: number;
@@ -34,7 +33,7 @@ export class BankDebitsDue {
     }
   }
 
-  get howManyDaysAhead():number {
+  get howManyDaysAhead(): number {
     if (typeof this._howManyDaysAhead === "undefined") {
       const searchValue = "Look ahead";
       this._howManyDaysAhead = xLookup(searchValue, this.sheet, "F", "G");
@@ -43,10 +42,10 @@ export class BankDebitsDue {
   }
 
   getScheduledTransactions() {
-    return this.sheet.getDataRange().getValues();
+    return this.sheet.dataRange.getValues();
   }
 
-  getUpcomingDebits(howManyDaysAhead:number) {
+  getUpcomingDebits(howManyDaysAhead: number) {
     let upcomingPayments = `Due in the next ${this.howManyDaysAhead} days:`;
 
     const scheduledTransactions = this.getScheduledTransactions();

@@ -1,11 +1,11 @@
 /// <reference types="google-apps-script" />
+import { MetaBudgetAdHocTransactions as Meta } from "./constants";
 import {
   getFormattedDate,
   getNewDate,
   getOrdinalDate,
   setupDaysIterator,
 } from "./DateUtils";
-import { MetaBudgetAdHocTransactions as Meta } from "./constants";
 import { getAmountAsGBP } from "./MoneyUtils";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
@@ -19,7 +19,7 @@ export class BudgetAdHocTransactions {
 
   // Get all transactions from the sheet
   getScheduledTransactions() {
-    const values = this.sheet.getDataRange().getValues();
+    const values = this.sheet.dataRange.getValues();
     // Lose the header row
     return values.slice(1);
   }

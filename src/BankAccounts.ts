@@ -36,7 +36,7 @@ export class BankAccounts {
   }
 
   getDataRange() {
-    return this.sheet.getDataRange();
+    return this.sheet.dataRange;
   }
 
   getSheetName() {

@@ -5,6 +5,7 @@ import { isAccountSheetName } from "./isAccountSheetName";
  * Prefer using `Spreadsheet.getSheet(sheetName)` to instantiate.
  */
 export class Sheet {
+  #afterHeaderRange?: GoogleAppsScript.Spreadsheet.Range;
   #dataRange?: GoogleAppsScript.Spreadsheet.Range;
   #headerRange?: GoogleAppsScript.Spreadsheet.Range;
   #trueBounds?: { lastRow: number; lastColumn: number };
@@ -27,6 +28,20 @@ export class Sheet {
    */
   public constructor(gasSheet: GoogleAppsScript.Spreadsheet.Sheet) {
     this.gasSheet = gasSheet;
+  }
+
+  get afterHeaderRange(): GoogleAppsScript.Spreadsheet.Range {
+    if (!this.#afterHeaderRange) {
+      const lastColumn = this.getTrueDataBounds().lastColumn; // uses cache
+      let frozenRows = this.gasSheet.getFrozenRows() || 1;
+      this.#afterHeaderRange = this.gasSheet.getRange(
+        frozenRows + 1,
+        1,
+        this.gasSheet.getMaxRows() - frozenRows,
+        lastColumn
+      );
+    }
+    return this.#afterHeaderRange;
   }
 
   get dataRange(): GoogleAppsScript.Spreadsheet.Range {
@@ -124,18 +139,37 @@ export class Sheet {
     Logger.log(`Finished Sheet.fixSheet: ${this.name}`);
   }
 
+  formatAfterHeader(): void {
+    Logger.log(`Started Sheet.formatAfterHeader: ${this.name}`);
+
+    let afterHeaderRange = this.afterHeaderRange;
+    afterHeaderRange
+      .setBorder(true, true, true, true, false, false)
+      .setFontColor("#000000")
+      .setFontFamily("Arial")
+      .setFontSize(10)
+      .setFontWeight("normal")
+      .setHorizontalAlignment("left")
+      .setVerticalAlignment("top")
+      .setWrap(true);
+
+    Logger.log(`Finished Sheet.formatAfterHeader: ${this.name}`);
+  }
+
   formatHeader(): void {
     Logger.log(`Started Sheet.formatHeader: ${this.name}`);
 
     let headerRange = this.headerRange;
     headerRange
+      .setBorder(true, true, true, true, false, false)
       .setBackground("#f0f0f0")
+      .setFontFamily("Arial")
+      .setFontSize(12)
       .setFontWeight("bold")
       .setNumberFormat("@")
       .setHorizontalAlignment("center")
       .setVerticalAlignment("middle")
-      .setWrap(true)
-      .setFontSize(12);
+      .setWrap(true);
 
     Logger.log(`Finished Sheet.formatHeader: ${this.name}`);
   }
@@ -143,14 +177,8 @@ export class Sheet {
   formatSheet(): void {
     Logger.log(`Started Sheet.formatSheet: ${this.name}`);
 
-    this.setFont()
-      .setBorder(true, true, true, true, false, false)
-      .setFontWeight("normal")
-      .setHorizontalAlignment("left")
-      .setVerticalAlignment("top")
-      .setWrap(true);
-
     this.formatHeader();
+    this.formatAfterHeader();
 
     Logger.log(`Finished Sheet.formatSheet: ${this.name}`);
   }
@@ -227,9 +255,6 @@ export class Sheet {
     this.#trueBounds = { lastRow, lastColumn };
     return this.#trueBounds;
   }
-
-
-
 
   hideColumn(column: GoogleAppsScript.Spreadsheet.Range): void {
     this.gasSheet.hideColumn(column);

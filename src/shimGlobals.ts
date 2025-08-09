@@ -37,6 +37,7 @@ export const shimGlobals = [
   "sortSheets",
   "trimAllSheets",
   "trimSheet",
+  "updateAllDependencies",
   "updateSpreadsheetSummary",
   "updateTransactionCategories",
   "updateTransactions",

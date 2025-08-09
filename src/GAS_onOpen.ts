@@ -26,10 +26,7 @@ export function budgetWeeklyTransactions() {
   goToSheet("Budget weekly transactions");
 }
 
-export function checkDependencies() {
-  const dependencies = new Dependencies();
-  dependencies.updateAllDependencies();
-}
+
 
 function dailyUpdate() {
   const bankAccounts = new BankAccounts();

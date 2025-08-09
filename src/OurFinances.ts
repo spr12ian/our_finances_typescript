@@ -20,6 +20,7 @@ import {
   MetaTransactionCategories,
 } from "./constants";
 import { getToday } from "./DateUtils";
+import { Dependencies } from "./Dependencies";
 import { outputToDrive } from "./driveFunctions";
 import { sendMeEmail } from "./emailFunctions";
 import { Spreadsheet } from "./Spreadsheet";
@@ -38,85 +39,93 @@ const logTiming = <T>(label: string, fn: () => T): T => {
   return result;
 };
 export class OurFinances {
-  private _accountBalances?: AccountBalances;
-  private _bankAccounts?: BankAccounts;
-  private _bankDebitsDue?: BankDebitsDue;
-  private _budgetAnnualTransactions?: BudgetAnnualTransactions;
-  private _budgetAdhocTransactions?: BudgetAdHocTransactions;
-  private _budgetMonthlyTransactions?: BudgetMonthlyTransactions;
-  private _budgetWeeklyTransactions?: BudgetWeeklyTransactions;
-  private _checkFixedAmounts?: CheckFixedAmounts;
-  private _spreadsheetSummary?: SpreadsheetSummary;
-  private _transactionCategories?: TransactionCategories;
-  private _transactions?: Transactions;
-  private _howManyDaysAhead?: number;
+  #dependencies?: Dependencies;
+  #accountBalances?: AccountBalances;
+  #bankAccounts?: BankAccounts;
+  #bankDebitsDue?: BankDebitsDue;
+  #budgetAnnualTransactions?: BudgetAnnualTransactions;
+  #budgetAdhocTransactions?: BudgetAdHocTransactions;
+  #budgetMonthlyTransactions?: BudgetMonthlyTransactions;
+  #budgetWeeklyTransactions?: BudgetWeeklyTransactions;
+  #checkFixedAmounts?: CheckFixedAmounts;
+  #spreadsheetSummary?: SpreadsheetSummary;
+  #transactionCategories?: TransactionCategories;
+  #transactions?: Transactions;
+  #howManyDaysAhead?: number;
 
   constructor(
     private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
   ) {}
 
   get accountBalances() {
-    if (typeof this._accountBalances === "undefined") {
-      this._accountBalances = new AccountBalances(this.spreadsheet);
+    if (typeof this.#accountBalances === "undefined") {
+      this.#accountBalances = new AccountBalances(this.spreadsheet);
     }
-    return this._accountBalances;
+    return this.#accountBalances;
   }
 
   get bankAccounts() {
-    if (typeof this._bankAccounts === "undefined") {
-      this._bankAccounts = new BankAccounts(this.spreadsheet);
+    if (typeof this.#bankAccounts === "undefined") {
+      this.#bankAccounts = new BankAccounts(this.spreadsheet);
     }
-    return this._bankAccounts;
+    return this.#bankAccounts;
   }
 
   get bankDebitsDue() {
-    if (typeof this._bankDebitsDue === "undefined") {
-      this._bankDebitsDue = new BankDebitsDue(this.spreadsheet);
+    if (typeof this.#bankDebitsDue === "undefined") {
+      this.#bankDebitsDue = new BankDebitsDue(this.spreadsheet);
     }
-    return this._bankDebitsDue;
+    return this.#bankDebitsDue;
   }
 
   get budgetAdhocTransactions() {
-    if (typeof this._budgetAdhocTransactions === "undefined") {
-      this._budgetAdhocTransactions = new BudgetAdHocTransactions(
+    if (typeof this.#budgetAdhocTransactions === "undefined") {
+      this.#budgetAdhocTransactions = new BudgetAdHocTransactions(
         this.spreadsheet
       );
     }
-    return this._budgetAdhocTransactions;
+    return this.#budgetAdhocTransactions;
   }
 
   get budgetAnnualTransactions() {
-    if (typeof this._budgetAnnualTransactions === "undefined") {
-      this._budgetAnnualTransactions = new BudgetAnnualTransactions(
+    if (typeof this.#budgetAnnualTransactions === "undefined") {
+      this.#budgetAnnualTransactions = new BudgetAnnualTransactions(
         this.spreadsheet
       );
     }
-    return this._budgetAnnualTransactions;
+    return this.#budgetAnnualTransactions;
   }
 
   get budgetMonthlyTransactions() {
-    if (typeof this._budgetMonthlyTransactions === "undefined") {
-      this._budgetMonthlyTransactions = new BudgetMonthlyTransactions(
+    if (typeof this.#budgetMonthlyTransactions === "undefined") {
+      this.#budgetMonthlyTransactions = new BudgetMonthlyTransactions(
         this.spreadsheet
       );
     }
-    return this._budgetMonthlyTransactions;
+    return this.#budgetMonthlyTransactions;
   }
 
   get budgetWeeklyTransactions() {
-    if (typeof this._budgetWeeklyTransactions === "undefined") {
-      this._budgetWeeklyTransactions = new BudgetWeeklyTransactions(
+    if (typeof this.#budgetWeeklyTransactions === "undefined") {
+      this.#budgetWeeklyTransactions = new BudgetWeeklyTransactions(
         this.spreadsheet
       );
     }
-    return this._budgetWeeklyTransactions;
+    return this.#budgetWeeklyTransactions;
   }
 
   get checkFixedAmounts() {
-    if (typeof this._checkFixedAmounts === "undefined") {
-      this._checkFixedAmounts = new CheckFixedAmounts(this.spreadsheet);
+    if (typeof this.#checkFixedAmounts === "undefined") {
+      this.#checkFixedAmounts = new CheckFixedAmounts(this.spreadsheet);
     }
-    return this._checkFixedAmounts;
+    return this.#checkFixedAmounts;
+  }
+
+  get dependencies() {
+    if (typeof this.#dependencies === "undefined") {
+      this.#dependencies = new Dependencies(this.spreadsheet);
+    }
+    return this.#dependencies;
   }
 
   get fixedAmountMismatches() {
@@ -124,31 +133,31 @@ export class OurFinances {
   }
 
   get howManyDaysAhead() {
-    if (typeof this._howManyDaysAhead === "undefined") {
-      this._howManyDaysAhead = this.bankDebitsDue.howManyDaysAhead;
+    if (typeof this.#howManyDaysAhead === "undefined") {
+      this.#howManyDaysAhead = this.bankDebitsDue.howManyDaysAhead;
     }
-    return this._howManyDaysAhead;
+    return this.#howManyDaysAhead;
   }
 
   get spreadsheetSummary() {
-    if (typeof this._spreadsheetSummary === "undefined") {
-      this._spreadsheetSummary = new SpreadsheetSummary(this.spreadsheet);
+    if (typeof this.#spreadsheetSummary === "undefined") {
+      this.#spreadsheetSummary = new SpreadsheetSummary(this.spreadsheet);
     }
-    return this._spreadsheetSummary;
+    return this.#spreadsheetSummary;
   }
 
   get transactionCategories() {
-    if (typeof this._transactionCategories === "undefined") {
-      this._transactionCategories = new TransactionCategories(this.spreadsheet);
+    if (typeof this.#transactionCategories === "undefined") {
+      this.#transactionCategories = new TransactionCategories(this.spreadsheet);
     }
-    return this._transactionCategories;
+    return this.#transactionCategories;
   }
 
   get transactions() {
-    if (typeof this._transactions === "undefined") {
-      this._transactions = new Transactions(this.spreadsheet);
+    if (typeof this.#transactions === "undefined") {
+      this.#transactions = new Transactions(this.spreadsheet);
     }
-    return this._transactions;
+    return this.#transactions;
   }
 
   get upcomingDebits() {
@@ -393,6 +402,11 @@ export class OurFinances {
 
   trimSheet() {
     this.spreadsheet.activeSheet.trimSheet();
+  }
+
+  updateAllDependencies() {
+    const dependencies = new Dependencies(this.spreadsheet);
+    dependencies.updateAllDependencies();
   }
 
   updateSpreadsheetSummary() {

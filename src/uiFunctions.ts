@@ -28,7 +28,7 @@ export function buildGasMenu_(ui: GoogleAppsScript.Base.Ui) {
     ["All accounts", "showAllAccounts"],
     ["Apply Description replacements", "applyDescriptionReplacements"],
     ["Balance sheet", "balanceSheet"],
-    ["Check dependencies", "checkDependencies"],
+    ["Check dependencies", "updateAllDependencies"],
     ["Convert current column to uppercase", "convertCurrentColumnToUppercase"],
     ["Daily update", "dailyUpdate"],
     ["Fix sheet", "fixSheet"],

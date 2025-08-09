@@ -6,8 +6,21 @@ import { isAccountSheetName } from "./isAccountSheetName";
  */
 export class Sheet {
   #dataRange?: GoogleAppsScript.Spreadsheet.Range;
+  #headerRange?: GoogleAppsScript.Spreadsheet.Range;
+  #trueBounds?: { lastRow: number; lastColumn: number };
   private readonly gasSheet: GoogleAppsScript.Spreadsheet.Sheet;
   private meta: { SHEET: { NAME: string } } | null = null;
+
+  // Call this after any mutating operation:
+  private changed() {
+    this.invalidate();
+  }
+
+  private invalidate() {
+    this.#dataRange = undefined;
+    this.#trueBounds = undefined;
+    this.#headerRange = undefined;
+  }
 
   /**
    * ⚠️ Internal constructor – prefer `Spreadsheet.getSheet(sheetName)` for safety.
@@ -30,17 +43,12 @@ export class Sheet {
   }
 
   get headerRange(): GoogleAppsScript.Spreadsheet.Range {
-    const lastColumn = this.getTrueLastColumn();
-    let frozenRows = this.gasSheet.getFrozenRows();
-    if (frozenRows === 0) {
-      Logger.log(
-        `No frozen rows found in sheet: ${this.name}. Treating first row as header.`
-      );
-      frozenRows = 1; // If no frozen rows, treat first row as header
+    if (!this.#headerRange) {
+      const lastColumn = this.getTrueDataBounds().lastColumn; // uses cache
+      let frozenRows = this.gasSheet.getFrozenRows() || 1;
+      this.#headerRange = this.gasSheet.getRange(1, 1, frozenRows, lastColumn);
     }
-
-    const headerRange = this.gasSheet.getRange(1, 1, frozenRows, lastColumn);
-    return headerRange;
+    return this.#headerRange;
   }
 
   get name(): string {
@@ -59,10 +67,12 @@ export class Sheet {
 
   clear(): void {
     this.gasSheet.clear();
+    this.changed();
   }
 
   clearContents(): void {
     this.gasSheet.clearContents();
+    this.changed();
   }
 
   deleteExcessColumns(): void {
@@ -73,6 +83,7 @@ export class Sheet {
     const howMany = maxColumns - startColumn + 1;
     if (howMany > 0) {
       this.gasSheet.deleteColumns(startColumn, howMany);
+      this.changed();
     }
   }
 
@@ -84,20 +95,24 @@ export class Sheet {
     const howMany = maxRows - startRow + 1;
     if (howMany > 0) {
       this.gasSheet.deleteRows(startRow, howMany);
+      this.changed();
     }
   }
 
   deleteRows(startRow: number, howMany: number): void {
     this.gasSheet.deleteRows(startRow, howMany);
+    this.changed();
   }
 
-  findRowByKey(searchColumn: string, keyValue: string) {
-    const data = this.gasSheet
-      .getRange(`${searchColumn}1:${searchColumn}${this.gasSheet.getLastRow()}`)
-      .getValues();
-
-    const rowIndex = data.findIndex((row) => row[0] === keyValue);
-    return rowIndex !== -1 ? rowIndex + 1 : -1; // Add 1 for 1-based indexing, return -1 if not found
+  findRowByKey(searchColumn: string, keyValue: string): number {
+    const colA1 = `${searchColumn}:${searchColumn}`;
+    const r = this.gasSheet.getRange(colA1);
+    const tf = r
+      .createTextFinder(keyValue)
+      .matchEntireCell(true)
+      .matchCase(false);
+    const m = tf.findNext();
+    return m ? m.getRow() : -1;
   }
 
   fixSheet(): void {
@@ -113,13 +128,14 @@ export class Sheet {
     Logger.log(`Started Sheet.formatHeader: ${this.name}`);
 
     let headerRange = this.headerRange;
-    headerRange.setBackground("#f0f0f0");
-    headerRange.setFontWeight("bold");
-    headerRange.setNumberFormat("@");
-    headerRange.setHorizontalAlignment("center");
-    headerRange.setVerticalAlignment("middle");
-    headerRange.setWrap(true);
-    headerRange.setFontSize(12);
+    headerRange
+      .setBackground("#f0f0f0")
+      .setFontWeight("bold")
+      .setNumberFormat("@")
+      .setHorizontalAlignment("center")
+      .setVerticalAlignment("middle")
+      .setWrap(true)
+      .setFontSize(12);
 
     Logger.log(`Finished Sheet.formatHeader: ${this.name}`);
   }
@@ -127,12 +143,12 @@ export class Sheet {
   formatSheet(): void {
     Logger.log(`Started Sheet.formatSheet: ${this.name}`);
 
-    this.dataRange.setBorder(true, true, true, true, false, false);
-    this.setFont();
-    this.dataRange.setFontWeight("normal");
-    this.dataRange.setHorizontalAlignment("left");
-    this.dataRange.setVerticalAlignment("top");
-    this.dataRange.setWrap(true);
+    this.setFont()
+      .setBorder(true, true, true, true, false, false)
+      .setFontWeight("normal")
+      .setHorizontalAlignment("left")
+      .setVerticalAlignment("top")
+      .setWrap(true);
 
     this.formatHeader();
 
@@ -145,10 +161,6 @@ export class Sheet {
 
   getValue(range: string): any {
     return this.gasSheet.getRange(range).getValue();
-  }
-
-  setValue(range: string, value: any): void {
-    this.gasSheet.getRange(range).setValue(value);
   }
 
   getRange(a1Notation: string): GoogleAppsScript.Spreadsheet.Range {
@@ -168,6 +180,8 @@ export class Sheet {
    * @returns {{ lastRow: number, lastColumn: number }}
    */
   getTrueDataBounds(): { lastRow: number; lastColumn: number } {
+    if (this.#trueBounds) return this.#trueBounds;
+
     const sheet = this.gasSheet;
     const frozenRows = sheet.getFrozenRows();
     const frozenCols = sheet.getFrozenColumns();
@@ -210,46 +224,15 @@ export class Sheet {
         }
       }
     }
-
-    return { lastRow, lastColumn };
+    this.#trueBounds = { lastRow, lastColumn };
+    return this.#trueBounds;
   }
 
-  /**
-   * Returns the last column that contains actual data (ignores formatting and empty formulas).
-   * @returns {number} The last column index with data (1-based).
-   */
-  getTrueLastColumn() {
-    const range = this.dataRange;
-    const values = range.getValues();
 
-    const rowMax = values.length;
-    const colCount = values[0]?.length || 0;
 
-    for (let c = colCount - 1; c >= 0; c--) {
-      for (let r = 0; r < rowMax; r++) {
-        if (values[r][c] !== "") return c + 1;
-      }
-    }
-    return 0;
-  }
 
-  /**
-   * Returns the last row that contains actual data (ignores formatting and empty formulas).
-   * @returns {number} The last row index with data (1-based).
-   */
-  getTrueLastRow(): number {
-    const range = this.dataRange;
-    const values = range.getValues();
-
-    const colLimit = values[0].length;
-
-    for (let r = values.length - 1; r >= 0; r--) {
-      for (let c = 0; c < colLimit; c++) {
-        const cell = values[r][c];
-        if (cell !== "") return r + 1; // +1 because Apps Script is 1-based
-      }
-    }
-    return 0; // all blank
+  hideColumn(column: GoogleAppsScript.Spreadsheet.Range): void {
+    this.gasSheet.hideColumn(column);
   }
 
   isAccountSheet() {
@@ -284,15 +267,20 @@ export class Sheet {
     fontFamily: string = "Arial",
     fontSize: number = 10,
     fontColor: string = "#000000"
-  ) {
+  ): GoogleAppsScript.Spreadsheet.Range {
     this.dataRange
       .setFontFamily(fontFamily)
       .setFontSize(fontSize)
       .setFontColor(fontColor);
+    return this.dataRange;
   }
 
   setHorizontalAlignmentLeft(a1range: string) {
     this.getRange(a1range).setHorizontalAlignment("left");
+  }
+
+  setHorizontalAlignmentRight(a1range: string) {
+    this.getRange(a1range).setHorizontalAlignment("right");
   }
 
   setMeta(meta: { SHEET: { NAME: string } }): void {
@@ -301,6 +289,7 @@ export class Sheet {
 
   setNumberFormat(a1range: string, format: string) {
     this.getRange(a1range).setNumberFormat(format);
+    this.getRange(a1range).setHorizontalAlignment("right");
   }
 
   setNumberFormatAsUKCurrency(...a1ranges: string[]): void {
@@ -322,12 +311,13 @@ export class Sheet {
     });
   }
 
-  showColumns(start: number, num: number): void {
-    this.gasSheet.showColumns(start, num);
+  setValue(range: string, value: any): void {
+    this.gasSheet.getRange(range).setValue(value);
+    this.changed();
   }
 
-  hideColumn(column: GoogleAppsScript.Spreadsheet.Range): void {
-    this.gasSheet.hideColumn(column);
+  showColumns(start: number, num: number): void {
+    this.gasSheet.showColumns(start, num);
   }
 
   sortByFirstColumn() {
@@ -336,6 +326,7 @@ export class Sheet {
 
     // Sort the range by the first column (column 1) in ascending order
     dataRange.sort({ column: 1, ascending: true });
+    this.changed();
   }
 
   sortByFirstColumnOmittingHeader() {
@@ -367,6 +358,7 @@ export class Sheet {
         );
       }
     }
+    this.changed();
   }
 
   trimSheet(): void {
@@ -390,9 +382,11 @@ export class Sheet {
 
     if (targetCols < maxColumns) {
       gasSheet.deleteColumns(targetCols + 1, maxColumns - targetCols);
+      this.changed();
     }
     if (targetRows < maxRows) {
       gasSheet.deleteRows(targetRows + 1, maxRows - targetRows);
+      this.changed();
     }
 
     if (maxRows === targetRows && maxColumns === targetCols) {

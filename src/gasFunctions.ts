@@ -159,6 +159,10 @@ export function GAS_trimSheet() {
   new OurFinances().trimSheet();
 }
 
+export function GAS_updateAllDependencies() {
+  new OurFinances().updateAllDependencies();
+}
+
 export function GAS_updateSpreadsheetSummary() {
   new OurFinances().updateSpreadsheetSummary();
 }

@@ -6,11 +6,6 @@ import { Spreadsheet } from "./Spreadsheet";
 
 // Function declarations
 
-function checkDependencies() {
-  const dependencies = new Dependencies();
-  dependencies.updateAllDependencies();
-}
-
 function cloneDate(date) {
   return new Date(date.getTime());
 }

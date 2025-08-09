@@ -32,26 +32,6 @@ export class AccountSheet {
     this.sheet.getRange(a1CellRange).setNote(note);
   }
 
-  fixHeaders() {
-    const headerRange = this.sheet.getRange("A1:H1");
-    const label = xLookup(
-      this.accountName,
-      this.spreadsheet.getSheet(MetaBankAccounts.SHEET.NAME),
-      "A",
-      "AP"
-    );
-    const description = `Description (${label}) ${this.accountName}`;
-    const headers = [Meta.HEADERS];
-    headers[0][Meta.COLUMNS.DESCRIPTION - 1] = description;
-    headerRange.setValues(headers);
-  }
-
-  fixSheet() {
-    this.fixHeaders();
-    this.formatSheet();
-    this.sheet.trimSheet();
-  }
-
   applyDescriptionReplacements() {
     const descriptionReplacements = new DescriptionReplacements();
     descriptionReplacements.applyReplacements(this.sheet);
@@ -70,6 +50,27 @@ export class AccountSheet {
     range.setValues(values);
   }
 
+  fixHeaders() {
+    const headerRange = this.sheet.getRange("A1:H1");
+    const label = xLookup(
+      this.accountName,
+      this.spreadsheet.getSheet(MetaBankAccounts.SHEET.NAME),
+      "A",
+      "AP"
+    );
+    const description = `Description (${label}) ${this.accountName}`;
+    const headers = [Meta.HEADERS];
+    headers[0][Meta.COLUMNS.DESCRIPTION - 1] = description;
+    headerRange.setValues(headers);
+  }
+
+  fixSheet() {
+    this.fixHeaders();
+    this.updateBalanceValues();
+    this.formatSheet();
+    this.sheet.trimSheet();
+  }
+
   formatSheet() {
     try {
       this.sheet.formatSheet();
@@ -83,17 +84,6 @@ export class AccountSheet {
     } catch (error) {
       throw error;
     }
-  }
-
-  getExpectedHeader(column: number) {
-    return column === Meta.COLUMNS.DESCRIPTION
-      ? xLookup(
-          this.accountName,
-          this.spreadsheet.getSheet(MetaBankAccounts.SHEET.NAME),
-          "A",
-          "AQ"
-        )
-      : Meta.HEADERS[column - 1];
   }
 
   setCounterpartyValidation(a1range: string) {
@@ -122,25 +112,45 @@ export class AccountSheet {
     sheet.setNumberFormatAsUKCurrency("C2:D", "H2:H");
   }
 
+  updateBalanceValues(): void {
+    const start = Meta.ROW_DATA_STARTS;
+    let balance = 0;
+
+    const allValues = this.sheet.dataRange.getValues();
+    const dataRows = allValues.slice(start - 1);
+    if (dataRows.length === 0) return;
+
+    const output: number[][] = new Array(dataRows.length);
+
+    let different = false;
+    for (const row of dataRows) {
+      const credit = Number(row[Meta.COLUMNS.CREDIT - 1]) || 0;
+      const debit = Number(row[Meta.COLUMNS.DEBIT - 1]) || 0;
+      const current_balance = Number(row[Meta.COLUMNS.BALANCE - 1]) || 0;
+
+      balance += credit - debit;
+      if (balance !== current_balance) {
+        different = true;
+      }
+      output.push([balance]);
+    }
+
+    if (!different) {
+      Logger.log(`No changes to balance for ${this.accountName}`);
+      return;
+    }
+
+    // Write back just the balance column
+    this.sheet.raw
+      .getRange(start, Meta.COLUMNS.BALANCE, output.length, 1)
+      .setValues(output);
+  }
+
   validateFrozenRows() {
     const frozenRows = this.sheet.raw.getFrozenRows();
     if (frozenRows !== 1) {
       throw new Error(`There should be 1 frozen row; found ${frozenRows}`);
     }
-  }
-
-  validateHeaders() {
-    const headers = this.sheet.raw
-      .getRange(1, 1, 1, Meta.MINIMUM_COLUMNS)
-      .getValues()[0];
-    headers.forEach((value: string, index: number) => {
-      const expected = this.getExpectedHeader(index + 1);
-      if (value !== expected) {
-        throw new Error(
-          `Column ${index + 1} should be '${expected}' but found '${value}'`
-        );
-      }
-    });
   }
 
   validateMinimumColumns() {
@@ -154,7 +164,6 @@ export class AccountSheet {
 
   validateSheet() {
     this.validateMinimumColumns();
-    this.validateHeaders();
     this.validateFrozenRows();
   }
 }

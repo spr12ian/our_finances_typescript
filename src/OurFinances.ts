@@ -175,6 +175,32 @@ export class OurFinances {
     }
   }
 
+  convertCurrentColumnToUppercase() {
+    const gasSheet = this.spreadsheet.activeSheet.raw;
+    const activeRange = gasSheet.getActiveRange();
+    if (!activeRange) {
+      Logger.log("No active range selected.");
+      return;
+    }
+    const START_ROW = 2;
+    const column = activeRange.getColumn();
+    if (column < 1) {
+      Logger.log("No column selected.");
+      return;
+    }
+
+    const lastRow = gasSheet.getLastRow();
+    const numRows = lastRow + 1 - START_ROW;
+
+    const range = gasSheet.getRange(START_ROW, column, numRows, 1);
+    const values = range.getValues();
+    const uppercasedValues = values.map((row) => [
+      row[0].toString().toUpperCase(),
+    ]);
+
+    range.setValues(uppercasedValues);
+  }
+
   dailySorts() {
     const sheetsToSort = [
       MetaBankAccounts.SHEET.NAME,
@@ -230,6 +256,21 @@ export class OurFinances {
     outputToDrive(fileName, output);
   }
 
+  fixAccountSheet() {
+    Logger.log(`Started OurFinances.fixAccountSheet`);
+
+    const activeSheet = this.spreadsheet.activeSheet;
+    if (!activeSheet) {
+      Logger.log("No active sheet found.");
+      return;
+    }
+
+    const accountSheet = new AccountSheet(activeSheet);
+    accountSheet.fixSheet();
+
+    Logger.log(`Finished OurFinances.fixAccountSheet`);
+  }
+
   fixSheet() {
     Logger.log(`Started OurFinances.fixSheet`);
 
@@ -257,9 +298,13 @@ export class OurFinances {
     if (action) {
       action();
     } else {
-      activeSheet.fixSheet();
+      if (activeSheet.name.startsWith("_")) {
+        Logger.log(`Sheet ${activeSheet.name} is an account sheet.`);
+        this.fixAccountSheet();
+      } else {
+        activeSheet.fixSheet();
+      }
     }
-
     Logger.log(`Finished OurFinances.fixSheet`);
   }
 
@@ -297,6 +342,8 @@ export class OurFinances {
     } catch (err) {
       console.error("onOpen error:", err);
     }
+
+    this.fixSheet();
   }
 
   sendDailyEmail(): void {

@@ -6,6 +6,7 @@ export const shimGlobals = [
   "budgetAdHocTransactions",
   "budgetAnnualTransactions",
   "categories",
+  "convertCurrentColumnToUppercase",
   "dailySorts",
   "exportFormulasToDrive",
   "fixSheet",

@@ -15,24 +15,6 @@ function cloneDate(date) {
   return new Date(date.getTime());
 }
 
-function convertCurrentColumnToUppercase() {
-  const gasSheet = gasSpreadsheetApp.getActiveSheet();
-  const activeRange = gasSheet.getActiveRange();
-  const START_ROW = 2;
-  const column = activeRange.getColumn();
-
-  const lastRow = gasSheet.getLastRow();
-  const numRows = lastRow + 1 - START_ROW;
-
-  const range = gasSheet.getRange(START_ROW, column, numRows, 1);
-  const values = range.getValues();
-  const uppercasedValues = values.map((row) => [
-    row[0].toString().toUpperCase(),
-  ]);
-
-  range.setValues(uppercasedValues);
-}
-
 function dailyUpdate() {
   const bankAccounts = new BankAccounts();
   bankAccounts.showDaily();

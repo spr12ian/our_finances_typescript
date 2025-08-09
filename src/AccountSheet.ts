@@ -15,6 +15,14 @@ export class AccountSheet {
     }
   }
 
+  get accountName(): string {
+    return this.name.slice(1);
+  }
+
+  get name(): string {
+    return this.sheet.name;
+  }
+
   addDefaultNotes() {
     this.addNoteToCell("F1", "Counterparty");
     this.addNoteToCell("G1", "Counterparty date");
@@ -24,22 +32,24 @@ export class AccountSheet {
     this.sheet.getRange(a1CellRange).setNote(note);
   }
 
-  alignLeft(a1range: string) {
-    this.sheet.getRange(a1range).setHorizontalAlignment("left");
+  fixHeaders() {
+    const headerRange = this.sheet.getRange("A1:H1");
+    const label = xLookup(
+      this.accountName,
+      this.spreadsheet.getSheet(MetaBankAccounts.SHEET.NAME),
+      "A",
+      "AP"
+    );
+    const description = `Description (${label}) ${this.accountName}`;
+    const headers = [Meta.HEADERS];
+    headers[0][Meta.COLUMNS.DESCRIPTION - 1] = description;
+    headerRange.setValues(headers);
   }
 
-  formatSheet() {
-    try {
-      this.validateSheet();
-      this.setSheetFormatting();
-      this.addDefaultNotes();
-      this.convertColumnToUppercase(Meta.COLUMNS.DESCRIPTION);
-      this.convertColumnToUppercase(Meta.COLUMNS.NOTE);
-      this.setColumnWidth(Meta.COLUMNS.DESCRIPTION, 500);
-      this.setColumnWidth(Meta.COLUMNS.NOTE, 170);
-    } catch (error) {
-      throw error;
-    }
+  fixSheet() {
+    this.fixHeaders();
+    this.formatSheet();
+    this.sheet.trimSheet();
   }
 
   applyDescriptionReplacements() {
@@ -60,50 +70,30 @@ export class AccountSheet {
     range.setValues(values);
   }
 
-  formatAsBold(a1range: string) {
-    this.sheet.getRange(a1range).setFontWeight("bold");
-  }
-
-  /**
-   * Formats the given A1 cell ranges as dates (dd/MM/yyyy)
-   * and applies date validation to each.
-   *
-   * @param {...string} a1ranges - One or more A1 notation ranges (e.g. "A2:A10").
-   */
-  formatAsDate(...a1ranges: string[]): void {
-    a1ranges.forEach((a1range) => {
-      this.setNumberFormat(a1range, "dd/MM/yyyy");
-      this.setDateValidation(a1range);
-    });
-  }
-
-  formatAsUKCurrency(...a1ranges: string[]): void {
-    a1ranges.forEach((a1range) => {
-      this.setNumberFormat(a1range, "£#,##0.00");
-    });
+  formatSheet() {
+    try {
+      this.sheet.formatSheet();
+      this.validateSheet();
+      this.setSheetFormatting();
+      this.addDefaultNotes();
+      this.convertColumnToUppercase(Meta.COLUMNS.DESCRIPTION);
+      this.convertColumnToUppercase(Meta.COLUMNS.NOTE);
+      this.sheet.raw.setColumnWidth(Meta.COLUMNS.DESCRIPTION, 500);
+      this.sheet.raw.setColumnWidth(Meta.COLUMNS.NOTE, 170);
+    } catch (error) {
+      throw error;
+    }
   }
 
   getExpectedHeader(column: number) {
     return column === Meta.COLUMNS.DESCRIPTION
       ? xLookup(
-          this.getSheetName().slice(1),
+          this.accountName,
           this.spreadsheet.getSheet(MetaBankAccounts.SHEET.NAME),
           "A",
           "AQ"
         )
       : Meta.HEADERS[column - 1];
-  }
-
-  getSheetName() {
-    return this.sheet.getSheetName();
-  }
-
-  setBackground(a1range: string, background = "#FFFFFF"): void {
-    this.sheet.getRange(a1range).setBackground(background);
-  }
-
-  setColumnWidth(column: number, widthInPixels: number) {
-    this.sheet.setColumnWidth(column, widthInPixels);
   }
 
   setCounterpartyValidation(a1range: string) {
@@ -121,47 +111,15 @@ export class AccountSheet {
     range.setDataValidation(rule);
   }
 
-  setDateValidation(a1range: string) {
-    const range = this.sheet.getRange(a1range);
-    const rule = SpreadsheetApp.newDataValidation()
-      .requireDate()
-      .setAllowInvalid(false)
-      .setHelpText("Please enter a valid date in DD/MM/YYYY format.")
-      .build();
-
-    range.setDataValidation(rule);
-  }
-
-  setNumberFormat(a1range: string, format: string) {
-    this.sheet.getRange(a1range).setNumberFormat(format);
-  }
-
-  /* Background colour can be cyan */
-  setSheetFont(fontFamily = "Arial", fontSize = 10, fontColor = "#000000") {
-    const range = this.sheet.dataRange;
-    range
-      .setFontFamily(fontFamily)
-      .setFontSize(fontSize)
-      .setFontColor(fontColor);
-  }
-
   setSheetFormatting() {
     const sheet = this.sheet;
-    const dataRange = sheet.getDataRange();
+    const dataRange = sheet.dataRange;
 
     dataRange.clearDataValidations();
 
-    // Apply formatting in batches
-    const headerRange = sheet.raw.getRange(1, 1, 1, Meta.MINIMUM_COLUMNS);
-    headerRange.setFontWeight("bold").setHorizontalAlignment("left");
-
     this.setCounterpartyValidation("F2:F");
-    this.setSheetFont();
-    this.formatAsDate("A2:A", "G2:G");
-    this.formatAsUKCurrency("C2:D", "H2:H");
-    this.formatAsBold("A1:H1");
-    this.alignLeft("A1:H1");
-    this.setBackground("A1:H1");
+    sheet.setNumberFormatAsDate("A2:A", "G2:G");
+    sheet.setNumberFormatAsUKCurrency("C2:D", "H2:H");
   }
 
   validateFrozenRows() {
@@ -189,9 +147,7 @@ export class AccountSheet {
     const lastColumn = this.sheet.raw.getLastColumn();
     if (lastColumn < Meta.MINIMUM_COLUMNS) {
       throw new Error(
-        `Sheet ${this.getSheetName()} requires at least ${
-          Meta.MINIMUM_COLUMNS
-        } columns, but found ${lastColumn}`
+        `Sheet ${this.name} requires at least ${Meta.MINIMUM_COLUMNS} columns, but found ${lastColumn}`
       );
     }
   }

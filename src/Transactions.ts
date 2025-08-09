@@ -19,7 +19,7 @@ export class Transactions {
 
   evaluateQueryFunction(queryString: string) {
     const sheet = this.sheet;
-    const dataRange = sheet.getDataRange(); // Adjust the range as needed
+    const dataRange = sheet.dataRange; // Adjust the range as needed
     const a1range = `Transactions!${dataRange.getA1Notation()}`;
 
     // Construct the QUERY formula

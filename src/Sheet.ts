@@ -2,7 +2,7 @@
 import { isAccountSheetName } from "./isAccountSheetName";
 /**
  * Thin wrapper around a GAS Sheet.
- * Prefer using `createSheet(...)` to instantiate.
+ * Prefer using `Spreadsheet.getSheet(sheetName)` to instantiate.
  */
 export class Sheet {
   #dataRange?: GoogleAppsScript.Spreadsheet.Range;
@@ -10,7 +10,7 @@ export class Sheet {
   private meta: { SHEET: { NAME: string } } | null = null;
 
   /**
-   * ⚠️ Internal constructor – prefer `createSheet(...)` for safety.
+   * ⚠️ Internal constructor – prefer `Spreadsheet.getSheet(sheetName)` for safety.
    */
   public constructor(gasSheet: GoogleAppsScript.Spreadsheet.Sheet) {
     this.gasSheet = gasSheet;
@@ -104,7 +104,7 @@ export class Sheet {
     Logger.log(`Started Sheet.fixSheet: ${this.name}`);
 
     this.trimSheet();
-    this.formatSheet()
+    this.formatSheet();
 
     Logger.log(`Finished Sheet.fixSheet: ${this.name}`);
   }
@@ -113,8 +113,13 @@ export class Sheet {
     Logger.log(`Started Sheet.formatHeader: ${this.name}`);
 
     let headerRange = this.headerRange;
-    headerRange.setFontWeight("bold");
     headerRange.setBackground("#f0f0f0");
+    headerRange.setFontWeight("bold");
+    headerRange.setNumberFormat("@");
+    headerRange.setHorizontalAlignment("center");
+    headerRange.setVerticalAlignment("middle");
+    headerRange.setWrap(true);
+    headerRange.setFontSize(12);
 
     Logger.log(`Finished Sheet.formatHeader: ${this.name}`);
   }
@@ -122,11 +127,12 @@ export class Sheet {
   formatSheet(): void {
     Logger.log(`Started Sheet.formatSheet: ${this.name}`);
 
-    this.dataRange.setFontSize(10);
+    this.dataRange.setBorder(true, true, true, true, false, false);
+    this.setFont();
+    this.dataRange.setFontWeight("normal");
     this.dataRange.setHorizontalAlignment("left");
     this.dataRange.setVerticalAlignment("top");
     this.dataRange.setWrap(true);
-    this.dataRange.setFontFamily("Arial");
 
     this.formatHeader();
 
@@ -136,8 +142,6 @@ export class Sheet {
   getAllValues(): any[][] {
     return this.dataRange.getValues();
   }
-
-
 
   getValue(range: string): any {
     return this.gasSheet.getRange(range).getValue();
@@ -252,16 +256,70 @@ export class Sheet {
     return isAccountSheetName(this.name);
   }
 
-  setColumnWidth(column: number, width: number): void {
-    this.gasSheet.setColumnWidth(column, width);
-  }
-
   setActiveRange(range: GoogleAppsScript.Spreadsheet.Range): void {
     this.gasSheet.setActiveRange(range);
   }
 
+  setBackground(a1range: string, background = "#FFFFFF"): void {
+    this.getRange(a1range).setBackground(background);
+  }
+
+  setDateValidation(a1range: string) {
+    const rule = SpreadsheetApp.newDataValidation()
+      .requireDate()
+      .setAllowInvalid(false)
+      .setHelpText("Please enter a valid date in DD/MM/YYYY format.")
+      .build();
+    this.getRange(a1range).setDataValidation(rule);
+  }
+
+  setFontWeightBold(...a1ranges: string[]): void {
+    a1ranges.forEach((a1range) => {
+      this.getRange(a1range).setFontWeight("bold");
+    });
+  }
+
+  /* Background colour can be cyan */
+  setFont(
+    fontFamily: string = "Arial",
+    fontSize: number = 10,
+    fontColor: string = "#000000"
+  ) {
+    this.dataRange
+      .setFontFamily(fontFamily)
+      .setFontSize(fontSize)
+      .setFontColor(fontColor);
+  }
+
+  setHorizontalAlignmentLeft(a1range: string) {
+    this.getRange(a1range).setHorizontalAlignment("left");
+  }
+
   setMeta(meta: { SHEET: { NAME: string } }): void {
     this.meta = meta;
+  }
+
+  setNumberFormat(a1range: string, format: string) {
+    this.getRange(a1range).setNumberFormat(format);
+  }
+
+  setNumberFormatAsUKCurrency(...a1ranges: string[]): void {
+    a1ranges.forEach((a1range) => {
+      this.setNumberFormat(a1range, "£#,##0.00");
+    });
+  }
+
+  /**
+   * Formats the given A1 cell ranges as dates (dd/MM/yyyy)
+   * and applies date validation to each.
+   *
+   * @param {...string} a1ranges - One or more A1 notation ranges (e.g. "A2:A10").
+   */
+  setNumberFormatAsDate(...a1ranges: string[]): void {
+    a1ranges.forEach((a1range) => {
+      this.setNumberFormat(a1range, "dd/MM/yyyy");
+      this.setDateValidation(a1range);
+    });
   }
 
   showColumns(start: number, num: number): void {

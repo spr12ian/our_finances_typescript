@@ -1,30 +1,31 @@
 /// <reference types="google-apps-script" />
 
 import type { Sheet } from "./Sheet";
-import { createSheet } from "./SheetFactory";
+import { Spreadsheet } from "./Spreadsheet";
 
 export class Dependencies {
-  private sheet: Sheet;
+  #allDependencies: any[][] | undefined;
+  private readonly sheet: Sheet;
   static get SHEET_NAME() {
     return "Dependencies";
   }
-  constructor() {
-    this.sheet = createSheet(Dependencies.SHEET_NAME);
+  constructor(private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()) {
+    this.sheet = this.spreadsheet.getSheet(Dependencies.SHEET_NAME);
   }
 
-  getAllDependencies() {
-    if (typeof this.allDependencies !== "undefined") {
+  get allDependencies(): any[][] {
+    if (typeof this.#allDependencies !== "undefined") {
       return this.allDependencies;
     }
 
     // Retrieve dependencies if not cached
-    let allDependencies = this.getSheet().getDataRange().getValues();
+    let allDependencies = this.sheet.dataRange.getValues();
 
     // Remove the first row (header or irrelevant row)
     allDependencies.shift();
 
     // Cache the result for future use
-    this.allDependencies = allDependencies;
+    this.#allDependencies = allDependencies;
 
     return allDependencies;
   }
@@ -33,10 +34,10 @@ export class Dependencies {
     return this.sheet.getSheetName();
   }
 
-  getSpreadsheetNameById(spreadsheetId) {
+  getSpreadsheetNameById(spreadsheetId:string) {
     try {
-      const spreadsheet = new Spreadsheet(spreadsheetId);
-      return spreadsheet.spreadsheetName;
+      const spreadsheet = Spreadsheet.openById(spreadsheetId);
+      return spreadsheet.name;
     } catch (error) {
       return null; // or handle it accordingly
     }
@@ -50,7 +51,7 @@ export class Dependencies {
    * Updates the spreadsheet names for all dependencies in the specified column.
    */
   updateAllDependencies() {
-    const allDependencies = this.getAllDependencies();
+    const allDependencies = this.allDependencies;
     const col = "B";
     const sheet = this.getSheet();
     const len = allDependencies.length;

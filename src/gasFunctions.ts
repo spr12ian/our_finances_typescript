@@ -35,6 +35,10 @@ export function GAS_categories() {
   new OurFinances().goToSheet("Categories");
 }
 
+export function GAS_convertCurrentColumnToUppercase() {
+  new OurFinances().convertCurrentColumnToUppercase();
+}
+
 export function GAS_dailySorts() {
   new OurFinances().dailySorts();
 }

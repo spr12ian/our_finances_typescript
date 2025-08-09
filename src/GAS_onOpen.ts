@@ -31,24 +31,6 @@ export function checkDependencies() {
   dependencies.updateAllDependencies();
 }
 
-export function convertCurrentColumnToUppercase() {
-  const sheet = gasSpreadsheetApp.getActiveSheet();
-  const activeRange = sheet.getActiveRange();
-  const START_ROW = 2;
-  const column = activeRange.getColumn();
-
-  const lastRow = sheet.getLastRow();
-  const numRows = lastRow + 1 - START_ROW;
-
-  const range = sheet.getRange(START_ROW, column, numRows, 1);
-  const values = range.getValues();
-  const uppercasedValues = values.map((row) => [
-    row[0].toString().toUpperCase(),
-  ]);
-
-  range.setValues(uppercasedValues);
-}
-
 function dailyUpdate() {
   const bankAccounts = new BankAccounts();
   bankAccounts.showDaily();

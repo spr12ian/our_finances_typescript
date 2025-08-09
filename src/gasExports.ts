@@ -5,6 +5,7 @@ export { GAS_budget } from "./gasFunctions";
 export { GAS_budgetAdHocTransactions } from "./gasFunctions";
 export { GAS_budgetAnnualTransactions } from "./gasFunctions";
 export { GAS_categories } from "./gasFunctions";
+export { GAS_convertCurrentColumnToUppercase } from "./gasFunctions";
 export { GAS_dailySorts } from "./gasFunctions";
 export { GAS_exportFormulasToDrive } from "./gasFunctions";
 export { GAS_fixSheet } from "./gasFunctions";

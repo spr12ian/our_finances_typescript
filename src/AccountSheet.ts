@@ -68,6 +68,8 @@ export class AccountSheet {
     this.fixHeaders();
     this.updateBalanceValues();
     this.formatSheet();
+    const lastRow = this.sheet.getTrueDataBounds().lastRow;
+    this.sheet.setActiveRange(this.sheet.raw.getRange(lastRow, 1));
     this.sheet.trimSheet();
   }
 

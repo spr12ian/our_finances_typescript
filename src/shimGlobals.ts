@@ -31,6 +31,7 @@ export const shimGlobals = [
   "goToSheet_SVIIRF",
   "helloWorld",
   "monthlyUpdate",
+  "onChange",
   "onOpen",
   "sendDailyEmail",
   "showAllAccounts",

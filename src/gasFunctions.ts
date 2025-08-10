@@ -135,6 +135,10 @@ export function GAS_monthlyUpdate() {
   new OurFinances().bankAccounts.showMonthly();
 }
 
+export function GAS_onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
+  new OurFinances().onChange(e);
+}
+
 export function GAS_onOpen(): void {
   new OurFinances().onOpen();
 }

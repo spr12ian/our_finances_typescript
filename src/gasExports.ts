@@ -30,6 +30,7 @@ export { GAS_goToSheet_SVIGBL } from "./gasFunctions";
 export { GAS_goToSheet_SVIIRF } from "./gasFunctions";
 export { GAS_helloWorld } from "./gasFunctions";
 export { GAS_monthlyUpdate } from "./gasFunctions";
+export { GAS_onChange } from "./gasFunctions";
 export { GAS_onOpen } from "./gasFunctions";
 export { GAS_sendDailyEmail } from "./gasFunctions";
 export { GAS_showAllAccounts } from "./gasFunctions";

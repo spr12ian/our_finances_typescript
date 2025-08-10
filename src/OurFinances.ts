@@ -337,6 +337,15 @@ export class OurFinances {
     }
   }
 
+  onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
+    Logger.log(`Started OurFinances.onChange`);
+    if (e.changeType === 'REMOVE_ROW') {
+      Logger.log(`Row removed`);
+      this.fixSheet();
+    }
+    Logger.log(`Finished OurFinances.onChange`);
+  }
+
   onOpen(): void {
     try {
       const ui = SpreadsheetApp.getUi();

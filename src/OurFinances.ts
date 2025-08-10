@@ -337,10 +337,12 @@ export class OurFinances {
 
   onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
     Logger.log(`Started OurFinances.onChange`);
+    Logger.log(`Change type: ${e.changeType}`);
     if (e.changeType === "REMOVE_ROW") {
       Logger.log(`Row removed`);
       this.updateBalanceValues();
     }
+    
     Logger.log(`Finished OurFinances.onChange`);
   }
 

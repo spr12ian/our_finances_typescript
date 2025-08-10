@@ -23,6 +23,7 @@ import { getToday } from "./DateUtils";
 import { Dependencies } from "./Dependencies";
 import { outputToDrive } from "./driveFunctions";
 import { sendMeEmail } from "./emailFunctions";
+import { intersectsWatchedCols } from "./intersectsWatchedCols";
 import { Spreadsheet } from "./Spreadsheet";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
 import { TransactionCategories } from "./TransactionCategories";
@@ -48,32 +49,29 @@ export class OurFinances {
   #budgetMonthlyTransactions?: BudgetMonthlyTransactions;
   #budgetWeeklyTransactions?: BudgetWeeklyTransactions;
   #checkFixedAmounts?: CheckFixedAmounts;
+  #spreadsheet: Spreadsheet = Spreadsheet.getActive()
   #spreadsheetSummary?: SpreadsheetSummary;
   #transactionCategories?: TransactionCategories;
   #transactions?: Transactions;
   #howManyDaysAhead?: number;
 
-  constructor(
-    private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
-  ) {}
-
   get accountBalances() {
     if (typeof this.#accountBalances === "undefined") {
-      this.#accountBalances = new AccountBalances(this.spreadsheet);
+      this.#accountBalances = new AccountBalances(this.#spreadsheet);
     }
     return this.#accountBalances;
   }
 
   get bankAccounts() {
     if (typeof this.#bankAccounts === "undefined") {
-      this.#bankAccounts = new BankAccounts(this.spreadsheet);
+      this.#bankAccounts = new BankAccounts(this.#spreadsheet);
     }
     return this.#bankAccounts;
   }
 
   get bankDebitsDue() {
     if (typeof this.#bankDebitsDue === "undefined") {
-      this.#bankDebitsDue = new BankDebitsDue(this.spreadsheet);
+      this.#bankDebitsDue = new BankDebitsDue(this.#spreadsheet);
     }
     return this.#bankDebitsDue;
   }
@@ -81,7 +79,7 @@ export class OurFinances {
   get budgetAdhocTransactions() {
     if (typeof this.#budgetAdhocTransactions === "undefined") {
       this.#budgetAdhocTransactions = new BudgetAdHocTransactions(
-        this.spreadsheet
+        this.#spreadsheet
       );
     }
     return this.#budgetAdhocTransactions;
@@ -90,7 +88,7 @@ export class OurFinances {
   get budgetAnnualTransactions() {
     if (typeof this.#budgetAnnualTransactions === "undefined") {
       this.#budgetAnnualTransactions = new BudgetAnnualTransactions(
-        this.spreadsheet
+        this.#spreadsheet
       );
     }
     return this.#budgetAnnualTransactions;
@@ -99,7 +97,7 @@ export class OurFinances {
   get budgetMonthlyTransactions() {
     if (typeof this.#budgetMonthlyTransactions === "undefined") {
       this.#budgetMonthlyTransactions = new BudgetMonthlyTransactions(
-        this.spreadsheet
+        this.#spreadsheet
       );
     }
     return this.#budgetMonthlyTransactions;
@@ -108,7 +106,7 @@ export class OurFinances {
   get budgetWeeklyTransactions() {
     if (typeof this.#budgetWeeklyTransactions === "undefined") {
       this.#budgetWeeklyTransactions = new BudgetWeeklyTransactions(
-        this.spreadsheet
+        this.#spreadsheet
       );
     }
     return this.#budgetWeeklyTransactions;
@@ -116,14 +114,14 @@ export class OurFinances {
 
   get checkFixedAmounts() {
     if (typeof this.#checkFixedAmounts === "undefined") {
-      this.#checkFixedAmounts = new CheckFixedAmounts(this.spreadsheet);
+      this.#checkFixedAmounts = new CheckFixedAmounts(this.#spreadsheet);
     }
     return this.#checkFixedAmounts;
   }
 
   get dependencies() {
     if (typeof this.#dependencies === "undefined") {
-      this.#dependencies = new Dependencies(this.spreadsheet);
+      this.#dependencies = new Dependencies(this.#spreadsheet);
     }
     return this.#dependencies;
   }
@@ -141,21 +139,21 @@ export class OurFinances {
 
   get spreadsheetSummary() {
     if (typeof this.#spreadsheetSummary === "undefined") {
-      this.#spreadsheetSummary = new SpreadsheetSummary(this.spreadsheet);
+      this.#spreadsheetSummary = new SpreadsheetSummary(this.#spreadsheet);
     }
     return this.#spreadsheetSummary;
   }
 
   get transactionCategories() {
     if (typeof this.#transactionCategories === "undefined") {
-      this.#transactionCategories = new TransactionCategories(this.spreadsheet);
+      this.#transactionCategories = new TransactionCategories(this.#spreadsheet);
     }
     return this.#transactionCategories;
   }
 
   get transactions() {
     if (typeof this.#transactions === "undefined") {
-      this.#transactions = new Transactions(this.spreadsheet);
+      this.#transactions = new Transactions(this.#spreadsheet);
     }
     return this.#transactions;
   }
@@ -173,11 +171,11 @@ export class OurFinances {
   }
 
   get url(): string {
-    return this.spreadsheet.url;
+    return this.#spreadsheet.url;
   }
 
   applyDescriptionReplacements() {
-    const activeSheet = this.spreadsheet.activeSheet;
+    const activeSheet = this.#spreadsheet.activeSheet;
     const accountSheet = new AccountSheet(activeSheet);
     if (accountSheet) {
       accountSheet.applyDescriptionReplacements();
@@ -185,7 +183,7 @@ export class OurFinances {
   }
 
   convertCurrentColumnToUppercase() {
-    const gasSheet = this.spreadsheet.activeSheet.raw;
+    const gasSheet = this.#spreadsheet.activeSheet.raw;
     const activeRange = gasSheet.getActiveRange();
     if (!activeRange) {
       Logger.log("No active range selected.");
@@ -221,7 +219,7 @@ export class OurFinances {
       MetaTransactionCategories.SHEET.NAME,
     ];
     sheetsToSort.forEach((sheetName) => {
-      const sheet = this.spreadsheet.getSheet(sheetName);
+      const sheet = this.#spreadsheet.getSheet(sheetName);
       if (sheet) {
         sheet.sortByFirstColumnOmittingHeader();
       }
@@ -268,7 +266,7 @@ export class OurFinances {
   fixAccountSheet() {
     Logger.log(`Started OurFinances.fixAccountSheet`);
 
-    const activeSheet = this.spreadsheet.activeSheet;
+    const activeSheet = this.#spreadsheet.activeSheet;
     if (!activeSheet) {
       Logger.log("No active sheet found.");
       return;
@@ -283,7 +281,7 @@ export class OurFinances {
   fixSheet() {
     Logger.log(`Started OurFinances.fixSheet`);
 
-    const activeSheet = this.spreadsheet.activeSheet;
+    const activeSheet = this.#spreadsheet.activeSheet;
     if (!activeSheet) {
       Logger.log("No active sheet found.");
       return;
@@ -318,7 +316,7 @@ export class OurFinances {
   }
 
   formatAccountSheet() {
-    const activeSheet = this.spreadsheet.activeSheet;
+    const activeSheet = this.#spreadsheet.activeSheet;
 
     if (!activeSheet) {
       return;
@@ -329,7 +327,7 @@ export class OurFinances {
   }
 
   goToSheet(sheetName: string) {
-    const sheet = this.spreadsheet.getSheet(sheetName);
+    const sheet = this.#spreadsheet.getSheet(sheetName);
 
     // Check if the sheet exists before trying to activate it.
     if (sheet) {
@@ -339,11 +337,36 @@ export class OurFinances {
 
   onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
     Logger.log(`Started OurFinances.onChange`);
-    if (e.changeType === 'REMOVE_ROW') {
+    if (e.changeType === "REMOVE_ROW") {
       Logger.log(`Row removed`);
-      this.fixSheet();
+      this.updateBalanceValues();
     }
     Logger.log(`Finished OurFinances.onChange`);
+  }
+
+  onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
+    Logger.log(`Started OurFinances.onEdit`);
+    const sheetName = e.source.getActiveSheet().getName();
+    Logger.log(`Edit made in sheet: ${sheetName}`);
+    if (sheetName.startsWith("_")) {
+      Logger.log(`Sheet ${sheetName} is an account sheet.`);
+      const range = e.range;
+      if (range) {
+        Logger.log(`Edit made in range: ${range.getA1Notation()}`);
+        const WATCHED_COLS = new Set<number>([3, 4, 8]); // Credit, Debit, or Balance
+
+        if (!intersectsWatchedCols(range, WATCHED_COLS)) return;
+        // Single-cell edit: we can test "actually changed"
+        if (range.getNumRows() === 1 && range.getNumColumns() === 1) {
+          // Note: clearing a cell -> e.value === undefined, e.oldValue is the previous value
+          if (e.value === e.oldValue) return; // no-op edit
+          this.updateBalanceValues();
+          return;
+        }
+      }
+    }
+
+    Logger.log(`Finished OurFinances.onEdit`);
   }
 
   onOpen(): void {
@@ -399,23 +422,41 @@ export class OurFinances {
   }
 
   sortSheets() {
-    this.spreadsheet.sortSheets();
+    this.#spreadsheet.sortSheets();
   }
 
   trimAllSheets() {
-    this.spreadsheet.sheets.forEach((sheet) => {
+    this.#spreadsheet.sheets.forEach((sheet) => {
       sheet.trimSheet();
     });
     Logger.log("All sheets trimmed.");
   }
 
   trimSheet() {
-    this.spreadsheet.activeSheet.trimSheet();
+    this.#spreadsheet.activeSheet.trimSheet();
   }
 
   updateAllDependencies() {
-    const dependencies = new Dependencies(this.spreadsheet);
+    const dependencies = new Dependencies(this.#spreadsheet);
     dependencies.updateAllDependencies();
+  }
+
+  updateBalanceValues() {
+    Logger.log(`Started OurFinances.updateBalanceValues`);
+
+    const activeSheet = this.#spreadsheet.activeSheet;
+    if (!activeSheet) {
+      Logger.log("No active sheet found.");
+      return;
+    }
+
+    if (activeSheet.name.startsWith("_")) {
+      Logger.log(`Sheet ${activeSheet.name} is an account sheet.`);
+      const accountSheet = new AccountSheet(activeSheet);
+      accountSheet.updateBalanceValues();
+    }
+
+    Logger.log(`Finished OurFinances.updateBalanceValues`);
   }
 
   updateSpreadsheetSummary() {

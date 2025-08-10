@@ -79,6 +79,12 @@ export const MetaBMONZO = {
   SHEET: { NAME: "BMONZO" },
 };
 
+export const MetaBalanceSheet = {
+  SHEET: {
+    NAME: "Balance sheet",
+  },
+};
+
 export const MetaBankAccounts = {
   COLUMNS: {
     KEY: 1,
@@ -139,6 +145,23 @@ export const MetaBudgetMonthlyTransactions = {
   },
   SHEET: {
     NAME: "Budget monthly transactions",
+  },
+};
+
+export const MetaBudgetPredictedSpend = {
+  COLUMNS: {
+    AD_HOC: 8,
+    ANNUAL: 7,
+    BALANCE: 2,
+    CHANGE: 3,
+    DATE: 1,
+    DAY: 0,
+    FOUR_WEEKLY: 5,
+    MONTHLY: 6,
+    WEEKLY: 4,
+  },
+  SHEET: {
+    NAME: "Budget predicted spend",
   },
 };
 

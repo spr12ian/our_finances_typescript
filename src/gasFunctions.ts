@@ -1,7 +1,12 @@
+import { OurFinances } from "./OurFinances";
 import {
+  MetaBalanceSheet,
   MetaBudget,
   MetaBudgetAdHocTransactions,
   MetaBudgetAnnualTransactions,
+  MetaBudgetMonthlyTransactions,
+  MetaBudgetPredictedSpend,
+  MetaBudgetWeeklyTransactions,
   MetaCategories,
   MetaCategoryClash,
   MetaHMRC_B,
@@ -12,7 +17,6 @@ import {
   MetaUncategorisedByDate,
 } from "./constants";
 import { logTime } from "./logTime";
-import { OurFinances } from "./OurFinances";
 import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
 
 export function GAS_applyDescriptionReplacements() {
@@ -25,10 +29,6 @@ export function GAS_budget() {
 
 export function GAS_budgetAdHocTransactions() {
   new OurFinances().goToSheet(MetaBudgetAdHocTransactions.SHEET.NAME);
-}
-
-export function GAS_budgetAnnualTransactions() {
-  new OurFinances().goToSheet(MetaBudgetAnnualTransactions.SHEET.NAME);
 }
 
 export function GAS_categories() {
@@ -57,6 +57,26 @@ export function GAS_formatAccountSheet() {
 
 export function GAS_goToSheet_AHALIF() {
   new OurFinances().goToSheet("_AHALIF");
+}
+
+export function GAS_balanceSheet() {
+  new OurFinances().goToSheet(MetaBalanceSheet.SHEET.NAME);
+}
+
+export function GAS_budgetAnnualTransactions() {
+  new OurFinances().goToSheet(MetaBudgetAnnualTransactions.SHEET.NAME);
+}
+
+export function GAS_budgetMonthlyTransactions() {
+  new OurFinances().goToSheet(MetaBudgetMonthlyTransactions.SHEET.NAME);
+}
+
+export function GAS_budgetPredictedSpend() {
+  new OurFinances().goToSheet(MetaBudgetPredictedSpend.SHEET.NAME);
+}
+
+export function GAS_budgetWeeklyTransactions() {
+  new OurFinances().goToSheet(MetaBudgetWeeklyTransactions.SHEET.NAME);
 }
 
 export function GAS_goToSheetCategories() {
@@ -137,6 +157,10 @@ export function GAS_monthlyUpdate() {
 
 export function GAS_onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
   new OurFinances().onChange(e);
+}
+
+export function GAS_onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
+  new OurFinances().onEdit(e);
 }
 
 export function GAS_onOpen(): void {

@@ -89,7 +89,7 @@ function findAllNamedRangeUsage() {
   });
 }
 
-export function findUsageByNamedRange(namedRange:string) {
+export function findUsageByNamedRange(namedRange: string) {
   const sheets = Spreadsheet.getActive().sheets;
   const rangeUsage = [];
 

@@ -1,32 +1,7 @@
 /// <reference types="google-apps-script" />
-import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
 import { OurFinances } from "./OurFinances";
-import type { Sheet } from "./Sheet";
-import { SpreadsheetSummary } from "./SpreadsheetSummary";
 
 // Function declarations
-
-export function balanceSheet() {
-  goToSheet("Balance sheet");
-}
-
-export function budgetAnnualTransactions() {
-  goToSheet(BudgetAnnualTransactions.SHEET.NAME);
-}
-
-export function budgetMonthlyTransactions() {
-  goToSheet("Budget monthly transactions");
-}
-
-export function budgetPredictedSpend() {
-  goToSheet("Budget predicted spend");
-}
-
-export function budgetWeeklyTransactions() {
-  goToSheet("Budget weekly transactions");
-}
-
-
 
 function dailyUpdate() {
   const bankAccounts = new BankAccounts();
@@ -76,8 +51,6 @@ function findAllNamedRangeUsage() {
 export function getHMRCTotalByYear(category, year) {
   return category + "-" + year;
 }
-
-
 
 function openAccounts() {
   const ourFinances = new OurFinances();

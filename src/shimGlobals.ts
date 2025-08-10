@@ -2,9 +2,13 @@
 
 export const shimGlobals = [
   "applyDescriptionReplacements",
+  "balanceSheet",
   "budget",
   "budgetAdHocTransactions",
   "budgetAnnualTransactions",
+  "budgetMonthlyTransactions",
+  "budgetPredictedSpend",
+  "budgetWeeklyTransactions",
   "categories",
   "convertCurrentColumnToUppercase",
   "dailySorts",
@@ -32,6 +36,7 @@ export const shimGlobals = [
   "helloWorld",
   "monthlyUpdate",
   "onChange",
+  "onEdit",
   "onOpen",
   "sendDailyEmail",
   "showAllAccounts",

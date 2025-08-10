@@ -54,41 +54,6 @@ export function examineObject(object, name = "anonymous value") {
   }
 }
 
-function findAllNamedRangeUsage() {
-  const sheets = activeSpreadsheet.getSheets();
-  const namedRanges = activeSpreadsheet.getNamedRanges();
-  const rangeUsage = [];
-
-  if (!namedRanges.length) {
-    return;
-  }
-
-  // Extract the named range names
-  const namedRangeNames = namedRanges.map((range) => range.getName());
-
-  sheets.forEach((sheet) => {
-    const formulas = sheet.getDataRange().getFormulas();
-
-    formulas.forEach((rowFormulas, rowIndex) => {
-      rowFormulas.forEach((formula, colIndex) => {
-        // Only track cells containing named ranges
-        if (formula) {
-          namedRangeNames.forEach((name) => {
-            if (formula.includes(name)) {
-              const cellRef = sheet
-                .getRange(rowIndex + 1, colIndex)
-                .getA1Notation();
-              rangeUsage.push(
-                `Sheet: ${sheet.getName()} - Cell: ${cellRef} - Name: ${name}`
-              );
-            }
-          });
-        }
-      });
-    });
-  });
-}
-
 export function findUsageByNamedRange(namedRange: string) {
   const sheets = Spreadsheet.getActive().sheets;
   const rangeUsage = [];

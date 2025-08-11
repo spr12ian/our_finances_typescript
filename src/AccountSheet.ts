@@ -65,8 +65,8 @@ export class AccountSheet {
   }
 
   fixSheet() {
-    this.fixHeaders();
     this.updateBalanceValues();
+    this.fixHeaders();
     this.formatSheet();
     const lastRow = this.sheet.getTrueDataBounds().lastRow;
     this.sheet.setActiveRange(this.sheet.raw.getRange(lastRow, 1));
@@ -74,18 +74,25 @@ export class AccountSheet {
   }
 
   formatSheet() {
+    const sheet = this.sheet;
     try {
-      this.sheet.formatSheet();
+      sheet.formatSheet();
       this.validateSheet();
       this.setSheetFormatting();
       this.addDefaultNotes();
-      if (this.sheet.name !== "_SVI2TJ" && this.sheet.name !== "_SVIIRF") {
+      if (sheet.name !== "_SVI2TJ" && sheet.name !== "_SVIIRF") {
         this.convertColumnToUppercase(Meta.COLUMNS.DESCRIPTION);
         this.convertColumnToUppercase(Meta.COLUMNS.NOTE);
       }
-      this.sheet.raw.setColumnWidth(Meta.COLUMNS.DESCRIPTION, 500);
-      this.sheet.raw.setColumnWidth(Meta.COLUMNS.NOTE, 170);
-      this.sheet.raw.setColumnWidth(Meta.COLUMNS.COUNTERPARTY, 99);
+      sheet.raw
+        .autoResizeColumn(Meta.COLUMNS.DATE)
+        .setColumnWidth(Meta.COLUMNS.DESCRIPTION, 500)
+        .autoResizeColumn(Meta.COLUMNS.CREDIT)
+        .autoResizeColumn(Meta.COLUMNS.DEBIT)
+        .setColumnWidth(Meta.COLUMNS.NOTE, 170)
+        .setColumnWidth(Meta.COLUMNS.COUNTERPARTY, 97)
+        .autoResizeColumn(Meta.COLUMNS.COUNTERPARTY_DATE)
+        .autoResizeColumn(Meta.COLUMNS.BALANCE);
     } catch (error) {
       throw error;
     }

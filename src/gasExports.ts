@@ -44,6 +44,7 @@ export { GAS_sortSheets } from "./gasFunctions";
 export { GAS_trimAllSheets } from "./gasFunctions";
 export { GAS_trimSheet } from "./gasFunctions";
 export { GAS_updateAllDependencies } from "./gasFunctions";
+export { GAS_updateBalanceValues } from "./gasFunctions";
 export { GAS_updateSpreadsheetSummary } from "./gasFunctions";
 export { GAS_updateTransactionCategories } from "./gasFunctions";
 export { GAS_updateTransactions } from "./gasFunctions";

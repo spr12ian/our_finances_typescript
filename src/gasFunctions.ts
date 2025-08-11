@@ -205,6 +205,10 @@ export function GAS_updateAllDependencies() {
   new OurFinances().updateAllDependencies();
 }
 
+export function GAS_updateBalanceValues() {
+  new OurFinances().updateBalanceValues();
+}
+
 export function GAS_updateSpreadsheetSummary() {
   new OurFinances().updateSpreadsheetSummary();
 }

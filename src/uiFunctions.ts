@@ -47,7 +47,7 @@ export function buildSectionsMenu_(ui: GoogleAppsScript.Base.Ui) {
     .addSubMenu(
       ui
         .createMenu("Accounts")
-        .addItem("Update 'Transactions'", "updateTransactions")
+        .addItem("Update balance values", "updateBalanceValues")
         .addItem(
           "Not in transaction categories",
           "goToSheetNotInTransactionCategories"
@@ -58,6 +58,7 @@ export function buildSectionsMenu_(ui: GoogleAppsScript.Base.Ui) {
         .addItem("Transactions by date", "goToSheetTransactionsByDate")
         .addItem("Transaction categories", "goToSheetTransactionCategories")
         .addItem("Format account sheet", "formatAccountSheet")
+        .addItem("Update 'Transactions'", "updateTransactions")
     )
     .addSeparator()
     .addSubMenu(

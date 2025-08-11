@@ -49,11 +49,15 @@ export class OurFinances {
   #budgetMonthlyTransactions?: BudgetMonthlyTransactions;
   #budgetWeeklyTransactions?: BudgetWeeklyTransactions;
   #checkFixedAmounts?: CheckFixedAmounts;
-  #spreadsheet: Spreadsheet = Spreadsheet.getActive()
+  readonly #spreadsheet: Spreadsheet;
   #spreadsheetSummary?: SpreadsheetSummary;
   #transactionCategories?: TransactionCategories;
   #transactions?: Transactions;
   #howManyDaysAhead?: number;
+
+  constructor(spreadsheet: Spreadsheet) {
+    this.#spreadsheet = spreadsheet;
+  }
 
   get accountBalances() {
     if (typeof this.#accountBalances === "undefined") {
@@ -146,7 +150,9 @@ export class OurFinances {
 
   get transactionCategories() {
     if (typeof this.#transactionCategories === "undefined") {
-      this.#transactionCategories = new TransactionCategories(this.#spreadsheet);
+      this.#transactionCategories = new TransactionCategories(
+        this.#spreadsheet
+      );
     }
     return this.#transactionCategories;
   }
@@ -342,7 +348,7 @@ export class OurFinances {
       Logger.log(`Row removed`);
       this.updateBalanceValues();
     }
-    
+
     Logger.log(`Finished OurFinances.onChange`);
   }
 

@@ -20,7 +20,7 @@ export class BankAccounts {
     // Clear any existing filters
     this.removeFilter();
 
-    const filter = sheet.getDataRange().createFilter();
+    const filter = sheet.dataRange.createFilter();
 
     filters.forEach((item) => {
       const criteria =

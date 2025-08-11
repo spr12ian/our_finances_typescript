@@ -1,58 +1,11 @@
 /// <reference types="google-apps-script" />
 
+import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
 import { OurFinances } from "./OurFinances";
 import { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 
 // Function declarations
-
-function cloneDate(date) {
-  return new Date(date.getTime());
-}
-
-function dailyUpdate() {
-  const bankAccounts = new BankAccounts();
-  bankAccounts.showDaily();
-}
-
-export function dynamicQuery(rangeString, queryString) {
-  try {
-    // Import QUERY function from DataTable
-    const dataTable = Charts.newDataTable()
-      .addColumn("Column", "string")
-      .build();
-
-    rangeString = rangeString.trim();
-    queryString = queryString.trim();
-
-    const result = dataTable.applyQuery(rangeString + "," + queryString);
-    return result.toArray();
-  } catch (error) {
-    console.error("Error in dynamicQuery:", error);
-    throw error;
-  }
-}
-
-function emailUpcomingPayments() {
-  const ourFinances = new OurFinances();
-  ourFinances.emailUpcomingPayments();
-}
-
-export function examineObject(object, name = "anonymous value") {
-  if (typeof object === "object" && object !== null) {
-    const keys = Object.keys(object);
-
-    const ownPropertyNames = Object.getOwnPropertyNames(object);
-
-    // Get own properties
-    const ownDescriptors = Object.getOwnPropertyDescriptors(object);
-
-    // Get prototype properties (including greet)
-    const prototypeDescriptors = Object.getOwnPropertyDescriptors(
-      Object.getPrototypeOf(object)
-    );
-  }
-}
 
 export function findUsageByNamedRange(namedRange: string) {
   const sheets = Spreadsheet.getActive().sheets;
@@ -173,21 +126,17 @@ export function isSingleCell(range: GoogleAppsScript.Spreadsheet.Range) {
   return range.getNumColumns() === 1 && range.getNumRows() === 1;
 }
 
-export function openAccounts() {
-  const ourFinances = new OurFinances();
-  ourFinances.bankAccounts.showOpenAccounts();
-}
-
 export function setLastUpdatedOnAccountBalanceChange(sheet: Sheet) {
   if (sheet.isAccountSheet()) {
     const key = sheet.getSheetName().slice(1);
-    const bankAccounts = new OurFinances().bankAccounts;
+    const spreadsheet = getFinancesSpreadsheet();
+    const bankAccounts = new OurFinances(spreadsheet).bankAccounts;
 
     bankAccounts.updateLastUpdatedByKey(key);
   }
 }
 
-export function toValidFunctionName(str: string) {
+export function toValidFunctionName(str: string): string {
   // Remove non-alphanumeric characters, except for letters and digits, replace them with underscores
   let validName = str.trim().replace(/[^a-zA-Z0-9]/g, "_");
 

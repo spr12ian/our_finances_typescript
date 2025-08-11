@@ -1,6 +1,10 @@
 import { LOCALE } from "./constants";
 import { getOrdinal } from "./NumberUtils";
 
+export function cloneDate(date: Date) {
+  return new Date(date.getTime());
+}
+
 export function getDayName(date: Date): string {
   return date.toLocaleDateString(LOCALE, { weekday: "long" });
 }

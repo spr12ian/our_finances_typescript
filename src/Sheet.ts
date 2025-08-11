@@ -78,6 +78,7 @@ export class Sheet {
 
   activate(): void {
     this.gasSheet.activate();
+    SpreadsheetApp.flush(); // Ensure the sheet is activated before further operations
   }
 
   clear(): void {

@@ -9,7 +9,7 @@ export class BankAccounts {
   private readonly sheet: Sheet;
 
   constructor(
-    private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
+    private readonly spreadsheet: Spreadsheet
   ) {
     this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
   }
@@ -68,14 +68,20 @@ export class BankAccounts {
   }
 
   showAll() {
-    const sheet = this.sheet;
+    const gasSpreadsheet = this.spreadsheet.raw;
+    const gasSheet = this.sheet.raw;
 
     this.removeFilter();
-    sheet.showColumns(1, sheet.raw.getLastColumn());
-    sheet.activate();
+
+    gasSheet.showSheet();
+    gasSpreadsheet.setActiveSheet(gasSheet, true);
+
+    gasSheet.showColumns(1, gasSheet.getLastColumn());
+    SpreadsheetApp.flush();
   }
 
   showDaily() {
+    Logger.log("Started BankAccounts.showDaily");
     this.showAll();
     const colCheckBalanceFrequency = Meta.COLUMNS.CHECK_BALANCE_FREQUENCY;
     const colOwnerCode = Meta.COLUMNS.OWNER_CODE;
@@ -93,6 +99,7 @@ export class BankAccounts {
 
     const columnsToHide = ["C:L", "N:O", "Q:Q", "S:AN", "AQ:AQ"];
     this.hideColumns(columnsToHide);
+    Logger.log("Finished BankAccounts.showDaily");
   }
 
   showMonthly() {

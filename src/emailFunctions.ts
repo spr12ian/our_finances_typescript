@@ -1,4 +1,5 @@
 import { Spreadsheet } from "./Spreadsheet";
+
 export function getMyEmailAddress() {
   // Use optional chaining to safely access the email address
   const myEmailAddress = getPrivateData()?.["MY_EMAIL_ADDRESS"];
@@ -12,28 +13,30 @@ export function getMyEmailAddress() {
   }
 }
 
-function getPrivateData() {
+function getPrivateData(): Record<string, string> | undefined {
   const privateDataId = "1hxcINN1seSzn-sLPI25KmV9t4kxLvZlievc0X3EgMhs";
-  const spreadsheet = Spreadsheet.openById(privateDataId);
+  const spreadsheet: Spreadsheet | null = Spreadsheet.openById(privateDataId);
 
   if (!spreadsheet) {
     return;
   }
 
-  // Get data from sheet without header row
-  const values = spreadsheet.raw.getDataRange().getValues().slice(1);
+  // Get all rows except the header
+  const values: unknown[][] = spreadsheet.raw
+    .getDataRange()
+    .getValues()
+    .slice(1);
 
   if (values.length === 0) {
     return;
   }
 
-  let keyValuePairs = {};
+  const keyValuePairs: Record<string, string> = {};
 
-  values.forEach(([key, value]) => {
+  values.forEach((row) => {
+    const [key, value] = row as [string, string];
     if (key && value) {
-      if (key && value) {
-        keyValuePairs[key] = value; // Store the key-value pair in the object
-      }
+      keyValuePairs[key] = value;
     }
   });
 
@@ -53,7 +56,10 @@ export function sendMeEmail(
   subject: string,
   emailBody: string,
   options: GoogleAppsScript.Gmail.GmailAdvancedOptions = {}
-) {
+): void {
   const body = `${subject}\n\n${emailBody}`;
-  return sendEmail(getMyEmailAddress(), subject, body, options);
+  const myEmailAddress = getMyEmailAddress();
+  if (myEmailAddress) {
+    sendEmail(myEmailAddress, subject, body, options);
+  }
 }

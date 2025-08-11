@@ -37,6 +37,7 @@ export { GAS_monthlyUpdate } from "./gasFunctions";
 export { GAS_onChange } from "./gasFunctions";
 export { GAS_onEdit } from "./gasFunctions";
 export { GAS_onOpen } from "./gasFunctions";
+export { GAS_saveContainerIdOnce } from "./gasFunctions";
 export { GAS_sendDailyEmail } from "./gasFunctions";
 export { GAS_showAllAccounts } from "./gasFunctions";
 export { GAS_sortSheets } from "./gasFunctions";

@@ -2,12 +2,11 @@
   "compilerOptions": {
     "isolatedModules": true,
     "lib": ["ES2021", "DOM", "DOM.Iterable"],
-    "module": "ES2020",
     "moduleResolution": "Node",
     "noUnusedParameters": true,
     "outDir": "build",
     "rootDir": "../src",
-    "target": "ES2021",
+    "target": "ES2019",
     "types": ["google-apps-script"],
     "useDefineForClassFields": false
   },

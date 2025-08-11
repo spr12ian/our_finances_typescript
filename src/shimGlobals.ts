@@ -38,6 +38,7 @@ export const shimGlobals = [
   "onChange",
   "onEdit",
   "onOpen",
+  "saveContainerIdOnce",
   "sendDailyEmail",
   "showAllAccounts",
   "sortSheets",

@@ -19,20 +19,32 @@ export class Spreadsheet {
 
   /** Static factory: open by ID */
   static openById(id: string): Spreadsheet {
+    Logger.log(`Opening spreadsheet by ID: ${id}`);
+    if (!id) throw new Error("Spreadsheet ID is required");
+    if (typeof id !== "string") {
+      throw new Error("Spreadsheet ID must be a string");
+    }
     const ss = SpreadsheetApp.openById(id);
 
     if (!ss) throw new Error("Unable to obtain a spreadsheet instance");
 
-    return new Spreadsheet(ss);
+    const spreadsheet = new Spreadsheet(ss);
+
+    Logger.log(`Opened spreadsheet: ${ss.getName()} (ID: ${id})`);
+    return spreadsheet;
   }
 
   /** Static factory: open active spreadsheet */
   static getActive(): Spreadsheet {
+    Logger.log("Getting active spreadsheet");
     const ss = SpreadsheetApp.getActiveSpreadsheet();
 
     if (!ss) throw new Error("Unable to obtain a spreadsheet instance");
 
-    return new Spreadsheet(ss);
+    const spreadsheet = new Spreadsheet(ss);
+
+    Logger.log(`Opened spreadsheet: ${ss.getName()} (ID: ${ss.getId()})`);
+    return spreadsheet;
   }
 
   // ─── Metadata ────────────────────────────────────────────────

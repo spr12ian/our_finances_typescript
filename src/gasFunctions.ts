@@ -18,9 +18,14 @@ import {
 } from "./constants";
 import { logTime } from "./logTime";
 import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
+import { withReentrancy } from "./withReentrancy";
 
 export function GAS_applyDescriptionReplacements() {
   new OurFinances().applyDescriptionReplacements();
+}
+
+export function GAS_balanceSheet() {
+  new OurFinances().goToSheet(MetaBalanceSheet.SHEET.NAME);
 }
 
 export function GAS_budget() {
@@ -29,38 +34,6 @@ export function GAS_budget() {
 
 export function GAS_budgetAdHocTransactions() {
   new OurFinances().goToSheet(MetaBudgetAdHocTransactions.SHEET.NAME);
-}
-
-export function GAS_categories() {
-  new OurFinances().goToSheet("Categories");
-}
-
-export function GAS_convertCurrentColumnToUppercase() {
-  new OurFinances().convertCurrentColumnToUppercase();
-}
-
-export function GAS_dailySorts() {
-  new OurFinances().dailySorts();
-}
-
-export function GAS_exportFormulasToDrive() {
-  new OurFinances().exportFormulasToDrive();
-}
-
-export function GAS_fixSheet() {
-  new OurFinances().fixSheet();
-}
-
-export function GAS_formatAccountSheet() {
-  new OurFinances().formatAccountSheet();
-}
-
-export function GAS_goToSheet_AHALIF() {
-  new OurFinances().goToSheet("_AHALIF");
-}
-
-export function GAS_balanceSheet() {
-  new OurFinances().goToSheet(MetaBalanceSheet.SHEET.NAME);
 }
 
 export function GAS_budgetAnnualTransactions() {
@@ -77,6 +50,36 @@ export function GAS_budgetPredictedSpend() {
 
 export function GAS_budgetWeeklyTransactions() {
   new OurFinances().goToSheet(MetaBudgetWeeklyTransactions.SHEET.NAME);
+}
+
+export function GAS_categories() {
+  new OurFinances().goToSheet("Categories");
+}
+
+export function GAS_convertCurrentColumnToUppercase() {
+  new OurFinances().convertCurrentColumnToUppercase();
+}
+
+export function GAS_dailySorts() {
+  withReentrancy('DAILY_SORTS_RUNNING', 5 * 60000, () => {
+    new OurFinances().dailySorts();
+  });
+}
+
+export function GAS_exportFormulasToDrive() {
+  new OurFinances().exportFormulasToDrive();
+}
+
+export function GAS_fixSheet() {
+  new OurFinances().fixSheet();
+}
+
+export function GAS_formatAccountSheet() {
+  new OurFinances().formatAccountSheet();
+}
+
+export function GAS_goToSheet_AHALIF() {
+  new OurFinances().goToSheet("_AHALIF");
 }
 
 export function GAS_goToSheetCategories() {
@@ -156,19 +159,30 @@ export function GAS_monthlyUpdate() {
 }
 
 export function GAS_onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
-  new OurFinances().onChange(e);
+  withReentrancy('ONCHANGE_RUNNING', 60_000, () => {
+    new OurFinances().onChange(e);
+  });
 }
 
 export function GAS_onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
-  new OurFinances().onEdit(e);
+  withReentrancy('ONEDIT_RUNNING', 60_000, () => {
+    new OurFinances().onEdit(e);
+  });
 }
 
 export function GAS_onOpen(): void {
   new OurFinances().onOpen();
 }
 
+export function GAS_saveContainerIdOnce() {
+  const id = SpreadsheetApp.getActiveSpreadsheet().getId();
+  PropertiesService.getScriptProperties().setProperty('FINANCES_SPREADSHEET_ID', id);
+}
+
 export function GAS_sendDailyEmail() {
-  new OurFinances().sendDailyEmail();
+  withReentrancy('SEND_DAILY_EMAIL_RUNNING', 5 * 60_000, () => {
+    new OurFinances().sendDailyEmail();
+  });
 }
 
 export function GAS_showAllAccounts() {

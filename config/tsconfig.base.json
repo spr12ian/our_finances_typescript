@@ -8,7 +8,7 @@
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "lib": ["ES2021", "DOM", "DOM.Iterable"],
-    "module": "ES2020",
+    "module": "ESNext",
     "moduleResolution": "Node",
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
@@ -16,7 +16,6 @@
     "noUnusedParameters": true,
     "skipLibCheck": true,
     "strict": true,
-    "target": "ES2022",
     "useDefineForClassFields": true
   }
 }

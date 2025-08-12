@@ -10,7 +10,7 @@ export class Sheet {
   #headerRange?: GoogleAppsScript.Spreadsheet.Range;
   #trueBounds?: { lastRow: number; lastColumn: number };
   private readonly gasSheet: GoogleAppsScript.Spreadsheet.Sheet;
-  private meta: { SHEET: { NAME: string } } | null = null;
+  // private meta: { SHEET: { NAME: string } } | null = null;
 
   // Call this after any mutating operation:
   private changed() {
@@ -309,9 +309,9 @@ export class Sheet {
     this.getRange(a1range).setHorizontalAlignment("right");
   }
 
-  setMeta(meta: { SHEET: { NAME: string } }): void {
-    this.meta = meta;
-  }
+  // setMeta(meta: { SHEET: { NAME: string } }): void {
+  //   this.meta = meta;
+  // }
 
   setNumberFormat(a1range: string, format: string) {
     this.getRange(a1range).setNumberFormat(format);

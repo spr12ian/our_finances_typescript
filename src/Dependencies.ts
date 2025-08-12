@@ -9,7 +9,7 @@ export class Dependencies {
   static get SHEET_NAME() {
     return "Dependencies";
   }
-  constructor(private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()) {
+  constructor(private readonly spreadsheet: Spreadsheet) {
     this.sheet = this.spreadsheet.getSheet(Dependencies.SHEET_NAME);
   }
 
@@ -34,7 +34,7 @@ export class Dependencies {
     return this.sheet.getSheetName();
   }
 
-  getSpreadsheetNameById(spreadsheetId:string) {
+  getSpreadsheetNameById(spreadsheetId: string) {
     try {
       const spreadsheet = Spreadsheet.openById(spreadsheetId);
       return spreadsheet.name;

@@ -11,9 +11,7 @@ import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 export class BudgetAdHocTransactions {
   private readonly sheet: Sheet;
-  constructor(
-    private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
-  ) {
+  constructor(private readonly spreadsheet: Spreadsheet) {
     this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
   }
 

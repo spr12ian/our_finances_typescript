@@ -94,7 +94,7 @@ export class Spreadsheet {
 
   getSheetByMeta(meta: { SHEET: { NAME: string } }): Sheet {
     const sheet = this.getSheet(meta.SHEET.NAME);
-    sheet.setMeta(meta);
+    // sheet.setMeta(meta);
     return sheet;
   }
 

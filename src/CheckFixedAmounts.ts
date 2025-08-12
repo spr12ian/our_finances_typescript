@@ -8,9 +8,7 @@ export class CheckFixedAmounts {
   private readonly sheet: Sheet;
   #values?: any[][];
 
-  constructor(
-    private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
-  ) {
+  constructor(private readonly spreadsheet: Spreadsheet) {
     this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
     this.validateSheetStructure();
   }

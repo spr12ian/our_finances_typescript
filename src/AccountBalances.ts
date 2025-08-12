@@ -9,7 +9,7 @@ export class AccountBalances {
   private readonly sheet: Sheet;
 
   constructor(
-    private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
+    private readonly spreadsheet: Spreadsheet
   ) {
     this.sheet = this.spreadsheet.getSheetByMeta(Meta);
   }

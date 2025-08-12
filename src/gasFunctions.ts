@@ -18,7 +18,6 @@ import {
   ONE_MINUTE,
 } from "./constants";
 import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
-import { getSpreadsheetFromEvent } from "./getSpreadsheetFromEvent";
 import { logTime } from "./logTime";
 import { OurFinances } from "./OurFinances";
 import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
@@ -213,21 +212,26 @@ export function GAS_monthlyUpdate() {
 
 export function GAS_onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
   withReentrancy("ONCHANGE_RUNNING", ONE_MINUTE, () => {
-    const spreadsheet = getSpreadsheetFromEvent(e);
+    const spreadsheet = getFinancesSpreadsheet(e);
     new OurFinances(spreadsheet).onChange(e);
   });
 }
 
 export function GAS_onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
   withReentrancy("ONEDIT_RUNNING", ONE_MINUTE, () => {
-    const spreadsheet = getSpreadsheetFromEvent(e);
+    const spreadsheet = getFinancesSpreadsheet(e);
     new OurFinances(spreadsheet).onEdit(e);
   });
 }
 
-export function GAS_onOpen(): void {
-  const spreadsheet = getFinancesSpreadsheet();
+export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
+  Logger.log("Started GAS_onOpen");
+  if (e) {
+    Logger.log("GAS_onOpen called with event.");
+  }
+  const spreadsheet = getFinancesSpreadsheet(e);
   new OurFinances(spreadsheet).onOpen();
+  Logger.log("Finished GAS_onOpen");
 }
 
 export function GAS_openAccounts() {

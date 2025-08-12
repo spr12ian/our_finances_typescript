@@ -182,7 +182,7 @@ export class OurFinances {
 
   applyDescriptionReplacements() {
     const activeSheet = this.#spreadsheet.activeSheet;
-    const accountSheet = new AccountSheet(activeSheet);
+    const accountSheet = new AccountSheet(activeSheet, this.#spreadsheet);
     if (accountSheet) {
       accountSheet.applyDescriptionReplacements();
     }
@@ -278,7 +278,7 @@ export class OurFinances {
       return;
     }
 
-    const accountSheet = new AccountSheet(activeSheet);
+    const accountSheet = new AccountSheet(activeSheet, this.#spreadsheet);
     accountSheet.fixSheet();
 
     Logger.log(`Finished OurFinances.fixAccountSheet`);
@@ -328,7 +328,7 @@ export class OurFinances {
       return;
     }
 
-    const accountSheet = new AccountSheet(activeSheet);
+    const accountSheet = new AccountSheet(activeSheet, this.#spreadsheet);
     accountSheet.formatSheet();
   }
 
@@ -460,7 +460,7 @@ export class OurFinances {
 
     if (activeSheet.name.startsWith("_")) {
       Logger.log(`Sheet ${activeSheet.name} is an account sheet.`);
-      const accountSheet = new AccountSheet(activeSheet);
+      const accountSheet = new AccountSheet(activeSheet, this.#spreadsheet);
       accountSheet.updateBalanceValues();
     }
 

@@ -3,7 +3,7 @@ export function validateAllMenuFunctionNames() {
 
   // Logger.log("🧩 Registered functions:");
   // Logger.log([...registered].sort().join(", "));
-  
+
   const knownMissing = ["onEdit", "doGet"];
 
   const builderFunctionNames = [

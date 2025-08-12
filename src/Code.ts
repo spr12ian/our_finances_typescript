@@ -5,7 +5,7 @@ import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
 import { OurFinances } from "./OurFinances";
 import { registerDynamicAccountFunctions } from "./registerDynamicAccountFunctions";
 import { shimGlobals } from "./shimGlobals";
-import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
+// import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
 /**
  * Application entry point – executed when the script is loaded.
  */
@@ -49,4 +49,4 @@ exportToGlobalThis(globalsToExport);
 //     console.log(key);
 //   });
 
-validateAllMenuFunctionNames();
+// validateAllMenuFunctionNames();

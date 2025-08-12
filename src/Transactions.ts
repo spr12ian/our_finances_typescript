@@ -7,9 +7,7 @@ import { MetaTransactions as Meta } from "./constants";
 export class Transactions {
   private readonly sheet: Sheet;
 
-  constructor(
-    private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
-  ) {
+  constructor(private readonly spreadsheet: Spreadsheet) {
     this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
   }
 

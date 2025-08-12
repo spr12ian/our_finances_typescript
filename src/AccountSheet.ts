@@ -8,7 +8,7 @@ import { xLookup } from "./xLookup";
 export class AccountSheet {
   constructor(
     private readonly sheet: Sheet,
-    private readonly spreadsheet: Spreadsheet = Spreadsheet.getActive()
+    private readonly spreadsheet: Spreadsheet
   ) {
     if (sheet.name[0] !== "_") {
       throw new Error(`${sheet.name} is NOT an account sheet`);
@@ -33,7 +33,7 @@ export class AccountSheet {
   }
 
   applyDescriptionReplacements() {
-    const descriptionReplacements = new DescriptionReplacements();
+    const descriptionReplacements = new DescriptionReplacements(this.spreadsheet);
     descriptionReplacements.applyReplacements(this.sheet);
   }
 

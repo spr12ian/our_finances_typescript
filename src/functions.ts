@@ -3,29 +3,8 @@
 import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
 import { OurFinances } from "./OurFinances";
 import { Sheet } from "./Sheet";
-import { Spreadsheet } from "./Spreadsheet";
 
 // Function declarations
-
-export function findUsageByNamedRange(namedRange: string) {
-  const sheets = Spreadsheet.getActive().sheets;
-  const rangeUsage = [];
-
-  sheets.forEach((sheet) => {
-    const formulas = sheet.raw.getDataRange().getFormulas();
-
-    formulas.forEach((rowFormulas, rowIndex) => {
-      rowFormulas.forEach((formula, colIndex: number) => {
-        if (formula.includes(namedRange)) {
-          const cellRef = sheet.raw
-            .getRange(rowIndex + 1, colIndex + 1)
-            .getA1Notation();
-          rangeUsage.push(`Sheet: ${sheet.name} - Cell: ${cellRef}`);
-        }
-      });
-    });
-  });
-}
 
 export function getLastUpdatedColumn(sheet: Sheet) {
   const lastUpdated = "Last Updated";
@@ -66,7 +45,7 @@ export function getLineNumber(): string {
 }
 
 export function goToSheetLastRow(sheetName: string) {
-  const spreadsheet = Spreadsheet.getActive();
+  const spreadsheet = getFinancesSpreadsheet();
   const sheet = spreadsheet.getSheet(sheetName);
   sheet.setActiveRange(sheet.raw.getRange(sheet.raw.getLastRow(), 1));
 }

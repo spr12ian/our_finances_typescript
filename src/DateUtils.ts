@@ -1,6 +1,17 @@
 import { LOCALE } from "./constants";
 import { getOrdinal } from "./NumberUtils";
 
+// 1) Utility: forbid extra keys on object literals
+type Strict<T extends object> = T & Record<Exclude<string, keyof T>, never>;
+
+// 2) Defaults: literal, read-only, and validated against the real type
+const DEFAULT_DATE_OPTIONS = {
+  weekday: "long",
+  year: "numeric",
+  month: "long",
+  day: "numeric",
+} as const satisfies Partial<Intl.DateTimeFormatOptions>;
+
 export function cloneDate(date: Date) {
   return new Date(date.getTime());
 }
@@ -46,20 +57,21 @@ export function getSeasonName(date: Date): string {
   return seasons[monthSeasons[getMonthIndex(date)]];
 }
 
+// 3) Function: only known Intl.DateTimeFormatOptions keys allowed
 export function getToday(
-  options = { weekday: "long", year: "numeric", month: "long", day: "numeric" }
-) {
+  overrides?: Strict<Partial<Intl.DateTimeFormatOptions>>
+): string {
+  const options: Intl.DateTimeFormatOptions = {
+    ...DEFAULT_DATE_OPTIONS,
+    ...overrides,
+  };
+
   const date = new Date();
-  let today;
-
   try {
-    const dtf = new Intl.DateTimeFormat(LOCALE, options);
-    today = dtf.format(date);
-  } catch (error) {
-    today = date.toLocaleDateString(LOCALE, options); // Fallback to toLocaleDateString
+    return new Intl.DateTimeFormat(LOCALE, options).format(date);
+  } catch {
+    return date.toLocaleDateString(LOCALE, options);
   }
-
-  return today;
 }
 
 export function setupDaysIterator(startDate: Date) {

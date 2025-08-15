@@ -33,7 +33,9 @@ export class AccountSheet {
   }
 
   applyDescriptionReplacements() {
-    const descriptionReplacements = new DescriptionReplacements(this.spreadsheet);
+    const descriptionReplacements = new DescriptionReplacements(
+      this.spreadsheet
+    );
     descriptionReplacements.applyReplacements(this.sheet);
   }
 
@@ -126,40 +128,38 @@ export class AccountSheet {
 
   updateBalanceValues(): void {
     const start = Meta.ROW_DATA_STARTS;
-    let balance = 0;
-
     const allValues = this.sheet.dataRange.getValues();
-    const dataRows = allValues.slice(start - 1); // Slice the data starting from the defined row
+    const dataRows = allValues.slice(start - 1);
     if (dataRows.length === 0) return;
 
-    const output: number[][] = []; // Initialize output as an empty array to hold balance values
+    let balance = 0;
+    const output: number[][] = new Array(dataRows.length);
+    let firstDiffIndex = -1;
+    const TOL = 0.005; // ~half a penny to avoid FP noise
 
-    let different = false;
-    for (const row of dataRows) {
+    for (let i = 0; i < dataRows.length; i++) {
+      const row = dataRows[i];
       const credit = Number(row[Meta.COLUMNS.CREDIT - 1]) || 0;
       const debit = Number(row[Meta.COLUMNS.DEBIT - 1]) || 0;
-      const current_balance = Number(row[Meta.COLUMNS.BALANCE - 1]) || 0;
+      const currentBalance = Number(row[Meta.COLUMNS.BALANCE - 1]) || 0;
 
       balance += credit - debit;
-      output.push([balance]); // Store the updated balance
+      output[i] = [balance];
 
-      // If the balance doesn't match, mark it as different
-      if (Math.abs(balance - current_balance) > 0.01) {
-        // Using a tolerance to avoid floating point precision issues
-        different = true;
+      if (firstDiffIndex === -1 && Math.abs(balance - currentBalance) > TOL) {
+        firstDiffIndex = i;
       }
     }
 
-    // If there are no changes in the balance, log the result and return early
-    if (!different) {
+    if (firstDiffIndex === -1) {
       Logger.log(`No changes to balance for ${this.accountName}`);
       return;
     }
 
-    // Write back the updated balance column
+    const slice = output.slice(firstDiffIndex);
     this.sheet.raw
-      .getRange(start, Meta.COLUMNS.BALANCE, output.length, 1)
-      .setValues(output);
+      .getRange(start + firstDiffIndex, Meta.COLUMNS.BALANCE, slice.length, 1)
+      .setValues(slice);
   }
 
   validateFrozenRows() {

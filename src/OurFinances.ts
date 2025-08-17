@@ -1,6 +1,7 @@
 /// <reference types="google-apps-script" />
 import { AccountBalances } from "./AccountBalances";
 import { AccountSheet } from "./AccountSheet";
+import { isAccountSheetName } from "./accountSheetFunctions";
 import { BankAccounts } from "./BankAccounts";
 import { BankDebitsDue } from "./BankDebitsDue";
 import { BudgetAdHocTransactions } from "./BudgetAdHocTransactions";
@@ -25,6 +26,7 @@ import { outputToDrive } from "./driveFunctions";
 import { sendMeEmail } from "./emailFunctions";
 import { FastLog } from "./FastLog";
 import { intersectsWatchedCols } from "./intersectsWatchedCols";
+import { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
 import { TransactionCategories } from "./TransactionCategories";
@@ -362,52 +364,6 @@ export class OurFinances {
     }
 
     FastLog.log(`Finished OurFinances.onChange`);
-  }
-
-  onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
-    FastLog.log(`Started OurFinances.onEdit`);
-    FastLog.log(`Edit event: ${JSON.stringify(e, null, 2)}`);
-
-    let shouldUpdate = false;
-
-    const sheet = e.source?.getActiveSheet?.();
-    const sheetName = sheet?.getName?.();
-    FastLog.log(`Edit made in sheet: ${sheetName ?? "(unknown)"}`);
-
-    if (sheetName && sheetName.startsWith("_")) {
-      FastLog.log(`Sheet ${sheetName} is an account sheet.`);
-
-      const range = e.range;
-      if (range) {
-        FastLog.log(`Edit made in range: ${range.getA1Notation()}`);
-
-        const WATCHED_COLS = new Set<number>([3, 4, 8]); // Credit, Debit, Balance
-        const touchesWatched = intersectsWatchedCols(range, WATCHED_COLS);
-
-        if (touchesWatched) {
-          // For single-cell edits, only update if the value actually changed.
-          const isSingleCell =
-            range.getNumRows() === 1 && range.getNumColumns() === 1;
-          if (isSingleCell) {
-            const actuallyChanged = e.value !== e.oldValue; // note: undefined vs string handles clears
-            shouldUpdate = actuallyChanged;
-            if (!actuallyChanged) {
-              FastLog.log(`No-op single-cell edit detected (value unchanged).`);
-            }
-          } else {
-            // Multi-cell edit that touches watched columns → always update
-            shouldUpdate = true;
-          }
-        }
-      }
-    }
-
-    if (shouldUpdate) {
-      this.updateBalanceValues();
-    }
-
-    FastLog.log(`Finished OurFinances.onEdit`);
-    return;
   }
 
   onOpen(): void {

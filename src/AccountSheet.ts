@@ -53,6 +53,8 @@ export class AccountSheet {
     range.setValues(values);
   }
 
+  onEdit() {}
+
   fixHeaders() {
     const headerRange = this.sheet.getRange("A1:H1");
     const label = xLookup(

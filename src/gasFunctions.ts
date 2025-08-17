@@ -23,6 +23,7 @@ import { OurFinances } from "./OurFinances";
 import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
 import { withReentrancy } from "./withReentrancy";
 import { FastLog } from './FastLog';
+import { onEdit } from './onEdit';
 
 export function GAS_applyDescriptionReplacements() {
   const spreadsheet = getFinancesSpreadsheet();
@@ -220,8 +221,7 @@ export function GAS_onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
 
 export function GAS_onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
   withReentrancy("ONEDIT_RUNNING", ONE_MINUTE, () => {
-    const spreadsheet = getFinancesSpreadsheet(e);
-    new OurFinances(spreadsheet).onEdit(e);
+    onEdit(e);
   });
 }
 

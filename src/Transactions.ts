@@ -47,7 +47,7 @@ export class Transactions {
     const sheets = ss.getSheets();
     const transactionSheet = this.sheet.raw;
     // const exclude = new Set(["_CVITRA", "_SVIIRF"]);
-    const exclude = new Set(["_SVIIRF"]);
+    const exclude = new Set(["_SAMAZO", "_SVIIRF"]);
     // 1. Collect account sheet names (start with "_")
     const accountSheets = sheets
       .map((s) => s.getName())
@@ -74,5 +74,7 @@ export class Transactions {
     const fullFormula = `=FILTER(${query}, ${filterCondition})`;
     // 4. Insert formula in Transactions!A1
     transactionSheet.getRange("A1").setFormula(fullFormula);
+    
+    this.sheet.trimSheet();
   }
 }

@@ -1,4 +1,5 @@
 import { MetaAccountBalances as Meta } from "./constants";
+import { FastLog } from "./FastLog";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 
@@ -13,14 +14,14 @@ export class AccountBalances {
   }
 
   fixSheet() {
-    console.log(`Started AccountBalances.fixSheet: ${this.sheet.name}`);
+    FastLog.log(`Started AccountBalances.fixSheet: ${this.sheet.name}`);
     this.update();
     this.sheet.fixSheet();
-    console.log(`Finished AccountBalances.fixSheet: ${this.sheet.name}`);
+    FastLog.log(`Finished AccountBalances.fixSheet: ${this.sheet.name}`);
   }
 
   update() {
-    console.log(`Started AccountBalances.update: ${this.sheet.name}`);
+    FastLog.log(`Started AccountBalances.update: ${this.sheet.name}`);
 
     const values = this.spreadsheet
       .getSheet("Transactions")
@@ -33,7 +34,7 @@ export class AccountBalances {
         .clearContents()
         .getRange(1, 1, 1, 4)
         .setValues([["Account", "Credit (£)", "Debit (£)", "Nett (£)"]]);
-      console.log(
+      FastLog.log(
         `Finished AccountBalances.update: ${this.sheet.name} (no data)`
       );
       return;
@@ -84,6 +85,6 @@ export class AccountBalances {
       .getRange(1, 1, output.length, 4)
       .setValues(output);
 
-    console.log(`Finished AccountBalances.update: ${this.sheet.name}`);
+    FastLog.log(`Finished AccountBalances.update: ${this.sheet.name}`);
   }
 }

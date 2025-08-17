@@ -1,8 +1,9 @@
+import { FastLog } from "./FastLog";
 export function validateAllMenuFunctionNames() {
   const registered = new Set((globalThis as any).__exportedGlobals__ ?? []);
 
-  // console.log("🧩 Registered functions:");
-  // console.log([...registered].sort().join(", "));
+  // FastLog.log("🧩 Registered functions:");
+  // FastLog.log([...registered].sort().join(", "));
 
   const knownMissing = ["onEdit", "doGet"];
 
@@ -35,19 +36,19 @@ export function validateAllMenuFunctionNames() {
   );
 
   if (missingBuilders.length > 0) {
-    console.log("⚠️ Menu builders not found on globalThis:");
-    missingBuilders.forEach((b) => console.log(`- ${b}`));
+    FastLog.log("⚠️ Menu builders not found on globalThis:");
+    missingBuilders.forEach((b) => FastLog.log(`- ${b}`));
   }
 
   if (missing.length === 0) {
-    console.log(
+    FastLog.log(
       "✅ All menu function names used in builder functions are valid."
     );
   } else {
-    console.log("❌ Missing function(s) referenced in menu builders:");
-    missing.forEach((fn) => console.log(`- ${fn}`));
+    FastLog.log("❌ Missing function(s) referenced in menu builders:");
+    missing.forEach((fn) => FastLog.log(`- ${fn}`));
   }
 
-  console.log("🧩 Used function names:");
-  console.log([...usedFunctionNames].sort().join(", "));
+  FastLog.log("🧩 Used function names:");
+  FastLog.log([...usedFunctionNames].sort().join(", "));
 }

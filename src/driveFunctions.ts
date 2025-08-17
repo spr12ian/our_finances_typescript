@@ -1,3 +1,5 @@
+
+import { FastLog } from "./FastLog";
 export function outputToDrive(fileName: string, output: string) {
   // Overwrite if it already exists
   const existing = DriveApp.getFilesByName(fileName);
@@ -7,5 +9,5 @@ export function outputToDrive(fileName: string, output: string) {
   }
 
   DriveApp.createFile(fileName, output, "text/plain");
-  console.log(`Export complete: ${fileName} created in Drive.`);
+  FastLog.log(`Export complete: ${fileName} created in Drive.`);
 }

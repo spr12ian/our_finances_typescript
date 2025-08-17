@@ -12,6 +12,7 @@
 import fs from "fs";
 import path from "node:path";
 import { getDirname } from "./utils/esmPath";
+import { FastLog } from '../src/FastLog';
 
 const __dirname = getDirname(import.meta.url);
 
@@ -65,8 +66,8 @@ const shimLines = [
 
 fs.writeFileSync(SHIM_GLOBALS, shimLines.join("\n"), "utf8");
 
-console.log(`✅ Found ${shimGlobals.length} GAS functions`);
-console.log(`✅ Wrote to: ${SHIM_GLOBALS}`);
+FastLog.log(`✅ Found ${shimGlobals.length} GAS functions`);
+FastLog.log(`✅ Wrote to: ${SHIM_GLOBALS}`);
 
 // Emit gasExports.ts
 const lines = [
@@ -77,4 +78,4 @@ const lines = [
 
 fs.writeFileSync(GAS_EXPORTS, lines.join("\n"), "utf8");
 
-console.log(`✅ Wrote to: ${GAS_EXPORTS}`);
+FastLog.log(`✅ Wrote to: ${GAS_EXPORTS}`);

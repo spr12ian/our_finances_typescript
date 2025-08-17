@@ -1,5 +1,7 @@
 /// <reference types="google-apps-script" />
+
 import { isAccountSheetName } from "./isAccountSheetName";
+import { FastLog } from "./FastLog";
 /**
  * Thin wrapper around a GAS Sheet.
  * Prefer using `Spreadsheet.getSheet(sheetName)` to instantiate.
@@ -132,16 +134,16 @@ export class Sheet {
   }
 
   fixSheet(): void {
-    console.log(`Started Sheet.fixSheet: ${this.name}`);
+    FastLog.log(`Started Sheet.fixSheet: ${this.name}`);
 
     this.trimSheet();
     this.formatSheet();
 
-    console.log(`Finished Sheet.fixSheet: ${this.name}`);
+    FastLog.log(`Finished Sheet.fixSheet: ${this.name}`);
   }
 
   formatAfterHeader(): void {
-    console.log(`Started Sheet.formatAfterHeader: ${this.name}`);
+    FastLog.log(`Started Sheet.formatAfterHeader: ${this.name}`);
 
     let afterHeaderRange = this.afterHeaderRange;
     afterHeaderRange
@@ -154,11 +156,11 @@ export class Sheet {
       .setVerticalAlignment("top")
       .setWrap(true);
 
-    console.log(`Finished Sheet.formatAfterHeader: ${this.name}`);
+    FastLog.log(`Finished Sheet.formatAfterHeader: ${this.name}`);
   }
 
   formatHeader(): void {
-    console.log(`Started Sheet.formatHeader: ${this.name}`);
+    FastLog.log(`Started Sheet.formatHeader: ${this.name}`);
 
     let headerRange = this.headerRange;
     headerRange
@@ -172,16 +174,16 @@ export class Sheet {
       .setVerticalAlignment("middle")
       .setWrap(true);
 
-    console.log(`Finished Sheet.formatHeader: ${this.name}`);
+    FastLog.log(`Finished Sheet.formatHeader: ${this.name}`);
   }
 
   formatSheet(): void {
-    console.log(`Started Sheet.formatSheet: ${this.name}`);
+    FastLog.log(`Started Sheet.formatSheet: ${this.name}`);
 
     this.formatHeader();
     this.formatAfterHeader();
 
-    console.log(`Finished Sheet.formatSheet: ${this.name}`);
+    FastLog.log(`Finished Sheet.formatSheet: ${this.name}`);
   }
 
   getAllValues(): any[][] {
@@ -362,7 +364,7 @@ export class Sheet {
 
     // Skip sheets with no data rows
     if (lastRow <= 1 || lastCol === 0) {
-      console.log(`${sheet.getSheetName()} skipped: no data to sort`);
+      FastLog.log(`${sheet.getSheetName()} skipped: no data to sort`);
       return;
     }
 
@@ -370,7 +372,7 @@ export class Sheet {
       const range = sheet.getRange(2, 1, lastRow - 1, lastCol);
       const startTime = Date.now();
       range.sort({ column: 1, ascending: true });
-      console.log(
+      FastLog.log(
         `${sheet.getSheetName()} sorted in ${Date.now() - startTime}ms`
       );
     } catch (error: unknown) {
@@ -388,7 +390,7 @@ export class Sheet {
   }
 
   trimSheet(): void {
-    console.log(`Started Sheet.trimSheet: ${this.name}`);
+    FastLog.log(`Started Sheet.trimSheet: ${this.name}`);
 
     const { lastRow, lastColumn } = this.getTrueDataBounds();
     const gasSheet = this.gasSheet;
@@ -416,12 +418,12 @@ export class Sheet {
     }
 
     if (maxRows === targetRows && maxColumns === targetCols) {
-      console.log(`No trimming needed for ${this.name}`);
+      FastLog.log(`No trimming needed for ${this.name}`);
     } else {
-      console.log(
+      FastLog.log(
         `Trimmed from ${maxRows} rows × ${maxColumns} columns to ${targetRows} rows × ${targetCols} columns`
       );
     }
-    console.log(`Finished Sheet.trimSheet: ${this.name}`);
+    FastLog.log(`Finished Sheet.trimSheet: ${this.name}`);
   }
 }

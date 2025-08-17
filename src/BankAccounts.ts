@@ -1,6 +1,9 @@
+
+import { FastLog } from "./FastLog";
 import { MetaBankAccounts as Meta } from "./constants";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
+
 type FilterSpec = {
   column: number;
   hideValues: string[] | null;
@@ -79,7 +82,7 @@ export class BankAccounts {
   }
 
   showDaily() {
-    console.log("Started BankAccounts.showDaily");
+    FastLog.log("Started BankAccounts.showDaily");
     this.showAll();
     const colCheckBalanceFrequency = Meta.COLUMNS.CHECK_BALANCE_FREQUENCY;
     const colOwnerCode = Meta.COLUMNS.OWNER_CODE;
@@ -97,7 +100,7 @@ export class BankAccounts {
 
     const columnsToHide = ["C:L", "N:O", "Q:Q", "S:AN", "AQ:AQ"];
     this.hideColumns(columnsToHide);
-    console.log("Finished BankAccounts.showDaily");
+    FastLog.log("Finished BankAccounts.showDaily");
   }
 
   showMonthly() {

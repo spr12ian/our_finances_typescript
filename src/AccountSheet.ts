@@ -1,4 +1,5 @@
 /// <reference types="google-apps-script" />
+import { FastLog } from "./FastLog";
 import { MetaAccountSheet as Meta, MetaBankAccounts } from "./constants";
 import { DescriptionReplacements } from "./DescriptionReplacements";
 import type { Sheet } from "./Sheet";
@@ -152,7 +153,7 @@ export class AccountSheet {
     }
 
     if (firstDiffIndex === -1) {
-      console.log(`No changes to balance for ${this.accountName}`);
+      FastLog.log(`No changes to balance for ${this.accountName}`);
       return;
     }
 

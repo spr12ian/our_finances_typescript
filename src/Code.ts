@@ -6,6 +6,8 @@ import { OurFinances } from "./OurFinances";
 import { registerDynamicAccountFunctions } from "./registerDynamicAccountFunctions";
 import { shimGlobals } from "./shimGlobals";
 // import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
+// import { FastLog } from './FastLog';
+
 /**
  * Application entry point – executed when the script is loaded.
  */
@@ -38,7 +40,7 @@ for (const name of shimGlobals) {
 }
 exportToGlobalThis(globalsToExport);
 
-// console.log("✅ Global functions registered.");
+// FastLog.log("✅ Global functions registered.");
 
 // Export this list for the shim generator
 (globalThis as any).__exportedGlobals__ = Object.keys(globalsToExport).sort();
@@ -46,7 +48,7 @@ exportToGlobalThis(globalsToExport);
 // Object.keys(globalThis)
 //   .sort()
 //   .forEach((key) => {
-//     console.log(key);
+//     FastLog.log(key);
 //   });
 
 // validateAllMenuFunctionNames();

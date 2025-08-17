@@ -23,6 +23,7 @@ import { getToday } from "./DateUtils";
 import { Dependencies } from "./Dependencies";
 import { outputToDrive } from "./driveFunctions";
 import { sendMeEmail } from "./emailFunctions";
+import { FastLog } from "./FastLog";
 import { intersectsWatchedCols } from "./intersectsWatchedCols";
 import { Spreadsheet } from "./Spreadsheet";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
@@ -33,10 +34,11 @@ import {
   buildGasMenu_,
   buildSectionsMenu_,
 } from "./uiFunctions";
+
 const logTiming = <T>(label: string, fn: () => T): T => {
   const t0 = Date.now();
   const result = fn();
-  console.log(`${label}: ${Date.now() - t0}ms`);
+  FastLog.log(`${label}: ${Date.now() - t0}ms`);
   return result;
 };
 export class OurFinances {
@@ -192,13 +194,13 @@ export class OurFinances {
     const gasSheet = this.#spreadsheet.activeSheet.raw;
     const activeRange = gasSheet.getActiveRange();
     if (!activeRange) {
-      console.log("No active range selected.");
+      FastLog.log("No active range selected.");
       return;
     }
     const START_ROW = 2;
     const column = activeRange.getColumn();
     if (column < 1) {
-      console.log("No column selected.");
+      FastLog.log("No column selected.");
       return;
     }
 
@@ -261,7 +263,7 @@ export class OurFinances {
           "\n"
         )}\n] as { cell: string; formula: string }[],\n`;
         output += `SHEET: { NAME: "${sheet.getName()}", },\n\n`;
-        console.log(`// ---- ${sheet.getName()} ----\n`);
+        FastLog.log(`// ---- ${sheet.getName()} ----\n`);
       }
     }
 
@@ -270,26 +272,26 @@ export class OurFinances {
   }
 
   fixAccountSheet() {
-    console.log(`Started OurFinances.fixAccountSheet`);
+    FastLog.log(`Started OurFinances.fixAccountSheet`);
 
     const activeSheet = this.#spreadsheet.activeSheet;
     if (!activeSheet) {
-      console.log("No active sheet found.");
+      FastLog.log("No active sheet found.");
       return;
     }
 
     const accountSheet = new AccountSheet(activeSheet, this.#spreadsheet);
     accountSheet.fixSheet();
 
-    console.log(`Finished OurFinances.fixAccountSheet`);
+    FastLog.log(`Finished OurFinances.fixAccountSheet`);
   }
 
   fixSheet() {
-    console.log(`Started OurFinances.fixSheet`);
+    FastLog.log(`Started OurFinances.fixSheet`);
 
     const activeSheet = this.#spreadsheet.activeSheet;
     if (!activeSheet) {
-      console.log("No active sheet found.");
+      FastLog.log("No active sheet found.");
       return;
     }
 
@@ -312,13 +314,13 @@ export class OurFinances {
       action();
     } else {
       if (activeSheet.name.startsWith("_")) {
-        console.log(`Sheet ${activeSheet.name} is an account sheet.`);
+        FastLog.log(`Sheet ${activeSheet.name} is an account sheet.`);
         this.fixAccountSheet();
       } else {
         activeSheet.fixSheet();
       }
     }
-    console.log(`Finished OurFinances.fixSheet`);
+    FastLog.log(`Finished OurFinances.fixSheet`);
   }
 
   formatAccountSheet() {
@@ -342,25 +344,25 @@ export class OurFinances {
   }
 
   onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
-    console.log(`Started OurFinances.onChange`);
-    console.log(`Change type: ${e.changeType}`);
+    FastLog.log(`Started OurFinances.onChange`);
+    FastLog.log(`Change type: ${e.changeType}`);
     if (e.changeType === "REMOVE_ROW") {
-      console.log(`Row removed`);
+      FastLog.log(`Row removed`);
       this.updateBalanceValues();
     }
 
-    console.log(`Finished OurFinances.onChange`);
+    FastLog.log(`Finished OurFinances.onChange`);
   }
 
   onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
-    console.log(`Started OurFinances.onEdit`);
+    FastLog.log(`Started OurFinances.onEdit`);
     const sheetName = e.source.getActiveSheet().getName();
-    console.log(`Edit made in sheet: ${sheetName}`);
+    FastLog.log(`Edit made in sheet: ${sheetName}`);
     if (sheetName.startsWith("_")) {
-      console.log(`Sheet ${sheetName} is an account sheet.`);
+      FastLog.log(`Sheet ${sheetName} is an account sheet.`);
       const range = e.range;
       if (range) {
-        console.log(`Edit made in range: ${range.getA1Notation()}`);
+        FastLog.log(`Edit made in range: ${range.getA1Notation()}`);
         const WATCHED_COLS = new Set<number>([3, 4, 8]); // Credit, Debit, or Balance
 
         if (!intersectsWatchedCols(range, WATCHED_COLS)) return;
@@ -374,7 +376,7 @@ export class OurFinances {
       }
     }
 
-    console.log(`Finished OurFinances.onEdit`);
+    FastLog.log(`Finished OurFinances.onEdit`);
   }
 
   onOpen(): void {
@@ -437,7 +439,7 @@ export class OurFinances {
     this.#spreadsheet.sheets.forEach((sheet) => {
       sheet.trimSheet();
     });
-    console.log("All sheets trimmed.");
+    FastLog.log("All sheets trimmed.");
   }
 
   trimSheet() {
@@ -450,21 +452,21 @@ export class OurFinances {
   }
 
   updateBalanceValues() {
-    console.log(`Started OurFinances.updateBalanceValues`);
+    FastLog.log(`Started OurFinances.updateBalanceValues`);
 
     const activeSheet = this.#spreadsheet.activeSheet;
     if (!activeSheet) {
-      console.log("No active sheet found.");
+      FastLog.log("No active sheet found.");
       return;
     }
 
     if (activeSheet.name.startsWith("_")) {
-      console.log(`Sheet ${activeSheet.name} is an account sheet.`);
+      FastLog.log(`Sheet ${activeSheet.name} is an account sheet.`);
       const accountSheet = new AccountSheet(activeSheet, this.#spreadsheet);
       accountSheet.updateBalanceValues();
     }
 
-    console.log(`Finished OurFinances.updateBalanceValues`);
+    FastLog.log(`Finished OurFinances.updateBalanceValues`);
   }
 
   updateSpreadsheetSummary() {

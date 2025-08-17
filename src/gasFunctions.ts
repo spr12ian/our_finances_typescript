@@ -22,6 +22,7 @@ import { logTime } from "./logTime";
 import { OurFinances } from "./OurFinances";
 import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
 import { withReentrancy } from "./withReentrancy";
+import { FastLog } from './FastLog';
 
 export function GAS_applyDescriptionReplacements() {
   const spreadsheet = getFinancesSpreadsheet();
@@ -225,13 +226,13 @@ export function GAS_onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
 }
 
 export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
-  console.log("Started GAS_onOpen");
+  FastLog.log("Started GAS_onOpen");
   if (e) {
-    console.log("GAS_onOpen called with event.");
+    FastLog.log("GAS_onOpen called with event.");
   }
   const spreadsheet = getFinancesSpreadsheet(e);
   new OurFinances(spreadsheet).onOpen();
-  console.log("Finished GAS_onOpen");
+  FastLog.log("Finished GAS_onOpen");
 }
 
 export function GAS_openAccounts() {

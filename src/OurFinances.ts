@@ -345,10 +345,13 @@ export class OurFinances {
 
   onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
     FastLog.log(`Started OurFinances.onChange`);
-    FastLog.log(`Change type: ${e.changeType}`);
-    if (e.changeType === "REMOVE_ROW") {
-      FastLog.log(`Row removed`);
-      this.updateBalanceValues();
+    switch (e.changeType) {
+      case "REMOVE_ROW":
+        FastLog.log(`Row removed`);
+        this.updateBalanceValues();
+        break;
+      default:
+        FastLog.log(`Unhandled change event: ${JSON.stringify(e, null, 2)}`);
     }
 
     FastLog.log(`Finished OurFinances.onChange`);
@@ -356,6 +359,7 @@ export class OurFinances {
 
   onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
     FastLog.log(`Started OurFinances.onEdit`);
+    FastLog.log(`Edit event: ${JSON.stringify(e, null, 2)}`);
     const sheetName = e.source.getActiveSheet().getName();
     FastLog.log(`Edit made in sheet: ${sheetName}`);
     if (sheetName.startsWith("_")) {

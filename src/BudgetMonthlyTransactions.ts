@@ -25,7 +25,7 @@ export class BudgetMonthlyTransactions {
     if (scheduledTransactions.length > 0) {
       upcomingPayments += `\nMonthly payment due:\n`;
       // Get the dates for the upcoming days
-      const upcomingDays = [];
+      const upcomingDays: any[] = [];
       const { first, iterator: days } = setupDaysIterator(today);
       let day = first;
       for (let index = 0; index <= howManyDaysAhead; index++) {

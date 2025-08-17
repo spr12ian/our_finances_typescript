@@ -4,6 +4,8 @@ import { getAmountAsGBP } from "./MoneyUtils";
 import type { Sheet } from "./Sheet";
 import type { Spreadsheet } from "./Spreadsheet";
 import { xLookup } from "./xLookup";
+import { asNumber } from './asNumber';
+
 export class BankDebitsDue {
   private sheet: Sheet;
   private _howManyDaysAhead?: number;
@@ -36,7 +38,13 @@ export class BankDebitsDue {
   get howManyDaysAhead(): number {
     if (typeof this._howManyDaysAhead === "undefined") {
       const searchValue = "Look ahead";
-      this._howManyDaysAhead = xLookup(searchValue, this.sheet, "F", "G");
+      const foundValue = asNumber(xLookup(searchValue, this.sheet, "F", "G"));
+      if (foundValue === null) {
+        throw new Error(
+          `No number found for '${searchValue}' in column F of the sheet '${BankDebitsDue.SHEET.NAME}'.`
+        );
+      }
+      this._howManyDaysAhead = foundValue;
     }
     return this._howManyDaysAhead;
   }
@@ -45,7 +53,7 @@ export class BankDebitsDue {
     return this.sheet.dataRange.getValues();
   }
 
-  getUpcomingDebits(howManyDaysAhead: number) {
+  getUpcomingDebits() {
     let upcomingPayments = `Due in the next ${this.howManyDaysAhead} days:`;
 
     const scheduledTransactions = this.getScheduledTransactions();

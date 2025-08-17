@@ -170,7 +170,7 @@ export class OurFinances {
     const howManyDaysAhead = this.bankDebitsDue.howManyDaysAhead;
     // Collect upcoming debits from different sources
     return [
-      this.bankDebitsDue.getUpcomingDebits(howManyDaysAhead),
+      this.bankDebitsDue.getUpcomingDebits(),
       this.budgetAdhocTransactions.getUpcomingDebits(howManyDaysAhead),
       this.budgetAnnualTransactions.getUpcomingDebits(howManyDaysAhead),
       this.budgetMonthlyTransactions.getUpcomingDebits(howManyDaysAhead),

@@ -7,5 +7,5 @@ export function outputToDrive(fileName: string, output: string) {
   }
 
   DriveApp.createFile(fileName, output, "text/plain");
-  Logger.log(`Export complete: ${fileName} created in Drive.`);
+  console.log(`Export complete: ${fileName} created in Drive.`);
 }

@@ -8,9 +8,7 @@ type FilterSpec = {
 export class BankAccounts {
   private readonly sheet: Sheet;
 
-  constructor(
-    private readonly spreadsheet: Spreadsheet
-  ) {
+  constructor(private readonly spreadsheet: Spreadsheet) {
     this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
   }
 
@@ -81,7 +79,7 @@ export class BankAccounts {
   }
 
   showDaily() {
-    Logger.log("Started BankAccounts.showDaily");
+    console.log("Started BankAccounts.showDaily");
     this.showAll();
     const colCheckBalanceFrequency = Meta.COLUMNS.CHECK_BALANCE_FREQUENCY;
     const colOwnerCode = Meta.COLUMNS.OWNER_CODE;
@@ -99,7 +97,7 @@ export class BankAccounts {
 
     const columnsToHide = ["C:L", "N:O", "Q:Q", "S:AN", "AQ:AQ"];
     this.hideColumns(columnsToHide);
-    Logger.log("Finished BankAccounts.showDaily");
+    console.log("Finished BankAccounts.showDaily");
   }
 
   showMonthly() {

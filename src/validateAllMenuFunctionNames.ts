@@ -1,8 +1,8 @@
 export function validateAllMenuFunctionNames() {
   const registered = new Set((globalThis as any).__exportedGlobals__ ?? []);
 
-  // Logger.log("🧩 Registered functions:");
-  // Logger.log([...registered].sort().join(", "));
+  // console.log("🧩 Registered functions:");
+  // console.log([...registered].sort().join(", "));
 
   const knownMissing = ["onEdit", "doGet"];
 
@@ -35,19 +35,19 @@ export function validateAllMenuFunctionNames() {
   );
 
   if (missingBuilders.length > 0) {
-    Logger.log("⚠️ Menu builders not found on globalThis:");
-    missingBuilders.forEach((b) => Logger.log(`- ${b}`));
+    console.log("⚠️ Menu builders not found on globalThis:");
+    missingBuilders.forEach((b) => console.log(`- ${b}`));
   }
 
   if (missing.length === 0) {
-    Logger.log(
+    console.log(
       "✅ All menu function names used in builder functions are valid."
     );
   } else {
-    Logger.log("❌ Missing function(s) referenced in menu builders:");
-    missing.forEach((fn) => Logger.log(`- ${fn}`));
+    console.log("❌ Missing function(s) referenced in menu builders:");
+    missing.forEach((fn) => console.log(`- ${fn}`));
   }
 
-  Logger.log("🧩 Used function names:");
-  Logger.log([...usedFunctionNames].sort().join(", "));
+  console.log("🧩 Used function names:");
+  console.log([...usedFunctionNames].sort().join(", "));
 }

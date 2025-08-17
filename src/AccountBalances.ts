@@ -8,21 +8,19 @@ import { Spreadsheet } from "./Spreadsheet";
 export class AccountBalances {
   private readonly sheet: Sheet;
 
-  constructor(
-    private readonly spreadsheet: Spreadsheet
-  ) {
+  constructor(private readonly spreadsheet: Spreadsheet) {
     this.sheet = this.spreadsheet.getSheetByMeta(Meta);
   }
 
   fixSheet() {
-    Logger.log(`Started AccountBalances.fixSheet: ${this.sheet.name}`);
+    console.log(`Started AccountBalances.fixSheet: ${this.sheet.name}`);
     this.update();
     this.sheet.fixSheet();
-    Logger.log(`Finished AccountBalances.fixSheet: ${this.sheet.name}`);
+    console.log(`Finished AccountBalances.fixSheet: ${this.sheet.name}`);
   }
 
   update() {
-    Logger.log(`Started AccountBalances.update: ${this.sheet.name}`);
+    console.log(`Started AccountBalances.update: ${this.sheet.name}`);
 
     const values = this.spreadsheet
       .getSheet("Transactions")
@@ -35,7 +33,7 @@ export class AccountBalances {
         .clearContents()
         .getRange(1, 1, 1, 4)
         .setValues([["Account", "Credit (£)", "Debit (£)", "Nett (£)"]]);
-      Logger.log(
+      console.log(
         `Finished AccountBalances.update: ${this.sheet.name} (no data)`
       );
       return;
@@ -86,6 +84,6 @@ export class AccountBalances {
       .getRange(1, 1, output.length, 4)
       .setValues(output);
 
-    Logger.log(`Finished AccountBalances.update: ${this.sheet.name}`);
+    console.log(`Finished AccountBalances.update: ${this.sheet.name}`);
   }
 }

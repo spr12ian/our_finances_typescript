@@ -132,16 +132,16 @@ export class Sheet {
   }
 
   fixSheet(): void {
-    Logger.log(`Started Sheet.fixSheet: ${this.name}`);
+    console.log(`Started Sheet.fixSheet: ${this.name}`);
 
     this.trimSheet();
     this.formatSheet();
 
-    Logger.log(`Finished Sheet.fixSheet: ${this.name}`);
+    console.log(`Finished Sheet.fixSheet: ${this.name}`);
   }
 
   formatAfterHeader(): void {
-    Logger.log(`Started Sheet.formatAfterHeader: ${this.name}`);
+    console.log(`Started Sheet.formatAfterHeader: ${this.name}`);
 
     let afterHeaderRange = this.afterHeaderRange;
     afterHeaderRange
@@ -154,11 +154,11 @@ export class Sheet {
       .setVerticalAlignment("top")
       .setWrap(true);
 
-    Logger.log(`Finished Sheet.formatAfterHeader: ${this.name}`);
+    console.log(`Finished Sheet.formatAfterHeader: ${this.name}`);
   }
 
   formatHeader(): void {
-    Logger.log(`Started Sheet.formatHeader: ${this.name}`);
+    console.log(`Started Sheet.formatHeader: ${this.name}`);
 
     let headerRange = this.headerRange;
     headerRange
@@ -172,16 +172,16 @@ export class Sheet {
       .setVerticalAlignment("middle")
       .setWrap(true);
 
-    Logger.log(`Finished Sheet.formatHeader: ${this.name}`);
+    console.log(`Finished Sheet.formatHeader: ${this.name}`);
   }
 
   formatSheet(): void {
-    Logger.log(`Started Sheet.formatSheet: ${this.name}`);
+    console.log(`Started Sheet.formatSheet: ${this.name}`);
 
     this.formatHeader();
     this.formatAfterHeader();
 
-    Logger.log(`Finished Sheet.formatSheet: ${this.name}`);
+    console.log(`Finished Sheet.formatSheet: ${this.name}`);
   }
 
   getAllValues(): any[][] {
@@ -388,7 +388,7 @@ export class Sheet {
   }
 
   trimSheet(): void {
-    Logger.log(`Started Sheet.trimSheet: ${this.name}`);
+    console.log(`Started Sheet.trimSheet: ${this.name}`);
 
     const { lastRow, lastColumn } = this.getTrueDataBounds();
     const gasSheet = this.gasSheet;
@@ -416,12 +416,12 @@ export class Sheet {
     }
 
     if (maxRows === targetRows && maxColumns === targetCols) {
-      Logger.log(`No trimming needed for ${this.name}`);
+      console.log(`No trimming needed for ${this.name}`);
     } else {
-      Logger.log(
+      console.log(
         `Trimmed from ${maxRows} rows × ${maxColumns} columns to ${targetRows} rows × ${targetCols} columns`
       );
     }
-    Logger.log(`Finished Sheet.trimSheet: ${this.name}`);
+    console.log(`Finished Sheet.trimSheet: ${this.name}`);
   }
 }

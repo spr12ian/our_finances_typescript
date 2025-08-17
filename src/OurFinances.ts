@@ -192,13 +192,13 @@ export class OurFinances {
     const gasSheet = this.#spreadsheet.activeSheet.raw;
     const activeRange = gasSheet.getActiveRange();
     if (!activeRange) {
-      Logger.log("No active range selected.");
+      console.log("No active range selected.");
       return;
     }
     const START_ROW = 2;
     const column = activeRange.getColumn();
     if (column < 1) {
-      Logger.log("No column selected.");
+      console.log("No column selected.");
       return;
     }
 
@@ -261,7 +261,7 @@ export class OurFinances {
           "\n"
         )}\n] as { cell: string; formula: string }[],\n`;
         output += `SHEET: { NAME: "${sheet.getName()}", },\n\n`;
-        Logger.log(`// ---- ${sheet.getName()} ----\n`);
+        console.log(`// ---- ${sheet.getName()} ----\n`);
       }
     }
 
@@ -270,26 +270,26 @@ export class OurFinances {
   }
 
   fixAccountSheet() {
-    Logger.log(`Started OurFinances.fixAccountSheet`);
+    console.log(`Started OurFinances.fixAccountSheet`);
 
     const activeSheet = this.#spreadsheet.activeSheet;
     if (!activeSheet) {
-      Logger.log("No active sheet found.");
+      console.log("No active sheet found.");
       return;
     }
 
     const accountSheet = new AccountSheet(activeSheet, this.#spreadsheet);
     accountSheet.fixSheet();
 
-    Logger.log(`Finished OurFinances.fixAccountSheet`);
+    console.log(`Finished OurFinances.fixAccountSheet`);
   }
 
   fixSheet() {
-    Logger.log(`Started OurFinances.fixSheet`);
+    console.log(`Started OurFinances.fixSheet`);
 
     const activeSheet = this.#spreadsheet.activeSheet;
     if (!activeSheet) {
-      Logger.log("No active sheet found.");
+      console.log("No active sheet found.");
       return;
     }
 
@@ -312,13 +312,13 @@ export class OurFinances {
       action();
     } else {
       if (activeSheet.name.startsWith("_")) {
-        Logger.log(`Sheet ${activeSheet.name} is an account sheet.`);
+        console.log(`Sheet ${activeSheet.name} is an account sheet.`);
         this.fixAccountSheet();
       } else {
         activeSheet.fixSheet();
       }
     }
-    Logger.log(`Finished OurFinances.fixSheet`);
+    console.log(`Finished OurFinances.fixSheet`);
   }
 
   formatAccountSheet() {
@@ -342,25 +342,25 @@ export class OurFinances {
   }
 
   onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
-    Logger.log(`Started OurFinances.onChange`);
-    Logger.log(`Change type: ${e.changeType}`);
+    console.log(`Started OurFinances.onChange`);
+    console.log(`Change type: ${e.changeType}`);
     if (e.changeType === "REMOVE_ROW") {
-      Logger.log(`Row removed`);
+      console.log(`Row removed`);
       this.updateBalanceValues();
     }
 
-    Logger.log(`Finished OurFinances.onChange`);
+    console.log(`Finished OurFinances.onChange`);
   }
 
   onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
-    Logger.log(`Started OurFinances.onEdit`);
+    console.log(`Started OurFinances.onEdit`);
     const sheetName = e.source.getActiveSheet().getName();
-    Logger.log(`Edit made in sheet: ${sheetName}`);
+    console.log(`Edit made in sheet: ${sheetName}`);
     if (sheetName.startsWith("_")) {
-      Logger.log(`Sheet ${sheetName} is an account sheet.`);
+      console.log(`Sheet ${sheetName} is an account sheet.`);
       const range = e.range;
       if (range) {
-        Logger.log(`Edit made in range: ${range.getA1Notation()}`);
+        console.log(`Edit made in range: ${range.getA1Notation()}`);
         const WATCHED_COLS = new Set<number>([3, 4, 8]); // Credit, Debit, or Balance
 
         if (!intersectsWatchedCols(range, WATCHED_COLS)) return;
@@ -374,7 +374,7 @@ export class OurFinances {
       }
     }
 
-    Logger.log(`Finished OurFinances.onEdit`);
+    console.log(`Finished OurFinances.onEdit`);
   }
 
   onOpen(): void {
@@ -437,7 +437,7 @@ export class OurFinances {
     this.#spreadsheet.sheets.forEach((sheet) => {
       sheet.trimSheet();
     });
-    Logger.log("All sheets trimmed.");
+    console.log("All sheets trimmed.");
   }
 
   trimSheet() {
@@ -450,21 +450,21 @@ export class OurFinances {
   }
 
   updateBalanceValues() {
-    Logger.log(`Started OurFinances.updateBalanceValues`);
+    console.log(`Started OurFinances.updateBalanceValues`);
 
     const activeSheet = this.#spreadsheet.activeSheet;
     if (!activeSheet) {
-      Logger.log("No active sheet found.");
+      console.log("No active sheet found.");
       return;
     }
 
     if (activeSheet.name.startsWith("_")) {
-      Logger.log(`Sheet ${activeSheet.name} is an account sheet.`);
+      console.log(`Sheet ${activeSheet.name} is an account sheet.`);
       const accountSheet = new AccountSheet(activeSheet, this.#spreadsheet);
       accountSheet.updateBalanceValues();
     }
 
-    Logger.log(`Finished OurFinances.updateBalanceValues`);
+    console.log(`Finished OurFinances.updateBalanceValues`);
   }
 
   updateSpreadsheetSummary() {

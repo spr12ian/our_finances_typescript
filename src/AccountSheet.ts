@@ -152,7 +152,7 @@ export class AccountSheet {
     }
 
     if (firstDiffIndex === -1) {
-      Logger.log(`No changes to balance for ${this.accountName}`);
+      console.log(`No changes to balance for ${this.accountName}`);
       return;
     }
 

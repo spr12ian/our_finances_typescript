@@ -225,13 +225,13 @@ export function GAS_onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
 }
 
 export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
-  Logger.log("Started GAS_onOpen");
+  console.log("Started GAS_onOpen");
   if (e) {
-    Logger.log("GAS_onOpen called with event.");
+    console.log("GAS_onOpen called with event.");
   }
   const spreadsheet = getFinancesSpreadsheet(e);
   new OurFinances(spreadsheet).onOpen();
-  Logger.log("Finished GAS_onOpen");
+  console.log("Finished GAS_onOpen");
 }
 
 export function GAS_openAccounts() {

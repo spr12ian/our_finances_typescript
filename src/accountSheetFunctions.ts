@@ -40,3 +40,11 @@ export function getAccountSheetNames(
 
   return cachedAccountSheetNames;
 }
+
+export function isAccountSheet(sheet:Sheet) {
+  return isAccountSheetName(sheet.name);
+}
+
+export function isAccountSheetName(sheetName:string) {
+  return sheetName && sheetName.startsWith(ACCOUNT_PREFIX);
+}

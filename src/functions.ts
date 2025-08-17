@@ -1,5 +1,6 @@
 /// <reference types="google-apps-script" />
 
+import { isAccountSheet } from './accountSheetFunctions';
 import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
 import { OurFinances } from "./OurFinances";
 import { Sheet } from "./Sheet";
@@ -106,7 +107,7 @@ export function isSingleCell(range: GoogleAppsScript.Spreadsheet.Range) {
 }
 
 export function setLastUpdatedOnAccountBalanceChange(sheet: Sheet) {
-  if (sheet.isAccountSheet()) {
+  if (isAccountSheet(sheet)) {
     const key = sheet.getSheetName().slice(1);
     const spreadsheet = getFinancesSpreadsheet();
     const bankAccounts = new OurFinances(spreadsheet).bankAccounts;

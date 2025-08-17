@@ -3,6 +3,7 @@ import { FastLog } from "./FastLog";
 import { MetaBankAccounts as Meta } from "./constants";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
+import { isAccountSheet } from './accountSheetFunctions';
 
 type FilterSpec = {
   column: number;
@@ -137,7 +138,7 @@ export class BankAccounts {
   }
 
   updateLastUpdatedBySheet(sheet: Sheet) {
-    if (sheet.isAccountSheet()) {
+    if (isAccountSheet(sheet)) {
       const key = sheet.getSheetName().slice(1);
       this.updateLastUpdatedByKey(key);
     }

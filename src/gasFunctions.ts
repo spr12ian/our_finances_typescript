@@ -228,7 +228,7 @@ export function GAS_onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
 export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
   FastLog.log("Started GAS_onOpen");
   if (e) {
-    FastLog.log("GAS_onOpen called with event.");
+    FastLog.log(`Event details: ${JSON.stringify(e, null, 2)}`);
   }
   const spreadsheet = getFinancesSpreadsheet(e);
   new OurFinances(spreadsheet).onOpen();

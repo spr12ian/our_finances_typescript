@@ -345,13 +345,20 @@ export class OurFinances {
 
   onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
     FastLog.log(`Started OurFinances.onChange`);
-    switch (e.changeType) {
-      case "REMOVE_ROW":
-        FastLog.log(`Row removed`);
-        this.updateBalanceValues();
-        break;
-      default:
-        FastLog.log(`Unhandled change event: ${JSON.stringify(e, null, 2)}`);
+    const ignored = new Set([
+      "FORMAT",
+      // add others you don't need
+    ]);
+
+    if (!ignored.has(e.changeType as string)) {
+      switch (e.changeType) {
+        case "REMOVE_ROW":
+          FastLog.log(`Row removed`);
+          this.updateBalanceValues();
+          break;
+        default:
+          FastLog.log(`Unhandled change event: ${JSON.stringify(e, null, 2)}`);
+      }
     }
 
     FastLog.log(`Finished OurFinances.onChange`);
@@ -360,27 +367,47 @@ export class OurFinances {
   onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
     FastLog.log(`Started OurFinances.onEdit`);
     FastLog.log(`Edit event: ${JSON.stringify(e, null, 2)}`);
-    const sheetName = e.source.getActiveSheet().getName();
-    FastLog.log(`Edit made in sheet: ${sheetName}`);
-    if (sheetName.startsWith("_")) {
+
+    let shouldUpdate = false;
+
+    const sheet = e.source?.getActiveSheet?.();
+    const sheetName = sheet?.getName?.();
+    FastLog.log(`Edit made in sheet: ${sheetName ?? "(unknown)"}`);
+
+    if (sheetName && sheetName.startsWith("_")) {
       FastLog.log(`Sheet ${sheetName} is an account sheet.`);
+
       const range = e.range;
       if (range) {
         FastLog.log(`Edit made in range: ${range.getA1Notation()}`);
-        const WATCHED_COLS = new Set<number>([3, 4, 8]); // Credit, Debit, or Balance
 
-        if (!intersectsWatchedCols(range, WATCHED_COLS)) return;
-        // Single-cell edit: we can test "actually changed"
-        if (range.getNumRows() === 1 && range.getNumColumns() === 1) {
-          // Note: clearing a cell -> e.value === undefined, e.oldValue is the previous value
-          if (e.value === e.oldValue) return; // no-op edit
-          this.updateBalanceValues();
-          return;
+        const WATCHED_COLS = new Set<number>([3, 4, 8]); // Credit, Debit, Balance
+        const touchesWatched = intersectsWatchedCols(range, WATCHED_COLS);
+
+        if (touchesWatched) {
+          // For single-cell edits, only update if the value actually changed.
+          const isSingleCell =
+            range.getNumRows() === 1 && range.getNumColumns() === 1;
+          if (isSingleCell) {
+            const actuallyChanged = e.value !== e.oldValue; // note: undefined vs string handles clears
+            shouldUpdate = actuallyChanged;
+            if (!actuallyChanged) {
+              FastLog.log(`No-op single-cell edit detected (value unchanged).`);
+            }
+          } else {
+            // Multi-cell edit that touches watched columns → always update
+            shouldUpdate = true;
+          }
         }
       }
     }
 
+    if (shouldUpdate) {
+      this.updateBalanceValues();
+    }
+
     FastLog.log(`Finished OurFinances.onEdit`);
+    return;
   }
 
   onOpen(): void {

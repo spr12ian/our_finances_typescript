@@ -1,7 +1,7 @@
 /// <reference types="google-apps-script" />
 
-import { isAccountSheetName } from "./isAccountSheetName";
 import { FastLog } from "./FastLog";
+
 /**
  * Thin wrapper around a GAS Sheet.
  * Prefer using `Spreadsheet.getSheet(sheetName)` to instantiate.
@@ -261,10 +261,6 @@ export class Sheet {
 
   hideColumn(column: GoogleAppsScript.Spreadsheet.Range): void {
     this.gasSheet.hideColumn(column);
-  }
-
-  isAccountSheet() {
-    return isAccountSheetName(this.name);
   }
 
   setActiveRange(range: GoogleAppsScript.Spreadsheet.Range): void {

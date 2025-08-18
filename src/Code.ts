@@ -1,9 +1,9 @@
 /// <reference types="google-apps-script" />
 import { exportToGlobalThis } from "./exportToGlobal";
 import * as GAS from "./gasExports";
-import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
-import { OurFinances } from "./OurFinances";
-import { registerDynamicAccountFunctions } from "./registerDynamicAccountFunctions";
+// import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
+// import { OurFinances } from "./OurFinances";
+// import { registerDynamicAccountFunctions } from "./registerDynamicAccountFunctions";
 import { shimGlobals } from "./shimGlobals";
 // import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
 // import { FastLog } from './FastLog';
@@ -15,12 +15,12 @@ import { shimGlobals } from "./shimGlobals";
 // ────────────────────────────────────────────────────────────
 //  Dynamically create account menu functions
 // ────────────────────────────────────────────────────────────
-(() => {
-  const spreadsheet = getFinancesSpreadsheet();
-  const accountSheetNames = new OurFinances(spreadsheet).spreadsheetSummary
-    .accountSheetNames;
-  registerDynamicAccountFunctions(accountSheetNames);
-})();
+// (() => {
+//   const spreadsheet = getFinancesSpreadsheet();
+//   const accountSheetNames = new OurFinances(spreadsheet).spreadsheetSummary
+//     .accountSheetNames;
+//   registerDynamicAccountFunctions(accountSheetNames);
+// })();
 
 // ────────────────────────────────────────────────────────────
 // Register trigger handlers

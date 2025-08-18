@@ -1,7 +1,7 @@
 /// <reference types="google-apps-script" />
-import { FastLog } from "./FastLog";
 import { MetaAccountSheet as Meta, MetaBankAccounts } from "./constants";
 import { DescriptionReplacements } from "./DescriptionReplacements";
+import { FastLog } from "./FastLog";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 import { xLookup } from "./xLookup";
@@ -129,27 +129,46 @@ export class AccountSheet {
     sheet.setNumberFormatAsUKCurrency("C2:D", "H2:H");
   }
 
-  updateBalanceValues(): void {
-    const start = Meta.ROW_DATA_STARTS;
-    const allValues = this.sheet.dataRange.getValues();
-    const dataRows = allValues.slice(start - 1);
-    if (dataRows.length === 0) return;
+  updateBalanceValues(rowEdited?: number): void {
+    const COLUMNS = Meta.COLUMNS;
+    const ROW_DATA_STARTS = Meta.ROW_DATA_STARTS;
+    const gasSheet = this.sheet.raw;
 
-    let balance = 0;
-    const output: number[][] = new Array(dataRows.length);
+    // Clamp to first data row
+    const row = Math.max(ROW_DATA_STARTS, rowEdited ?? ROW_DATA_STARTS);
+    const lastRow = gasSheet.getLastRow();
+    const len = Math.max(0, lastRow - row + 1);
+    if (len === 0) return;
+
+    // Seed running balance from the previous row’s BALANCE (or 0 if first data row)
+    const toPennies = (v: unknown) => Math.round((Number(v) || 0) * 100);
+    let balP = 0;
+    if (row > ROW_DATA_STARTS) {
+      balP = toPennies(gasSheet.getRange(row - 1, COLUMNS.BALANCE).getValue());
+    }
+
+    const creditColumn = gasSheet
+      .getRange(row, COLUMNS.CREDIT, len, 1)
+      .getValues();
+    const debitColumn = gasSheet
+      .getRange(row, COLUMNS.DEBIT, len, 1)
+      .getValues();
+    const balanceColumn = gasSheet
+      .getRange(row, COLUMNS.BALANCE, len, 1)
+      .getValues();
+
+    const output: number[][] = new Array(len);
     let firstDiffIndex = -1;
-    const TOL = 0.005; // ~half a penny to avoid FP noise
 
-    for (let i = 0; i < dataRows.length; i++) {
-      const row = dataRows[i];
-      const credit = Number(row[Meta.COLUMNS.CREDIT - 1]) || 0;
-      const debit = Number(row[Meta.COLUMNS.DEBIT - 1]) || 0;
-      const currentBalance = Number(row[Meta.COLUMNS.BALANCE - 1]) || 0;
+    for (let i = 0; i < len; i++) {
+      const creditP = toPennies(creditColumn[i][0]) || 0;
+      const debitP = toPennies(debitColumn[i][0]) || 0;
+      const currentBalanceP = toPennies(balanceColumn[i][0]) || 0;
 
-      balance += credit - debit;
-      output[i] = [balance];
+      balP += creditP - debitP;
+      output[i] = [balP / 100];
 
-      if (firstDiffIndex === -1 && Math.abs(balance - currentBalance) > TOL) {
+      if (firstDiffIndex === -1 && currentBalanceP !== balP) {
         firstDiffIndex = i;
       }
     }
@@ -160,8 +179,8 @@ export class AccountSheet {
     }
 
     const slice = output.slice(firstDiffIndex);
-    this.sheet.raw
-      .getRange(start + firstDiffIndex, Meta.COLUMNS.BALANCE, slice.length, 1)
+    gasSheet
+      .getRange(row + firstDiffIndex, COLUMNS.BALANCE, slice.length, 1)
       .setValues(slice);
   }
 

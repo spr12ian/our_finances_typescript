@@ -17,13 +17,13 @@ import {
   MetaUncategorisedByDate,
   ONE_MINUTE,
 } from "./constants";
+import { FastLog } from "./FastLog";
 import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
 import { logTime } from "./logTime";
+import { onEdit } from "./onEdit";
 import { OurFinances } from "./OurFinances";
 import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
-import { withReentrancy } from "./withReentrancy";
-import { FastLog } from './FastLog';
-import { onEdit } from './onEdit';
+import { withReentryGuard } from "./withReentryGuard";
 
 export function GAS_applyDescriptionReplacements() {
   const spreadsheet = getFinancesSpreadsheet();
@@ -86,7 +86,7 @@ export function GAS_convertCurrentColumnToUppercase() {
 export function GAS_dailySorts() {
   const spreadsheet = getFinancesSpreadsheet();
 
-  withReentrancy("DAILY_SORTS_RUNNING", FIVE_MINUTES, () => {
+  withReentryGuard("DAILY_SORTS_RUNNING", FIVE_MINUTES, () => {
     new OurFinances(spreadsheet).dailySorts();
   });
 }
@@ -213,16 +213,14 @@ export function GAS_monthlyUpdate() {
 }
 
 export function GAS_onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
-  withReentrancy("ONCHANGE_RUNNING", ONE_MINUTE, () => {
+  withReentryGuard("ONCHANGE_RUNNING", ONE_MINUTE, () => {
     const spreadsheet = getFinancesSpreadsheet(e);
     new OurFinances(spreadsheet).onChange(e);
   });
 }
 
 export function GAS_onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
-  withReentrancy("ONEDIT_RUNNING", ONE_MINUTE, () => {
-    onEdit(e);
-  });
+  onEdit(e);
 }
 
 export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
@@ -250,7 +248,7 @@ export function GAS_saveContainerIdOnce() {
 }
 
 export function GAS_sendDailyEmail() {
-  withReentrancy("SEND_DAILY_EMAIL_RUNNING", FIVE_MINUTES, () => {
+  withReentryGuard("SEND_DAILY_EMAIL_RUNNING", FIVE_MINUTES, () => {
     const spreadsheet = getFinancesSpreadsheet();
     new OurFinances(spreadsheet).sendDailyEmail();
   });

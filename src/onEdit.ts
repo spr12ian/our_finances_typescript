@@ -1,8 +1,10 @@
 /// <reference types="google-apps-script" />
 
-import { FastLog } from './FastLog';
-import { OurFinances } from './OurFinances';
-import { Spreadsheet } from './Spreadsheet';
+import { TWO_SECONDS } from "./constants";
+import { FastLog } from "./FastLog";
+import { OurFinances } from "./OurFinances";
+import { Spreadsheet } from "./Spreadsheet";
+import { withReentryGuard } from "./withReentryGuard";
 
 type SheetsOnEdit = GoogleAppsScript.Events.SheetsOnEdit;
 
@@ -18,7 +20,7 @@ type OnEditRule = {
 /** Keep this lean and at top-level so it's initialized once */
 const ON_EDIT_RULES: OnEditRule[] = [
   // examples:
-  { sheet: /^_/, range: ["C:D", "H:H"], fn: updateBalanceValues }, // any sheet starting with "_" → watch column C
+  { sheet: /^_/, range: ["C:D", "H:H"], fn: updateBalanceValues }, // account sheets → watch column C, D, & H
   { sheet: "Budget", range: "B2:D", fn: updateBudgetPreview }, // "Budget" sheet, 3-column band starting B2
   { sheet: "Categories", range: "A:A", fn: refreshCategoryMap },
 ];
@@ -28,32 +30,44 @@ const ON_EDIT_RULES: OnEditRule[] = [
 const FIRST_MATCH_ONLY = true;
 
 export function onEdit(e: SheetsOnEdit): void {
-  // Guard against non-edit triggers or missing range
-  if (!e || !e.range) return;
+  try {
+    // Guard against non-edit triggers or missing range
+    if (!e || !e.range) return;
 
-  const editRange = e.range;
-  const sheet = editRange.getSheet();
-  const sheetName = sheet.getName();
+    const editRange = e.range;
+    const a1 = editRange.getA1Notation();
+    const gasSheet = editRange.getSheet();
+    const sheetName = gasSheet.getName();
+    FastLog.info(`onEdit: ${sheetName} ${a1}`);
 
-  for (const rule of ON_EDIT_RULES) {
-    if (!sheetMatches(rule.sheet, sheetName)) continue;
+    let fired = false;
 
-    const ranges = Array.isArray(rule.range) ? rule.range : [rule.range];
-    // Build once per rule, then test each concrete Range
-    const watchedRanges = sheet.getRangeList(ranges).getRanges();
+    for (const rule of ON_EDIT_RULES) {
+      if (!sheetMatches(rule.sheet, sheetName)) continue;
 
-    if (intersectsAny(editRange, watchedRanges)) {
-      try {
-        rule.fn(e);
-      } catch (err) {
-        // Keep errors local; don't let them break other rules
-        FastLog.error(
-          `onEdit rule failed (${describeRule(rule, sheetName)}):`,
-          err
-        );
-      }
-      if (FIRST_MATCH_ONLY) return;
+      const ranges = Array.isArray(rule.range) ? rule.range : [rule.range];
+      // Build once per rule, then test each concrete Range
+      const watched = gasSheet.getRangeList(ranges).getRanges();
+      if (!intersectsAny(e.range, watched)) continue;
+
+      fired = true;
+      FastLog.info(`onEdit rule hit (${describeRule(rule, sheetName)}):`);
+
+      withReentryGuard(
+        `onEdit:${rule.fn.name}:${sheetName}`,
+        TWO_SECONDS,
+        () => {
+          rule.fn(e);
+        }
+      );
+
+      if (FIRST_MATCH_ONLY) break;
     }
+    if (!fired) FastLog.info("onEdit: no rule matched");
+  } catch (err) {
+    FastLog.error("onEdit top-level error", err);
+  } finally {
+    FastLog.persistRing(); // <— always flush ring to properties
   }
 }
 
@@ -99,11 +113,13 @@ function describeRule(rule: OnEditRule, actualSheet: string): string {
 /* ── Example handlers (replace with your real ones) ───────── */
 
 function updateBalanceValues(e: SheetsOnEdit): void {
-  // …your logic here (e.range is inside the watched region)
-  // Minimal example:
   FastLog.log("updateBalanceValues hit on", e.range.getA1Notation());
+  if (!isSingleCellActuallyChanged(e)) {
+    FastLog.log("Ignoring multi-cell edit or no actual change.");
+    return;
+  }
   const spreadsheet = new Spreadsheet(e.source);
-  new OurFinances(spreadsheet).updateBalanceValues();
+  new OurFinances(spreadsheet).updateBalanceValues(e.range.getRow());
 }
 
 function updateBudgetPreview(e: SheetsOnEdit): void {
@@ -112,4 +128,26 @@ function updateBudgetPreview(e: SheetsOnEdit): void {
 
 function refreshCategoryMap(e: SheetsOnEdit): void {
   console.log("refreshCategoryMap hit on", e.range.getA1Notation());
+}
+
+function isSingleCellActuallyChanged(e: SheetsOnEdit): boolean {
+  const isSingleCell =
+    e.range.getNumRows() === 1 && e.range.getNumColumns() === 1;
+  if (!isSingleCell) return false; // ignore multi-cell edits
+
+  const normalize = (s: string | undefined) => {
+    if (s == null) return ""; // treat undefined as empty (clears)
+    const t = s.trim();
+    // normalize numbers like "1.0" vs "1"
+    const n = Number(t.replace(/,/g, ""));
+    if (!Number.isNaN(n) && t !== "") return String(n);
+    return t;
+  };
+
+  const v = normalize(e.value);
+  const ov = normalize(e.oldValue);
+  const actuallyChanged = v !== ov;
+
+  return actuallyChanged;
+  // … proceed with your logic
 }

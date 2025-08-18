@@ -1,6 +1,6 @@
 /// <reference types="google-apps-script" />
 
-import { goToSheetLastRow } from "./functions";
+import { goToSheetLastRow } from "./goToSheetLastRow";
 
 /**
  * Registers `dynamicAccount_*` functions on `globalThis`

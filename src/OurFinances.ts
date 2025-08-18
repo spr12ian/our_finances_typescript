@@ -1,7 +1,7 @@
 /// <reference types="google-apps-script" />
 import { AccountBalances } from "./AccountBalances";
 import { AccountSheet } from "./AccountSheet";
-import { isAccountSheetName } from "./accountSheetFunctions";
+import { isAccountSheet } from "./accountSheetFunctions";
 import { BankAccounts } from "./BankAccounts";
 import { BankDebitsDue } from "./BankDebitsDue";
 import { BudgetAdHocTransactions } from "./BudgetAdHocTransactions";
@@ -25,8 +25,7 @@ import { Dependencies } from "./Dependencies";
 import { outputToDrive } from "./driveFunctions";
 import { sendMeEmail } from "./emailFunctions";
 import { FastLog } from "./FastLog";
-import { intersectsWatchedCols } from "./intersectsWatchedCols";
-import { Sheet } from "./Sheet";
+import { registerDynamicAccountFunctions } from "./registerDynamicAccountFunctions";
 import { Spreadsheet } from "./Spreadsheet";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
 import { TransactionCategories } from "./TransactionCategories";
@@ -377,6 +376,8 @@ export class OurFinances {
       );
       logTiming("GAS menu", () => buildGasMenu_(ui));
       logTiming("Sections menu", () => buildSectionsMenu_(ui));
+
+      registerDynamicAccountFunctions(accountSheetNames);
     } catch (err) {
       console.error("onOpen error:", err);
     }
@@ -438,7 +439,7 @@ export class OurFinances {
     dependencies.updateAllDependencies();
   }
 
-  updateBalanceValues() {
+  updateBalanceValues(rowEdited?: number) {
     FastLog.log(`Started OurFinances.updateBalanceValues`);
 
     const activeSheet = this.#spreadsheet.activeSheet;
@@ -447,10 +448,10 @@ export class OurFinances {
       return;
     }
 
-    if (activeSheet.name.startsWith("_")) {
+    if (isAccountSheet(activeSheet)) {
       FastLog.log(`Sheet ${activeSheet.name} is an account sheet.`);
       const accountSheet = new AccountSheet(activeSheet, this.#spreadsheet);
-      accountSheet.updateBalanceValues();
+      accountSheet.updateBalanceValues(rowEdited);
     }
 
     FastLog.log(`Finished OurFinances.updateBalanceValues`);

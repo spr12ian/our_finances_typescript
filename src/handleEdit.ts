@@ -30,22 +30,25 @@ const ON_EDIT_RULES: OnEditRule[] = [
 const FIRST_MATCH_ONLY = true;
 
 export function handleEdit(e: SheetsOnEdit): void {
-  const kind = e?.triggerUid ? "installable" : e ? "simple" : "manual";
-  console.log(`onEdit kind=${kind}`, { triggerUid: e?.triggerUid });
-  if (kind !== "installable") return;
+  if (!e.triggerUid) return;
 
-  const eventParts: any = brief(e);
+  // Handle installable trigger
+  console.log(`onEdit triggerUid: ${e.triggerUid}`);
+
+  const eventParts: any = getEditEventParts(e);
+  const quickParts = eventParts;
+  quickParts.range = null;
+  quickParts.gasSheet = null;
   // 1) First-breath log (nothing slow above this line!)
-  console.log("handleOnEdit ENTER", new Date().toISOString(), eventParts);
+  console.log("handleOnEdit ENTER", new Date().toISOString(), quickParts);
 
   try {
     // Guard against non-edit triggers or missing range
-    if (!e || !e.range) return;
+    if (!eventParts || !eventParts.range) return;
 
-    const editRange = e.range;
-    const a1 = editRange.getA1Notation();
-    const gasSheet = editRange.getSheet();
-    const sheetName = gasSheet.getName();
+    const a1 = eventParts.a1Notation;
+    const gasSheet = eventParts.gasSheet;
+    const sheetName = eventParts.sheetName;
     FastLog.info(`onEdit: ${sheetName} ${a1}`);
 
     let fired = false;
@@ -77,21 +80,26 @@ export function handleEdit(e: SheetsOnEdit): void {
   } finally {
     FastLog.persistRing(); // <— always flush ring to properties
   }
+
+  console.log("handleOnEdit EXIT", new Date().toISOString(), quickParts);
 }
 
 /* ── Helpers ─────────────────────────────────────────────── */
 
-function brief(e: SheetsOnEdit) {
+function getEditEventParts(e: SheetsOnEdit) {
   const range = e?.range;
+  const gasSheet = range && range.getSheet();
   // Only log cheap, serializable fields
   return {
     range: range,
-    sheetName: range && range.getSheet().getName(),
+    gasSheet: gasSheet,
+    sheetName: gasSheet && gasSheet.getName(),
     a1Notation: range && range.getA1Notation(),
     col: range && range.getColumn(),
     row: range && range.getRow(),
     value: e?.value,
     oldValue: e?.oldValue,
+    triggerUid: e?.triggerUid,
   };
 }
 

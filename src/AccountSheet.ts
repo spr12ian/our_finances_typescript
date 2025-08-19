@@ -53,7 +53,9 @@ export class AccountSheet {
     range.setValues(values);
   }
 
-  onEdit() {}
+  onEdit() {
+    FastLog.log("AccountSheet.onEdit");
+  }
 
   fixHeaders() {
     const headerRange = this.sheet.getRange("A1:H1");

@@ -1,26 +1,11 @@
 /// <reference types="google-apps-script" />
 import { exportToGlobalThis } from "./exportToGlobal";
 import * as GAS from "./gasExports";
-// import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
-// import { OurFinances } from "./OurFinances";
-// import { registerDynamicAccountFunctions } from "./registerDynamicAccountFunctions";
 import { shimGlobals } from "./shimGlobals";
-// import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
-// import { FastLog } from './FastLog';
 
 /**
  * Application entry point – executed when the script is loaded.
  */
-
-// ────────────────────────────────────────────────────────────
-//  Dynamically create account menu functions
-// ────────────────────────────────────────────────────────────
-// (() => {
-//   const spreadsheet = getFinancesSpreadsheet();
-//   const accountSheetNames = new OurFinances(spreadsheet).spreadsheetSummary
-//     .accountSheetNames;
-//   registerDynamicAccountFunctions(accountSheetNames);
-// })();
 
 // ────────────────────────────────────────────────────────────
 // Register trigger handlers
@@ -44,11 +29,3 @@ exportToGlobalThis(globalsToExport);
 
 // Export this list for the shim generator
 (globalThis as any).__exportedGlobals__ = Object.keys(globalsToExport).sort();
-
-// Object.keys(globalThis)
-//   .sort()
-//   .forEach((key) => {
-//     FastLog.log(key);
-//   });
-
-// validateAllMenuFunctionNames();

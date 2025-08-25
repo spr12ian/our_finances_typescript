@@ -19,7 +19,7 @@ import {
 } from "./constants";
 import { FastLog } from "./FastLog";
 import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
-import { handleEdit } from "./handleEdit";
+import { handleEditTrigger } from "./handleEditTrigger";
 import { logTime } from "./logTime";
 import { OurFinances } from "./OurFinances";
 import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
@@ -219,8 +219,10 @@ export function GAS_onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
   });
 }
 
-export function GAS_onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
-  handleEdit(e);
+export function GAS_onEditTrigger(
+  e: GoogleAppsScript.Events.SheetsOnEdit
+): void {
+  handleEditTrigger(e);
 }
 
 export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {

@@ -53,8 +53,8 @@ export class AccountSheet {
     range.setValues(values);
   }
 
-  onEdit() {
-    FastLog.log("AccountSheet.onEdit");
+  handleEditTrigger() {
+    FastLog.log("AccountSheet.handleEditTrigger");
   }
 
   fixHeaders() {

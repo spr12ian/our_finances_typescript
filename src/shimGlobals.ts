@@ -37,7 +37,7 @@ export const shimGlobals = [
   "helloWorld",
   "monthlyUpdate",
   "onChange",
-  "onEdit",
+  "onEditTrigger",
   "onOpen",
   "openAccounts",
   "saveContainerIdOnce",

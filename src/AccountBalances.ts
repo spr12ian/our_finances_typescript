@@ -1,7 +1,7 @@
 import { MetaAccountBalances as Meta } from "./constants";
-import { FastLog } from "./FastLog";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
+import { FastLog } from "./support/FastLog";
 
 /**
  * Class to handle the "Account balances" sheet.

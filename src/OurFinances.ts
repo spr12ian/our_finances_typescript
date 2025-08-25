@@ -24,10 +24,10 @@ import { getToday } from "./DateUtils";
 import { Dependencies } from "./Dependencies";
 import { outputToDrive } from "./driveFunctions";
 import { sendMeEmail } from "./emailFunctions";
-import { FastLog } from "./FastLog";
 import { registerDynamicAccountFunctions } from "./registerDynamicAccountFunctions";
 import { Spreadsheet } from "./Spreadsheet";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
+import { FastLog } from "./support/FastLog";
 import { TransactionCategories } from "./TransactionCategories";
 import { Transactions } from "./Transactions";
 import {

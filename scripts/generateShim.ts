@@ -2,8 +2,8 @@
 import fs from "fs";
 import path from "path";
 import { shimGlobals } from "../src/shimGlobals";
+import { FastLog } from "../src/support/FastLog";
 import { getDirname } from "./utils/esmPath";
-import { FastLog } from '../src/FastLog';
 
 const __dirname = getDirname(import.meta.url);
 

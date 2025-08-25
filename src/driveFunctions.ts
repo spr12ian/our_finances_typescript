@@ -1,5 +1,4 @@
-
-import { FastLog } from "./FastLog";
+import { FastLog } from "./support/FastLog";
 export function outputToDrive(fileName: string, output: string) {
   // Overwrite if it already exists
   const existing = DriveApp.getFilesByName(fileName);

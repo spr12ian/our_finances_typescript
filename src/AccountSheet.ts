@@ -1,9 +1,9 @@
 /// <reference types="google-apps-script" />
 import { MetaAccountSheet as Meta, MetaBankAccounts } from "./constants";
 import { DescriptionReplacements } from "./DescriptionReplacements";
-import { FastLog } from "./FastLog";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
+import { FastLog } from "./support/FastLog";
 import { xLookup } from "./xLookup";
 
 export class AccountSheet {

@@ -1,9 +1,9 @@
 /// <reference types="google-apps-script" />
 
 import { TWO_SECONDS } from "./constants";
-import { FastLog } from "./FastLog";
 import { OurFinances } from "./OurFinances";
 import { Spreadsheet } from "./Spreadsheet";
+import { FastLog } from "./support/FastLog";
 import { withReentryGuard } from "./withReentryGuard";
 
 type SheetsOnEdit = GoogleAppsScript.Events.SheetsOnEdit;

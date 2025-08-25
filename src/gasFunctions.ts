@@ -17,11 +17,11 @@ import {
   MetaUncategorisedByDate,
   ONE_MINUTE,
 } from "./constants";
-import { FastLog } from "./FastLog";
 import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
 import { handleEditTrigger } from "./handleEditTrigger";
 import { logTime } from "./logTime";
 import { OurFinances } from "./OurFinances";
+import { FastLog } from "./support/FastLog";
 import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
 import { withReentryGuard } from "./withReentryGuard";
 

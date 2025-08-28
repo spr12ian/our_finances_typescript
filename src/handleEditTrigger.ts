@@ -19,7 +19,7 @@ type OnEditRule = {
 
 /** Keep this lean and at top-level so it's initialized once */
 const ON_EDIT_RULES: OnEditRule[] = [
-  { sheet: /^_/, range: ["C:D", "H:H"], fn: updateBalanceValues },
+  { sheet: /^_/, range: "C2:D", fn: updateBalanceValues },
   { sheet: "Budget", range: "B2:D", fn: updateBudgetPreview },
   { sheet: "Categories", range: "A:A", fn: refreshCategoryMap },
 ];

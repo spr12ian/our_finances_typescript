@@ -1,6 +1,6 @@
 # our_finances_typescript
 
-This repository attempts to use [clasp](https://github.com/google/clasp) to allow
+This repository uses [clasp](https://github.com/google/clasp) to allow
 GAS development using TypeScript.
 
 Some of my process was influenced by sqrrrl's
@@ -66,6 +66,6 @@ Ensure node npm package scripts are consistent with the Makefile.
 
 ## Daily workflow
 
-Make changes as required then
+Make code changes in src as required then
 
-`make gas`
+`make`

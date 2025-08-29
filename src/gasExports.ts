@@ -39,6 +39,7 @@ export { GAS_onChange } from "./gasFunctions";
 export { GAS_onEditTrigger } from "./gasFunctions";
 export { GAS_onOpen } from "./gasFunctions";
 export { GAS_openAccounts } from "./gasFunctions";
+export { GAS_queueSetup } from "./gasFunctions";
 export { GAS_saveContainerIdOnce } from "./gasFunctions";
 export { GAS_sendDailyEmail } from "./gasFunctions";
 export { GAS_showAllAccounts } from "./gasFunctions";

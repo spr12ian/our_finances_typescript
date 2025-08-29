@@ -40,6 +40,7 @@ export const shimGlobals = [
   "onEditTrigger",
   "onOpen",
   "openAccounts",
+  "queueSetup",
   "saveContainerIdOnce",
   "sendDailyEmail",
   "showAllAccounts",

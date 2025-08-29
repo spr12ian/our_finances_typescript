@@ -1,5 +1,5 @@
+import * as timeConstants from "./timeConstants";
 import {
-  FIVE_MINUTES,
   MetaBalanceSheet,
   MetaBudget,
   MetaBudgetAdHocTransactions,
@@ -15,12 +15,12 @@ import {
   MetaTransactionCategories,
   MetaTransactionsByDate,
   MetaUncategorisedByDate,
-  ONE_MINUTE,
 } from "./constants";
 import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
 import { handleEditTrigger } from "./handleEditTrigger";
 import { logTime } from "./logTime";
 import { OurFinances } from "./OurFinances";
+import { queue_ensureSetup } from './queueFunctions';
 import { FastLog } from "./support/FastLog";
 import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
 import { withReentryGuard } from "./withReentryGuard";
@@ -86,7 +86,7 @@ export function GAS_convertCurrentColumnToUppercase() {
 export function GAS_dailySorts() {
   const spreadsheet = getFinancesSpreadsheet();
 
-  withReentryGuard("DAILY_SORTS_RUNNING", FIVE_MINUTES, () => {
+  withReentryGuard("DAILY_SORTS_RUNNING", timeConstants.FIVE_MINUTES, () => {
     new OurFinances(spreadsheet).dailySorts();
   });
 }
@@ -94,6 +94,10 @@ export function GAS_dailySorts() {
 export function GAS_dailyUpdate() {
   const spreadsheet = getFinancesSpreadsheet();
   new OurFinances(spreadsheet).bankAccounts.showDaily();
+}
+
+export function GAS_queueSetup(): void {
+  queue_ensureSetup()
 }
 
 export function GAS_exportFormulasToDrive() {
@@ -213,7 +217,7 @@ export function GAS_monthlyUpdate() {
 }
 
 export function GAS_onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
-  withReentryGuard("ONCHANGE_RUNNING", ONE_MINUTE, () => {
+  withReentryGuard("ONCHANGE_RUNNING", timeConstants.ONE_MINUTE, () => {
     const spreadsheet = getFinancesSpreadsheet(e);
     new OurFinances(spreadsheet).onChange(e);
   });
@@ -250,7 +254,7 @@ export function GAS_saveContainerIdOnce() {
 }
 
 export function GAS_sendDailyEmail() {
-  withReentryGuard("SEND_DAILY_EMAIL_RUNNING", FIVE_MINUTES, () => {
+  withReentryGuard("SEND_DAILY_EMAIL_RUNNING", timeConstants.FIVE_MINUTES, () => {
     const spreadsheet = getFinancesSpreadsheet();
     new OurFinances(spreadsheet).sendDailyEmail();
   });

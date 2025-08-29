@@ -1,10 +1,5 @@
 export const ACCOUNT_PREFIX = "_";
-export const ONE_MINUTE = 60 * 1000;
-export const ONE_SECOND = 1000;
-export const FIVE_MINUTES = 5 * ONE_MINUTE;
 export const LOCALE = "en-GB" as const;
-export const THIRTY_SECONDS = 30 * 1000;
-export const TWO_SECONDS = 2 * 1000;
 
 export const MetaAccountBalances = {
   FORMULA_CONFIG: [

@@ -133,9 +133,10 @@ function __getEventPartsOpt(e: SheetsOnEdit) {
   const c1 = range.getColumn();
   const r2 = r1 + range.getNumRows() - 1;
   const c2 = c1 + range.getNumColumns() - 1;
-  const a1 = range.getA1Notation();
-  const sheetName = e.source.getActiveSheet().getName();
-  return { sheetName, a1, editBounds: { r1, c1, r2, c2 } as Bounds };
+  FastLog.info("A: about to read sheet name");
+  const sheetName = range.getSheet().getName();
+  FastLog.info("B: got sheet name");
+  return { sheetName, editBounds: { r1, c1, r2, c2 } as Bounds };
 }
 
 // ---------------------------
@@ -143,10 +144,16 @@ function __getEventPartsOpt(e: SheetsOnEdit) {
 // ---------------------------
 export function handleEditTrigger(e: SheetsOnEdit): void {
   const startMs = Date.now();
+  FastLog.info(`handleEditTrigger started`);
   let fired = false;
 
   try {
-    const { sheetName, a1, editBounds } = __getEventPartsOpt(e);
+    const { sheetName, editBounds } = __getEventPartsOpt(e);
+
+    // Ultra-cheap early exits
+    if (editBounds.r1 !== editBounds.r2 || editBounds.c1 !== editBounds.c2) return;
+    // Old/new value equality (skip formula recalculate churn)
+    if ("oldValue" in e && e.oldValue === e.value) return;
 
     const rules = __compileRulesOpt().filter((r) =>
       typeof r.sheet === "string"
@@ -154,6 +161,8 @@ export function handleEditTrigger(e: SheetsOnEdit): void {
         : (r.sheet as RegExp).test(sheetName)
     );
     if (rules.length === 0) return;
+
+    const cellKey = `${editBounds.r1}:${editBounds.c1}`;
 
     for (const rule of rules) {
       let match = false;
@@ -164,9 +173,10 @@ export function handleEditTrigger(e: SheetsOnEdit): void {
         }
       }
       if (!match) continue;
+      FastLog.info(`handleEditTrigger rule match found on ${sheetName}:${cellKey}`);
 
       withReentryGuard(
-        `handleEditTrigger:${sheetName}:${a1}`,
+        `handleEditTrigger:${sheetName}:${cellKey}`,
         TWO_SECONDS,
         () => {
           rule.fn(e);
@@ -181,8 +191,8 @@ export function handleEditTrigger(e: SheetsOnEdit): void {
     FastLog.error(`handleEditTrigger error: ${(err as Error)?.message || err}`);
     throw err;
   } finally {
-    if (fired) FastLog.persistRing();
-    FastLog.info(`handleEditTrigger ran for ${Date.now() - startMs}ms`);
+    // if (fired) FastLog.persistRing();
+    FastLog.info(`handleEditTrigger ran for ${Date.now() - startMs}ms, fired: ${fired}`);
   }
 }
 

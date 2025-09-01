@@ -1,9 +1,10 @@
 /// <reference types="google-apps-script" />
 
-import { TWO_SECONDS } from "./timeConstants";
 import { OurFinances } from "./OurFinances";
+import * as queueConstants from "./queueConstants";
 import { Spreadsheet } from "./Spreadsheet";
 import { FastLog } from "./support/FastLog";
+import { TWO_SECONDS } from "./timeConstants";
 import { withReentryGuard } from "./withReentryGuard";
 
 type SheetsOnEdit = GoogleAppsScript.Events.SheetsOnEdit;
@@ -148,10 +149,20 @@ export function handleEditTrigger(e: SheetsOnEdit): void {
   let fired = false;
 
   try {
+    if (!e || !e.range) return;
+
     const { sheetName, editBounds } = __getEventPartsOpt(e);
+    if (
+      sheetName === queueConstants.QUEUE_SHEET_NAME ||
+      sheetName === queueConstants.DEAD_SHEET_NAME
+    )
+      return; // avoid feedback loops
+
+    if (!isSingleCell(e)) return;
 
     // Ultra-cheap early exits
-    if (editBounds.r1 !== editBounds.r2 || editBounds.c1 !== editBounds.c2) return;
+    if (editBounds.r1 !== editBounds.r2 || editBounds.c1 !== editBounds.c2)
+      return;
     // Old/new value equality (skip formula recalculate churn)
     if ("oldValue" in e && e.oldValue === e.value) return;
 
@@ -173,7 +184,9 @@ export function handleEditTrigger(e: SheetsOnEdit): void {
         }
       }
       if (!match) continue;
-      FastLog.info(`handleEditTrigger rule match found on ${sheetName}:${cellKey}`);
+      FastLog.info(
+        `handleEditTrigger rule match found on ${sheetName}:${cellKey}`
+      );
 
       withReentryGuard(
         `handleEditTrigger:${sheetName}:${cellKey}`,
@@ -192,7 +205,9 @@ export function handleEditTrigger(e: SheetsOnEdit): void {
     throw err;
   } finally {
     // if (fired) FastLog.persistRing();
-    FastLog.info(`handleEditTrigger ran for ${Date.now() - startMs}ms, fired: ${fired}`);
+    FastLog.info(
+      `handleEditTrigger ran for ${Date.now() - startMs}ms, fired: ${fired}`
+    );
   }
 }
 
@@ -213,10 +228,14 @@ function refreshCategoryMap(e: SheetsOnEdit): void {
   console.log("refreshCategoryMap hit on", e.range.getA1Notation());
 }
 
-function isSingleCellActuallyChanged(e: SheetsOnEdit): boolean {
+function isSingleCell(e: SheetsOnEdit): boolean {
   const isSingleCell =
     e.range.getNumRows() === 1 && e.range.getNumColumns() === 1;
-  if (!isSingleCell) return false;
+  return isSingleCell;
+}
+
+function isSingleCellActuallyChanged(e: SheetsOnEdit): boolean {
+  if (!isSingleCell(e)) return false;
   const normalize = (s: string | undefined) => {
     if (s == null) return "";
     const t = s.trim();

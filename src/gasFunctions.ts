@@ -1,4 +1,3 @@
-import * as timeConstants from "./timeConstants";
 import {
   MetaBalanceSheet,
   MetaBudget,
@@ -17,13 +16,15 @@ import {
   MetaUncategorisedByDate,
 } from "./constants";
 import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
-import { handleEditTrigger } from "./handleEditTrigger";
+// import { handleEditTrigger } from "./handleEditTrigger";
 import { logTime } from "./logTime";
 import { OurFinances } from "./OurFinances";
-import { queue_ensureSetup } from './queueFunctions';
+import { queue_ensureSetup } from "./queueFunctions";
 import { FastLog } from "./support/FastLog";
+import * as timeConstants from "./timeConstants";
 import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
 import { withReentryGuard } from "./withReentryGuard";
+import { queue_onEdit } from "./queueFunctions";
 
 export function GAS_applyDescriptionReplacements() {
   const spreadsheet = getFinancesSpreadsheet();
@@ -94,10 +95,6 @@ export function GAS_dailySorts() {
 export function GAS_dailyUpdate() {
   const spreadsheet = getFinancesSpreadsheet();
   new OurFinances(spreadsheet).bankAccounts.showDaily();
-}
-
-export function GAS_queueSetup(): void {
-  queue_ensureSetup()
 }
 
 export function GAS_exportFormulasToDrive() {
@@ -226,7 +223,8 @@ export function GAS_onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
 export function GAS_onEditTrigger(
   e: GoogleAppsScript.Events.SheetsOnEdit
 ): void {
-  handleEditTrigger(e);
+  // handleEditTrigger(e);
+  queue_onEdit(e);
 }
 
 export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
@@ -245,6 +243,10 @@ export function GAS_openAccounts() {
   ourFinances.bankAccounts.showOpenAccounts();
 }
 
+export function GAS_queueSetup(): void {
+  queue_ensureSetup();
+}
+
 export function GAS_saveContainerIdOnce() {
   const id = SpreadsheetApp.getActiveSpreadsheet().getId();
   PropertiesService.getScriptProperties().setProperty(
@@ -254,10 +256,14 @@ export function GAS_saveContainerIdOnce() {
 }
 
 export function GAS_sendDailyEmail() {
-  withReentryGuard("SEND_DAILY_EMAIL_RUNNING", timeConstants.FIVE_MINUTES, () => {
-    const spreadsheet = getFinancesSpreadsheet();
-    new OurFinances(spreadsheet).sendDailyEmail();
-  });
+  withReentryGuard(
+    "SEND_DAILY_EMAIL_RUNNING",
+    timeConstants.FIVE_MINUTES,
+    () => {
+      const spreadsheet = getFinancesSpreadsheet();
+      new OurFinances(spreadsheet).sendDailyEmail();
+    }
+  );
 }
 
 export function GAS_showAllAccounts() {

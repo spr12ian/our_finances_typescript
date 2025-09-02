@@ -1,11 +1,8 @@
 /// <reference types="google-apps-script" />
 
-import { OurFinances } from "./OurFinances";
 import * as queueConstants from "./queueConstants";
-import { Spreadsheet } from "./Spreadsheet";
+import { queue_enqueue } from "./queueFunctions";
 import { FastLog } from "./support/FastLog";
-import { TWO_SECONDS } from "./timeConstants";
-import { withReentryGuard } from "./withReentryGuard";
 
 type SheetsOnEdit = GoogleAppsScript.Events.SheetsOnEdit;
 
@@ -21,8 +18,6 @@ type OnEditRule = {
 /** Keep this lean and at top-level so it's initialized once */
 const ON_EDIT_RULES: OnEditRule[] = [
   { sheet: /^_/, range: "C2:D", fn: updateBalanceValues },
-  { sheet: "Budget", range: "B2:D", fn: updateBudgetPreview },
-  { sheet: "Categories", range: "A:A", fn: refreshCategoryMap },
 ];
 
 // Optional: stop after the first matching rule to avoid duplicate work.
@@ -134,9 +129,7 @@ function __getEventPartsOpt(e: SheetsOnEdit) {
   const c1 = range.getColumn();
   const r2 = r1 + range.getNumRows() - 1;
   const c2 = c1 + range.getNumColumns() - 1;
-  FastLog.info("A: about to read sheet name");
   const sheetName = range.getSheet().getName();
-  FastLog.info("B: got sheet name");
   return { sheetName, editBounds: { r1, c1, r2, c2 } as Bounds };
 }
 
@@ -146,10 +139,11 @@ function __getEventPartsOpt(e: SheetsOnEdit) {
 export function handleEditTrigger(e: SheetsOnEdit): void {
   const startMs = Date.now();
   FastLog.info(`handleEditTrigger started`);
+
   let fired = false;
 
   try {
-    if (!e || !e.range) return;
+    if (!e || !e.range || !isSingleCell(e.range)) return;
 
     const { sheetName, editBounds } = __getEventPartsOpt(e);
     if (
@@ -157,8 +151,6 @@ export function handleEditTrigger(e: SheetsOnEdit): void {
       sheetName === queueConstants.DEAD_SHEET_NAME
     )
       return; // avoid feedback loops
-
-    if (!isSingleCell(e)) return;
 
     // Ultra-cheap early exits
     if (editBounds.r1 !== editBounds.r2 || editBounds.c1 !== editBounds.c2)
@@ -173,7 +165,7 @@ export function handleEditTrigger(e: SheetsOnEdit): void {
     );
     if (rules.length === 0) return;
 
-    const cellKey = `${editBounds.r1}:${editBounds.c1}`;
+    // const cellKey = `${editBounds.r1}:${editBounds.c1}`;
 
     for (const rule of rules) {
       let match = false;
@@ -184,17 +176,20 @@ export function handleEditTrigger(e: SheetsOnEdit): void {
         }
       }
       if (!match) continue;
-      FastLog.info(
-        `handleEditTrigger rule match found on ${sheetName}:${cellKey}`
-      );
 
-      withReentryGuard(
-        `handleEditTrigger:${sheetName}:${cellKey}`,
-        TWO_SECONDS,
-        () => {
-          rule.fn(e);
-        }
-      );
+      rule.fn(e);
+
+      // FastLog.info(
+      //   `handleEditTrigger rule match found on ${sheetName}:${cellKey}`
+      // );
+
+      // withReentryGuard(
+      //   `handleEditTrigger:${sheetName}:${cellKey}`,
+      //   TWO_SECONDS,
+      //   () => {
+      //     rule.fn(e);
+      //   }
+      // );
 
       fired = true;
       if (FIRST_MATCH_ONLY) break;
@@ -216,26 +211,27 @@ export function handleEditTrigger(e: SheetsOnEdit): void {
 function updateBalanceValues(e: SheetsOnEdit): void {
   FastLog.log("updateBalanceValues hit on", e.range.getA1Notation());
   if (!isSingleCellActuallyChanged(e)) return;
-  const spreadsheet = new Spreadsheet(e.source);
-  new OurFinances(spreadsheet).updateBalanceValues(e.range.getRow());
+
+  try {
+    const r = e.range;
+    const parameters = {
+      sheetName: r.getSheet().getName(),
+      row: r.getRow(),
+    };
+    queue_enqueue(queueConstants.FUNCTION_CALLED.UPDATE_BALANCES, parameters, {
+      priority: 80,
+    });
+  } catch (err) {
+    FastLog.error("updateBalanceValues error", err);
+  }
 }
 
-function updateBudgetPreview(e: SheetsOnEdit): void {
-  console.log("updateBudgetPreview hit on", e.range.getA1Notation());
-}
-
-function refreshCategoryMap(e: SheetsOnEdit): void {
-  console.log("refreshCategoryMap hit on", e.range.getA1Notation());
-}
-
-function isSingleCell(e: SheetsOnEdit): boolean {
-  const isSingleCell =
-    e.range.getNumRows() === 1 && e.range.getNumColumns() === 1;
-  return isSingleCell;
+function isSingleCell(range: GoogleAppsScript.Spreadsheet.Range): boolean {
+  return range.getNumRows() === 1 && range.getNumColumns() === 1;
 }
 
 function isSingleCellActuallyChanged(e: SheetsOnEdit): boolean {
-  if (!isSingleCell(e)) return false;
+  if (!isSingleCell(e.range)) return false;
   const normalize = (s: string | undefined) => {
     if (s == null) return "";
     const t = s.trim();

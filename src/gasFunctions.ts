@@ -16,7 +16,6 @@ import {
   MetaUncategorisedByDate,
 } from "./constants";
 import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
-// import { handleEditTrigger } from "./handleEditTrigger";
 import { logTime } from "./logTime";
 import { OurFinances } from "./OurFinances";
 import { queue_ensureSetup } from "./queueFunctions";
@@ -24,7 +23,8 @@ import { FastLog } from "./support/FastLog";
 import * as timeConstants from "./timeConstants";
 import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
 import { withReentryGuard } from "./withReentryGuard";
-import { queue_onEdit } from "./queueFunctions";
+import { handleEditTrigger } from './handleEditTrigger';
+import { UPDATE_BALANCES } from './UPDATE_BALANCES';
 
 export function GAS_applyDescriptionReplacements() {
   const spreadsheet = getFinancesSpreadsheet();
@@ -223,8 +223,7 @@ export function GAS_onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
 export function GAS_onEditTrigger(
   e: GoogleAppsScript.Events.SheetsOnEdit
 ): void {
-  // handleEditTrigger(e);
-  queue_onEdit(e);
+  handleEditTrigger(e);
 }
 
 export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
@@ -313,4 +312,8 @@ export function GAS_updateTransactionCategories() {
 
 export function GAS_validateAllMenuFunctionNames() {
   validateAllMenuFunctionNames();
+}
+
+export function GAS_UPDATE_BALANCES(parameters:any) {
+  UPDATE_BALANCES(parameters);
 }

@@ -18,18 +18,16 @@ export const STATUS = {
   ERROR: "ERROR",
 } as const;
 
-
-
 // Column map to avoid magic numbers
 export const Col = {
   ID: 1,
-  ENQUEUED_AT: 2,
-  TYPE: 3,
-  PRIORITY: 4,
-  NEXT_RUN_AT: 5,
-  ATTEMPTS: 6,
-  STATUS: 7,
-  PAYLOAD_JSON: 8,
+  CALL: 2,
+  JSON_PARAMETERS: 3,
+  ENQUEUED_AT: 4,
+  PRIORITY: 5,
+  NEXT_RUN_AT: 6,
+  ATTEMPTS: 7,
+  STATUS: 8,
   LAST_ERROR: 9,
   WORKER_ID: 10,
   STARTED_AT: 11,
@@ -37,20 +35,18 @@ export const Col = {
 
 export const HEADERS: string[] = [
   "id",
+  "call",
+  "json_parameters",
   "enqueued_at",
-  "type",
   "priority",
   "next_run_at",
   "attempts",
   "status",
-  "payload_json",
   "last_error",
   "worker_id",
   "started_at",
 ];
 
-// Example job types used below — customise for your project
-export const JOB_TYPE = {
-  EDIT_EVENT: "EDIT_EVENT",
+export const FUNCTION_CALLED = {
   UPDATE_BALANCES: "UPDATE_BALANCES",
 } as const;

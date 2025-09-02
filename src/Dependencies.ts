@@ -52,17 +52,26 @@ export class Dependencies {
    */
   updateAllDependencies() {
     const allDependencies = this.allDependencies;
-    const col = "B";
     const sheet = this.getSheet();
     const len = allDependencies.length;
 
-    for (let index = 0; index < len; index++) {
-      const spreadsheetId = allDependencies[index][0];
-      const spreadsheetName = this.getSpreadsheetNameById(spreadsheetId);
-      const row = index + 2;
-      const a1Notation = col + row;
-      const cell = sheet.getRange(a1Notation);
-      cell.setValue(spreadsheetName);
+    // Build a 2D array for setValues
+    const values: string[][] = new Array(len);
+    for (let i = 0; i < len; i++) {
+      const spreadsheetId = allDependencies[i][0];
+      if (spreadsheetId) {
+        const spreadsheetName = this.getSpreadsheetNameById(spreadsheetId);
+        if (spreadsheetName) {
+          values[i] = [spreadsheetName];
+        } else {
+          values[i] = [""];
+        }
+      } else {
+        values[i] = [""];
+      }
     }
+
+    // Write once: column B starting at row 2
+    sheet.raw.getRange(2, 2, len, 1).setValues(values);
   }
 }

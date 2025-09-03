@@ -49,4 +49,5 @@ export const HEADERS: string[] = [
 
 export const FUNCTION_CALLED = {
   UPDATE_BALANCES: "UPDATE_BALANCES",
+  UPDATE_ACCOUNT_BALANCES: "UPDATE_ACCOUNT_BALANCES",
 } as const;

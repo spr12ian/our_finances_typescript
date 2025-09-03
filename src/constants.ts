@@ -2,6 +2,12 @@ export const ACCOUNT_PREFIX = "_";
 export const LOCALE = "en-GB" as const;
 
 export const MetaAccountBalances = {
+  COLUMNS: {
+    ACCOUNT: 1,
+    CREDIT: 2,
+    DEBIT: 3,
+    NETT: 4,
+  },
   FORMULA_CONFIG: [
     {
       cell: "A1",
@@ -13,6 +19,13 @@ export const MetaAccountBalances = {
       formula: '={"Balance (£)"; ARRAYFORMULA(IF(A2:A<>"", B2:B - C2:C, ""))}',
     },
   ] as { cell: string; formula: string }[],
+  HEADERS: [
+    "Account",
+    "Credit (£)",
+    "Debit (£)",
+    "Nett (£)",
+  ],
+  ROW_DATA_STARTS: 2,
   SHEET: {
     NAME: "Account balances",
   },

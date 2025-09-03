@@ -87,4 +87,10 @@ export class AccountBalances {
 
     FastLog.log(`Finished AccountBalances.update: ${this.sheet.name}`);
   }
+
+  updateAccountBalance(sheetName: string): void {
+    FastLog.log(`Started AccountBalances.updateAccountBalance: ${sheetName}`);
+    // Logic to update account balances by sheet name
+    FastLog.log(`Finished AccountBalances.updateAccountBalance: ${sheetName}`);
+  }
 }

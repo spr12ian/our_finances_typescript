@@ -1,7 +1,7 @@
 /// <reference types="google-apps-script" />
 
-import { queue_enqueue } from "./queueClient";
 import * as queueConstants from "./queueConstants";
+import { queueJob } from "./queueJob";
 import { FastLog } from "./support/FastLog";
 
 type SheetsOnEdit = GoogleAppsScript.Events.SheetsOnEdit;
@@ -218,7 +218,7 @@ function updateBalanceValues(e: SheetsOnEdit): void {
       sheetName: r.getSheet().getName(),
       row: r.getRow(),
     };
-    queue_enqueue(queueConstants.FUNCTION_CALLED.UPDATE_BALANCES, parameters, {
+    queueJob(queueConstants.FUNCTION_CALLED.UPDATE_BALANCES, parameters, {
       priority: 80,
     });
   } catch (err) {

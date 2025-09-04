@@ -4,45 +4,69 @@
 // Constants & schema
 // ───────────────────────────────────────────────────────────────────────────────
 import { toIso_ } from "./DateFunctions";
-import * as queueConstants from "./queueConstants";
+import { DEFAULT_PRIORITY, QUEUE_SHEET_NAME, STATUS } from "./queueConstants";
 import type { EnqueueOptions, JobName, JobRow } from "./queueTypes";
-
+import { FastLog } from "./support/FastLog";
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Public API
 // ───────────────────────────────────────────────────────────────────────────────
 
 /** Enqueue a job */
-export function queue_enqueue<Name extends JobName = JobName>(
+export function queueJob<Name extends JobName = JobName>(
   job_name: Name,
   parameters: unknown,
   options: EnqueueOptions = {}
 ): { id: string; row: number } {
-  const priority =
-    typeof options?.priority === "number"
-      ? options!.priority
-      : queueConstants.DEFAULT_PRIORITY;
+  const lock = LockService.getDocumentLock();
+  if (!lock.tryLock(3000)) {
+    // avoid re-entrancy during row allocation
+    throw new Error("queueJob: Queue is busy; try again shortly.");
+  }
 
-  const sheet = getQueueSheet_();
+  try {
+    FastLog.log("Started queueJob", job_name);
 
-  const id = generateId_();
-  const row: JobRow = [
-    id,
-    String(job_name) as any,
-    JSON.stringify(parameters ?? {}),
-    toIso_(new Date()),
-    priority,
-    toIso_(options.runAt),
-    0,
-    queueConstants.STATUS.PENDING,
-    "",
-    "",
-    "",
-  ];
+    const priority =
+      typeof options?.priority === "number"
+        ? options!.priority
+        : DEFAULT_PRIORITY;
 
-  sheet.appendRow(row);
+    const id = generateId_();
+    const isoNow = toIso_(new Date());
+    const isoRunAt = toIso_(options.runAt);
 
-  return { id, row: sheet.getLastRow() };
+    const rowValues: JobRow = [
+      id,
+      String(job_name) as any,
+      JSON.stringify(parameters ?? {}),
+      isoNow,
+      priority,
+      isoRunAt,
+      0,
+      STATUS.PENDING,
+      "",
+      "",
+      "",
+    ];
+
+
+    const sheet = getQueueSheet_();
+
+    // Determine the row BEFORE writing and write atomically
+    const rowIndex = sheet.getLastRow() + 1;
+    sheet.getRange(rowIndex, 1, 1, rowValues.length).setValues([rowValues]);
+
+    FastLog.log("Finished queueJob", job_name);
+    return { id, row: rowIndex };
+  } catch (err) {
+    FastLog.error("queueJob error", err);
+    throw err;
+  } finally {
+    try {
+      lock.releaseLock();
+    } catch (_e) {}
+  }
 }
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -50,7 +74,7 @@ export function queue_enqueue<Name extends JobName = JobName>(
 // ───────────────────────────────────────────────────────────────────────────────
 function getQueueSheet_(): GoogleAppsScript.Spreadsheet.Sheet {
   const ss = SpreadsheetApp.getActive();
-  const sheet = ss.getSheetByName(queueConstants.QUEUE_SHEET_NAME);
+  const sheet = ss.getSheetByName(QUEUE_SHEET_NAME);
   if (!sheet) throw new Error("Queue sheet missing. Run queue_ensureSetup().");
   return sheet;
 }

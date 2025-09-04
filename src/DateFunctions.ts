@@ -1,7 +1,8 @@
-import { LOCALE } from "./constants";
+// import { LOCALE } from "./constants";
 import { getOrdinal } from "./NumberUtils";
+import { FastLog } from './support/FastLog';
 
-
+const LOCALE = "en-GB" as const;
 
 type DateInput = Date | string | number | undefined | null;
 
@@ -104,6 +105,7 @@ export function setupDaysIterator(startDate: Date) {
 }
 
 function toDateSafe(x: DateInput): Date {
+  FastLog.log("Started toDateSafe", x);
   if (x == null) return new Date();
   if (x instanceof Date) return x;
 
@@ -111,10 +113,16 @@ function toDateSafe(x: DateInput): Date {
   if (typeof x === "number" && x > 0 && x < 1e12) x = x * 1000;
 
   const d = new Date(x);
-  return Number.isNaN(d.getTime()) ? new Date() : d;
+
+  const safeDate = Number.isNaN(d.getTime()) ? new Date() : d;
+  FastLog.log("Finished toDateSafe", safeDate);
+  return safeDate;
 }
 
 export function toIso_(x: any): string {
+  FastLog.log("Started toIso_", x);
   const d = toDateSafe(x);
-  return d.toISOString();
+  const isoString = d.toISOString();
+  FastLog.log("Finished toIso_", isoString);
+  return isoString;
 }

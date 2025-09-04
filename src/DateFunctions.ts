@@ -1,6 +1,10 @@
 import { LOCALE } from "./constants";
 import { getOrdinal } from "./NumberUtils";
 
+
+
+type DateInput = Date | string | number | undefined | null;
+
 // 1) Utility: forbid extra keys on object literals
 type Strict<T extends object> = T & Record<Exclude<string, keyof T>, never>;
 
@@ -97,4 +101,20 @@ export function setupDaysIterator(startDate: Date) {
   };
 
   return { first, iterator };
+}
+
+function toDateSafe(x: DateInput): Date {
+  if (x == null) return new Date();
+  if (x instanceof Date) return x;
+
+  // handle epoch seconds vs ms
+  if (typeof x === "number" && x > 0 && x < 1e12) x = x * 1000;
+
+  const d = new Date(x);
+  return Number.isNaN(d.getTime()) ? new Date() : d;
+}
+
+export function toIso_(x: any): string {
+  const d = toDateSafe(x);
+  return d.toISOString();
 }

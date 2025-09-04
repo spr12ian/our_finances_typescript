@@ -10,7 +10,13 @@ export class AccountBalances {
   private readonly sheet: Sheet;
 
   constructor(private readonly spreadsheet: Spreadsheet) {
+    FastLog.log("AccountBalances.constructor started", Meta);
     this.sheet = this.spreadsheet.getSheetByMeta(Meta);
+    FastLog.log("AccountBalances.constructor finished");
+  }
+
+  get allValues(): (string | number)[][] {
+    return this.sheet.raw.getDataRange().getValues() as (string | number)[][];
   }
 
   fixSheet() {
@@ -88,9 +94,61 @@ export class AccountBalances {
     FastLog.log(`Finished AccountBalances.update: ${this.sheet.name}`);
   }
 
+/** Sums credits/debits in C:D starting at row 2. */
+ sumCreditsDebits_(sheetName: string) {
+  FastLog.log(`Started AccountBalances.sumCreditsDebits_: ${sheetName}`);
+  const sheet = this.spreadsheet.getSheet(sheetName);
+  const lastRow = sheet.raw.getLastRow();
+  if (lastRow < 2) {
+    FastLog.log(`Finished AccountBalances.sumCreditsDebits_: ${sheetName} (no data)`);
+    return { credit: 0, debit: 0 };
+  }
+
+  // Read only the used rows.
+  const numRows = lastRow - 1; // since we start at row 2
+  const values = sheet.raw
+    .getRange(2, 3, numRows, 2) // (row 2, col C=3, rows, cols=2)
+    .getValues() as (number | string)[][];
+
+  let credit = 0;
+  let debit = 0;
+
+  for (const [c, d] of values) {
+    // In GAS, numbers come as numbers; blanks are usually "".
+    if (typeof c === 'number') credit += c;
+    if (typeof d === 'number') debit += d;
+    // If you expect strings like "1,234.56", add a parse step:
+    // else if (typeof c === 'string' && c) credit += parseFloat(c.replace(/,/g, '')) || 0;
+    // else if (typeof d === 'string' && d) debit  += parseFloat(d.replace(/,/g, '')) || 0;
+  }
+
+  FastLog.log(`Finished AccountBalances.sumCreditsDebits_: ${sheetName} (credit=${credit}, debit=${debit})`);
+  return { credit, debit };
+}
+
   updateAccountBalance(sheetName: string): void {
     FastLog.log(`Started AccountBalances.updateAccountBalance: ${sheetName}`);
-    // Logic to update account balances by sheet name
+    const { credit, debit } = this.sumCreditsDebits_(sheetName);
+    const nett = credit - debit;
+    const accountName = sheetName.slice(1); // remove leading '=' if present
+    FastLog.log(`Account: ${accountName}, Credit: ${credit}, Debit: ${debit}, Nett: ${nett}`);
+
+    const accountRow = this.allValues.findIndex(
+      (row) => String(row[0] ?? "").trim() === accountName
+    );
+
+    if (accountRow === -1) {
+      // Account not found; append a new row.
+      const newRow = [accountName, credit, debit, nett];
+      this.sheet.raw.appendRow(newRow);
+      FastLog.log(`Appended new account row: ${newRow}`);
+    } else {
+      FastLog.log(`Found existing account row at index ${accountRow}`);
+      // Account found; update the existing row.
+      const rowIndex = accountRow + 1; // Convert to 1-based index for GAS
+      this.sheet.raw.getRange(rowIndex, 2, 1, 3).setValues([[credit, debit, nett]]);
+      FastLog.log(`Updated account row ${rowIndex + 1}: Credit=${credit}, Debit=${debit}, Nett=${nett}`);
+    }
     FastLog.log(`Finished AccountBalances.updateAccountBalance: ${sheetName}`);
   }
 }

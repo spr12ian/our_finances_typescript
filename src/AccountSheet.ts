@@ -1,13 +1,11 @@
 /// <reference types="google-apps-script" />
 import { MetaAccountSheet as Meta, MetaBankAccounts } from "./constants";
 import { DescriptionReplacements } from "./DescriptionReplacements";
-import { queue_enqueue } from './queueFunctions';
+
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";
 import { FastLog } from "./support/FastLog";
 import { xLookup } from "./xLookup";
-import * as queueConstants from "./queueConstants";
-
 export class AccountSheet {
   constructor(
     private readonly sheet: Sheet,
@@ -133,21 +131,6 @@ export class AccountSheet {
     sheet.setNumberFormatAsUKCurrency("C2:D", "H2:H");
   }
 
-  updateAccountBalances(): void {
-    FastLog.log(`Updating account balances for ${this.accountName}`);
-    // Logic to update account balances
-    try {
-        const parameters = {
-          sheetName: this.sheet.name,
-        };
-        queue_enqueue(queueConstants.FUNCTION_CALLED.UPDATE_ACCOUNT_BALANCES, parameters, {
-          priority: 80,
-        });
-      } catch (err) {
-        FastLog.error("updateAccountBalances error", err);
-      }
-  }
-
   updateBalanceValues(rowEdited?: number): void {
     const COLUMNS = Meta.COLUMNS;
     const ROW_DATA_STARTS = Meta.ROW_DATA_STARTS;
@@ -203,8 +186,6 @@ export class AccountSheet {
       .setValues(slice);
 
     FastLog.log(`Updated balance values for ${this.accountName}`);
-
-    this.updateAccountBalances();
   }
 
   validateFrozenRows() {

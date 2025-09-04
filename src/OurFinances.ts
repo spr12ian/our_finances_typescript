@@ -20,7 +20,7 @@ import {
   MetaDescriptionReplacements,
   MetaTransactionCategories,
 } from "./constants";
-import { getToday } from "./DateUtils";
+import { getToday } from "./DateFunctions";
 import { Dependencies } from "./Dependencies";
 import { outputToDrive } from "./driveFunctions";
 import { sendMeEmail } from "./emailFunctions";

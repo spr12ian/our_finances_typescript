@@ -5,7 +5,7 @@ import {
   getNewDate,
   getOrdinalDate,
   setupDaysIterator,
-} from "./DateUtils";
+} from "./DateFunctions";
 import { getAmountAsGBP } from "./MoneyUtils";
 import type { Sheet } from "./Sheet";
 import { Spreadsheet } from "./Spreadsheet";

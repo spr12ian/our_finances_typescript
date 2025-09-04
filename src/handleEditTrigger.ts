@@ -1,7 +1,7 @@
 /// <reference types="google-apps-script" />
 
+import { queue_enqueue } from "./queueClient";
 import * as queueConstants from "./queueConstants";
-import { queue_enqueue } from "./queueFunctions";
 import { FastLog } from "./support/FastLog";
 
 type SheetsOnEdit = GoogleAppsScript.Events.SheetsOnEdit;

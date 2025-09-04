@@ -16,15 +16,17 @@ import {
   MetaUncategorisedByDate,
 } from "./constants";
 import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
+import { handleEditTrigger } from "./handleEditTrigger";
 import { logTime } from "./logTime";
 import { OurFinances } from "./OurFinances";
-import { queue_ensureSetup } from "./queueFunctions";
+import { queue_ensureSetup } from "./queueSetup";
+import { queue_worker } from "./queueWorker";
 import { FastLog } from "./support/FastLog";
 import * as timeConstants from "./timeConstants";
+import { UPDATE_ACCOUNT_BALANCES } from "./UPDATE_ACCOUNT_BALANCES";
+import { UPDATE_BALANCES } from "./UPDATE_BALANCES";
 import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
 import { withReentryGuard } from "./withReentryGuard";
-import { handleEditTrigger } from './handleEditTrigger';
-import { UPDATE_BALANCES } from './UPDATE_BALANCES';
 
 export function GAS_applyDescriptionReplacements() {
   const spreadsheet = getFinancesSpreadsheet();
@@ -246,6 +248,10 @@ export function GAS_queueSetup(): void {
   queue_ensureSetup();
 }
 
+export function GAS_queueWorker(): void {
+  queue_worker();
+}
+
 export function GAS_saveContainerIdOnce() {
   const id = SpreadsheetApp.getActiveSpreadsheet().getId();
   PropertiesService.getScriptProperties().setProperty(
@@ -314,6 +320,10 @@ export function GAS_validateAllMenuFunctionNames() {
   validateAllMenuFunctionNames();
 }
 
-export function GAS_UPDATE_BALANCES(parameters:any) {
+export function GAS_UPDATE_ACCOUNT_BALANCES(parameters: any) {
+  UPDATE_ACCOUNT_BALANCES(parameters);
+}
+
+export function GAS_UPDATE_BALANCES(parameters: any) {
   UPDATE_BALANCES(parameters);
 }

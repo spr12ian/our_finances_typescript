@@ -21,7 +21,7 @@ export const STATUS = {
 // Column map to avoid magic numbers
 export const Col = {
   ID: 1,
-  CALL: 2,
+  JOB_NAME: 2,
   JSON_PARAMETERS: 3,
   ENQUEUED_AT: 4,
   PRIORITY: 5,
@@ -35,7 +35,7 @@ export const Col = {
 
 export const HEADERS: string[] = [
   "id",
-  "call",
+  "job_name",
   "json_parameters",
   "enqueued_at",
   "priority",

@@ -48,6 +48,7 @@ export const HEADERS: string[] = [
 ];
 
 export const FUNCTION_CALLED = {
+  FIX_SHEET: "FIX_SHEET",
   UPDATE_BALANCES: "UPDATE_BALANCES",
   UPDATE_ACCOUNT_BALANCES: "UPDATE_ACCOUNT_BALANCES",
 } as const;

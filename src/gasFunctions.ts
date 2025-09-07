@@ -17,12 +17,14 @@ import {
 } from "./constants";
 import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
 import { handleEditTrigger } from "./handleEditTrigger";
+import { handleOpenTrigger } from "./handleOpenTrigger";
 import { logTime } from "./logTime";
 import { OurFinances } from "./OurFinances";
 import { queue_ensureSetup } from "./queueSetup";
 import { queue_worker } from "./queueWorker";
 import { FastLog } from "./support/FastLog";
 import * as timeConstants from "./timeConstants";
+import { FIX_SHEET } from "./FIX_SHEET";
 import { UPDATE_ACCOUNT_BALANCES } from "./UPDATE_ACCOUNT_BALANCES";
 import { UPDATE_BALANCES } from "./UPDATE_BALANCES";
 import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
@@ -228,6 +230,12 @@ export function GAS_onEditTrigger(
   handleEditTrigger(e);
 }
 
+export function GAS_onOpenTrigger(
+  e: GoogleAppsScript.Events.SheetsOnOpen
+): void {
+  handleOpenTrigger(e);
+}
+
 export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
   FastLog.log("Started GAS_onOpen");
   if (e) {
@@ -318,6 +326,10 @@ export function GAS_updateTransactionCategories() {
 
 export function GAS_validateAllMenuFunctionNames() {
   validateAllMenuFunctionNames();
+}
+
+export function GAS_FIX_SHEET(parameters: any) {
+  FIX_SHEET(parameters);
 }
 
 export function GAS_UPDATE_ACCOUNT_BALANCES(parameters: any) {

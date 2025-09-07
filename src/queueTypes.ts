@@ -14,6 +14,7 @@ type _IsoString = string;
 
 /** Map each job name to its parameter shape */
 interface _JobParametersMap {
+  FIX_SHEET: { sheetName: string };
   UPDATE_BALANCES: { sheetName: string, row: number };
   UPDATE_ACCOUNT_BALANCES: { sheetName: string };
 }

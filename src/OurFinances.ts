@@ -381,8 +381,6 @@ export class OurFinances {
     } catch (err) {
       console.error("onOpen error:", err);
     }
-
-    this.fixSheet();
   }
 
   sendDailyEmail(): void {

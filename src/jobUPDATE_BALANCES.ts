@@ -1,11 +1,12 @@
 import { AccountSheet } from "./AccountSheet";
-import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
+import { getExtendedSheet } from "./getExtendedSheet";
 import { queueJob } from "./queueJob";
 import type { ParamsOf } from "./queueTypes";
 import { FastLog } from "./support/FastLog";
 
+const JOB_NAME = "UPDATE_BALANCES";
 export function UPDATE_BALANCES(parameters: ParamsOf<"UPDATE_BALANCES">): void {
-  FastLog.log("Started UPDATE_BALANCES", parameters);
+  const startTime = FastLog.start(`${JOB_NAME}`, parameters);
   const { row, sheetName } = parameters;
 
   if (!row || row < 2) {
@@ -13,15 +14,11 @@ export function UPDATE_BALANCES(parameters: ParamsOf<"UPDATE_BALANCES">): void {
     return;
   }
 
-  const spreadsheet = getFinancesSpreadsheet();
-  const accountSheet = new AccountSheet(
-    spreadsheet.getSheet(sheetName),
-    spreadsheet
-  );
+  const accountSheet = getExtendedSheet(sheetName) as AccountSheet;
 
   accountSheet.updateBalanceValues(row);
 
   queueJob("UPDATE_ACCOUNT_BALANCES", { sheetName: sheetName });
 
-  FastLog.log("Finished UPDATE_BALANCES", parameters);
+  FastLog.finish(`${JOB_NAME}`, startTime, parameters);
 }

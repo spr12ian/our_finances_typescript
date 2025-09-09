@@ -1,7 +1,7 @@
 /// <reference types="google-apps-script" />
-import { AccountBalances } from "./AccountBalances";
 import { AccountSheet } from "./AccountSheet";
 import { isAccountSheet } from "./accountSheetFunctions";
+import { AccountBalances } from "./app/sheets/AccountBalances";
 import { BankAccounts } from "./BankAccounts";
 import { BankDebitsDue } from "./BankDebitsDue";
 import { BudgetAdHocTransactions } from "./BudgetAdHocTransactions";

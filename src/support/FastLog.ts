@@ -4,7 +4,7 @@
 // Fast, low-noise logging for GAS (no namespaces; isolatedModules-safe)
 // ────────────────────────────────────────────────────────────
 
-type LogLevel = "none" | "error" | "info" | "warn" | "log";
+type LogLevel = "none" | "error" | "info" | "warn" | "start" | "finish" | "log";
 const LOG_LEVEL: LogLevel = "log"; // set to "none" in production
 type LogRecord = { t: string; level: LogLevel; msg: string };
 
@@ -13,7 +13,9 @@ const levels: Record<LogLevel, number> = {
   error: 1,
   warn: 2,
   info: 3,
-  log: 4,
+  start: 4,
+  finish: 5,
+  log: 6,
 };
 
 const RING_SIZE = 20;
@@ -87,6 +89,12 @@ function log(level: LogLevel, ...parts: unknown[]) {
     case "log":
       console.log(msg);
       break;
+    case "start":
+      console.log(`START: ${msg}`);
+      break;
+    case "finish":
+      console.log(`FINISH: ${msg}`);
+      break;
     case "warn":
       console.warn(msg);
       break;
@@ -134,6 +142,15 @@ function clearRing() {
   persistRing();
 }
 
+// Helper
+// Add helper near internals
+
+function formatDurationMs(ms: number): string {
+  // e.g. "845 ms", "2.13 s"
+  return ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(2)} s`;
+}
+
+
 // ────────────────────────────────────────────────────────────
 // Public API (exported for TS/module use; also mirrored to globalThis)
 // ────────────────────────────────────────────────────────────
@@ -143,6 +160,16 @@ export const FastLog = {
   warn: (...p: unknown[]) => log("warn", ...p),
   info: (...p: unknown[]) => log("info", ...p),
   error: (...p: unknown[]) => log("error", ...p),
+  start: (...p: unknown[]): Date => {
+    const now = new Date();
+    log("start", ...p);
+    return now;
+  },
+  finish: (label: unknown, startTime: Date, ...rest: unknown[]): void => {
+    const ms = Date.now() - (startTime?.getTime?.() ?? Date.now());
+    // Append ", <duration>" to the end of the message
+    log("finish", `${safeString(label)}, ${formatDurationMs(ms)}`, ...rest);
+  },
   persistRing,
   manualSnapshot,
   clear: clearRing,

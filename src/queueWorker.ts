@@ -22,6 +22,7 @@ import {
   STATUS,
   WORKER_BUDGET_MS,
 } from "./queueConstants";
+import { FastLog } from './support/FastLog';
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Public API
@@ -151,7 +152,10 @@ function dispatchJob_(job: Job): void {
   const handler: Handler | undefined = (handlers as any)[job.jobName];
   if (!handler) throw new Error(`Unknown job: ${job.jobName}`);
 
+  const started = Date.now();
   handler(job.parameters as any);
+  const duration = Date.now() - started;
+  FastLog.log(`Job ${job.id} (${job.jobName}) completed in ${duration}ms`);
   return;
 }
 

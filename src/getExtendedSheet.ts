@@ -1,6 +1,7 @@
 import { AccountSheet } from "./AccountSheet";
 import { isAccountSheetName } from "./accountSheetFunctions";
 import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
+import { AccountBalances } from "./app/sheets/AccountBalances";
 
 export function getExtendedSheet(sheetName: string): any {
   const spreadsheet = getFinancesSpreadsheet();
@@ -23,7 +24,7 @@ export function getSheetClass(sheetName: string): any {
   // Implementation to get the correct sheet class based on the sheetName
   // For example, you might have a mapping of sheet names to classes
   const sheetClassMap: { [key: string]: any } = {
-    // "AccountSheet": AccountSheet,
+    "Account balances": AccountBalances,
     // "BudgetSheet": BudgetSheet,
     // Add other mappings as necessary
   };

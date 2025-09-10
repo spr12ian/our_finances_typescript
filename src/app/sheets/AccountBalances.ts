@@ -1,4 +1,5 @@
 import { MetaAccountBalances as Meta } from "../../constants";
+import { queueJob } from "../../queueJob";
 import type { Sheet } from "../../Sheet";
 import { Spreadsheet } from "../../Spreadsheet";
 import { FastLog } from "../../support/FastLog";
@@ -27,15 +28,25 @@ export class AccountBalances {
   }
 
   queueFormatSheet() {
-    const startTime = FastLog.start(`AccountBalances.queueFormatSheet: ${this.sheet.name}`);
-    queueFormatSheet(this.sheet.name);
-    FastLog.finish(`AccountBalances.queueFormatSheet: ${this.sheet.name}`, startTime);
+    const startTime = FastLog.start(
+      `AccountBalances.queueFormatSheet: ${this.sheet.name}`
+    );
+    queueJob("FORMAT_SHEET", { sheetName: this.sheet.name });
+    FastLog.finish(
+      `AccountBalances.queueFormatSheet: ${this.sheet.name}`,
+      startTime
+    );
   }
 
   queueTrimSheet() {
-    const startTime = FastLog.start(`AccountBalances.queueTrimSheet: ${this.sheet.name}`);
-    this.sheet.queueTrimSheet();
-    FastLog.finish(`AccountBalances.queueTrimSheet: ${this.sheet.name}`, startTime);
+    const startTime = FastLog.start(
+      `AccountBalances.queueTrimSheet: ${this.sheet.name}`
+    );
+    queueJob("TRIM_SHEET", { sheetName: this.sheet.name });
+    FastLog.finish(
+      `AccountBalances.queueTrimSheet: ${this.sheet.name}`,
+      startTime
+    );
   }
 
   update() {

@@ -2,6 +2,8 @@
 
 export const shimGlobals = [
   "FIX_SHEET",
+  "FORMAT_SHEET",
+  "TRIM_SHEET",
   "UPDATE_ACCOUNT_BALANCES",
   "UPDATE_BALANCES",
   "applyDescriptionReplacements",

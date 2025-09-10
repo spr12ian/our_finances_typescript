@@ -24,24 +24,12 @@ import { getToday } from "./DateFunctions";
 import { Dependencies } from "./Dependencies";
 import { outputToDrive } from "./driveFunctions";
 import { sendMeEmail } from "./emailFunctions";
-import { registerDynamicAccountFunctions } from "./registerDynamicAccountFunctions";
 import { Spreadsheet } from "./Spreadsheet";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
 import { FastLog } from "./support/FastLog";
 import { TransactionCategories } from "./TransactionCategories";
 import { Transactions } from "./Transactions";
-import {
-  buildAccountsMenu_,
-  buildGasMenu_,
-  buildSectionsMenu_,
-} from "./uiFunctions";
 
-const logTiming = <T>(label: string, fn: () => T): T => {
-  const t0 = Date.now();
-  const result = fn();
-  FastLog.log(`${label}: ${Date.now() - t0}ms`);
-  return result;
-};
 export class OurFinances {
   #dependencies?: Dependencies;
   #accountBalances?: AccountBalances;
@@ -363,24 +351,6 @@ export class OurFinances {
     }
 
     FastLog.log(`Finished OurFinances.onChange`);
-  }
-
-  onOpen(): void {
-    try {
-      const ui = SpreadsheetApp.getUi();
-      const accountSheetNames: string[] =
-        this.spreadsheetSummary.accountSheetNames;
-
-      logTiming("Accounts menu", () =>
-        buildAccountsMenu_(ui, accountSheetNames)
-      );
-      logTiming("GAS menu", () => buildGasMenu_(ui));
-      logTiming("Sections menu", () => buildSectionsMenu_(ui));
-
-      registerDynamicAccountFunctions(accountSheetNames);
-    } catch (err) {
-      console.error("onOpen error:", err);
-    }
   }
 
   sendDailyEmail(): void {

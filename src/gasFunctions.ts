@@ -19,6 +19,8 @@ import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
 import { handleEditTrigger } from "./handleEditTrigger";
 import { handleOpenTrigger } from "./handleOpenTrigger";
 import { FIX_SHEET } from "./jobFIX_SHEET";
+import { FORMAT_SHEET } from "./jobFORMAT_SHEET";
+import { TRIM_SHEET } from "./jobTRIM_SHEET";
 import { UPDATE_ACCOUNT_BALANCES } from "./jobUPDATE_ACCOUNT_BALANCES";
 import { UPDATE_BALANCES } from "./jobUPDATE_BALANCES";
 import { logTime } from "./logTime";
@@ -29,6 +31,7 @@ import { FastLog } from "./support/FastLog";
 import * as timeConstants from "./timeConstants";
 import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
 import { withReentryGuard } from "./withReentryGuard";
+import { onOpen } from "./onOpen";
 
 export function GAS_applyDescriptionReplacements() {
   const spreadsheet = getFinancesSpreadsheet();
@@ -233,17 +236,15 @@ export function GAS_onEditTrigger(
 export function GAS_onOpenTrigger(
   e: GoogleAppsScript.Events.SheetsOnOpen
 ): void {
+  const startTime = FastLog.start(GAS_onOpenTrigger.name, e);
   handleOpenTrigger(e);
+  FastLog.finish(GAS_onOpenTrigger.name, startTime);
 }
 
 export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
-  FastLog.log("Started GAS_onOpen");
-  if (e) {
-    FastLog.log(`Event details: ${JSON.stringify(e, null, 2)}`);
-  }
-  const spreadsheet = getFinancesSpreadsheet(e);
-  new OurFinances(spreadsheet).onOpen();
-  FastLog.log("Finished GAS_onOpen");
+  const startTime = FastLog.start(GAS_onOpen.name, e);
+  onOpen(e);
+  FastLog.finish(GAS_onOpen.name, startTime);
 }
 
 export function GAS_openAccounts() {
@@ -330,6 +331,14 @@ export function GAS_validateAllMenuFunctionNames() {
 
 export function GAS_FIX_SHEET(parameters: any) {
   FIX_SHEET(parameters);
+}
+
+export function GAS_FORMAT_SHEET(parameters: any) {
+  FORMAT_SHEET(parameters);
+}
+
+export function GAS_TRIM_SHEET(parameters: any) {
+  TRIM_SHEET(parameters);
 }
 
 export function GAS_UPDATE_ACCOUNT_BALANCES(parameters: any) {

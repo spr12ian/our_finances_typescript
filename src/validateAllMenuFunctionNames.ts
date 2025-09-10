@@ -8,9 +8,9 @@ export function validateAllMenuFunctionNames() {
   const knownMissing = ["onEdit", "doGet"];
 
   const builderFunctionNames = [
-    "buildSectionsMenu_",
-    "buildGasMenu_",
-    "buildAccountsMenu_",
+    "buildSectionsMenu",
+    "buildGasMenu",
+    "buildAccountsMenu",
   ];
 
   const regex = /\.addItem\(\s*["'][^"']+["']\s*,\s*["']([^"']+)["']\s*\)/g;

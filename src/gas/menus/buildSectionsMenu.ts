@@ -1,48 +1,11 @@
 import {
   MetaBudgetAdHocTransactions,
   MetaBudgetAnnualTransactions,
-} from "./constants";
+} from "../../constants";
+import { FastLog } from "../../support/FastLog";
 
-export function buildAccountsMenu_(
-  ui: GoogleAppsScript.Base.Ui,
-  accountSheetNames: string[]
-): void {
-  // Check if any accounts are found
-  if (accountSheetNames.length === 0) {
-    ui.alert("No account sheets found!");
-    return;
-  }
-
-  const itemArray: [string, string][] = [];
-
-  for (const accountSheetName of accountSheetNames) {
-    const funName = "dynamicAccount" + accountSheetName;
-    itemArray.push([accountSheetName, funName]);
-  }
-
-  createMenu(ui, "Accounts", itemArray);
-}
-
-export function buildGasMenu_(ui: GoogleAppsScript.Base.Ui) {
-  const itemArray: [string, string][] = [
-    ["All accounts", "showAllAccounts"],
-    ["Apply Description replacements", "applyDescriptionReplacements"],
-    ["Balance sheet", "balanceSheet"],
-    ["Check dependencies", "updateAllDependencies"],
-    ["Convert current column to uppercase", "convertCurrentColumnToUppercase"],
-    ["Daily update", "dailyUpdate"],
-    ["Fix sheet", "fixSheet"],
-    ["Monthly update", "monthlyUpdate"],
-    ["Open accounts", "openAccounts"],
-    ["Sort sheet order", "sortSheets"],
-    ["Trim all sheets", "trimAllSheets"],
-    ["Update spreadsheet summary", "updateSpreadsheetSummary"],
-    ["Validate all menu function names", "validateAllMenuFunctionNames"],
-  ];
-  createMenu(ui, "GAS Menu", itemArray);
-}
-
-export function buildSectionsMenu_(ui: GoogleAppsScript.Base.Ui) {
+export function buildSectionsMenu(ui: GoogleAppsScript.Base.Ui) {
+  const startTime = FastLog.start(buildSectionsMenu.name);
   ui.createMenu("Sections")
     .addSubMenu(
       ui
@@ -124,18 +87,6 @@ export function buildSectionsMenu_(ui: GoogleAppsScript.Base.Ui) {
     .addSeparator()
     .addItem("Xfers mismatch", "goToSheetXfersMismatch")
     .addToUi();
-}
 
-function createMenu(
-  ui: GoogleAppsScript.Base.Ui,
-  menuCaption: string,
-  menuItemArray: [string, string][]
-) {
-  const menu = ui.createMenu(menuCaption);
-
-  menuItemArray.forEach(([itemName, itemFunction]) => {
-    menu.addItem(itemName, itemFunction);
-  });
-
-  menu.addToUi();
+  FastLog.finish(buildSectionsMenu.name, startTime);
 }

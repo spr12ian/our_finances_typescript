@@ -10,8 +10,7 @@ type SheetsOnOpen = GoogleAppsScript.Events.SheetsOnOpen;
 // Public entry point
 // ---------------------------
 export function handleOpenTrigger(e: SheetsOnOpen): void {
-  const startMs = Date.now();
-  FastLog.info(`handleOpenTrigger started`);
+  const startTime = FastLog.start(handleOpenTrigger.name, e);
 
   try {
     if (!e || !e.source || !e.source.getActiveSheet()) return;
@@ -25,28 +24,30 @@ export function handleOpenTrigger(e: SheetsOnOpen): void {
 
     queueFixSheet(e);
   } catch (err) {
-    FastLog.error(`handleOpenTrigger error: ${(err as Error)?.message || err}`);
+    FastLog.error(handleOpenTrigger.name, err);
     throw err;
   } finally {
-    FastLog.info(
-      `handleOpenTrigger ran for ${Date.now() - startMs}ms`
-    );
+    try {
+      FastLog.finish(handleOpenTrigger.name, startTime);
+    } catch {}
   }
 }
 
 /* ── Example handlers ───────────────────────────────────── */
 
 function queueFixSheet(e: SheetsOnOpen): void {
-  FastLog.log("Started queueFixSheet");
+  const startTime = FastLog.start(queueFixSheet.name, e);
 
   try {
     const parameters = {
       sheetName: e.source.getActiveSheet().getName(),
     };
-    queueJob(queueConstants.FUNCTION_CALLED.FIX_SHEET, parameters, {
-      priority: 80,
-    });
+    queueJob("FIX_SHEET", parameters, { priority: 80 });
   } catch (err) {
-    FastLog.error("queueFixSheet error", err);
+    FastLog.error(queueFixSheet.name, err);
+  } finally {
+    try {
+      FastLog.finish(queueFixSheet.name, startTime);
+    } catch {}
   }
 }

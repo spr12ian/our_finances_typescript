@@ -47,6 +47,9 @@ export const HEADERS: string[] = [
   "started_at",
 ];
 
+// All valid job names must have a correspond GAS function of the same name
+// which accepts a single parameter object.
+// See queueTypes.ts for parameter shapes.
 export const FUNCTION_CALLED = {
   FIX_SHEET: "FIX_SHEET",
   FORMAT_SHEET: "FORMAT_SHEET",

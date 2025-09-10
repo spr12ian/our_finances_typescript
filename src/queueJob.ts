@@ -24,9 +24,12 @@ export function queueJob<Name extends JobName = JobName>(
     throw new Error("queueJob: Queue is busy; try again shortly.");
   }
 
+  const startTime = FastLog.start(queueJob.name, {
+    job_name,
+    parameters,
+    options,
+  });
   try {
-    FastLog.log("Started queueJob", job_name);
-
     const priority =
       typeof options?.priority === "number"
         ? options!.priority
@@ -50,22 +53,24 @@ export function queueJob<Name extends JobName = JobName>(
       "",
     ];
 
-
     const sheet = getQueueSheet_();
 
     // Determine the row BEFORE writing and write atomically
     const rowIndex = sheet.getLastRow() + 1;
     sheet.getRange(rowIndex, 1, 1, rowValues.length).setValues([rowValues]);
 
-    FastLog.log("Finished queueJob", job_name);
     return { id, row: rowIndex };
   } catch (err) {
-    FastLog.error("queueJob error", err);
+    FastLog.error(queueJob.name, err);
     throw err;
   } finally {
     try {
       lock.releaseLock();
     } catch (_e) {}
+
+    try {
+      FastLog.finish(queueJob.name, startTime);
+    } catch {}
   }
 }
 

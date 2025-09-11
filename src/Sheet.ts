@@ -373,11 +373,11 @@ export class Sheet {
       );
     } catch (error: unknown) {
       if (error instanceof Error) {
-        console.error(
+        FastLog.error(
           `Failed to sort ${sheet.getSheetName()}: ${error.message}`
         );
       } else {
-        console.error(
+        FastLog.error(
           `Failed to sort ${sheet.getSheetName()}: ${String(error)}`
         );
       }

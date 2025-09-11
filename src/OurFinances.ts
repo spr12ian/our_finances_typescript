@@ -432,8 +432,4 @@ export class OurFinances {
   updateTransactions() {
     this.transactions.update();
   }
-
-  updateTransactionCategories() {
-    this.transactionCategories.update();
-  }
 }

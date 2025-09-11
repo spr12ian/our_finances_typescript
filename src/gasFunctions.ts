@@ -24,6 +24,7 @@ import { TRIM_SHEET } from "./jobTRIM_SHEET";
 import { UPDATE_ACCOUNT_BALANCES } from "./jobUPDATE_ACCOUNT_BALANCES";
 import { UPDATE_BALANCES } from "./jobUPDATE_BALANCES";
 import { logTime } from "./logTime";
+import { onOpen } from "./onOpen";
 import { OurFinances } from "./OurFinances";
 import { queue_ensureSetup } from "./queueSetup";
 import { queue_worker } from "./queueWorker";
@@ -31,7 +32,6 @@ import { FastLog } from "./support/FastLog";
 import * as timeConstants from "./timeConstants";
 import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
 import { withReentryGuard } from "./withReentryGuard";
-import { onOpen } from "./onOpen";
 
 export function GAS_applyDescriptionReplacements() {
   const spreadsheet = getFinancesSpreadsheet();
@@ -318,11 +318,6 @@ export function GAS_updateSpreadsheetSummary() {
 export function GAS_updateTransactions() {
   const spreadsheet = getFinancesSpreadsheet();
   new OurFinances(spreadsheet).updateTransactions();
-}
-
-export function GAS_updateTransactionCategories() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).updateTransactionCategories();
 }
 
 export function GAS_validateAllMenuFunctionNames() {

@@ -3,7 +3,8 @@
 
 import { queueRunStep } from "./queueRunStep"; // your queue implementation
 import { RunStepJob, StepContext, StepFn } from "./queueStepTypes";
-import { ONE_MINUTE, ONE_SECOND } from './timeConstants';
+import { FastLog } from "./support/FastLog";
+import { ONE_MINUTE, ONE_SECOND } from "./timeConstants";
 
 // Registry of workflows and their steps
 // e.g., WORKFLOWS["RecalculateBalances"]["ScanSheets"] = fn
@@ -38,7 +39,7 @@ export function runStep(job: RunStepJob) {
     budgetMs,
     startedAt,
     log: (m, ...args) =>
-      console.log(`[${workflowName}.${stepName}] ${m}`, ...args),
+      FastLog.log(`[${workflowName}.${stepName}] ${m}`, ...args),
     now: () => Date.now(),
   };
 
@@ -74,7 +75,7 @@ export function runStep(job: RunStepJob) {
     }
     case "complete": {
       // Optionally persist completion marker / emit event
-      console.log(`[${workflowName}] completed`, {
+      FastLog.log(`[${workflowName}] completed`, {
         workflowId: job.workflowId,
         output: res.output,
       });
@@ -90,7 +91,7 @@ export function runStep(job: RunStepJob) {
         );
       } else {
         // dead-letter
-        console.warn(
+        FastLog.warn(
           `[${workflowName}.${stepName}] failed permanently`,
           res.reason
         );

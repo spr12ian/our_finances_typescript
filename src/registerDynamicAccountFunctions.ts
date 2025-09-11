@@ -1,6 +1,7 @@
 /// <reference types="google-apps-script" />
 
 import { goToSheetLastRow } from "./goToSheetLastRow";
+import { FastLog } from './support/FastLog';
 
 /**
  * Registers `dynamicAccount_*` functions on `globalThis`
@@ -16,7 +17,7 @@ export function registerDynamicAccountFunctions(accountSheetNames: string[]): vo
 
     // Ensure we don’t overwrite existing global properties
     if (Object.prototype.hasOwnProperty.call(globalThis, functionName)) {
-      console.warn(`⚠️ Skipping existing function: ${functionName}`);
+      FastLog.warn(`⚠️ Skipping existing function: ${functionName}`);
       continue;
     }
 

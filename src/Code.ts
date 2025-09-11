@@ -2,6 +2,7 @@
 import { exportToGlobalThis } from "./exportToGlobal";
 import * as GAS from "./gasExports";
 import { shimGlobals } from "./shimGlobals";
+import { FastLog } from './support/FastLog';
 
 /**
  * Application entry point – executed when the script is loaded.
@@ -20,7 +21,7 @@ for (const name of shimGlobals) {
     globalThis[key] = fn;
     globalsToExport[name] = fn;
   } else {
-    console.warn(`⚠️ GAS function not found: ${key}`);
+    FastLog.warn(`⚠️ GAS function not found: ${key}`);
   }
 }
 exportToGlobalThis(globalsToExport);

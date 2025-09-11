@@ -1,5 +1,7 @@
 /// <reference types="google-apps-script" />
 
+import { FastLog } from './support/FastLog';
+
 // ──────────────────────────────────────────
 // Configuration
 // ──────────────────────────────────────────
@@ -37,6 +39,6 @@ export function log(levelOrMsg: LogLevel | unknown, ...args: unknown[]): void {
     const ts = new Date().toISOString();
     const prefix = `[${ts}][${level.toUpperCase()}]`;
 
-    console.log(prefix, ...messageParts);
+    FastLog.log(prefix, ...messageParts);
   }
 }

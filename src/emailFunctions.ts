@@ -1,4 +1,5 @@
 import { Spreadsheet } from "./Spreadsheet";
+import { FastLog } from './support/FastLog';
 
 // A pragmatic regex; don’t chase full RFC 5322.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -18,7 +19,7 @@ export function getMyEmailAddress(): EmailAddressType | null {
   if (myEmailAddress) {
     return asEmail(myEmailAddress);
   } else {
-    console.error("MY_EMAIL_ADDRESS not found in private data");
+    FastLog.error("MY_EMAIL_ADDRESS not found in private data");
     return null; // Return null if the email is not found
   }
 }

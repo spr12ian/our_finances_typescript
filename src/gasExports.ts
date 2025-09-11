@@ -56,6 +56,5 @@ export { GAS_trimSheet } from "./gasFunctions";
 export { GAS_updateAllDependencies } from "./gasFunctions";
 export { GAS_updateBalanceValues } from "./gasFunctions";
 export { GAS_updateSpreadsheetSummary } from "./gasFunctions";
-export { GAS_updateTransactionCategories } from "./gasFunctions";
 export { GAS_updateTransactions } from "./gasFunctions";
 export { GAS_validateAllMenuFunctionNames } from "./gasFunctions";

@@ -1,6 +1,6 @@
 // import { LOCALE } from "./constants";
 import { getOrdinal } from "./NumberUtils";
-import { FastLog } from './support/FastLog';
+import { FastLog } from "./support/FastLog";
 
 const LOCALE = "en-GB" as const;
 
@@ -120,9 +120,9 @@ function toDateSafe(x: DateInput): Date {
 }
 
 export function toIso_(x: any): string {
-  FastLog.log("Started toIso_", x);
+  const startTime = FastLog.start(toIso_.name, x);
   const d = toDateSafe(x);
   const isoString = d.toISOString();
-  FastLog.log("Finished toIso_", isoString);
+  FastLog.finish(toIso_.name, startTime, isoString);
   return isoString;
 }

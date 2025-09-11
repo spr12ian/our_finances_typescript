@@ -2,6 +2,7 @@
 // Keep this file free of any runtime code that could drag in the worker.
 
 import type * as queueConstants from "./queueConstants";
+import { RunStepJob } from './queueStepTypes';
 
 // ────────────────────────────────────────────────────────────
 // Enum/type re-exports so callers can depend on a tiny, stable surface.
@@ -25,6 +26,7 @@ type _IsoString = string;
 interface _JobParametersMap {
   FIX_SHEET: { sheetName: string };
   FORMAT_SHEET: { sheetName: string };
+  RUN_STEP: RunStepJob;
   TRIM_SHEET: { sheetName: string };
   UPDATE_BALANCES: { sheetName: string; row: number };
   UPDATE_ACCOUNT_BALANCES: { sheetName: string };
@@ -80,44 +82,3 @@ export type JobRow = [
   worker_id: string,
   started_at: _IsoString | "" // empty until first run
 ];
-
-/// <reference types="google-apps-script" />
-
-// A stable id for a whole workflow run
-type WorkflowId = string;
-
-// Step function contract
-export type StepFn = (ctx: StepContext) => StepResult;
-
-// What every step receives
-export type StepContext = {
-  workflowId: WorkflowId;     // one run across all steps
-  workflowName: string;       // e.g., "RecalculateBalances"
-  stepName: string;           // e.g., "ScanSheets"
-  input: unknown;             // immutable initial input for the workflow
-  state: Record<string, any>; // mutable per-step state (cursor, offsets, etc.)
-  attempt: number;            // attempt count for this step
-  budgetMs: number;           // soft budget per invocation (e.g., 25_000)
-  startedAt: number;          // Date.now()
-  // utilities
-  log: (msg: string, ...args: any[]) => void;
-  now: () => number;
-};
-
-// Instruction returned by a step
-export type StepResult =
-  | { kind: "yield"; state: Record<string, any>; delayMs?: number }              // continue same step later
-  | { kind: "next"; nextStep: string; state?: Record<string, any>; delayMs?: number } // jump to next step
-  | { kind: "complete"; output?: unknown }                                       // workflow done
-  | { kind: "fail"; reason: string; retryable?: boolean; delayMs?: number };     // park or dead-letter
-
-// A runnable unit the queue knows about (completely decoupled from your step code)
-export type RunStepJob = {
-  type: "RUN_STEP";
-  workflowId: WorkflowId;
-  workflowName: string;
-  stepName: string;
-  input: unknown;
-  state: Record<string, any>;
-  attempt: number;
-};

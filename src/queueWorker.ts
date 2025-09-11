@@ -1,10 +1,12 @@
+// queueWorker.ts
+
 /// <reference types="google-apps-script" />
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Constants & schema
 // ───────────────────────────────────────────────────────────────────────────────
 import { toIso_ } from "./DateFunctions";
-import { handlers } from "./handlers";
+import { jobHandlers } from "./jobHandlers";
 import type { Handler, Job, JobRow, JobStatus } from "./queueTypes";
 import * as timeConstants from "./timeConstants";
 
@@ -22,7 +24,7 @@ import {
   STATUS,
   WORKER_BUDGET_MS,
 } from "./queueConstants";
-import { FastLog } from './support/FastLog';
+import { FastLog } from "./support/FastLog";
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Public API
@@ -149,7 +151,7 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
 }
 
 function dispatchJob_(job: Job): void {
-  const handler: Handler | undefined = (handlers as any)[job.jobName];
+  const handler: Handler | undefined = (jobHandlers as any)[job.jobName];
   if (!handler) throw new Error(`Unknown job: ${job.jobName}`);
 
   const started = Date.now();

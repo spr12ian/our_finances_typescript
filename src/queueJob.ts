@@ -1,4 +1,4 @@
-/// <reference types="google-apps-script" />
+// queueJob.ts
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Constants & schema

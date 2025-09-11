@@ -2,6 +2,7 @@
 
 import * as queueConstants from "./queueConstants";
 import { queueJob } from "./queueJob";
+import { startWorkflow } from "./startWorkflow";
 import { FastLog } from "./support/FastLog";
 
 type SheetsOnOpen = GoogleAppsScript.Events.SheetsOnOpen;
@@ -22,6 +23,7 @@ export function handleOpenTrigger(e: SheetsOnOpen): void {
     )
       return; // avoid feedback loops
 
+    startWorkflow("Workflow1", "Workflow1Step1", { startedBy: "onOpen" });
     queueFixSheet(e);
   } catch (err) {
     FastLog.error(handleOpenTrigger.name, err);
@@ -32,8 +34,6 @@ export function handleOpenTrigger(e: SheetsOnOpen): void {
     } catch {}
   }
 }
-
-/* ── Example handlers ───────────────────────────────────── */
 
 function queueFixSheet(e: SheetsOnOpen): void {
   const startTime = FastLog.start(queueFixSheet.name, e);

@@ -1,10 +1,11 @@
 // queueStepFunctions.ts
 // Central registry of step functions per workflow
 
-import { queueRunStep } from "./queueRunStep"; // your queue implementation
-import { RunStepJob, StepContext, StepFn } from "./queueStepTypes";
 import { FastLog } from "./support/FastLog";
 import { ONE_MINUTE, ONE_SECOND } from "./timeConstants";
+import { makeStepLogger } from "./workflow/makeStepLogger";
+import { enqueueRunStep } from "./workflow/workflowEngine"; // your queue implementation
+import { RunStepJob, StepContext, StepFn } from "./workflow/workflowTypes";
 
 // Registry of workflows and their steps
 // e.g., WORKFLOWS["RecalculateBalances"]["ScanSheets"] = fn
@@ -29,6 +30,12 @@ export function runStep(job: RunStepJob) {
 
   const budgetMs = 25 * ONE_SECOND; // be conservative inside a 6-min GAS window
   const startedAt = Date.now();
+  const logger = makeStepLogger({
+  workflowId: job.workflowId,
+  workflowName,
+  stepName,
+});
+
   const ctx: StepContext = {
     workflowId: job.workflowId,
     workflowName,
@@ -38,8 +45,7 @@ export function runStep(job: RunStepJob) {
     attempt: job.attempt ?? 0,
     budgetMs,
     startedAt,
-    log: (m, ...args) =>
-      FastLog.log(`[${workflowName}.${stepName}] ${m}`, ...args),
+    log: logger,
     now: () => Date.now(),
   };
 
@@ -48,7 +54,7 @@ export function runStep(job: RunStepJob) {
   // The engine decides what to queue next (decoupled)
   switch (res.kind) {
     case "yield": {
-      queueRunStep(
+      enqueueRunStep(
         {
           ...job,
           state: res.state,
@@ -59,7 +65,7 @@ export function runStep(job: RunStepJob) {
       return;
     }
     case "next": {
-      queueRunStep(
+      enqueueRunStep(
         {
           type: "RUN_STEP",
           workflowId: job.workflowId,
@@ -85,7 +91,7 @@ export function runStep(job: RunStepJob) {
       const retryable = res.retryable !== false; // default retryable
       if (retryable && job.attempt < 5) {
         const backoff = Math.min(2 ** job.attempt * ONE_SECOND, ONE_MINUTE);
-        queueRunStep(
+        enqueueRunStep(
           { ...job, attempt: job.attempt + 1 },
           res.delayMs ?? backoff
         );

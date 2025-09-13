@@ -41,7 +41,7 @@ export function configureWorkflowEngine(enqueue: EnqueueFn) {
 }
 
 // Enqueue the next RUN_STEP
-function enqueueRunStep(
+export function enqueueRunStep(
   job: RunStepJob,
   delayMs?: number,
   priority?: number

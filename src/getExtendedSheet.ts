@@ -1,6 +1,7 @@
 // getExtendedSheet.ts
 import { AccountSheet } from "./AccountSheet";
 import { BankAccounts } from "./BankAccounts";
+import { BankCards } from "./BankCards";
 import type { Spreadsheet } from "./Spreadsheet";
 import { isAccountSheetName } from "./accountSheetFunctions";
 import { AccountBalances } from "./app/sheets/AccountBalances";
@@ -89,6 +90,7 @@ export function getSheetClass(sheetName: string): SheetClassConstructor {
     const sheetClassMap: { [key: string]: any } = {
       "Account balances": AccountBalances,
       "Bank accounts": BankAccounts,
+      "Bank cards": BankCards,
       // "BudgetSheet": BudgetSheet,
       // Add other mappings as necessary
     };

@@ -1,5 +1,5 @@
-// src/queueStepTypes.ts
-/// <reference types="google-apps-script" />
+// src/workflow/types.ts
+import type { StepLogger } from "../workflow/logging";
 
 // A stable id for a whole workflow run
 export type WorkflowId = string;
@@ -18,7 +18,7 @@ export type StepContext = {
   budgetMs: number; // soft budget per invocation (e.g., 25 seconds)
   startedAt: number; // Date.now()
   // utilities
-  log: (msg: string, ...args: any[]) => void;
+  log: StepLogger;
   now: () => number;
 };
 

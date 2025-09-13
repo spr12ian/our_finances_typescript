@@ -1,4 +1,10 @@
 import { MetaAccountBalances as Meta } from "../../constants";
+import type {
+  canFixSheet,
+  canFormatSheet,
+  canTrimSheet,
+  ExtendedSheet,
+} from "../../getExtendedSheet";
 import { queueJob } from "../../queueJob";
 import type { Sheet } from "../../Sheet";
 import { Spreadsheet } from "../../Spreadsheet";
@@ -7,7 +13,10 @@ import { FastLog } from "../../support/FastLog";
 /**
  * Class to handle the "Account balances" sheet.
  */
-export class AccountBalances {
+export class AccountBalances
+  implements ExtendedSheet, canFixSheet, canFormatSheet, canTrimSheet
+{
+  readonly name: string = Meta.SHEET.NAME;
   private readonly sheet: Sheet;
 
   constructor(private readonly spreadsheet: Spreadsheet) {
@@ -20,11 +29,20 @@ export class AccountBalances {
     return this.sheet.raw.getDataRange().getValues() as (string | number)[][];
   }
 
+
+
   fixSheet() {
     FastLog.log(`Started AccountBalances.fixSheet: ${this.sheet.name}`);
     this.update();
     this.sheet.fixSheet();
     FastLog.log(`Finished AccountBalances.fixSheet: ${this.sheet.name}`);
+  }
+
+  formatSheet() {
+    const fn = "AccountBalances.formatSheet";
+    const timeStamp = FastLog.start(`${fn}: ${this.sheet.name}`);
+    this.sheet.formatSheet();
+    FastLog.finish(`${fn}: ${this.sheet.name}`, timeStamp);
   }
 
   queueFormatSheet() {
@@ -151,6 +169,10 @@ export class AccountBalances {
       `Finished AccountBalances.sumCreditsDebits_: ${sheetName} (credit=${credit}, debit=${debit})`
     );
     return { credit, debit };
+  }
+
+  trimSheet() {
+    this.sheet.trimSheet();
   }
 
   updateAccountBalance(sheetName: string): void {

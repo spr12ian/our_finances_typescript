@@ -105,7 +105,6 @@ export function setupDaysIterator(startDate: Date) {
 }
 
 function toDateSafe(x: DateInput): Date {
-  FastLog.log("Started toDateSafe", x);
   if (x == null) return new Date();
   if (x instanceof Date) return x;
 
@@ -115,7 +114,6 @@ function toDateSafe(x: DateInput): Date {
   const d = new Date(x);
 
   const safeDate = Number.isNaN(d.getTime()) ? new Date() : d;
-  FastLog.log("Finished toDateSafe", safeDate);
   return safeDate;
 }
 

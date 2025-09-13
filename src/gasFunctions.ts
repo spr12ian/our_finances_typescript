@@ -18,11 +18,6 @@ import {
 import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
 import { handleEditTrigger } from "./handleEditTrigger";
 import { handleOpenTrigger } from "./handleOpenTrigger";
-import { FIX_SHEET } from "./jobFIX_SHEET";
-import { FORMAT_SHEET } from "./jobFORMAT_SHEET";
-import { TRIM_SHEET } from "./jobTRIM_SHEET";
-import { UPDATE_ACCOUNT_BALANCES } from "./jobUPDATE_ACCOUNT_BALANCES";
-import { UPDATE_BALANCES } from "./jobUPDATE_BALANCES";
 import { logTime } from "./logTime";
 import { onOpen } from "./onOpen";
 import { OurFinances } from "./OurFinances";
@@ -322,24 +317,4 @@ export function GAS_updateTransactions() {
 
 export function GAS_validateAllMenuFunctionNames() {
   validateAllMenuFunctionNames();
-}
-
-export function GAS_FIX_SHEET(parameters: any) {
-  FIX_SHEET(parameters);
-}
-
-export function GAS_FORMAT_SHEET(parameters: any) {
-  FORMAT_SHEET(parameters);
-}
-
-export function GAS_TRIM_SHEET(parameters: any) {
-  TRIM_SHEET(parameters);
-}
-
-export function GAS_UPDATE_ACCOUNT_BALANCES(parameters: any) {
-  UPDATE_ACCOUNT_BALANCES(parameters);
-}
-
-export function GAS_UPDATE_BALANCES(parameters: any) {
-  UPDATE_BALANCES(parameters);
 }

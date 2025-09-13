@@ -6,9 +6,9 @@
 // Constants & schema
 // ───────────────────────────────────────────────────────────────────────────────
 import { toIso_ } from "./DateFunctions";
-import { jobHandlers } from "./jobHandlers";
 import type { Handler, Job, JobRow, JobStatus } from "./queueTypes";
 import * as timeConstants from "./timeConstants";
+import { jobHandlers } from "./workflow/workflowHandlers";
 
 import {
   Col,

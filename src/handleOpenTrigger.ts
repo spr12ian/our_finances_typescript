@@ -1,9 +1,8 @@
 /// <reference types="google-apps-script" />
 
 import * as queueConstants from "./queueConstants";
-import { queueJob } from "./queueJob";
-import { startWorkflow } from "./startWorkflow";
 import { FastLog } from "./support/FastLog";
+import { startWorkflow } from "./workflow/workflowEngine";
 
 type SheetsOnOpen = GoogleAppsScript.Events.SheetsOnOpen;
 
@@ -23,31 +22,17 @@ export function handleOpenTrigger(e: SheetsOnOpen): void {
     )
       return; // avoid feedback loops
 
-    startWorkflow("Workflow1", "Workflow1Step1", { startedBy: "onOpen" });
-    queueFixSheet(e);
+    // registerAllWorkflows();
+    startWorkflow("onOpenFlow", "onOpenFixSheet", {
+      sheetName: sheetName,
+      startedBy: "onOpen",
+    });
   } catch (err) {
     FastLog.error(handleOpenTrigger.name, err);
     throw err;
   } finally {
     try {
       FastLog.finish(handleOpenTrigger.name, startTime);
-    } catch {}
-  }
-}
-
-function queueFixSheet(e: SheetsOnOpen): void {
-  const startTime = FastLog.start(queueFixSheet.name, e);
-
-  try {
-    const parameters = {
-      sheetName: e.source.getActiveSheet().getName(),
-    };
-    queueJob("FIX_SHEET", parameters, { priority: 80 });
-  } catch (err) {
-    FastLog.error(queueFixSheet.name, err);
-  } finally {
-    try {
-      FastLog.finish(queueFixSheet.name, startTime);
     } catch {}
   }
 }

@@ -2,7 +2,7 @@
 // Keep this file free of any runtime code that could drag in the worker.
 
 import type * as queueConstants from "./queueConstants";
-import { RunStepJob } from './queueStepTypes';
+import type { RunStepJob } from "./workflow/workflowTypes";
 
 // ────────────────────────────────────────────────────────────
 // Enum/type re-exports so callers can depend on a tiny, stable surface.

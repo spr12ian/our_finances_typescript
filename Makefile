@@ -1,10 +1,13 @@
 .DEFAULT_GOAL := push
+
+SHELL := /bin/bash
+.SHELLFLAGS := -eu -o pipefail -c
 # ─────────────────────────────────────────────
 # Variables
 # ─────────────────────────────────────────────
 BUILD_DIR := build
 SCRIPT_ID := $(OUR_FINANCES_SCRIPT_ID)
-
+TREE_EXCLUDES := '.git|.hatch|.mypy_cache|.pytest_cache|.ruff_cache|.venv|node_modules'
 .PHONY: \
 	build \
 	clean \
@@ -13,7 +16,9 @@ SCRIPT_ID := $(OUR_FINANCES_SCRIPT_ID)
 	lint \
 	prepare-gas \
 	push \
+	_run-with-log \
 	rename \
+	tree \
 	typecheck \
 	watch
 
@@ -53,8 +58,32 @@ install: ## Ensure clasp and dependencies are ready
 lint: ## Run ESLint on .ts files
 	npm run lint
 
+output:
+	@install -d output
+
 push: copy-appsscript ## Push to Google Apps Script using clasp
 	npm run push
+
+_run-with-log: output
+	@timestamp="$$(date '+%F_%H:%M')"; \
+	log_file="output/$${timestamp}_$(ACTION).txt"; \
+	stdout_file="output/$${timestamp}_$(ACTION).stdout"; \
+	stderr_file="output/$${timestamp}_$(ACTION).stderr"; \
+	echo "$$COMMAND"; \
+	color_log() { printf "\033[1;34m🔧 Starting %s...\033[0m\n" "$(ACTION)"; }; \
+	color_log_end() { printf "\033[1;32m✅ %s finished.\033[0m\n" "$(ACTION)"; }; \
+	color_log | tee "$$log_file"; \
+	{ \
+	  { eval "$(COMMAND)"; } 2> >(tee "$$stderr_file" >&2); \
+	} | tee "$$stdout_file" -a "$$log_file"; \
+	cat "$$stderr_file" >> "$$log_file"; \
+	color_log_end | tee -a "$$log_file"; \
+	for f in "$$log_file" "$$stdout_file" "$$stderr_file"; do \
+	  [ -s "$$f" ] || rm -f "$$f"; \
+	done
+
+tree: output ## Current project tree
+	@$(MAKE) _run-with-log ACTION=tree COMMAND="tree -a -F -I $(TREE_EXCLUDES)"
 
 typecheck: ## Run TypeScript without emitting output
 	npm run typecheck

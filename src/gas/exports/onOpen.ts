@@ -1,10 +1,10 @@
-import { getAccountSheetNames } from "./accountSheetFunctions";
-import { buildAccountsMenu } from "./gas/menus/buildAccountsMenu";
-import { buildGasMenu } from "./gas/menus/buildGasMenu";
-import { buildSectionsMenu } from "./gas/menus/buildSectionsMenu";
-import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
-import { FastLog } from "./lib/FastLog";
-import { registerDynamicAccountFunctions } from "./registerDynamicAccountFunctions";
+import { getAccountSheetNames } from "../../accountSheetFunctions";
+import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
+import { FastLog } from "../../lib/FastLog";
+import { registerDynamicAccountFunctions } from "../../registerDynamicAccountFunctions";
+import { buildAccountsMenu } from "../menus/buildAccountsMenu";
+import { buildGasMenu } from "../menus/buildGasMenu";
+import { buildSectionsMenu } from "../menus/buildSectionsMenu";
 
 export function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
   const startTime = FastLog.start(onOpen.name, e);

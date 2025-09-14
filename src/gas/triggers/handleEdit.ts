@@ -1,8 +1,8 @@
 /// <reference types="google-apps-script" />
 
-import { FastLog } from "./lib/FastLog";
-import * as queueConstants from "./queueConstants";
-import { queueJob } from "./queueJob";
+import { FastLog } from "../../lib/FastLog";
+import * as queueConstants from "../../queueConstants";
+import { queueJob } from "../../queueJob";
 
 type SheetsOnEdit = GoogleAppsScript.Events.SheetsOnEdit;
 
@@ -136,7 +136,7 @@ function __getEventPartsOpt(e: SheetsOnEdit) {
 // ---------------------------
 // Public entry point
 // ---------------------------
-export function handleEditTrigger(e: SheetsOnEdit): void {
+export function handleEdit(e: SheetsOnEdit): void {
   const startMs = Date.now();
   FastLog.info(`handleEditTrigger started`);
 

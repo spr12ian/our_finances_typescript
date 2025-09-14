@@ -14,19 +14,19 @@ import {
   MetaTransactionCategories,
   MetaTransactionsByDate,
   MetaUncategorisedByDate,
-} from "./constants";
-import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
-import { handleEditTrigger } from "./handleEditTrigger";
-import { handleOpenTrigger } from "./handleOpenTrigger";
-import { FastLog } from "./lib/FastLog";
-import { logTime } from "./logTime";
+} from "../../constants";
+import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
+import { FastLog } from "../../lib/FastLog";
+import { logTime } from "../../logTime";
+import { OurFinances } from "../../OurFinances";
+import { queue_ensureSetup } from "../../queueSetup";
+import { queue_worker } from "../../queueWorker";
+import * as timeConstants from "../../timeConstants";
+import { validateAllMenuFunctionNames } from "../../validateAllMenuFunctionNames";
+import { withReentryGuard } from "../../withReentryGuard";
+import { handleEdit } from "../triggers/handleEdit";
+import { handleOpen } from "../triggers/handleOpen";
 import { onOpen } from "./onOpen";
-import { OurFinances } from "./OurFinances";
-import { queue_ensureSetup } from "./queueSetup";
-import { queue_worker } from "./queueWorker";
-import * as timeConstants from "./timeConstants";
-import { validateAllMenuFunctionNames } from "./validateAllMenuFunctionNames";
-import { withReentryGuard } from "./withReentryGuard";
 
 export function GAS_applyDescriptionReplacements() {
   const spreadsheet = getFinancesSpreadsheet();
@@ -225,14 +225,14 @@ export function GAS_onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
 export function GAS_onEditTrigger(
   e: GoogleAppsScript.Events.SheetsOnEdit
 ): void {
-  handleEditTrigger(e);
+  handleEdit(e);
 }
 
 export function GAS_onOpenTrigger(
   e: GoogleAppsScript.Events.SheetsOnOpen
 ): void {
   const startTime = FastLog.start(GAS_onOpenTrigger.name, e);
-  handleOpenTrigger(e);
+  handleOpen(e);
   FastLog.finish(GAS_onOpenTrigger.name, startTime);
 }
 

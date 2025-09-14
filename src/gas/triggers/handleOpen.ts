@@ -1,16 +1,16 @@
 /// <reference types="google-apps-script" />
 
-import { startWorkflow } from "./app/workflow/workflowEngine";
-import { FastLog } from "./lib/FastLog";
-import * as queueConstants from "./queueConstants";
+import { startWorkflow } from "../../app/workflow/workflowEngine";
+import { FastLog } from "../../lib/FastLog";
+import * as queueConstants from "../../queueConstants";
 
 type SheetsOnOpen = GoogleAppsScript.Events.SheetsOnOpen;
 
 // ---------------------------
 // Public entry point
 // ---------------------------
-export function handleOpenTrigger(e: SheetsOnOpen): void {
-  const startTime = FastLog.start(handleOpenTrigger.name, e);
+export function handleOpen(e: SheetsOnOpen): void {
+  const startTime = FastLog.start(handleOpen.name, e);
 
   try {
     if (!e || !e.source || !e.source.getActiveSheet()) return;
@@ -28,11 +28,11 @@ export function handleOpenTrigger(e: SheetsOnOpen): void {
       startedBy: "onOpen",
     });
   } catch (err) {
-    FastLog.error(handleOpenTrigger.name, err);
+    FastLog.error(handleOpen.name, err);
     throw err;
   } finally {
     try {
-      FastLog.finish(handleOpenTrigger.name, startTime);
+      FastLog.finish(handleOpen.name, startTime);
     } catch {}
   }
 }

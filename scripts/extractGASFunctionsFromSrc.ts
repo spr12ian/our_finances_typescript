@@ -75,7 +75,7 @@ const lines = [
   "",
   "export {",
   ...shimGlobals.map((name) => `  GAS_${name},`),
-  "} from '../../gasFunctions';",
+  "} from './gasFunctions';",
 ];
 lines.push('')
 

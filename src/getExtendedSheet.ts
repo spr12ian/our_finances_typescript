@@ -1,10 +1,11 @@
 // getExtendedSheet.ts
 import { AccountSheet } from "./AccountSheet";
 import { BankAccounts } from "./BankAccounts";
-import { BankCards } from "./BankCards";
+//import { BankCards } from "./BankCards";
 import type { Spreadsheet } from "./Spreadsheet";
 import { isAccountSheetName } from "./accountSheetFunctions";
-import { AccountBalances } from "./app/sheets/AccountBalances";
+//import { AccountBalances } from "./app/sheets/AccountBalances";
+import { createAccountBalances } from "./app/sheets/AccountBalances/AccountBalances";
 import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
 import { FastLog } from "./support/FastLog";
 import { getErrorMessage } from "./support/errors";
@@ -52,6 +53,7 @@ export const hasUpdateAccountBalance = (
 
 // If every non-account sheet takes only spreadsheet:
 export type SheetCtor = new (spreadsheet: Spreadsheet) => ExtendedSheet;
+type SheetFactory = (spreadsheet: Spreadsheet) => ExtendedSheet;
 
 export function getExtendedSheet(sheetName: string): ExtendedSheet {
   const fn = getExtendedSheet.name;
@@ -66,12 +68,12 @@ export function getExtendedSheet(sheetName: string): ExtendedSheet {
       return new AccountSheet(sheet, spreadsheet);
     }
 
-    const SheetClass = getSheetClass(sheetName);
-    if (!SheetClass) {
-      throw new Error(`Sheet class for ${sheetName} not found`);
+    const make = getSheetFactory(sheetName);
+    if (!make) {
+      throw new Error(`Sheet factory for ${sheetName} not found`);
     }
 
-    return new SheetClass(spreadsheet);
+    return make(spreadsheet);
   } catch (err) {
     FastLog.error(fn, err);
     throw new Error(`${fn}: ${getErrorMessage(err)}`);
@@ -80,6 +82,26 @@ export function getExtendedSheet(sheetName: string): ExtendedSheet {
   }
 }
 type SheetClassConstructor = new (...args: any[]) => ExtendedSheet;
+export function getSheetFactory(sheetName: string): SheetFactory {
+  const fn = getSheetFactory.name;
+  const startTime = FastLog.start(fn, sheetName);
+  try {
+    // Registry now stores FACTORIES
+    const factories: Record<string, SheetFactory> = {
+      "Account balances": createAccountBalances,          // ✅ new factory sheet
+      //"Bank accounts":    (s) => new BankAccounts(s),     // ✅ wrap old ctor
+      //"Bank cards":       (s) => new BankCards(s),        // ✅ wrap old ctor
+      // add others the same way
+    };
+
+    const f = factories[sheetName];
+    if (!f) throw new Error(`No sheet factory found for sheetName: ${sheetName}`);
+    return f;
+  } finally {
+    FastLog.finish(fn, startTime, sheetName);
+  }
+}
+
 export function getSheetClass(sheetName: string): SheetClassConstructor {
   const fn = getSheetClass.name;
   const startTime = FastLog.start(fn, sheetName);
@@ -88,9 +110,9 @@ export function getSheetClass(sheetName: string): SheetClassConstructor {
     // Implementation to get the correct sheet class based on the sheetName
     // For example, you might have a mapping of sheet names to classes
     const sheetClassMap: { [key: string]: any } = {
-      "Account balances": AccountBalances,
+      "Account balances": createAccountBalances,
       "Bank accounts": BankAccounts,
-      "Bank cards": BankCards,
+      // "Bank cards": BankCards,
       // "BudgetSheet": BudgetSheet,
       // Add other mappings as necessary
     };

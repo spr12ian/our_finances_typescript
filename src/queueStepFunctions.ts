@@ -5,7 +5,7 @@ import { FastLog } from "./support/FastLog";
 import { ONE_MINUTE, ONE_SECOND } from "./timeConstants";
 import { makeStepLogger } from "./workflow/makeStepLogger";
 import { enqueueRunStep } from "./workflow/workflowEngine"; // your queue implementation
-import { RunStepJob, StepContext, StepFn } from "./workflow/workflowTypes";
+import type { RunStepJob, StepContext, StepFn } from "./workflow/workflowTypes";
 
 // Registry of workflows and their steps
 // e.g., WORKFLOWS["RecalculateBalances"]["ScanSheets"] = fn

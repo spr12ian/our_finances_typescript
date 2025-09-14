@@ -33,7 +33,7 @@
   },
   "scripts": {
     "build": "rollup -c config/rollup.config.js && npx tsx scripts/generateShim.ts",
-    "clean": "rm -rf build",
+    "clean": "rm -rf build/*",
     "copy-appsscript": "cp appsscript.json build/",
     "extract-gas-functions": "npx tsx scripts/extractGASFunctionsFromSrc.ts",
     "dev": "concurrently \"rollup -c config/rollup.config.js -w\" \"npm run watch\"",

@@ -1,4 +1,5 @@
 build/
+!build/.keep
 node_modules/
 output/
 .clasp.json

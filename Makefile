@@ -26,9 +26,12 @@ TREE_EXCLUDES := '.git|.hatch|.mypy_cache|.pytest_cache|.ruff_cache|.venv|node_m
 # Targets
 # ─────────────────────────────────────────────
 
-build: extract-gas-functions ## Bundle TypeScript files with Rollup and generate shim
-	mkdir $(BUILD_DIR)
+build: build-dir extract-gas-functions ## Bundle TypeScript files with Rollup and generate shim
 	npm run build
+
+build-dir:
+	@install -d $(BUILD_DIR)
+	touch $(BUILD_DIR)/.keep
 
 clean: ## Remove build output directories
 	npm run clean

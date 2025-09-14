@@ -20,7 +20,7 @@ const levels: Record<LogLevel, number> = {
 
 const RING_SIZE = 20;
 const PROP_KEY = "FASTLOG_RING";
-const STATUS_SHEET_NAME = "Status";
+const STATUS_SHEET_NAME = "$Status";
 const ERROR_SNAPSHOT_THRESHOLD = 3;
 
 // in-execution state

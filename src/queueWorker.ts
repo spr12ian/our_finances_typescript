@@ -10,6 +10,7 @@ import type { Handler, Job, JobRow, JobStatus } from "./queueTypes";
 import * as timeConstants from "./timeConstants";
 import { jobHandlers } from "./workflow/workflowHandlers";
 
+import { FastLog } from "./lib/FastLog";
 import {
   Col,
   DEAD_SHEET_NAME,
@@ -24,7 +25,6 @@ import {
   STATUS,
   WORKER_BUDGET_MS,
 } from "./queueConstants";
-import { FastLog } from "./support/FastLog";
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Public API

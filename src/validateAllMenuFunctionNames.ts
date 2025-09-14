@@ -1,4 +1,4 @@
-import { FastLog } from "./support/FastLog";
+import { FastLog } from "./lib/FastLog";
 export function validateAllMenuFunctionNames() {
   const registered = new Set((globalThis as any).__exportedGlobals__ ?? []);
 

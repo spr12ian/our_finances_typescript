@@ -3,8 +3,8 @@ import { buildAccountsMenu } from "./gas/menus/buildAccountsMenu";
 import { buildGasMenu } from "./gas/menus/buildGasMenu";
 import { buildSectionsMenu } from "./gas/menus/buildSectionsMenu";
 import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
+import { FastLog } from "./lib/FastLog";
 import { registerDynamicAccountFunctions } from "./registerDynamicAccountFunctions";
-import { FastLog } from "./support/FastLog";
 
 export function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
   const startTime = FastLog.start(onOpen.name, e);

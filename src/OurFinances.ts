@@ -24,9 +24,9 @@ import { getToday } from "./DateFunctions";
 import { Dependencies } from "./Dependencies";
 import { outputToDrive } from "./driveFunctions";
 import { sendMeEmail } from "./emailFunctions";
+import { FastLog } from "./lib/FastLog";
 import { Spreadsheet } from "./Spreadsheet";
 import { SpreadsheetSummary } from "./SpreadsheetSummary";
-import { FastLog } from "./support/FastLog";
 import { TransactionCategories } from "./TransactionCategories";
 import { Transactions } from "./Transactions";
 

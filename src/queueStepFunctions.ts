@@ -1,7 +1,7 @@
 // queueStepFunctions.ts
 // Central registry of step functions per workflow
 
-import { FastLog } from "./support/FastLog";
+import { FastLog } from "./lib/FastLog";
 import { ONE_MINUTE, ONE_SECOND } from "./timeConstants";
 import { makeStepLogger } from "./workflow/makeStepLogger";
 import { enqueueRunStep } from "./workflow/workflowEngine"; // your queue implementation
@@ -31,10 +31,10 @@ export function runStep(job: RunStepJob) {
   const budgetMs = 25 * ONE_SECOND; // be conservative inside a 6-min GAS window
   const startedAt = Date.now();
   const logger = makeStepLogger({
-  workflowId: job.workflowId,
-  workflowName,
-  stepName,
-});
+    workflowId: job.workflowId,
+    workflowName,
+    stepName,
+  });
 
   const ctx: StepContext = {
     workflowId: job.workflowId,

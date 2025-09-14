@@ -1,4 +1,4 @@
-import { FastLog } from "../../support/FastLog";
+import { FastLog } from "../../lib/FastLog";
 import { createMenu } from "./createMenu";
 
 export function buildGasMenu(ui: GoogleAppsScript.Base.Ui) {

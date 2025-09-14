@@ -1,6 +1,6 @@
 // import { LOCALE } from "./constants";
 import { getOrdinal } from "./NumberUtils";
-import { FastLog } from "./support/FastLog";
+import { FastLog } from "./lib/FastLog";
 
 const LOCALE = "en-GB" as const;
 

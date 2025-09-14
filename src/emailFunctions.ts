@@ -1,10 +1,10 @@
 import { Spreadsheet } from "./Spreadsheet";
-import { FastLog } from './support/FastLog';
+import { FastLog } from "./lib/FastLog";
 
 // A pragmatic regex; don’t chase full RFC 5322.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export type EmailAddressType = string & { readonly __brand: 'EmailAddress' };
+export type EmailAddressType = string & { readonly __brand: "EmailAddress" };
 
 export function asEmail(s: string): EmailAddressType {
   if (!EMAIL_RE.test(s)) throw new Error(`Invalid email address: ${s}`);

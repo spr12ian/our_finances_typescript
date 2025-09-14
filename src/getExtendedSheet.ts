@@ -7,8 +7,8 @@ import { isAccountSheetName } from "./accountSheetFunctions";
 //import { AccountBalances } from "./app/sheets/AccountBalances";
 import { createAccountBalances } from "./app/sheets/AccountBalances/AccountBalances";
 import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
-import { FastLog } from "./support/FastLog";
-import { getErrorMessage } from "./support/errors";
+import { FastLog } from "./lib/FastLog";
+import { getErrorMessage } from "./lib/errors";
 
 export interface ExtendedSheet {
   name: string;
@@ -88,14 +88,15 @@ export function getSheetFactory(sheetName: string): SheetFactory {
   try {
     // Registry now stores FACTORIES
     const factories: Record<string, SheetFactory> = {
-      "Account balances": createAccountBalances,          // ✅ new factory sheet
+      "Account balances": createAccountBalances, // ✅ new factory sheet
       //"Bank accounts":    (s) => new BankAccounts(s),     // ✅ wrap old ctor
       //"Bank cards":       (s) => new BankCards(s),        // ✅ wrap old ctor
       // add others the same way
     };
 
     const f = factories[sheetName];
-    if (!f) throw new Error(`No sheet factory found for sheetName: ${sheetName}`);
+    if (!f)
+      throw new Error(`No sheet factory found for sheetName: ${sheetName}`);
     return f;
   } finally {
     FastLog.finish(fn, startTime, sheetName);

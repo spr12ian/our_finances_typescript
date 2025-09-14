@@ -1,7 +1,7 @@
 /// <reference types="google-apps-script" />
 
 import { Sheet } from "./Sheet";
-import { FastLog } from "./support/FastLog";
+import { FastLog } from "./lib/FastLog";
 
 /**
  * Thin, type‑safe wrapper around a GAS `Spreadsheet`.

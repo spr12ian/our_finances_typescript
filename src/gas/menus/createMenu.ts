@@ -1,4 +1,4 @@
-import { FastLog } from "../../support/FastLog";
+import { FastLog } from "../../lib/FastLog";
 
 export function createMenu(
   ui: GoogleAppsScript.Base.Ui,
@@ -6,7 +6,7 @@ export function createMenu(
   menuItemArray: [string, string][]
 ) {
   const startTime = FastLog.start(createMenu.name);
-  
+
   const menu = ui.createMenu(menuCaption);
 
   menuItemArray.forEach(([itemName, itemFunction]) => {

@@ -2,7 +2,7 @@ import {
   MetaBudgetAdHocTransactions,
   MetaBudgetAnnualTransactions,
 } from "../../constants";
-import { FastLog } from "../../support/FastLog";
+import { FastLog } from "../../lib/FastLog";
 
 export function buildSectionsMenu(ui: GoogleAppsScript.Base.Ui) {
   const startTime = FastLog.start(buildSectionsMenu.name);

@@ -1,7 +1,7 @@
 /// <reference types="google-apps-script" />
 
 import { goToSheetLastRow } from "./goToSheetLastRow";
-import { FastLog } from './support/FastLog';
+import { FastLog } from "./lib/FastLog";
 
 /**
  * Registers `dynamicAccount_*` functions on `globalThis`
@@ -11,7 +11,9 @@ import { FastLog } from './support/FastLog';
  *
  * Example: `dynamicAccount_AHALIF()` activates `_AHALIF` sheet last row.
  */
-export function registerDynamicAccountFunctions(accountSheetNames: string[]): void {
+export function registerDynamicAccountFunctions(
+  accountSheetNames: string[]
+): void {
   for (const name of accountSheetNames) {
     const functionName = `dynamicAccount${name}`;
 

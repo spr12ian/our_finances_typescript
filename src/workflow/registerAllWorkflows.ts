@@ -1,4 +1,4 @@
-import { FastLog } from "../support/FastLog";
+import { FastLog } from "../lib/FastLog";
 import { onOpenFlow } from "./onOpenFlow";
 
 // Call once, e.g., inside onOpen or module top-level

@@ -1,8 +1,8 @@
 // src/workflow/workflowEngine.ts
 
 import { toIso_ } from "../DateFunctions";
+import { FastLog } from "../lib/FastLog";
 import type { EnqueueOptions, JobName } from "../queueTypes";
-import { FastLog } from "../support/FastLog";
 import { ONE_MINUTE, ONE_SECOND } from "../timeConstants";
 import { makeStepLogger } from "./makeStepLogger";
 import type { RunStepJob, StepContext, StepFn } from "./workflowTypes";

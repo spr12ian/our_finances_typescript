@@ -1,5 +1,5 @@
 import { fixSheet } from "../fixSheet";
-import { getErrorMessage } from "../support/errors";
+import { getErrorMessage } from "../lib/errors";
 import { registerStep } from "./workflowEngine";
 import type { StepFn } from "./workflowTypes";
 

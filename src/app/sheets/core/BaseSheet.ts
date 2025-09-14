@@ -1,7 +1,7 @@
 // src/sheets/core/BaseSheet.ts
-import { FastLog } from "../../../support/FastLog";
-import type { Spreadsheet } from "../../../Spreadsheet";
+import { FastLog } from "../../../lib/FastLog";
 import type { Sheet } from "../../../Sheet";
+import type { Spreadsheet } from "../../../Spreadsheet";
 
 export abstract class BaseSheet {
   constructor(

@@ -5,10 +5,10 @@ import type {
   canTrimSheet,
   ExtendedSheet,
 } from "../../getExtendedSheet";
+import { FastLog } from "../../lib/FastLog";
 import { queueJob } from "../../queueJob";
 import type { Sheet } from "../../Sheet";
 import { Spreadsheet } from "../../Spreadsheet";
-import { FastLog } from "../../support/FastLog";
 
 /**
  * Class to handle the "Account balances" sheet.
@@ -28,8 +28,6 @@ export class AccountBalances
   get allValues(): (string | number)[][] {
     return this.sheet.raw.getDataRange().getValues() as (string | number)[][];
   }
-
-
 
   fixSheet() {
     FastLog.log(`Started AccountBalances.fixSheet: ${this.sheet.name}`);

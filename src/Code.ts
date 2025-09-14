@@ -1,8 +1,8 @@
 /// <reference types="google-apps-script" />
 import { exportToGlobalThis } from "./exportToGlobal";
 import * as GAS from "./gasExports";
+import { FastLog } from "./lib/FastLog";
 import { shimGlobals } from "./shimGlobals";
-import { FastLog } from './support/FastLog';
 
 /**
  * Application entry point – executed when the script is loaded.

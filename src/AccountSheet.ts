@@ -2,9 +2,9 @@
 import { MetaAccountSheet as Meta, MetaBankAccounts } from "./constants";
 import { DescriptionReplacements } from "./DescriptionReplacements";
 
+import type { Sheet } from "./domain/Sheet";
+import { Spreadsheet } from "./domain/Spreadsheet";
 import { FastLog } from "./lib/FastLog";
-import type { Sheet } from "./Sheet";
-import { Spreadsheet } from "./Spreadsheet";
 import { xLookup } from "./xLookup";
 export class AccountSheet {
   constructor(

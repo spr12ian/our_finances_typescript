@@ -22,11 +22,11 @@ import {
 } from "./constants";
 import { getToday } from "./DateFunctions";
 import { Dependencies } from "./Dependencies";
+import { Spreadsheet } from "./domain/Spreadsheet";
+import { SpreadsheetSummary } from "./domain/SpreadsheetSummary";
 import { outputToDrive } from "./driveFunctions";
 import { sendMeEmail } from "./emailFunctions";
 import { FastLog } from "./lib/FastLog";
-import { Spreadsheet } from "./Spreadsheet";
-import { SpreadsheetSummary } from "./SpreadsheetSummary";
 import { TransactionCategories } from "./TransactionCategories";
 import { Transactions } from "./Transactions";
 

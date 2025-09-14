@@ -1,4 +1,6 @@
 import { MetaAccountBalances as Meta } from "../../constants";
+import type { Sheet } from "../../domain/Sheet";
+import { Spreadsheet } from "../../domain/Spreadsheet";
 import type {
   canFixSheet,
   canFormatSheet,
@@ -7,8 +9,6 @@ import type {
 } from "../../getExtendedSheet";
 import { FastLog } from "../../lib/FastLog";
 import { queueJob } from "../../queueJob";
-import type { Sheet } from "../../Sheet";
-import { Spreadsheet } from "../../Spreadsheet";
 
 /**
  * Class to handle the "Account balances" sheet.

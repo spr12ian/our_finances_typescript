@@ -1,10 +1,10 @@
 /// <reference types="google-apps-script" />
 
 import { getAmountAsGBP } from "./MoneyUtils";
-import type { Sheet } from "./Sheet";
-import type { Spreadsheet } from "./Spreadsheet";
+import { asNumber } from "./asNumber";
+import type { Sheet } from "./domain/Sheet";
+import type { Spreadsheet } from "./domain/Spreadsheet";
 import { xLookup } from "./xLookup";
-import { asNumber } from './asNumber';
 
 export class BankDebitsDue {
   private sheet: Sheet;

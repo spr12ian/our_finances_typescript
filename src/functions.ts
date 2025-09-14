@@ -1,9 +1,9 @@
 /// <reference types="google-apps-script" />
 
-import { isAccountSheet } from './accountSheetFunctions';
+import { isAccountSheet } from "./accountSheetFunctions";
+import { Sheet } from "./domain/Sheet";
 import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
 import { OurFinances } from "./OurFinances";
-import { Sheet } from "./Sheet";
 
 // Function declarations
 

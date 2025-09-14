@@ -1,11 +1,17 @@
 // src/sheets/account-balances/AccountBalances.ts
 import { MetaAccountBalances as Meta } from "../../../constants";
-import type { Spreadsheet } from "../../../Spreadsheet";
-import { AccountBalancesCore } from "./AccountBalancesCore";
+import type { Spreadsheet } from "../../../domain/Spreadsheet";
 import {
-  Formattable, Trimmable, Fixable, Queueable,
-  type CanFormatSheet, type CanTrimSheet, type CanFixSheet, type QueueOps
+  Fixable,
+  Formattable,
+  Queueable,
+  Trimmable,
+  type CanFixSheet,
+  type CanFormatSheet,
+  type CanTrimSheet,
+  type QueueOps,
 } from "../core/capabilityMixins";
+import { AccountBalancesCore } from "./AccountBalancesCore";
 
 // ❶ Public-ctor shim (no behavior change)
 class CorePublic extends AccountBalancesCore {
@@ -24,10 +30,19 @@ class _AccountBalances extends Queueable(
   }
 }
 
-export type AccountBalances =
-  _AccountBalances & CanFormatSheet & CanTrimSheet & CanFixSheet & QueueOps;
+export type AccountBalances = _AccountBalances &
+  CanFormatSheet &
+  CanTrimSheet &
+  CanFixSheet &
+  QueueOps;
 
-export function createAccountBalances(spreadsheet: Spreadsheet): AccountBalances {
+export function createAccountBalances(
+  spreadsheet: Spreadsheet
+): AccountBalances {
   const sheet = spreadsheet.getSheetByMeta(Meta);
-  return new _AccountBalances(Meta.SHEET.NAME, spreadsheet, sheet) as AccountBalances;
+  return new _AccountBalances(
+    Meta.SHEET.NAME,
+    spreadsheet,
+    sheet
+  ) as AccountBalances;
 }

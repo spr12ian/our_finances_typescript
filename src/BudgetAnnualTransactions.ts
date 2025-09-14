@@ -6,9 +6,9 @@ import {
   getOrdinalDate,
   setupDaysIterator,
 } from "./DateFunctions";
+import type { Sheet } from "./domain/Sheet";
+import { Spreadsheet } from "./domain/Spreadsheet";
 import { getAmountAsGBP } from "./MoneyUtils";
-import type { Sheet } from "./Sheet";
-import { Spreadsheet } from "./Spreadsheet";
 export class BudgetAnnualTransactions {
   private readonly sheet: Sheet;
   constructor(private readonly spreadsheet: Spreadsheet) {

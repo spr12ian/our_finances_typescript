@@ -1,8 +1,8 @@
 /// <reference types="google-apps-script" />
 
-import type { Sheet } from "./Sheet";
-import { Spreadsheet } from "./Spreadsheet";
 import { MetaTransactions as Meta } from "./constants";
+import type { Sheet } from "./domain/Sheet";
+import { Spreadsheet } from "./domain/Spreadsheet";
 
 export class Transactions {
   private readonly sheet: Sheet;
@@ -74,7 +74,7 @@ export class Transactions {
     const fullFormula = `=FILTER(${query}, ${filterCondition})`;
     // 4. Insert formula in Transactions!A1
     transactionSheet.getRange("A1").setFormula(fullFormula);
-    
+
     this.sheet.trimSheet();
   }
 }

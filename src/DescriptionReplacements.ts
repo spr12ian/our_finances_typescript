@@ -3,8 +3,8 @@ import {
   MetaDescriptionReplacements as Meta,
   MetaAccountSheet,
 } from "./constants";
-import type { Sheet } from "./Sheet";
-import { Spreadsheet } from "./Spreadsheet";
+import type { Sheet } from "./domain/Sheet";
+import { Spreadsheet } from "./domain/Spreadsheet";
 
 export class DescriptionReplacements {
   private readonly sheet: Sheet;

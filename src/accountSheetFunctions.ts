@@ -1,6 +1,6 @@
-import type { Sheet } from "./Sheet";
-import type { Spreadsheet } from "./Spreadsheet";
 import { ACCOUNT_PREFIX } from "./constants";
+import type { Sheet } from "./domain/Sheet";
+import type { Spreadsheet } from "./domain/Spreadsheet";
 
 let cachedAccountSheets: Sheet[] | null = null;
 let cachedAccountSheetNames: string[] | null = null;
@@ -41,10 +41,10 @@ export function getAccountSheetNames(
   return cachedAccountSheetNames;
 }
 
-export function isAccountSheet(sheet:Sheet) {
+export function isAccountSheet(sheet: Sheet) {
   return isAccountSheetName(sheet.name);
 }
 
-export function isAccountSheetName(sheetName:string) {
+export function isAccountSheetName(sheetName: string) {
   return sheetName && sheetName.startsWith(ACCOUNT_PREFIX);
 }

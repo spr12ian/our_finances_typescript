@@ -12,7 +12,7 @@
 import fs from "fs";
 import path from "node:path";
 import { FastLog } from "../src/lib/logging/FastLog";
-import { getDirname } from "./utils/esmPath";
+import { getDirname } from "./esmPath";
 
 const __dirname = getDirname(import.meta.url);
 

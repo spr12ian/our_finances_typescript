@@ -1,15 +1,15 @@
 // queueStepFunctions.ts
 // Central registry of step functions per workflow
 
-import { makeStepLogger } from "./app/workflow/makeStepLogger";
-import { enqueueRunStep } from "./app/workflow/workflowEngine"; // your queue implementation
+import { makeStepLogger } from "../../features/workflow/makeStepLogger";
+import { enqueueRunStep } from "../../features/workflow/workflowEngine"; // your queue implementation
 import type {
   RunStepJob,
   StepContext,
   StepFn,
-} from "./app/workflow/workflowTypes";
-import { FastLog } from "./lib/FastLog";
-import { ONE_MINUTE, ONE_SECOND } from "./timeConstants";
+} from "../../features/workflow/workflowTypes";
+import { FastLog } from "../../lib/FastLog";
+import { ONE_MINUTE, ONE_SECOND } from "../../timeConstants";
 
 // Registry of workflows and their steps
 // e.g., WORKFLOWS["RecalculateBalances"]["ScanSheets"] = fn

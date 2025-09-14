@@ -1,6 +1,6 @@
 // src/sheets/core/capabilityMixins.ts
 import type { Ctor } from "./mixins";
-import { queueJob } from "../../../queueJob";
+import { queueJob } from "../../queue/queueJob"
 
 // Capabilities are *mixins* that expect BaseSheet protected API on `this`
 

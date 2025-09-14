@@ -1,4 +1,4 @@
-import * as timeConstants from "./timeConstants";
+import * as timeConstants from "../../timeConstants";
 
 export const QUEUE_SHEET_NAME = "$Queue"; // hidden operational sheet
 export const DEAD_SHEET_NAME = "$QueueDead"; // optional dead‑letter sink

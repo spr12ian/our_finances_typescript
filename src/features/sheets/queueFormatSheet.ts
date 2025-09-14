@@ -1,6 +1,6 @@
-import { FastLog } from "./lib/FastLog";
-import { queueJob } from "./queueJob";
-import type { ParamsOf } from "./queueTypes";
+import { FastLog } from "../../lib/FastLog";
+import { queueJob } from "../queue/queueJob"
+import type { ParamsOf } from "../queue/queueTypes";
 
 export function queueFormatSheet(parameters: ParamsOf<"FORMAT_SHEET">): void {
   const startTime = FastLog.start("queueFormatSheet", parameters);

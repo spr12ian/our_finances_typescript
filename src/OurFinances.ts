@@ -1,7 +1,6 @@
 /// <reference types="google-apps-script" />
 import { AccountSheet } from "./AccountSheet";
 import { isAccountSheet } from "./accountSheetFunctions";
-import { AccountBalances } from "./app/sheets/AccountBalances";
 import { BankAccounts } from "./BankAccounts";
 import { BankDebitsDue } from "./BankDebitsDue";
 import { BudgetAdHocTransactions } from "./BudgetAdHocTransactions";
@@ -26,6 +25,7 @@ import { Spreadsheet } from "./domain/Spreadsheet";
 import { SpreadsheetSummary } from "./domain/SpreadsheetSummary";
 import { outputToDrive } from "./driveFunctions";
 import { sendMeEmail } from "./emailFunctions";
+import { AccountBalances } from "./features/sheets/AccountBalances";
 import { FastLog } from "./lib/FastLog";
 import { TransactionCategories } from "./TransactionCategories";
 import { Transactions } from "./Transactions";

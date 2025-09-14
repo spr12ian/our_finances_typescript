@@ -3,8 +3,8 @@
 // ───────────────────────────────────────────────────────────────────────────────
 // Constants & schema
 // ───────────────────────────────────────────────────────────────────────────────
-import { toIso_ } from "./DateFunctions";
-import { FastLog } from "./lib/FastLog";
+import { toIso_ } from "../../DateFunctions";
+import { FastLog } from "../../lib/FastLog";
 import { DEFAULT_PRIORITY, QUEUE_SHEET_NAME, STATUS } from "./queueConstants";
 import type { EnqueueOptions, JobName, JobRow } from "./queueTypes";
 

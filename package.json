@@ -6,6 +6,7 @@
   "description": "GAS repository",
   "devDependencies": {
     "@google/clasp": "^3.0.6-alpha",
+    "@rollup/plugin-alias": "^5.1.1",
     "@rollup/plugin-commonjs": "^25.0.0",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@rollup/plugin-typescript": "^11.1.2",

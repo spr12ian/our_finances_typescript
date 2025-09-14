@@ -1,6 +1,6 @@
 // src/sheets/account-balances/AccountBalances.ts
-import type { Spreadsheet } from "../../../domain/Spreadsheet";
-import { MetaAccountBalances as Meta } from "../../../lib/constants";
+import type { Spreadsheet } from "@domain/Spreadsheet";
+import { MetaAccountBalances as Meta } from "@lib/constants";
 import {
   Fixable,
   Formattable,

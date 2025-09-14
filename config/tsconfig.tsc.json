@@ -1,15 +1,23 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "isolatedModules": true,
-    "lib": ["ES2021", "DOM", "DOM.Iterable"],
-    "module": "ES2020",
-    "moduleResolution": "Node",
-    "noUnusedParameters": true,
+    "baseUrl": "..",
     "rootDir": "../",
     "target": "ES2021",
+    "module": "ES2020",
+    "moduleResolution": "Node",
+    "isolatedModules": true,
+    "noUnusedParameters": true,
+    "skipLibCheck": true,
     "types": ["node"],
-    "useDefineForClassFields": false
+    "useDefineForClassFields": false,
+    "paths": {
+      "@domain/*": ["src/domain/*"],
+      "@features/*": ["src/features/*"],
+      "@gas/*": ["src/gas/*"],
+      "@lib/*": ["src/lib/*"],
+      "@queue/*": ["src/features/queue/*"]
+    }
   },
-  "extends": "./tsconfig.base.json",
-  "include": ["../scripts/**/*.ts", "../src/**/*.ts"]
+  "include": ["../tools/**/*.ts", "../src/**/*.ts"]
 }

@@ -1,17 +1,26 @@
 {
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "isolatedModules": true,
-    "lib": ["ES2021", "DOM", "DOM.Iterable"],
-    "module": "ES2020",
-    "moduleResolution": "Node",
-    "noUnusedParameters": true,
-    "outDir": "build",
+    "baseUrl": "..",
     "rootDir": "../src",
     "target": "ES2021",
+    "module": "ES2020",
+    "moduleResolution": "Node",
+    "isolatedModules": true,
+    "verbatimModuleSyntax": true,
+    "noUnusedParameters": true,
+    "noEmit": true,
+    "skipLibCheck": true,
     "types": ["google-apps-script"],
+    "lib": ["ES2021", "DOM", "DOM.Iterable"],
     "useDefineForClassFields": false,
-    "verbatimModuleSyntax": true
+    "paths": {
+      "@domain/*": ["src/domain/*"],
+      "@features/*": ["src/features/*"],
+      "@gas/*": ["src/gas/*"],
+      "@lib/*": ["src/lib/*"],
+      "@queue/*": ["src/features/queue/*"]
+    }
   },
-  "extends": "./tsconfig.base.json",
   "include": ["../src/**/*.ts"]
 }

@@ -1,11 +1,11 @@
 // src/workflow/workflowHandlers.ts (avoid importing queueFunctions to dodge cycles)
-import { queueJob } from "../queueJob";
+import { queueJob } from "../../queueJob";
+import { registerAllWorkflows } from "./registerAllWorkflows";
 import {
   configureWorkflowEngine,
   JOB_RUN_STEP,
   runStep,
-} from "../workflow/workflowEngine";
-import { registerAllWorkflows } from "./registerAllWorkflows";
+} from "./workflowEngine";
 
 configureWorkflowEngine(queueJob);
 

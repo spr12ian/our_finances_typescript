@@ -1,5 +1,5 @@
 // src/workflow/types.ts
-import type { StepLogger } from "../workflow/logging";
+import type { StepLogger } from "./logging";
 
 // A stable id for a whole workflow run
 export type WorkflowId = string;

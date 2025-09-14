@@ -1,6 +1,6 @@
 /// <reference types="google-apps-script" />
 import { exportToGlobalThis } from "./exportToGlobal";
-import * as GAS from "./gasExports";
+import * as GAS from "./gas/exports";
 import { FastLog } from "./lib/FastLog";
 import { shimGlobals } from "./shimGlobals";
 

@@ -1,8 +1,8 @@
 // src/queueTypes.ts
 // Keep this file free of any runtime code that could drag in the worker.
 
+import type { RunStepJob } from "./app/workflow/workflowTypes";
 import type * as queueConstants from "./queueConstants";
-import type { RunStepJob } from "./workflow/workflowTypes";
 
 // ────────────────────────────────────────────────────────────
 // Enum/type re-exports so callers can depend on a tiny, stable surface.

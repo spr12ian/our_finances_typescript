@@ -1,6 +1,6 @@
 // src/workflow/makeStepLogger.ts
-import { FastLog } from "../lib/FastLog";
-import { getErrorMessage } from "../lib/errors";
+import { FastLog } from "../../lib/FastLog";
+import { getErrorMessage } from "../../lib/errors";
 import type { StepLogger } from "./logging";
 
 type Ctx = {

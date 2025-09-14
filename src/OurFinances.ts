@@ -1,4 +1,6 @@
-/// <reference types="google-apps-script" />
+import { AccountBalances } from "@sheets/AccountBalances";
+import { Dependencies } from "@sheets/Dependencies";
+import { SpreadsheetSummary } from "@sheets/SpreadsheetSummary";
 import { AccountSheet } from "./AccountSheet";
 import { isAccountSheet } from "./accountSheetFunctions";
 import { BankAccounts } from "./BankAccounts";
@@ -9,9 +11,6 @@ import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
 import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
 import { CheckFixedAmounts } from "./CheckFixedAmounts";
 import { Spreadsheet } from "./domain/Spreadsheet";
-import { AccountBalances } from "./features/sheets/AccountBalances";
-import { Dependencies } from "./features/sheets/Dependencies";
-import { SpreadsheetSummary } from "./features/sheets/SpreadsheetSummary";
 import { columnToLetter } from "./lib/columnToLetter";
 import {
   MetaAccountBalances,

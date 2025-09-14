@@ -1,8 +1,8 @@
 /// <reference types="google-apps-script" />
 
-import * as queueConstants from "../../features/queue/queueConstants";
-import { startWorkflow } from "../../features/workflow/workflowEngine";
-import { FastLog } from "../../lib/logging/FastLog";
+import { FastLog } from "@logging/FastLog";
+import * as queueConstants from "@queue/queueConstants";
+import { startWorkflow } from "@workflow/workflowEngine";
 
 type SheetsOnOpen = GoogleAppsScript.Events.SheetsOnOpen;
 
@@ -23,7 +23,7 @@ export function handleOpen(e: SheetsOnOpen): void {
       return; // avoid feedback loops
 
     // registerAllWorkflows();
-    startWorkflow("onOpenFlow", "onOpenFixSheet", {
+    startWorkflow("fixSheetFlow", "fixSheetStep1", {
       sheetName: sheetName,
       startedBy: "onOpen",
     });

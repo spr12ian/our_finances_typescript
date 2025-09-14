@@ -1,11 +1,10 @@
-/// <reference types="google-apps-script" />
-import { DescriptionReplacements } from "./features/sheets/DescriptionReplacements";
-import { MetaAccountSheet as Meta, MetaBankAccounts } from "./lib/constants";
-
 import type { Sheet } from "@domain/Sheet";
 import { Spreadsheet } from "@domain/Spreadsheet";
-import { FastLog } from "./lib/logging/FastLog";
-import { xLookup } from "./lib/xLookup";
+import { MetaAccountSheet as Meta, MetaBankAccounts } from "@lib/constants";
+import { xLookup } from "@lib/xLookup";
+import { FastLog } from "@logging/FastLog";
+import { DescriptionReplacements } from "@sheets/DescriptionReplacements";
+
 export class AccountSheet {
   constructor(
     private readonly sheet: Sheet,

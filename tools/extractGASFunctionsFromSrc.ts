@@ -11,7 +11,7 @@
 // Config
 import fs from "fs";
 import path from "node:path";
-import { FastLog } from "../src/lib/logging/FastLog";
+import { FastLog } from "@logging/FastLog";
 import { getDirname } from "./esmPath";
 
 const __dirname = getDirname(import.meta.url);

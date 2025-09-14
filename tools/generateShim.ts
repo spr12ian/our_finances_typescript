@@ -1,7 +1,7 @@
 // scripts/generateShim.ts
 import fs from "fs";
 import path from "path";
-import { FastLog } from "../src/lib/logging/FastLog";
+import { FastLog } from "@logging/FastLog";
 import { shimGlobals } from "../src/shimGlobals";
 import { getDirname } from "./esmPath";
 

@@ -1,6 +1,4 @@
-/// <reference types="google-apps-script" />
-
-import { FastLog } from "../lib/logging/FastLog";
+import { FastLog } from "@logging/FastLog";
 
 /**
  * Thin wrapper around a GAS Sheet.

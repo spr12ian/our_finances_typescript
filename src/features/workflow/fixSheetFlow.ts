@@ -3,16 +3,16 @@ import { fixSheet } from "../sheets/fixSheet";
 import { registerStep } from "./workflowEngine";
 import type { StepFn } from "./workflowTypes";
 
-export function onOpenFlow(): void {
+export function fixSheetFlow(): void {
   // import step implementations here to register them
   // (don't import from jobHandlers to avoid cycles)
-  registerStep("onOpenFlow", "onOpenFixSheet", onOpenFixSheet);
-  registerStep("onOpenFlow", "onOpenFlowStep2", onOpenFlowStep2);
-  registerStep("onOpenFlow", "onOpenFlowStep3", onOpenFlowStep3);
+  registerStep("fixSheetFlow", "fixSheetStep1", fixSheetStep1);
+  registerStep("fixSheetFlow", "fixSheetFlowStep2", fixSheetFlowStep2);
+  registerStep("fixSheetFlow", "fixSheetFlowStep3", fixSheetFlowStep3);
 }
 
-const onOpenFixSheet: StepFn = ({ input, state, log }) => {
-  const startTime = log.start(onOpenFixSheet.name);
+const fixSheetStep1: StepFn = ({ input, state, log }) => {
+  const startTime = log.start(fixSheetStep1.name);
   try {
     const { sheetName, startedBy } = input as {
       sheetName: string;
@@ -22,24 +22,24 @@ const onOpenFixSheet: StepFn = ({ input, state, log }) => {
     log("startedBy:", startedBy);
 
     fixSheet(sheetName);
-    return { kind: "next", nextStep: "onOpenFlowStep2", state };
+    return { kind: "next", nextStep: "fixSheetFlowStep2", state };
   } catch (err) {
     log.error(err);
     return { kind: "fail", reason: getErrorMessage(err), retryable: true };
   } finally {
-    log.finish(onOpenFixSheet.name, startTime);
+    log.finish(fixSheetStep1.name, startTime);
   }
 };
 
-const onOpenFlowStep2: StepFn = ({ state, log }) => {
-  log("Starting onOpenFlowStep2");
+const fixSheetFlowStep2: StepFn = ({ state, log }) => {
+  log("Starting fixSheetFlowStep2");
   const totals: Record<string, { credit: number; debit: number }> =
     state.totals ?? {};
-  return { kind: "next", nextStep: "onOpenFlowStep3", state: { totals } };
+  return { kind: "next", nextStep: "fixSheetFlowStep3", state: { totals } };
 };
 
-const onOpenFlowStep3: StepFn = ({ state, log }) => {
-  log("Starting onOpenFlowStep3");
+const fixSheetFlowStep3: StepFn = ({ state, log }) => {
+  log("Starting fixSheetFlowStep3");
   log("Final totals:", state.totals);
   return { kind: "complete" };
 };

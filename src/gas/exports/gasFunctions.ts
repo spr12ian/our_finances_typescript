@@ -1,5 +1,7 @@
-import { queue_ensureSetup } from "../../features/queue/queueSetup";
-import { queue_worker } from "../../features/queue/queueWorker";
+import { getActiveSheetName } from "@gas";
+import { queue_ensureSetup } from "@queue/queueSetup";
+import { queue_worker } from "@queue/queueWorker";
+import { startWorkflow } from "@workflow/workflowEngine";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 import {
   MetaBalanceSheet,
@@ -105,8 +107,10 @@ export function GAS_exportFormulasToDrive() {
 }
 
 export function GAS_fixSheet() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).fixSheet();
+  startWorkflow("fixSheetFlow", "fixSheetStep1", {
+    sheetName: getActiveSheetName(),
+    startedBy: "GAS_fixSheet",
+  });
 }
 
 export function GAS_formatAccountSheet() {

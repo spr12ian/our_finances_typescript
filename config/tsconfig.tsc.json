@@ -13,10 +13,13 @@
     "useDefineForClassFields": false,
     "paths": {
       "@domain/*": ["src/domain/*"],
-      "@features/*": ["src/features/*"],
+      "@gas": ["src/gas/index.ts"],
       "@gas/*": ["src/gas/*"],
       "@lib/*": ["src/lib/*"],
-      "@queue/*": ["src/features/queue/*"]
+      "@logging/*": ["src/lib/logging/*"],
+      "@queue/*": ["src/features/queue/*"],
+      "@sheets/*": ["src/features/sheets/*"],
+      "@workflow/*": ["src/features/workflow/*"]
     }
   },
   "include": ["../tools/**/*.ts", "../src/**/*.ts"]

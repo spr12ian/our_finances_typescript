@@ -22,10 +22,12 @@ export default {
     alias({
       entries: [
         { find: '@domain',   replacement: path.join(root, 'src/domain') },
-        { find: '@features', replacement: path.join(root, 'src/features') },
         { find: '@gas',      replacement: path.join(root, 'src/gas') },
         { find: '@lib',      replacement: path.join(root, 'src/lib') },
+        { find: '@logging',  replacement: path.join(root, 'src/lib/logging') },
         { find: '@queue',    replacement: path.join(root, 'src/features/queue') },
+        { find: '@sheets',   replacement: path.join(root, 'src/features/sheets') },
+        { find: '@workflow', replacement: path.join(root, 'src/features/workflow') },
       ],
     }),
     resolve({ extensions: ['.ts', '.js'] }),

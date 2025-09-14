@@ -1,6 +1,6 @@
 /// <reference types="google-apps-script" />
 
-import { FastLog } from "../lib/logging/FastLog";
+import { FastLog } from "@logging/FastLog";
 import { Sheet } from "./Sheet";
 
 /**

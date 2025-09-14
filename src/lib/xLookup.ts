@@ -1,4 +1,4 @@
-import type { Sheet } from "./domain/Sheet";
+import type { Sheet } from "../domain/Sheet";
 
 /**
  * Custom XLOOKUP function for Google Apps Script

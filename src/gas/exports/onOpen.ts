@@ -1,6 +1,6 @@
 import { getAccountSheetNames } from "../../accountSheetFunctions";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
-import { FastLog } from "../../lib/FastLog";
+import { FastLog } from "../../lib/logging/FastLog";
 import { registerDynamicAccountFunctions } from "../../registerDynamicAccountFunctions";
 import { buildAccountsMenu } from "../menus/buildAccountsMenu";
 import { buildGasMenu } from "../menus/buildGasMenu";

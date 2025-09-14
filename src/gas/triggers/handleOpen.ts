@@ -1,8 +1,8 @@
 /// <reference types="google-apps-script" />
 
-import { startWorkflow } from "../../features/workflow/workflowEngine";
-import { FastLog } from "../../lib/FastLog";
 import * as queueConstants from "../../features/queue/queueConstants";
+import { startWorkflow } from "../../features/workflow/workflowEngine";
+import { FastLog } from "../../lib/logging/FastLog";
 
 type SheetsOnOpen = GoogleAppsScript.Events.SheetsOnOpen;
 

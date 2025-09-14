@@ -1,7 +1,7 @@
 /// <reference types="google-apps-script" />
 
 import { goToSheetLastRow } from "./goToSheetLastRow";
-import { FastLog } from "./lib/FastLog";
+import { FastLog } from "./lib/logging/FastLog";
 
 /**
  * Registers `dynamicAccount_*` functions on `globalThis`

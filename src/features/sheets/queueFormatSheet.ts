@@ -1,5 +1,5 @@
-import { FastLog } from "../../lib/FastLog";
-import { queueJob } from "../queue/queueJob"
+import { FastLog } from "../../lib/logging/FastLog";
+import { queueJob } from "../queue/queueJob";
 import type { ParamsOf } from "../queue/queueTypes";
 
 export function queueFormatSheet(parameters: ParamsOf<"FORMAT_SHEET">): void {

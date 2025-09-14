@@ -1,14 +1,14 @@
 /// <reference types="google-apps-script" />
-import { MetaBudgetAdHocTransactions as Meta } from "./constants";
+import type { Sheet } from "./domain/Sheet";
+import { Spreadsheet } from "./domain/Spreadsheet";
+import { MetaBudgetAdHocTransactions as Meta } from "./lib/constants";
 import {
   getFormattedDate,
   getNewDate,
   getOrdinalDate,
   setupDaysIterator,
-} from "./DateFunctions";
-import type { Sheet } from "./domain/Sheet";
-import { Spreadsheet } from "./domain/Spreadsheet";
-import { getAmountAsGBP } from "./MoneyUtils";
+} from "./lib/dates";
+import { getAmountAsGBP } from "./lib/money";
 export class BudgetAdHocTransactions {
   private readonly sheet: Sheet;
   constructor(private readonly spreadsheet: Spreadsheet) {

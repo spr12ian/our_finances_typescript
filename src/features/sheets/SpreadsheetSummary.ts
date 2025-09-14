@@ -1,8 +1,8 @@
 /// <reference types="google-apps-script" />
 
-import type { Sheet } from "./Sheet";
-import type { Spreadsheet } from "./Spreadsheet";
-import type { SpreadsheetSummaryRow } from "./interfaces";
+import type { Sheet } from "../../domain/Sheet";
+import type { Spreadsheet } from "../../domain/Spreadsheet";
+import type { SpreadsheetSummaryRow } from "../../domain/interfaces";
 
 export class SpreadsheetSummary {
   private sheet: Sheet;

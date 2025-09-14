@@ -11,7 +11,7 @@
 // Config
 import fs from "fs";
 import path from "node:path";
-import { FastLog } from "../src/lib/FastLog";
+import { FastLog } from "../src/lib/logging/FastLog";
 import { getDirname } from "./utils/esmPath";
 
 const __dirname = getDirname(import.meta.url);
@@ -77,7 +77,7 @@ const lines = [
   ...shimGlobals.map((name) => `  GAS_${name},`),
   "} from './gasFunctions';",
 ];
-lines.push('')
+lines.push("");
 
 fs.writeFileSync(GAS_EXPORTS, lines.join("\n"), "utf8");
 

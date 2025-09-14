@@ -8,8 +8,8 @@ import type {
   StepContext,
   StepFn,
 } from "../../features/workflow/workflowTypes";
-import { FastLog } from "../../lib/FastLog";
-import { ONE_MINUTE, ONE_SECOND } from "../../timeConstants";
+import { FastLog } from "../../lib/logging/FastLog";
+import { ONE_MINUTE, ONE_SECOND } from "../../lib/timeConstants";
 
 // Registry of workflows and their steps
 // e.g., WORKFLOWS["RecalculateBalances"]["ScanSheets"] = fn

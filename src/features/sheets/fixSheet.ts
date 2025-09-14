@@ -1,6 +1,6 @@
 // fixSheet.ts
-import { FastLog } from "../../lib/FastLog";
 import { getErrorMessage } from "../../lib/errors";
+import { FastLog } from "../../lib/logging/FastLog";
 import { getExtendedSheet, hasFixSheet } from "./getExtendedSheet";
 
 export function fixSheet(sheetName: string): boolean {

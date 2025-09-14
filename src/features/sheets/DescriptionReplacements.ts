@@ -1,10 +1,10 @@
 /// <reference types="google-apps-script" />
+import type { Sheet } from "../../domain/Sheet";
+import { Spreadsheet } from "../../domain/Spreadsheet";
 import {
   MetaDescriptionReplacements as Meta,
   MetaAccountSheet,
-} from "./constants";
-import type { Sheet } from "./domain/Sheet";
-import { Spreadsheet } from "./domain/Spreadsheet";
+} from "../../lib/constants";
 
 export class DescriptionReplacements {
   private readonly sheet: Sheet;

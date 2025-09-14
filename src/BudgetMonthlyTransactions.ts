@@ -1,9 +1,9 @@
 /// <reference types="google-apps-script" />
-import { MetaBudgetMonthlyTransactions as Meta } from "./constants";
-import { getNewDate, getOrdinalDate, setupDaysIterator } from "./DateFunctions";
 import { Sheet } from "./domain/Sheet";
 import { Spreadsheet } from "./domain/Spreadsheet";
-import { getAmountAsGBP } from "./MoneyUtils";
+import { MetaBudgetMonthlyTransactions as Meta } from "./lib/constants";
+import { getNewDate, getOrdinalDate, setupDaysIterator } from "./lib/dates";
+import { getAmountAsGBP } from "./lib/money";
 export class BudgetMonthlyTransactions {
   private readonly sheet: Sheet;
   constructor(private readonly spreadsheet: Spreadsheet) {

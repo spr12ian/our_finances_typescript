@@ -1,4 +1,4 @@
-import { FastLog } from "../../lib/FastLog";
+import { FastLog } from "../../lib/logging/FastLog";
 
 export function createMenu(
   ui: GoogleAppsScript.Base.Ui,

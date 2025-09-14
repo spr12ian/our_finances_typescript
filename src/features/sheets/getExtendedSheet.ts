@@ -6,8 +6,8 @@ import { isAccountSheetName } from "../../accountSheetFunctions";
 import type { Spreadsheet } from "../../domain/Spreadsheet";
 //import { AccountBalances } from "./app/sheets/AccountBalances";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
-import { FastLog } from "../../lib/FastLog";
 import { getErrorMessage } from "../../lib/errors";
+import { FastLog } from "../../lib/logging/FastLog";
 import { createAccountBalances } from "./AccountBalances/AccountBalances";
 
 export interface ExtendedSheet {

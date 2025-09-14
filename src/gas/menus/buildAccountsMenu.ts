@@ -1,4 +1,4 @@
-import { FastLog } from "../../lib/FastLog";
+import { FastLog } from "../../lib/logging/FastLog";
 import { createMenu } from "./createMenu";
 
 export function buildAccountsMenu(

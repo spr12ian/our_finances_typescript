@@ -1,8 +1,8 @@
 import { isAccountSheet } from "./accountSheetFunctions";
-import { MetaBankAccounts as Meta } from "./constants";
 import type { Sheet } from "./domain/Sheet";
 import { Spreadsheet } from "./domain/Spreadsheet";
-import { FastLog } from "./lib/FastLog";
+import { MetaBankAccounts as Meta } from "./lib/constants";
+import { FastLog } from "./lib/logging/FastLog";
 
 type FilterSpec = {
   column: number;

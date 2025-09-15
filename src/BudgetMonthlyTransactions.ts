@@ -1,7 +1,6 @@
 /// <reference types="google-apps-script" />
-import { Sheet } from "./domain/Sheet";
-import { Spreadsheet } from "./domain/Spreadsheet";
-import { MetaBudgetMonthlyTransactions as Meta } from "./lib/constants";
+import { Sheet, Spreadsheet } from "@domain";
+import { MetaBudgetMonthlyTransactions as Meta } from "@lib/constants";
 import { getNewDate, getOrdinalDate, setupDaysIterator } from "./lib/dates";
 import { getAmountAsGBP } from "./lib/money";
 export class BudgetMonthlyTransactions {

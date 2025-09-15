@@ -1,4 +1,4 @@
-import { Spreadsheet } from "../../domain/Spreadsheet";
+import { Spreadsheet } from "@domain";
 import { FastLog } from "../logging/FastLog";
 
 // A pragmatic regex; don’t chase full RFC 5322.

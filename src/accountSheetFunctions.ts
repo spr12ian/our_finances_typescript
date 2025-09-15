@@ -1,6 +1,5 @@
-import type { Sheet } from "./domain/Sheet";
-import type { Spreadsheet } from "./domain/Spreadsheet";
-import { ACCOUNT_PREFIX } from "./lib/constants";
+import type { Sheet, Spreadsheet } from "@domain";
+import { ACCOUNT_PREFIX } from "@lib/constants";
 
 let cachedAccountSheets: Sheet[] | null = null;
 let cachedAccountSheetNames: string[] | null = null;

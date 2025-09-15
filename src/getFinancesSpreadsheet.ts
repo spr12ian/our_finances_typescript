@@ -1,6 +1,5 @@
 // getFinancesSpreadsheet.ts
-/// <reference types="google-apps-script" />
-import { Spreadsheet } from "./domain/Spreadsheet";
+import { Spreadsheet } from "@domain";
 
 // Broadest event type that still lets us read .source / .authMode when present
 type AnyEvent = GoogleAppsScript.Events.AppsScriptEvent | undefined;

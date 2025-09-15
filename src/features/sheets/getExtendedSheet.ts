@@ -2,8 +2,8 @@
 import { AccountSheet } from "../../AccountSheet";
 import { BankAccounts } from "../../BankAccounts";
 //import { BankCards } from "./BankCards";
+import type { Spreadsheet } from "@domain/Spreadsheet";
 import { isAccountSheetName } from "../../accountSheetFunctions";
-import type { Spreadsheet } from "../../domain/Spreadsheet";
 //import { AccountBalances } from "./app/sheets/AccountBalances";
 import { getErrorMessage } from "@lib/errors";
 import { FastLog } from "@lib/logging/FastLog";

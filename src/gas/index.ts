@@ -1,3 +1,4 @@
-export * from "./getActiveSheet";
-export * from "./getActiveSheetName";
-export * from "./goToSheet";
+export { getActiveSheet } from "./getActiveSheet";
+export { getActiveSheetName } from "./getActiveSheetName";
+export { goToSheet } from "./goToSheet";
+export { isGasSheet } from "./isGasSheet";

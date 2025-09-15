@@ -1,8 +1,7 @@
 /// <reference types="google-apps-script" />
 
-import type { Sheet } from "./domain/Sheet";
-import { Spreadsheet } from "./domain/Spreadsheet";
-import { MetaTransactionCategories as Meta } from "./lib/constants";
+import type { Sheet, Spreadsheet } from "@domain";
+import { MetaTransactionCategories as Meta } from "@lib/constants";
 
 export class TransactionCategories {
   private readonly sheet: Sheet;

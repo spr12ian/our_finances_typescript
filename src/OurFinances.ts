@@ -1,3 +1,13 @@
+import {
+  MetaBankAccounts,
+  MetaBudgetAdHocTransactions,
+  MetaBudgetAnnualTransactions,
+  MetaBudgetMonthlyTransactions,
+  MetaBudgetWeeklyTransactions,
+  MetaDescriptionReplacements,
+  MetaTransactionCategories,
+} from "@lib/constants";
+import { FastLog } from "@logging/FastLog";
 import { Dependencies } from "@sheets/Dependencies";
 import { SpreadsheetSummary } from "@sheets/SpreadsheetSummary";
 import { AccountSheet } from "./AccountSheet";
@@ -9,21 +19,11 @@ import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
 import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
 import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
 import { CheckFixedAmounts } from "./CheckFixedAmounts";
-import { Spreadsheet } from "./domain/Spreadsheet";
+import { Spreadsheet } from "@domain";
 import { columnToLetter } from "./lib/columnToLetter";
-import {
-  MetaBankAccounts,
-  MetaBudgetAdHocTransactions,
-  MetaBudgetAnnualTransactions,
-  MetaBudgetMonthlyTransactions,
-  MetaBudgetWeeklyTransactions,
-  MetaDescriptionReplacements,
-  MetaTransactionCategories,
-} from "./lib/constants";
 import { getToday } from "./lib/dates";
 import { outputToDrive } from "./lib/google/drive";
 import { sendMeEmail } from "./lib/google/email";
-import { FastLog } from "./lib/logging/FastLog";
 import { TransactionCategories } from "./TransactionCategories";
 import { Transactions } from "./Transactions";
 

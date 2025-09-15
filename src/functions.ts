@@ -1,7 +1,7 @@
 /// <reference types="google-apps-script" />
 
+import { Sheet } from "@domain";
 import { isAccountSheet } from "./accountSheetFunctions";
-import { Sheet } from "./domain/Sheet";
 import { getFinancesSpreadsheet } from "./getFinancesSpreadsheet";
 import { OurFinances } from "./OurFinances";
 

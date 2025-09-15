@@ -1,5 +1,4 @@
-import type { Sheet } from "@domain/Sheet";
-import { Spreadsheet } from "@domain/Spreadsheet";
+import type { Sheet, Spreadsheet } from "@domain";
 import { MetaAccountSheet as Meta, MetaBankAccounts } from "@lib/constants";
 import { xLookup } from "@lib/xLookup";
 import { FastLog } from "@logging/FastLog";

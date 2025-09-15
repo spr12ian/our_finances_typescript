@@ -1,7 +1,5 @@
-/// <reference types="google-apps-script" />
-
-import type { Sheet } from "../../domain/Sheet";
-import { Spreadsheet } from "../../domain/Spreadsheet";
+import type { Sheet } from "@domain";
+import { Spreadsheet } from "@domain";
 
 export class Dependencies {
   #allDependencies: any[][] | undefined;

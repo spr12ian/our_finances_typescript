@@ -12,6 +12,7 @@
     "types": ["node"],
     "useDefineForClassFields": false,
     "paths": {
+      "@domain": ["src/domain/index.ts"],
       "@domain/*": ["src/domain/*"],
       "@gas": ["src/gas/index.ts"],
       "@gas/*": ["src/gas/*"],

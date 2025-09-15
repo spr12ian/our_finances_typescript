@@ -1,6 +1,5 @@
 // src/sheets/account-balances/AccountBalancesCore.ts
-import type { Sheet } from "@domain/Sheet";
-import type { Spreadsheet } from "@domain/Spreadsheet";
+import type { Sheet, Spreadsheet } from "@domain";
 import { BaseSheet } from "../core/BaseSheet";
 
 export abstract class AccountBalancesCore extends BaseSheet {

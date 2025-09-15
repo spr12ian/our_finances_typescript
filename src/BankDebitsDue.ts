@@ -1,7 +1,4 @@
-/// <reference types="google-apps-script" />
-
-import type { Sheet } from "./domain/Sheet";
-import type { Spreadsheet } from "./domain/Spreadsheet";
+import type { Sheet, Spreadsheet } from "@domain";
 import { asNumber } from "./lib/asNumber";
 import { getAmountAsGBP } from "./lib/money";
 import { xLookup } from "./lib/xLookup";

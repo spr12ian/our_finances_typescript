@@ -1,5 +1,5 @@
 // src/sheets/account-balances/AccountBalances.ts
-import type { Spreadsheet } from "@domain/Spreadsheet";
+import type { Spreadsheet } from "@domain";
 import { MetaAccountBalances as Meta } from "@lib/constants";
 import {
   Fixable,

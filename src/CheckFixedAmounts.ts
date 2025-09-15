@@ -1,7 +1,6 @@
 /// <reference types="google-apps-script" />
-import type { Sheet } from "./domain/Sheet";
-import { Spreadsheet } from "./domain/Spreadsheet";
-import { MetaCheckFixedAmounts as Meta } from "./lib/constants";
+import type { Sheet, Spreadsheet } from "@domain";
+import { MetaCheckFixedAmounts as Meta } from "@lib/constants";
 import { getAmountAsGBP } from "./lib/money";
 
 export class CheckFixedAmounts {

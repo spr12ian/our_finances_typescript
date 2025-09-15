@@ -82,6 +82,7 @@ export function getExtendedSheet(sheetName: string): ExtendedSheet {
   }
 }
 type SheetClassConstructor = new (...args: any[]) => ExtendedSheet;
+
 export function getSheetFactory(sheetName: string): SheetFactory {
   const fn = getSheetFactory.name;
   const startTime = FastLog.start(fn, sheetName);

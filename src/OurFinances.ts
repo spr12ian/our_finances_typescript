@@ -1,4 +1,3 @@
-import { AccountBalances } from "@sheets/AccountBalances";
 import { Dependencies } from "@sheets/Dependencies";
 import { SpreadsheetSummary } from "@sheets/SpreadsheetSummary";
 import { AccountSheet } from "./AccountSheet";
@@ -13,7 +12,6 @@ import { CheckFixedAmounts } from "./CheckFixedAmounts";
 import { Spreadsheet } from "./domain/Spreadsheet";
 import { columnToLetter } from "./lib/columnToLetter";
 import {
-  MetaAccountBalances,
   MetaBankAccounts,
   MetaBudgetAdHocTransactions,
   MetaBudgetAnnualTransactions,
@@ -31,7 +29,7 @@ import { Transactions } from "./Transactions";
 
 export class OurFinances {
   #dependencies?: Dependencies;
-  #accountBalances?: AccountBalances;
+  // #accountBalances?: AccountBalances;
   #bankAccounts?: BankAccounts;
   #bankDebitsDue?: BankDebitsDue;
   #budgetAnnualTransactions?: BudgetAnnualTransactions;
@@ -49,12 +47,12 @@ export class OurFinances {
     this.#spreadsheet = spreadsheet;
   }
 
-  get accountBalances() {
-    if (typeof this.#accountBalances === "undefined") {
-      this.#accountBalances = new AccountBalances(this.#spreadsheet);
-    }
-    return this.#accountBalances;
-  }
+  // get accountBalances() {
+  //   if (typeof this.#accountBalances === "undefined") {
+  //     this.#accountBalances = new AccountBalances(this.#spreadsheet);
+  //   }
+  //   return this.#accountBalances;
+  // }
 
   get bankAccounts() {
     if (typeof this.#bankAccounts === "undefined") {
@@ -274,42 +272,42 @@ export class OurFinances {
     FastLog.log(`Finished OurFinances.fixAccountSheet`);
   }
 
-  fixSheet() {
-    FastLog.log(`Started OurFinances.fixSheet`);
+  // fixSheet() {
+  //   FastLog.log(`Started OurFinances.fixSheet`);
 
-    const activeSheet = this.#spreadsheet.activeSheet;
-    if (!activeSheet) {
-      FastLog.log("No active sheet found.");
-      return;
-    }
+  //   const activeSheet = this.#spreadsheet.activeSheet;
+  //   if (!activeSheet) {
+  //     FastLog.log("No active sheet found.");
+  //     return;
+  //   }
 
-    // Define a strongly typed mapping from sheet name to action
-    const sheetActions: Record<string, () => void> = {
-      [MetaAccountBalances.SHEET.NAME]: () => this.accountBalances.fixSheet(),
-      // [MetaBankAccounts.SHEET.NAME]: () => this.bankAccounts.fixSheet(),
-      // [MetaBudgetAdHocTransactions.SHEET.NAME]: () => this.budgetAdhocTransactions.fixSheet(),
-      // [MetaBudgetAnnualTransactions.SHEET.NAME]: () => this.budgetAnnualTransactions.fixSheet(),
-      // [MetaBudgetMonthlyTransactions.SHEET.NAME]: () => this.budgetMonthlyTransactions.fixSheet(),
-      // [MetaBudgetWeeklyTransactions.SHEET.NAME]: () => this.budgetWeeklyTransactions.fixSheet(),
-      // [MetaDescriptionReplacements.SHEET.NAME]: () => this.descriptionReplacements.fixSheet(),
-      // [MetaTransactionCategories.SHEET.NAME]: () => this.transactionCategories.fixSheet(),
-    } as const;
+  //   // Define a strongly typed mapping from sheet name to action
+  //   const sheetActions: Record<string, () => void> = {
+  //     [MetaAccountBalances.SHEET.NAME]: () => this.accountBalances.fixSheet(),
+  //     // [MetaBankAccounts.SHEET.NAME]: () => this.bankAccounts.fixSheet(),
+  //     // [MetaBudgetAdHocTransactions.SHEET.NAME]: () => this.budgetAdhocTransactions.fixSheet(),
+  //     // [MetaBudgetAnnualTransactions.SHEET.NAME]: () => this.budgetAnnualTransactions.fixSheet(),
+  //     // [MetaBudgetMonthlyTransactions.SHEET.NAME]: () => this.budgetMonthlyTransactions.fixSheet(),
+  //     // [MetaBudgetWeeklyTransactions.SHEET.NAME]: () => this.budgetWeeklyTransactions.fixSheet(),
+  //     // [MetaDescriptionReplacements.SHEET.NAME]: () => this.descriptionReplacements.fixSheet(),
+  //     // [MetaTransactionCategories.SHEET.NAME]: () => this.transactionCategories.fixSheet(),
+  //   } as const;
 
-    // Look up the action based on sheet name
-    const action = sheetActions[activeSheet.name as keyof typeof sheetActions];
+  //   // Look up the action based on sheet name
+  //   const action = sheetActions[activeSheet.name as keyof typeof sheetActions];
 
-    if (action) {
-      action();
-    } else {
-      if (activeSheet.name.startsWith("_")) {
-        FastLog.log(`Sheet ${activeSheet.name} is an account sheet.`);
-        this.fixAccountSheet();
-      } else {
-        activeSheet.fixSheet();
-      }
-    }
-    FastLog.log(`Finished OurFinances.fixSheet`);
-  }
+  //   if (action) {
+  //     action();
+  //   } else {
+  //     if (activeSheet.name.startsWith("_")) {
+  //       FastLog.log(`Sheet ${activeSheet.name} is an account sheet.`);
+  //       this.fixAccountSheet();
+  //     } else {
+  //       activeSheet.fixSheet();
+  //     }
+  //   }
+  //   FastLog.log(`Finished OurFinances.fixSheet`);
+  // }
 
   formatAccountSheet() {
     const activeSheet = this.#spreadsheet.activeSheet;
@@ -320,15 +318,6 @@ export class OurFinances {
 
     const accountSheet = new AccountSheet(activeSheet, this.#spreadsheet);
     accountSheet.formatSheet();
-  }
-
-  goToSheet(sheetName: string) {
-    const sheet = this.#spreadsheet.getSheet(sheetName);
-
-    // Check if the sheet exists before trying to activate it.
-    if (sheet) {
-      sheet.activate();
-    }
   }
 
   onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {

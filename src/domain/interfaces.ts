@@ -1,10 +1,3 @@
-export interface AccountBalancesRow {
-  accountName: string;
-  sumCredit:string;
-  sumDebit: string;
-  balance: number;
-}
-
 export interface SpreadsheetSummaryRow {
   sheetName: string;
   lastRow: number;

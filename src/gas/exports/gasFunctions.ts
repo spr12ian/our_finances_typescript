@@ -1,4 +1,4 @@
-import { getActiveSheetName } from "@gas";
+import { getActiveSheetName, goToSheet } from "@gas";
 import {
   MetaBalanceSheet,
   MetaBudget,
@@ -36,51 +36,35 @@ export function GAS_applyDescriptionReplacements() {
 }
 
 export function GAS_balanceSheet() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet(MetaBalanceSheet.SHEET.NAME);
+  goToSheet(MetaBalanceSheet.SHEET.NAME);
 }
 
 export function GAS_budget() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet(MetaBudget.SHEET.NAME);
+  goToSheet(MetaBudget.SHEET.NAME);
 }
 
 export function GAS_budgetAdHocTransactions() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet(
-    MetaBudgetAdHocTransactions.SHEET.NAME
-  );
+  goToSheet(MetaBudgetAdHocTransactions.SHEET.NAME);
 }
 
 export function GAS_budgetAnnualTransactions() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet(
-    MetaBudgetAnnualTransactions.SHEET.NAME
-  );
+  goToSheet(MetaBudgetAnnualTransactions.SHEET.NAME);
 }
 
 export function GAS_budgetMonthlyTransactions() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet(
-    MetaBudgetMonthlyTransactions.SHEET.NAME
-  );
+  goToSheet(MetaBudgetMonthlyTransactions.SHEET.NAME);
 }
 
 export function GAS_budgetPredictedSpend() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet(MetaBudgetPredictedSpend.SHEET.NAME);
+  goToSheet(MetaBudgetPredictedSpend.SHEET.NAME);
 }
 
 export function GAS_budgetWeeklyTransactions() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet(
-    MetaBudgetWeeklyTransactions.SHEET.NAME
-  );
+  goToSheet(MetaBudgetWeeklyTransactions.SHEET.NAME);
 }
 
 export function GAS_categories() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet("Categories");
+  goToSheet("Categories");
 }
 
 export function GAS_convertCurrentColumnToUppercase() {
@@ -119,95 +103,75 @@ export function GAS_formatAccountSheet() {
 }
 
 export function GAS_goToSheet_AHALIF() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet("_AHALIF");
+  goToSheet("_AHALIF");
 }
 
 export function GAS_goToSheetCategories() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet(MetaCategories.SHEET.NAME);
+  goToSheet(MetaCategories.SHEET.NAME);
 }
 
 export function GAS_goToSheetCategoryClash() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet(MetaCategoryClash.SHEET.NAME);
+  goToSheet(MetaCategoryClash.SHEET.NAME);
 }
 
 export function GAS_goToSheet_CVITRA() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet("_CVITRA");
+  goToSheet("_CVITRA");
 }
 
 export function GAS_goToSheet_SVI2TJ() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet("_SVI2TJ");
+  goToSheet("_SVI2TJ");
 }
 
 export function GAS_goToSheet_SVIGBL() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet("_SVIGBL");
+  goToSheet("_SVIGBL");
 }
 
 export function GAS_goToSheet_SVIIRF() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet("_SVIIRF");
+  goToSheet("_SVIIRF");
 }
 
 export function GAS_goToSheetHMRC_B() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet(MetaHMRC_B.SHEET.NAME);
+  goToSheet(MetaHMRC_B.SHEET.NAME);
 }
 
 export function GAS_goToSheetHMRC_S() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet(MetaHMRC_S.SHEET.NAME);
+  goToSheet(MetaHMRC_S.SHEET.NAME);
 }
 
 export function GAS_goToSheetHMRCTransactionsSummary() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet("HMRC Transactions Summary");
+  goToSheet("HMRC Transactions Summary");
 }
 
 export function GAS_goToSheetLoanGlenburnie() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet("Loan Glenburnie");
+  goToSheet("Loan Glenburnie");
 }
 
 export function GAS_goToSheetPeople() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet("People");
+  goToSheet("People");
 }
 
 export function GAS_goToSheetSW183PTInventory() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet("SW18 3PT inventory");
+  goToSheet("SW18 3PT inventory");
 }
 
 export function GAS_goToSheetTransactionCategories() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet(MetaTransactionCategories.SHEET.NAME);
+  goToSheet(MetaTransactionCategories.SHEET.NAME);
 }
 
 export function GAS_goToSheetUncategorisedByDate() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet(MetaUncategorisedByDate.SHEET.NAME);
+  goToSheet(MetaUncategorisedByDate.SHEET.NAME);
 }
 
 export function GAS_goToSheetXfersMismatch() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet("Xfers mismatch");
+  goToSheet("Xfers mismatch");
 }
 
 export function GAS_goToSheetNotInTransactionCategories() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet(
-    MetaNotInTransactionCategories.SHEET.NAME
-  );
+  goToSheet(MetaNotInTransactionCategories.SHEET.NAME);
 }
 
 export function GAS_goToSheetTransactionsByDate() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).goToSheet(MetaTransactionsByDate.SHEET.NAME);
+  goToSheet(MetaTransactionsByDate.SHEET.NAME);
 }
 
 export function GAS_helloWorld(): void {

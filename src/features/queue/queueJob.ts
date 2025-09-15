@@ -3,8 +3,8 @@
 // ───────────────────────────────────────────────────────────────────────────────
 // Constants & schema
 // ───────────────────────────────────────────────────────────────────────────────
-import { toIso_ } from "../../lib/dates";
-import { FastLog } from "../../lib/logging/FastLog";
+import { toIso_ } from "@lib/dates";
+import { FastLog } from "@lib/logging/FastLog";
 import { DEFAULT_PRIORITY, QUEUE_SHEET_NAME, STATUS } from "./queueConstants";
 import type { EnqueueOptions, JobName, JobRow } from "./queueTypes";
 
@@ -24,7 +24,8 @@ export function queueJob<Name extends JobName = JobName>(
     throw new Error("queueJob: Queue is busy; try again shortly.");
   }
 
-  const startTime = FastLog.start(queueJob.name, {
+  const fn = queueJob.name;
+  const startTime = FastLog.start(fn, {
     job_name,
     parameters,
     options,
@@ -61,7 +62,7 @@ export function queueJob<Name extends JobName = JobName>(
 
     return { id, row: rowIndex };
   } catch (err) {
-    FastLog.error(queueJob.name, err);
+    FastLog.error(fn, err);
     throw err;
   } finally {
     try {
@@ -69,7 +70,7 @@ export function queueJob<Name extends JobName = JobName>(
     } catch (_e) {}
 
     try {
-      FastLog.finish(queueJob.name, startTime);
+      FastLog.finish(fn, startTime);
     } catch {}
   }
 }

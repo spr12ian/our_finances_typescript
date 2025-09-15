@@ -3,7 +3,6 @@ import type { StepFn } from "./workflowTypes";
 
 export function registerWorkflow2(): void {
   // import step implementations here to register them
-  // (don't import from jobHandlers to avoid cycles)
   registerStep("Workflow2", "Workflow2Step1", Workflow2Step1);
   registerStep("Workflow2", "Workflow2Step2", Workflow2Step2);
   registerStep("Workflow2", "Workflow2Step3", Workflow2Step3);

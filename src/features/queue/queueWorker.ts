@@ -1,18 +1,17 @@
 // queueWorker.ts
 
-/// <reference types="google-apps-script" />
-
 // ───────────────────────────────────────────────────────────────────────────────
 // Constants & schema
 // ───────────────────────────────────────────────────────────────────────────────
-import { toIso_ } from "../../lib/dates";
-import * as timeConstants from "../../lib/timeConstants";
-import { jobHandlers } from "../workflow/workflowHandlers";
-import type { Handler, Job, JobRow, JobStatus } from "./queueTypes";
+import { toIso_ } from "@lib/dates";
+import * as timeConstants from "@lib/timeConstants";
+import { handleJob, type InfraJobName } from "./jobDispatcher";
+import type { Job, JobRow, JobStatus } from "./queueTypes";
 
-import { FastLog } from "../../lib/logging/FastLog";
+import { getErrorMessage } from "@lib/errors";
+import { FastLog } from "@lib/logging/FastLog";
 import {
-  Col,
+  COL,
   DEAD_SHEET_NAME,
   DEFAULT_BACKOFF_MS,
   DEFAULT_PRIORITY,
@@ -55,8 +54,8 @@ function queue_purgeDoneOlderThanDays(days: number = PRUNE_AFTER_DAYS): number {
 
   const toDelete: number[] = [];
   for (let i = 0; i < data.length; i++) {
-    const status = String(data[i][Col.STATUS - 1]) as JobStatus;
-    const enqIso = String(data[i][Col.ENQUEUED_AT - 1]);
+    const status = String(data[i][COL.STATUS - 1]) as JobStatus;
+    const enqIso = String(data[i][COL.ENQUEUED_AT - 1]);
     const enq = parseIso_(enqIso)?.getTime() ?? 0;
     if ((status === STATUS.DONE || status === STATUS.ERROR) && enq < cutoff) {
       toDelete.push(i + 2);
@@ -70,94 +69,112 @@ function queue_purgeDoneOlderThanDays(days: number = PRUNE_AFTER_DAYS): number {
 // Internal: worker implementation
 // ───────────────────────────────────────────────────────────────────────────────
 function processQueueBatch_(maxJobs: number, budgetMs: number): void {
-  const started = Date.now();
-  const now = new Date();
-  const sheet = getQueueSheet_();
+  const fn = processQueueBatch_.name;
+  const startTime = FastLog.start(fn);
+  try {
+    const started = Date.now();
+    const now = new Date();
+    const sheet = getQueueSheet_();
 
-  const lastRow = sheet.getLastRow();
-  if (lastRow < 2) return; // headers only
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 2) return; // headers only
 
-  const range = sheet.getRange(2, 1, lastRow - 1, HEADERS.length);
-  const values = range.getValues() as JobRow[];
+    const range = sheet.getRange(2, 1, lastRow - 1, HEADERS.length);
+    const values = range.getValues() as JobRow[];
 
-  // filter runnable jobs
-  const runnable = values
-    .map((row, idx) => ({ row, idx }))
-    .filter(({ row }) => {
-      const status = String(row[Col.STATUS - 1]) as JobStatus;
-      if (status !== STATUS.PENDING) return false;
-      const nextRun = parseIsoMaybe_(String(row[Col.NEXT_RUN_AT - 1]));
-      return !nextRun || nextRun <= now; // null = run now
+    // filter runnable jobs
+    const runnable = values
+      .map((row, idx) => ({ row, idx }))
+      .filter(({ row }) => {
+        const status = String(row[COL.STATUS - 1]) as JobStatus;
+        if (status !== STATUS.PENDING) return false;
+        const nextRun = parseIsoMaybe_(String(row[COL.NEXT_RUN_AT - 1]));
+        return !nextRun || nextRun <= now; // null = run now
+      });
+
+    if (!runnable.length) return;
+
+    // sort by priority asc then enqueued_at asc
+    runnable.sort((a, b) => {
+      const pa = Number(a.row[COL.PRIORITY - 1]) || DEFAULT_PRIORITY;
+      const pb = Number(b.row[COL.PRIORITY - 1]) || DEFAULT_PRIORITY;
+      if (pa !== pb) return pa - pb;
+      return String(a.row[COL.ENQUEUED_AT - 1]).localeCompare(
+        String(b.row[COL.ENQUEUED_AT - 1])
+      );
     });
 
-  if (!runnable.length) return;
-
-  // sort by priority asc then enqueued_at asc
-  runnable.sort((a, b) => {
-    const pa = Number(a.row[Col.PRIORITY - 1]) || DEFAULT_PRIORITY;
-    const pb = Number(b.row[Col.PRIORITY - 1]) || DEFAULT_PRIORITY;
-    if (pa !== pb) return pa - pb;
-    return String(a.row[Col.ENQUEUED_AT - 1]).localeCompare(
-      String(b.row[Col.ENQUEUED_AT - 1])
-    );
-  });
-
-  // claim jobs (small N, individual writes are OK)
-  const toClaim = runnable.slice(0, Math.min(maxJobs, runnable.length));
-  const workerId = `w-${Utilities.getUuid().slice(0, 8)}`;
-  for (const item of toClaim) {
-    const absRow = item.idx + 2;
-    sheet.getRange(absRow, Col.STATUS).setValue(STATUS.RUNNING);
-    sheet.getRange(absRow, Col.WORKER_ID).setValue(workerId);
-    sheet.getRange(absRow, Col.STARTED_AT).setValue(toIso_(new Date()));
-  }
-  SpreadsheetApp.flush();
-
-  // process jobs
-  for (const item of toClaim) {
-    if (Date.now() - started > budgetMs) break;
-    const absRow = item.idx + 2;
-    const data = sheet
-      .getRange(absRow, 1, 1, HEADERS.length)
-      .getValues()[0] as JobRow;
-    const job = rowToJob_(data);
-
-    try {
-      dispatchJob_(job);
-      sheet.getRange(absRow, Col.STATUS).setValue(STATUS.DONE);
-      sheet.getRange(absRow, Col.LAST_ERROR).setValue("");
-    } catch (err) {
-      const attempts = Number(job.attempts) + 1;
-      if (attempts >= MAX_ATTEMPTS) {
-        sheet.getRange(absRow, Col.STATUS).setValue(STATUS.ERROR);
-        sheet.getRange(absRow, Col.LAST_ERROR).setValue(String(err));
-        moveToDeadIfConfigured_(absRow);
-        continue;
-      }
-      // schedule retry with backoff + jitter
-      const backoff = Math.min(
-        MAX_BACKOFF_MS,
-        Math.round(DEFAULT_BACKOFF_MS * Math.pow(2, attempts - 1))
-      );
-      const jitter = Math.floor(Math.random() * timeConstants.THREE_SECONDS); // up to 3s jitter to de‑sync workers
-      const next = new Date(Date.now() + backoff + jitter);
-
-      sheet.getRange(absRow, Col.ATTEMPTS).setValue(attempts);
-      sheet.getRange(absRow, Col.NEXT_RUN_AT).setValue(toIso_(next));
-      sheet.getRange(absRow, Col.STATUS).setValue(STATUS.PENDING);
-      sheet.getRange(absRow, Col.LAST_ERROR).setValue(String(err));
+    // claim jobs (small N, individual writes are OK)
+    const toClaim = runnable.slice(0, Math.min(maxJobs, runnable.length));
+    const workerId = `w-${Utilities.getUuid().slice(0, 8)}`;
+    for (const item of toClaim) {
+      const absRow = item.idx + 2;
+      sheet.getRange(absRow, COL.STATUS).setValue(STATUS.RUNNING);
+      sheet.getRange(absRow, COL.WORKER_ID).setValue(workerId);
+      sheet.getRange(absRow, COL.STARTED_AT).setValue(toIso_(new Date()));
     }
+    SpreadsheetApp.flush();
+
+    // process jobs
+    for (const item of toClaim) {
+      if (Date.now() - started > budgetMs) break;
+      const absRow = item.idx + 2;
+      const data = sheet
+        .getRange(absRow, 1, 1, HEADERS.length)
+        .getValues()[0] as JobRow;
+      const job = rowToJob_(data);
+
+      try {
+        dispatchJob_(job);
+        sheet.getRange(absRow, COL.STATUS).setValue(STATUS.DONE);
+        sheet.getRange(absRow, COL.LAST_ERROR).setValue("");
+      } catch (err) {
+        const errorMessage = getErrorMessage(err);
+        FastLog.error(fn, errorMessage);
+        const attempts = Number(job.attempts) + 1;
+        FastLog.info(`attempts: ${attempts}`);
+        if (attempts >= MAX_ATTEMPTS) {
+          sheet.getRange(absRow, COL.STATUS).setValue(STATUS.ERROR);
+          sheet.getRange(absRow, COL.LAST_ERROR).setValue(String(err));
+          moveToDeadIfConfigured_(absRow);
+          continue;
+        }
+        // schedule retry with backoff + jitter
+        const backoff = Math.min(
+          MAX_BACKOFF_MS,
+          Math.round(DEFAULT_BACKOFF_MS * Math.pow(2, attempts - 1))
+        );
+        const jitter = Math.floor(Math.random() * timeConstants.THREE_SECONDS); // up to 3s jitter to de‑sync workers
+        const next = new Date(Date.now() + backoff + jitter);
+
+        sheet.getRange(absRow, COL.ATTEMPTS).setValue(attempts);
+        sheet.getRange(absRow, COL.NEXT_RUN_AT).setValue(toIso_(next));
+        sheet.getRange(absRow, COL.STATUS).setValue(STATUS.PENDING);
+        sheet.getRange(absRow, COL.LAST_ERROR).setValue(String(err));
+      }
+    }
+  } catch (err) {
+    const errorMessage = getErrorMessage(err);
+    FastLog.error(fn, errorMessage);
+    throw new Error(errorMessage);
+  } finally {
+    FastLog.finish(fn, startTime);
   }
 }
 
 function dispatchJob_(job: Job): void {
-  const handler: Handler | undefined = (jobHandlers as any)[job.jobName];
-  if (!handler) throw new Error(`Unknown job: ${job.jobName}`);
-
-  const started = Date.now();
-  handler(job.parameters as any);
-  const duration = Date.now() - started;
-  FastLog.log(`Job ${job.id} (${job.jobName}) completed in ${duration}ms`);
+  const fn = dispatchJob_.name;
+  const startTime = FastLog.start(fn, job);
+  try {
+    const { jobName, json_parameters } = job;
+    handleJob(jobName as InfraJobName, json_parameters);
+  } catch (err) {
+    const errorMessage = getErrorMessage(err);
+    FastLog.error(fn, errorMessage);
+    throw new Error(errorMessage);
+  } finally {
+    FastLog.finish(fn, startTime, `Job ${job.id} (${job.jobName})`);
+  }
   return;
 }
 
@@ -186,19 +203,23 @@ function moveToDeadIfConfigured_(absRow: number): void {
 }
 
 function rowToJob_(r: JobRow): Job {
-  return {
-    id: String(r[Col.ID - 1] ?? ""),
-    jobName: String(r[Col.JOB_NAME - 1] ?? "") as any,
-    parameters: parseJsonSafe_(String(r[Col.JSON_PARAMETERS - 1] || "{}")),
-    enqueuedAt: parseIsoMaybe_(String(r[Col.ENQUEUED_AT - 1])) ?? new Date(0),
-    priority: Number(r[Col.PRIORITY - 1]) || DEFAULT_PRIORITY,
-    nextRunAt: parseIsoMaybe_(String(r[Col.NEXT_RUN_AT - 1])) ?? new Date(0),
-    attempts: Number(r[Col.ATTEMPTS - 1]) || 0,
-    status: String(r[Col.STATUS - 1] ?? STATUS.PENDING) as JobStatus,
-    lastError: String(r[Col.LAST_ERROR - 1] || ""),
-    workerId: String(r[Col.WORKER_ID - 1] || ""),
-    startedAt: parseIsoMaybe_(String(r[Col.STARTED_AT - 1] || "")), // Date | null
+  const fn = rowToJob_.name;
+  const startTime = FastLog.start(fn, r);
+  const job = {
+    id: String(r[COL.ID - 1] ?? ""),
+    jobName: String(r[COL.JOB_NAME - 1] ?? "") as any,
+    json_parameters: parseJsonSafe_(String(r[COL.JSON_PARAMETERS - 1] || "{}")),
+    enqueuedAt: parseIsoMaybe_(String(r[COL.ENQUEUED_AT - 1])) ?? new Date(0),
+    priority: Number(r[COL.PRIORITY - 1]) || DEFAULT_PRIORITY,
+    nextRunAt: parseIsoMaybe_(String(r[COL.NEXT_RUN_AT - 1])) ?? new Date(0),
+    attempts: Number(r[COL.ATTEMPTS - 1]) || 0,
+    status: String(r[COL.STATUS - 1] ?? STATUS.PENDING) as JobStatus,
+    lastError: String(r[COL.LAST_ERROR - 1] || ""),
+    workerId: String(r[COL.WORKER_ID - 1] || ""),
+    startedAt: parseIsoMaybe_(String(r[COL.STARTED_AT - 1] || "")), // Date | null
   };
+  FastLog.finish(fn, startTime);
+  return job;
 }
 
 function parseIso_(s: string): Date {

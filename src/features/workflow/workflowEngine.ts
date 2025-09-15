@@ -1,23 +1,22 @@
-// src/workflow/workflowEngine.ts
+// src/features/workflow/workflowEngine.ts
 
-import type { EnqueueOptions, JobName } from "../../features/queue/queueTypes";
-import { toIso_ } from "../../lib/dates";
-import { FastLog } from "../../lib/logging/FastLog";
-import { ONE_MINUTE, ONE_SECOND } from "../../lib/timeConstants";
+import { toIso_ } from "@lib/dates";
+import { getErrorMessage } from "@lib/errors";
+import { FastLog } from "@lib/logging/FastLog";
+import { ONE_MINUTE, ONE_SECOND } from "@lib/timeConstants";
+import { JOB_RUN_STEP, MAX_ATTEMPTS } from "@queue/queueConstants";
+import type { EnqueueOptions, JobName } from "@queue/queueTypes";
 import { makeStepLogger } from "./makeStepLogger";
 import type { RunStepJob, StepContext, StepFn } from "./workflowTypes";
 
 // Allow RUN_STEP even if it's not in JobName:
 type InfraJobName = JobName | "RUN_STEP";
 
-type EnqueueFn = (
+export type EnqueueFn = (
   jobName: InfraJobName,
   parameters: unknown,
   options?: EnqueueOptions
 ) => { id: string; row: number };
-
-// A single infrastructure job name the queue will dispatch
-export const JOB_RUN_STEP = "RUN_STEP" as const;
 
 // Registry of step functions (workflowName -> stepName -> StepFn)
 const WORKFLOWS: Record<string, Record<string, StepFn>> = Object.create(null);
@@ -35,9 +34,21 @@ export function registerStep(
 // ▶ Module-scoped variable to hold the real enqueuer
 let ENQUEUE: EnqueueFn | null = null;
 
-// ▶ Public config called once at init to provide the enqueuer
+let _enqueue: EnqueueFn | null = null;
+let _isConfigured = false;
+
+// ▶ Public config called once to provide the enqueuer
 export function configureWorkflowEngine(enqueue: EnqueueFn) {
-  ENQUEUE = enqueue;
+  if (_isConfigured) return; // idempotent
+
+  _enqueue = enqueue;
+  _isConfigured = true;
+}
+
+// For code that needs the enqueue function later
+export function getEnqueue(): EnqueueFn {
+  if (!_enqueue) throw new Error("Workflow engine not configured.");
+  return _enqueue;
 }
 
 // Enqueue the next RUN_STEP
@@ -46,19 +57,30 @@ export function enqueueRunStep(
   delayMs?: number,
   priority?: number
 ): void {
-  const enq = ENQUEUE; // capture to a non-null-checked local
-  if (!enq) {
-    throw new Error(
-      "Workflow engine not configured: enqueue function not set. Call configureWorkflowEngine(queueJob) at startup."
-    );
+  const fn = enqueueRunStep.name;
+  const startTime = FastLog.start(fn, job);
+  try {
+    const enq = ENQUEUE; // capture to a non-null-checked local
+    if (!enq) {
+      throw new Error(
+        "Workflow engine not configured: enqueue function not set. Call configureWorkflowEngine(queueJob) at startup."
+      );
+    }
+    const runAt = toIso_(delayMs ? new Date(Date.now() + delayMs) : new Date());
+    enq(JOB_RUN_STEP, job, { runAt, priority });
+  } catch (err) {
+    const errorMessage = getErrorMessage(err);
+    FastLog.error(fn, errorMessage);
+    throw new Error(errorMessage);
+  } finally {
+    FastLog.finish(fn, startTime, job);
   }
-  const runAt = toIso_(delayMs ? new Date(Date.now() + delayMs) : new Date());
-  enq(JOB_RUN_STEP, job, { runAt, priority });
 }
 
 // Public entry called by the handlers table
 export function runStep(job: RunStepJob): void {
-  const start = FastLog.start(`RUN_STEP ${job.workflowName}.${job.stepName}`, {
+  const fn = runStep.name;
+  const startTime = FastLog.start(fn, `${job.workflowName}.${job.stepName}`, {
     workflowId: job.workflowId,
     attempt: job.attempt,
   });
@@ -91,6 +113,7 @@ export function runStep(job: RunStepJob): void {
     };
 
     const res = stepFn(ctx);
+    FastLog.log(fn, res);
 
     switch (res.kind) {
       case "yield": {
@@ -124,7 +147,7 @@ export function runStep(job: RunStepJob): void {
       }
       case "fail": {
         const retryable = res.retryable !== false;
-        if (retryable && job.attempt < 5) {
+        if (retryable && job.attempt < MAX_ATTEMPTS) {
           const backoff =
             res.delayMs ?? Math.min(2 ** job.attempt * ONE_SECOND, ONE_MINUTE);
           enqueueRunStep({ ...job, attempt: job.attempt + 1 }, backoff);
@@ -140,7 +163,8 @@ export function runStep(job: RunStepJob): void {
     }
   } catch (err) {
     FastLog.error(
-      `RUN_STEP crash: ${job.workflowName}.${job.stepName}: ${
+      fn,
+      `crash: ${job.workflowName}.${job.stepName}: ${
         (err as Error)?.message || err
       }`
     );
@@ -150,7 +174,7 @@ export function runStep(job: RunStepJob): void {
     enqueueRunStep({ ...job, attempt: nextAttempt }, backoff);
     throw err;
   } finally {
-    FastLog.finish(`RUN_STEP ${job.workflowName}.${job.stepName}`, start);
+    FastLog.finish(fn, startTime, `${job.workflowName}.${job.stepName}`);
   }
 }
 
@@ -192,4 +216,11 @@ export function startWorkflow(
   } finally {
     FastLog.finish(startWorkflow.name, startTime);
   }
+}
+
+export function clearWorkflowRegistry() {
+  for (const k of Object.keys(WORKFLOWS)) delete WORKFLOWS[k];
+}
+export function isEngineConfigured() {
+  return _isConfigured;
 }

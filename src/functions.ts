@@ -45,28 +45,6 @@ export function getLineNumber(): string {
   }
 }
 
-export function isCellAccountBalance(sheet: Sheet, column: number) {
-  const accountBalance = "Account Balance";
-
-  let isCellAccountBalance = false;
-
-  const firstRowRange = sheet.firstRowRange;
-
-  const values = firstRowRange.getValues();
-  for (const row in values) {
-    const cell = values[row][column - 1];
-
-    const newCell = cell.replace(/\n/g, " ");
-
-    if (newCell == accountBalance) {
-      isCellAccountBalance = true;
-      break;
-    }
-  }
-
-  return isCellAccountBalance;
-}
-
 export function isCellADate(cell: GoogleAppsScript.Spreadsheet.Range) {
   // Get the value of the specified cell
   const cellValue = cell.getValue();

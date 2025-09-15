@@ -22,7 +22,6 @@ export function handleOpen(e: SheetsOnOpen): void {
     )
       return; // avoid feedback loops
 
-    // registerAllWorkflows();
     startWorkflow("fixSheetFlow", "fixSheetStep1", {
       sheetName: sheetName,
       startedBy: "onOpen",

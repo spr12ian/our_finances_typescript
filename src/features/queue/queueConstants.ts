@@ -1,4 +1,4 @@
-import * as timeConstants from "../../lib/timeConstants";
+import * as timeConstants from "@lib/timeConstants";
 
 export const QUEUE_SHEET_NAME = "$Queue"; // hidden operational sheet
 export const DEAD_SHEET_NAME = "$QueueDead"; // optional dead‑letter sink
@@ -19,18 +19,18 @@ export const STATUS = {
 } as const;
 
 // Column map to avoid magic numbers
-export const Col = {
-  ID: 1,
-  JOB_NAME: 2,
-  JSON_PARAMETERS: 3,
-  ENQUEUED_AT: 4,
-  PRIORITY: 5,
-  NEXT_RUN_AT: 6,
-  ATTEMPTS: 7,
-  STATUS: 8,
-  LAST_ERROR: 9,
-  WORKER_ID: 10,
-  STARTED_AT: 11,
+export const COL = {
+  ID: 1,                    // id: string
+  JOB_NAME: 2,              // jobName: JobName
+  JSON_PARAMETERS: 3,       // parameters: unknown (JSON string in sheet)
+  ENQUEUED_AT: 4,           // enqueuedAt: Date
+  PRIORITY: 5,              // priority: number
+  NEXT_RUN_AT: 6,           // nextRunAt: Date
+  ATTEMPTS: 7,              // attempts: number
+  STATUS: 8,                // status: JobStatus
+  LAST_ERROR: 9,            // lastError: string
+  WORKER_ID: 10,            // workerId: string
+  STARTED_AT: 11,           // startedAt?: Date | null
 } as const;
 
 export const HEADERS: string[] = [
@@ -58,3 +58,7 @@ export const FUNCTION_CALLED = {
   UPDATE_BALANCES: "UPDATE_BALANCES",
   UPDATE_ACCOUNT_BALANCES: "UPDATE_ACCOUNT_BALANCES",
 } as const;
+
+// A single infrastructure job name the queue will dispatch
+export const JOB_RUN_STEP = "RUN_STEP" as const;
+

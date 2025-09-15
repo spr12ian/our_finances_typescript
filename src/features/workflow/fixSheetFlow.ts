@@ -1,18 +1,18 @@
-import { getErrorMessage } from "../../lib/errors";
+import { getErrorMessage } from "@lib/errors";
 import { fixSheet } from "../sheets/fixSheet";
 import { registerStep } from "./workflowEngine";
 import type { StepFn } from "./workflowTypes";
 
 export function fixSheetFlow(): void {
   // import step implementations here to register them
-  // (don't import from jobHandlers to avoid cycles)
   registerStep("fixSheetFlow", "fixSheetStep1", fixSheetStep1);
   registerStep("fixSheetFlow", "fixSheetFlowStep2", fixSheetFlowStep2);
   registerStep("fixSheetFlow", "fixSheetFlowStep3", fixSheetFlowStep3);
 }
 
 const fixSheetStep1: StepFn = ({ input, state, log }) => {
-  const startTime = log.start(fixSheetStep1.name);
+  const fn = fixSheetStep1.name;
+  const startTime = log.start(fn);
   try {
     const { sheetName, startedBy } = input as {
       sheetName: string;
@@ -27,7 +27,7 @@ const fixSheetStep1: StepFn = ({ input, state, log }) => {
     log.error(err);
     return { kind: "fail", reason: getErrorMessage(err), retryable: true };
   } finally {
-    log.finish(fixSheetStep1.name, startTime);
+    log.finish(fn, startTime);
   }
 };
 

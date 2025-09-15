@@ -1,6 +1,6 @@
-import { queueJob } from "../../features/queue/queueJob";
-import type { ParamsOf } from "../../features/queue/queueTypes";
-import { FastLog } from "../../lib/logging/FastLog";
+import { FastLog } from "@lib/logging/FastLog";
+import { queueJob } from "@queue/queueJob";
+import type { ParamsOf } from "@queue/queueTypes";
 
 export function queueTrimSheet(parameters: ParamsOf<"TRIM_SHEET">): void {
   const startTime = FastLog.start("queueTrimSheet", parameters);

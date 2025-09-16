@@ -82,3 +82,5 @@ export type JobRow = [
   worker_id: string,
   started_at: _IsoString | "" // empty until first run
 ];
+
+export type InfraJobName = typeof queueConstants.JOB_RUN_STEP;

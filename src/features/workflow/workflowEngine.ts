@@ -4,8 +4,7 @@ import { getErrorMessage } from "@lib/errors";
 import { FastLog } from "@logging";
 import { JOB_RUN_STEP } from "@queue/queueConstants";
 // ⬇️ Pull the canonical types + accessors from engineState
-import { ONE_MINUTE, ONE_SECOND } from "@lib/timeConstants";
-import { MAX_ATTEMPTS } from "@queue/queueConstants";
+import { ONE_SECOND } from "@lib/timeConstants";
 import {
   ENGINE_INSTANCE_ID,
   getEnqueue,
@@ -92,34 +91,27 @@ export function runStep(job: RunStepJob): void {
         });
         return;
       }
-      case "fail": {
-        const retryable = res.retryable !== false;
-        if (retryable && job.attempt < MAX_ATTEMPTS) {
-          const backoff =
-            res.delayMs ?? Math.min(2 ** job.attempt * ONE_SECOND, ONE_MINUTE);
-          enqueueRunStep({ ...job, attempt: job.attempt + 1 }, backoff);
-        } else {
-          FastLog.warn(`Dead-letter: ${job.workflowName}.${job.stepName}`, {
+      case "fail":
+        {
+          // Let the batch handler decide attempts/backoff/dead-letter.
+          FastLog.warn(`Step failed: ${job.workflowName}.${job.stepName}`, {
             workflowId: job.workflowId,
             reason: res.reason,
+            attempt: job.attempt,
           });
-          // Optionally: enqueue to DEAD queue/sheet here
+          throw new Error(`runStep failed: ${String(res.reason)}`);
         }
+
         return;
-      }
     }
   } catch (err) {
+    const errorMessage = getErrorMessage(err);
     FastLog.error(
       fn,
-      `crash: ${job.workflowName}.${job.stepName}: ${
-        (err as Error)?.message || err
-      }`
+      `crash: ${job.workflowName}.${job.stepName}: ${errorMessage}`
     );
-    // Best-effort retry with backoff
-    const nextAttempt = (job.attempt ?? 0) + 1;
-    const backoff = Math.min(2 ** (nextAttempt - 1) * ONE_SECOND, ONE_MINUTE);
-    enqueueRunStep({ ...job, attempt: nextAttempt }, backoff);
-    throw err;
+
+    throw new Error(errorMessage);
   } finally {
     FastLog.finish(fn, startTime, `${job.workflowName}.${job.stepName}`);
   }

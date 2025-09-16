@@ -1,4 +1,4 @@
-// src/workflow/types.ts
+// @workflow/types.ts
 import type { StepLogger } from "@logging/workflowLogger";
 
 // A stable id for a whole workflow run
@@ -44,3 +44,5 @@ export type RunStepJob = {
   state: Record<string, any>;
   attempt: number;
 };
+
+

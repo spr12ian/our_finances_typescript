@@ -1,15 +1,15 @@
-// queueWorker.ts
+// @queue/queueWorker.ts
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Constants & schema
 // ───────────────────────────────────────────────────────────────────────────────
 import { toIso_ } from "@lib/dates";
-import * as timeConstants from "@lib/timeConstants";
-import { handleJob, type InfraJobName } from "./handleJob";
-import type { Job, JobRow, JobStatus } from "./queueTypes";
-
 import { getErrorMessage } from "@lib/errors";
+import * as timeConstants from "@lib/timeConstants";
 import { FastLog } from "@logging";
+import type { RunStepJob } from "@workflow";
+import { setupWorkflows } from "@workflow";
+import { runStep } from "@workflow/workflowEngine";
 import {
   COL,
   DEAD_SHEET_NAME,
@@ -24,7 +24,9 @@ import {
   STATUS,
   WORKER_BUDGET_MS,
 } from "./queueConstants";
-import { setupWorkflows } from '@workflow';
+import type { Job, JobRow, JobStatus } from "./queueTypes";
+
+const MAX_CELL_LENGTH = 2000;
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Public API
@@ -44,7 +46,7 @@ export function queueWorker(): void {
 }
 
 /** Prune DONE/ERROR jobs older than N days (defaults to PRUNE_AFTER_DAYS). */
-function queue_purgeDoneOlderThanDays(days: number = PRUNE_AFTER_DAYS): number {
+function purgeQueuesOlderThanDays(days: number = PRUNE_AFTER_DAYS): number {
   const sheet = getQueueSheet_();
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return 0;
@@ -116,10 +118,14 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
     }
     SpreadsheetApp.flush();
 
+    // Track which rows we actually started
+    const startedRows = new Set<number>();
+
     // process jobs
     for (const item of toClaim) {
       if (Date.now() - started > budgetMs) break;
       const absRow = item.idx + 2;
+      startedRows.add(absRow);
       const data = sheet
         .getRange(absRow, 1, 1, HEADERS.length)
         .getValues()[0] as JobRow;
@@ -135,8 +141,11 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
         const attempts = Number(job.attempts) + 1;
         FastLog.info(`attempts: ${attempts}`);
         if (attempts >= MAX_ATTEMPTS) {
+          sheet.getRange(absRow, COL.ATTEMPTS).setValue(attempts);
           sheet.getRange(absRow, COL.STATUS).setValue(STATUS.ERROR);
-          sheet.getRange(absRow, COL.LAST_ERROR).setValue(String(err));
+          sheet
+            .getRange(absRow, COL.LAST_ERROR)
+            .setValue(toCellMsg_(errorMessage));
           moveToDeadIfConfigured_(absRow);
           continue;
         }
@@ -151,7 +160,19 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
         sheet.getRange(absRow, COL.ATTEMPTS).setValue(attempts);
         sheet.getRange(absRow, COL.NEXT_RUN_AT).setValue(toIso_(next));
         sheet.getRange(absRow, COL.STATUS).setValue(STATUS.PENDING);
-        sheet.getRange(absRow, COL.LAST_ERROR).setValue(String(err));
+        sheet
+          .getRange(absRow, COL.LAST_ERROR)
+          .setValue(toCellMsg_(errorMessage));
+      }
+    }
+
+    // Unclaim any rows we set to RUNNING but didn't start
+    for (const item of toClaim) {
+      const absRow = item.idx + 2;
+      if (!startedRows.has(absRow)) {
+        sheet.getRange(absRow, COL.STATUS).setValue(STATUS.PENDING);
+        sheet.getRange(absRow, COL.WORKER_ID).setValue("");
+        sheet.getRange(absRow, COL.STARTED_AT).setValue("");
       }
     }
   } catch (err) {
@@ -168,8 +189,19 @@ function dispatchJob_(job: Job): void {
   const startTime = FastLog.start(fn, job);
   try {
     setupWorkflows();
-    const { jobName, json_parameters } = job;
-    handleJob(jobName as InfraJobName, json_parameters);
+    const { json_parameters } = job;
+
+    const p = (json_parameters as Partial<RunStepJob>) || {};
+    const rsj: RunStepJob = {
+      type: "RUN_STEP",
+      workflowId: String(p.workflowId),
+      workflowName: String(p.workflowName),
+      stepName: String(p.stepName),
+      input: p.input,
+      state: p.state ?? {},
+      attempt: Number(job.attempts) || 0, // ← sheet is source of truth
+    };
+    runStep(rsj);
   } catch (err) {
     const errorMessage = getErrorMessage(err);
     FastLog.error(fn, errorMessage);
@@ -242,6 +274,11 @@ function parseJsonSafe_(s: string): unknown {
   }
 }
 
+function toCellMsg_(x: unknown, max = MAX_CELL_LENGTH) {
+  const s = typeof x === "string" ? x : JSON.stringify(x);
+  return (s || "").slice(0, max);
+}
+
 // ───────────────────────────────────────────────────────────────────────────────
 // Export entrypoints to global for triggers & manual runs
 // ───────────────────────────────────────────────────────────────────────────────
@@ -249,6 +286,6 @@ function parseJsonSafe_(s: string): unknown {
   const g = globalThis as any;
   Object.assign(g, {
     queueWorker,
-    queue_purgeDoneOlderThanDays,
+    purgeQueuesOlderThanDays,
   });
 })();

@@ -7,6 +7,7 @@ import { FastLog } from "@logging";
 import type { RunStepJob, SerializedRunStepParameters } from "@workflow";
 import { setupWorkflows } from "@workflow";
 import { runStep } from "@workflow/workflowEngine";
+import {getSheetByName} from "@gas";
 import {
   COL,
   DEAD_SHEET_NAME,
@@ -42,9 +43,19 @@ export function queueWorker(): void {
   }
 }
 
+export function purgeQueuesOldData() {
+  const queueSheetNames = [DEAD_SHEET_NAME, QUEUE_SHEET_NAME];
+  for (const queueSheetName of queueSheetNames) {
+    const queueSheet = getSheetByName(queueSheetName);
+    purgeQueueOlderThanDays(queueSheet, PRUNE_AFTER_DAYS);
+  }
+}
+
 /** Prune DONE/ERROR jobs older than N days (defaults to PRUNE_AFTER_DAYS). */
-function purgeQueuesOlderThanDays(days: number = PRUNE_AFTER_DAYS): number {
-  const sheet = getQueueSheet_();
+function purgeQueueOlderThanDays(
+  sheet: GoogleAppsScript.Spreadsheet.Sheet,
+  days: number = PRUNE_AFTER_DAYS
+): number {
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return 0;
   const data = sheet
@@ -281,6 +292,6 @@ function toCellMsg_(x: unknown, max = MAX_CELL_LENGTH) {
   const g = globalThis as any;
   Object.assign(g, {
     queueWorker,
-    purgeQueuesOlderThanDays,
+    purgeQueuesOldData,
   });
 })();

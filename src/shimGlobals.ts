@@ -41,6 +41,7 @@ export const shimGlobals = [
   "onOpen",
   "onOpenTrigger",
   "openAccounts",
+  "purgeQueuesOldData",
   "queueSetup",
   "queueWorker",
   "saveContainerIdOnce",

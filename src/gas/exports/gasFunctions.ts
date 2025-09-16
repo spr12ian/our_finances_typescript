@@ -22,9 +22,9 @@ import { logTime } from "@lib/logging/logTime";
 import * as timeConstants from "@lib/timeConstants";
 import { FastLog } from "@logging";
 import { queueSetup } from "@queue/queueSetup";
-import { queueWorker } from "@queue/queueWorker";
-import {  startWorkflow } from "@workflow/workflowEngine";
+import { purgeQueuesOldData, queueWorker } from "@queue/queueWorker";
 import { setupWorkflows } from "@workflow";
+import { startWorkflow } from "@workflow/workflowEngine";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 import { OurFinances } from "../../OurFinances";
 import { validateAllMenuFunctionNames } from "../../validateAllMenuFunctionNames";
@@ -94,7 +94,7 @@ export function GAS_exportFormulasToDrive() {
 }
 
 export function GAS_fixSheet() {
-  setupWorkflows();  // safe to call repeatedly; internal lock + flag
+  setupWorkflows(); // safe to call repeatedly; internal lock + flag
   startWorkflow("fixSheetFlow", "fixSheetStep1", {
     sheetName: getActiveSheetName(),
     startedBy: "GAS_fixSheet",
@@ -218,6 +218,10 @@ export function GAS_openAccounts() {
   const spreadsheet = getFinancesSpreadsheet();
   const ourFinances = new OurFinances(spreadsheet);
   ourFinances.bankAccounts.showOpenAccounts();
+}
+
+export function GAS_purgeQueuesOldData(): void {
+  purgeQueuesOldData();
 }
 
 export function GAS_queueSetup(): void {

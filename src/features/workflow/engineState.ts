@@ -1,11 +1,5 @@
 // @workflow/engineState.ts
 
-// If you prefer, you can import JobName from your queue types:
-import type { JobName } from "@queue/queueTypes";
-
-// Unify the job name type so RUN_STEP is always allowed.
-export type InfraJobName = JobName | "RUN_STEP";
-
 // Authoritative options type for the engine.
 // Keep ISO strings here to match your queue layer.
 export type EnqueueOptions = {
@@ -14,7 +8,6 @@ export type EnqueueOptions = {
 };
 
 export type EnqueueFn = (
-  jobName: InfraJobName,
   parameters: unknown,
   options?: EnqueueOptions
 ) => { id: string; row: number };

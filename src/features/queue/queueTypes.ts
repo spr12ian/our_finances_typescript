@@ -1,14 +1,7 @@
 // src/queueTypes.ts
 // Keep this file free of any runtime code that could drag in the worker.
 
-import type { RunStepJob } from "@workflow";
 import type * as queueConstants from "./queueConstants";
-
-// ────────────────────────────────────────────────────────────
-// Enum/type re-exports so callers can depend on a tiny, stable surface.
-// ────────────────────────────────────────────────────────────
-type _JobKey = keyof typeof queueConstants.FUNCTION_CALLED;
-export type JobName = (typeof queueConstants.FUNCTION_CALLED)[_JobKey];
 
 type _StatusKey = keyof typeof queueConstants.STATUS;
 export type JobStatus = (typeof queueConstants.STATUS)[_StatusKey];
@@ -21,18 +14,6 @@ type _IsoString = string;
 // ────────────────────────────────────────────────────────────
 // Object shapes (use `interface`)
 // ────────────────────────────────────────────────────────────
-
-/** Map each job name to its parameter shape */
-interface _JobParametersMap {
-  FIX_SHEET: { sheetName: string };
-  FORMAT_SHEET: { sheetName: string };
-  RUN_STEP: RunStepJob;
-  TRIM_SHEET: { sheetName: string };
-  UPDATE_BALANCES: { sheetName: string; row: number };
-  UPDATE_ACCOUNT_BALANCES: { sheetName: string };
-}
-
-export type ParamsOf<N extends JobName> = _JobParametersMap[N];
 
 export interface EnqueueOptions {
   /** Higher number = higher priority (default 50) */
@@ -47,7 +28,6 @@ export interface EnqueueOptions {
 
 export interface Job {
   id: string;
-  jobName: JobName;
   json_parameters: unknown;
   enqueuedAt: Date;
   priority: number;
@@ -59,19 +39,12 @@ export interface Job {
   startedAt?: Date | null;
 }
 
-// Handlers are functions, keep as `type` aliases
-export type Handler<N extends JobName = JobName> = (
-  params: ParamsOf<N>
-) => unknown;
-export type HandlerMap = { [K in JobName]?: Handler<K> };
-
 // ────────────────────────────────────────────────────────────
 // Tuple / column-aligned row (use `type`)
 // ────────────────────────────────────────────────────────────
 
 export type JobRow = [
   id: string,
-  job_name: JobName,
   json_parameters: string,
   enqueued_at: _IsoString,
   priority: number,
@@ -82,5 +55,3 @@ export type JobRow = [
   worker_id: string,
   started_at: _IsoString | "" // empty until first run
 ];
-
-export type InfraJobName = typeof queueConstants.JOB_RUN_STEP;

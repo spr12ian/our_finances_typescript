@@ -2,7 +2,8 @@
 
 import { FastLog } from "@logging";
 import * as queueConstants from "@queue/queueConstants";
-import { queueJob } from "@queue/queueJob";
+import { setupWorkflows } from "@workflow";
+import { startWorkflow } from "@workflow/workflowEngine";
 
 type SheetsOnEdit = GoogleAppsScript.Events.SheetsOnEdit;
 
@@ -214,12 +215,11 @@ function updateBalanceValues(e: SheetsOnEdit): void {
 
   try {
     const r = e.range;
-    const parameters = {
+    setupWorkflows(); // safe to call repeatedly; internal lock + flag
+    startWorkflow("updateBalanceValuesFlow", "updateBalanceValuesStep1", {
       sheetName: r.getSheet().getName(),
       row: r.getRow(),
-    };
-    queueJob(queueConstants.FUNCTION_CALLED.UPDATE_BALANCES, parameters, {
-      priority: 80,
+      startedBy: "updateBalanceValues",
     });
   } catch (err) {
     FastLog.error("updateBalanceValues error", err);

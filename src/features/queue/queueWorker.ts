@@ -1,13 +1,10 @@
 // @queue/queueWorker.ts
 
-// ───────────────────────────────────────────────────────────────────────────────
-// Constants & schema
-// ───────────────────────────────────────────────────────────────────────────────
 import { toIso_ } from "@lib/dates";
 import { getErrorMessage } from "@lib/errors";
 import * as timeConstants from "@lib/timeConstants";
 import { FastLog } from "@logging";
-import type { RunStepJob } from "@workflow";
+import type { RunStepJob, SerializedRunStepParameters } from "@workflow";
 import { setupWorkflows } from "@workflow";
 import { runStep } from "@workflow/workflowEngine";
 import {
@@ -191,9 +188,8 @@ function dispatchJob_(job: Job): void {
     setupWorkflows();
     const { json_parameters } = job;
 
-    const p = (json_parameters as Partial<RunStepJob>) || {};
+    const p = (json_parameters as Partial<SerializedRunStepParameters>) || {};
     const rsj: RunStepJob = {
-      type: "RUN_STEP",
       workflowId: String(p.workflowId),
       workflowName: String(p.workflowName),
       stepName: String(p.stepName),
@@ -207,7 +203,7 @@ function dispatchJob_(job: Job): void {
     FastLog.error(fn, errorMessage);
     throw new Error(errorMessage);
   } finally {
-    FastLog.finish(fn, startTime, `Job ${job.id} (${job.jobName})`);
+    FastLog.finish(fn, startTime, `Job ${job.id}`);
   }
   return;
 }
@@ -241,7 +237,6 @@ function rowToJob_(r: JobRow): Job {
   const startTime = FastLog.start(fn, r);
   const job = {
     id: String(r[COL.ID - 1] ?? ""),
-    jobName: String(r[COL.JOB_NAME - 1] ?? "") as any,
     json_parameters: parseJsonSafe_(String(r[COL.JSON_PARAMETERS - 1] || "{}")),
     enqueuedAt: parseIsoMaybe_(String(r[COL.ENQUEUED_AT - 1])) ?? new Date(0),
     priority: Number(r[COL.PRIORITY - 1]) || DEFAULT_PRIORITY,

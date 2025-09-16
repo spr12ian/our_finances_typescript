@@ -2,7 +2,6 @@
 import { toIso_ } from "@lib/dates";
 import { getErrorMessage } from "@lib/errors";
 import { FastLog } from "@logging";
-import { JOB_RUN_STEP } from "@queue/queueConstants";
 // ⬇️ Pull the canonical types + accessors from engineState
 import { ONE_SECOND } from "@lib/timeConstants";
 import {
@@ -14,7 +13,11 @@ import {
 } from "./engineState";
 import { makeStepLogger } from "./makeStepLogger";
 import { getStep } from "./workflowRegistry";
-import type { RunStepJob, StepContext } from "./workflowTypes";
+import type {
+  RunStepJob,
+  SerializedRunStepParameters,
+  StepContext,
+} from "./workflowTypes";
 
 export function configureWorkflowEngine(fn: EnqueueFn) {
   setEnqueue(fn);
@@ -63,22 +66,17 @@ export function runStep(job: RunStepJob): void {
 
     switch (res.kind) {
       case "yield": {
-        enqueueRunStep(
-          { ...job, state: res.state, attempt: 0, type: "RUN_STEP" },
-          res.delayMs
-        );
+        enqueueRunStep({ ...job, state: res.state }, res.delayMs);
         return;
       }
       case "next": {
         enqueueRunStep(
           {
-            type: "RUN_STEP",
             workflowId: job.workflowId,
             workflowName: job.workflowName,
             stepName: res.nextStep,
             input: job.input,
             state: res.state ?? {},
-            attempt: 0,
           },
           res.delayMs
         );
@@ -130,13 +128,11 @@ export function startWorkflow(
     const workflowId = Utilities.getUuid();
     enqueueRunStep(
       {
-        type: "RUN_STEP",
         workflowId,
         workflowName,
         stepName: firstStep,
         input,
         state: initialState,
-        attempt: 0,
       },
       /*delayMs*/ 0,
       priority
@@ -151,22 +147,27 @@ export function startWorkflow(
   }
 }
 
-function enqueueRunStep(job: RunStepJob, delayMs?: number, priority?: number) {
+function enqueueRunStep(
+  rsp: SerializedRunStepParameters,
+  delayMs?: number,
+  priority?: number
+) {
   const fn = enqueueRunStep.name;
-  const t0 = FastLog.start(fn, job);
+  const t0 = FastLog.start(fn, rsp);
   try {
     const enqueue = getEnqueue();
     const runAtIso =
       delayMs && delayMs > 0
         ? toIso_(new Date(Date.now() + delayMs))
         : undefined;
-    enqueue(JOB_RUN_STEP, job, { runAt: runAtIso, priority });
+
+    enqueue(rsp, { runAt: runAtIso, priority });
   } catch (err) {
     const msg = getErrorMessage(err);
     FastLog.error(fn, msg);
     throw new Error(msg);
   } finally {
-    FastLog.finish(fn, t0, job);
+    FastLog.finish(fn, t0, rsp);
   }
 }
 

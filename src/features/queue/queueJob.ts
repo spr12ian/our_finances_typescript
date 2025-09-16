@@ -6,15 +6,14 @@
 import { toIso_ } from "@lib/dates";
 import { FastLog } from "@logging";
 import { DEFAULT_PRIORITY, QUEUE_SHEET_NAME, STATUS } from "./queueConstants";
-import type { EnqueueOptions, JobName, JobRow } from "./queueTypes";
+import type { EnqueueOptions, JobRow } from "./queueTypes";
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Public API
 // ───────────────────────────────────────────────────────────────────────────────
 
 /** Enqueue a job */
-export function queueJob<Name extends JobName = JobName>(
-  job_name: Name,
+export function queueJob(
   parameters: unknown,
   options: EnqueueOptions = {}
 ): { id: string; row: number } {
@@ -26,7 +25,6 @@ export function queueJob<Name extends JobName = JobName>(
 
   const fn = queueJob.name;
   const startTime = FastLog.start(fn, {
-    job_name,
     parameters,
     options,
   });
@@ -42,7 +40,6 @@ export function queueJob<Name extends JobName = JobName>(
 
     const rowValues: JobRow = [
       id,
-      String(job_name) as any,
       JSON.stringify(parameters ?? {}),
       isoNow,
       priority,

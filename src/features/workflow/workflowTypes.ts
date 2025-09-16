@@ -1,13 +1,29 @@
-// @workflow/types.ts
+// @workflow/workflowTypes.ts
 import type { StepLogger } from "@logging/workflowLogger";
 
 // A stable id for a whole workflow run
 export type WorkflowId = string;
 
-// Step function contract
-export type StepFn = (ctx: StepContext) => StepResult;
+// What actually gets serialized into JSON_PARAMETERS
+export type SerializedRunStepParameters = {
+  workflowId: string;
+  workflowName: string;
+  stepName: string;
+  input?: unknown;
+  state?: Record<string, any>;
+};
 
-// What every step receives
+// Engine-only meta that is NOT serialized
+export type EngineMeta = {
+  attempt: number; // sheet-derived, injected by worker
+  // You could add: queueRow?: number, budgetMs?: number, etc.
+};
+
+// A runnable unit the queue knows about (completely decoupled from step code)
+// What runStep receives (payload + meta)
+export type RunStepJob = SerializedRunStepParameters & EngineMeta;
+
+// What every step receives, it reads attempt from EngineMeta via RunStepJob
 export type StepContext = {
   workflowId: WorkflowId; // one run across all steps
   workflowName: string; // e.g., "RecalculateBalances"
@@ -34,15 +50,5 @@ export type StepResult =
   | { kind: "complete"; output?: unknown } // workflow done
   | { kind: "fail"; reason: string; retryable?: boolean; delayMs?: number }; // park or dead-letter
 
-// A runnable unit the queue knows about (completely decoupled from your step code)
-export type RunStepJob = {
-  type: "RUN_STEP";
-  workflowId: WorkflowId;
-  workflowName: string;
-  stepName: string;
-  input: unknown;
-  state: Record<string, any>;
-  attempt: number;
-};
-
-
+// Step function contract
+export type StepFn = (ctx: StepContext) => StepResult;

@@ -51,12 +51,12 @@ export const Queueable = <TBase extends Ctor>(Base: TBase) => {
   abstract class Mixin extends Base {
     queueFormatSheet() {
       const t0 = (this as any).start("queueFormatSheet");
-      try { queueJob("FORMAT_SHEET", { sheetName: (this as any).sheet.name }); }
+      try { queueJob( { sheetName: (this as any).sheet.name }); }
       finally { (this as any).finish("queueFormatSheet", t0); }
     }
     queueTrimSheet() {
       const t0 = (this as any).start("queueTrimSheet");
-      try { queueJob("TRIM_SHEET", { sheetName: (this as any).sheet.name }); }
+      try { queueJob( { sheetName: (this as any).sheet.name }); }
       finally { (this as any).finish("queueTrimSheet", t0); }
     }
   }

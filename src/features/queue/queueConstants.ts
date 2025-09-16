@@ -21,21 +21,19 @@ export const STATUS = {
 // Column map to avoid magic numbers
 export const COL = {
   ID: 1,                    // id: string
-  JOB_NAME: 2,              // jobName: JobName
-  JSON_PARAMETERS: 3,       // parameters: unknown (JSON string in sheet)
-  ENQUEUED_AT: 4,           // enqueuedAt: Date
-  PRIORITY: 5,              // priority: number
-  NEXT_RUN_AT: 6,           // nextRunAt: Date
-  ATTEMPTS: 7,              // attempts: number
-  STATUS: 8,                // status: JobStatus
-  LAST_ERROR: 9,            // lastError: string
-  WORKER_ID: 10,            // workerId: string
-  STARTED_AT: 11,           // startedAt?: Date | null
+  JSON_PARAMETERS: 2,       // parameters: unknown (JSON string in sheet)
+  ENQUEUED_AT: 3,           // enqueuedAt: Date
+  PRIORITY: 4,              // priority: number
+  NEXT_RUN_AT: 5,           // nextRunAt: Date
+  ATTEMPTS: 6,              // attempts: number
+  STATUS: 7,                // status: JobStatus
+  LAST_ERROR: 8,            // lastError: string
+  WORKER_ID: 9,             // workerId: string
+  STARTED_AT: 10,           // startedAt?: Date | null
 } as const;
 
 export const HEADERS: string[] = [
   "id",
-  "job_name",
   "json_parameters",
   "enqueued_at",
   "priority",
@@ -46,19 +44,3 @@ export const HEADERS: string[] = [
   "worker_id",
   "started_at",
 ];
-
-// All valid job names must have a correspond GAS function of the same name
-// which accepts a single parameter object.
-// See queueTypes.ts for parameter shapes.
-export const FUNCTION_CALLED = {
-  FIX_SHEET: "FIX_SHEET",
-  FORMAT_SHEET: "FORMAT_SHEET",
-  RUN_STEP: "RUN_STEP",
-  TRIM_SHEET: "TRIM_SHEET",
-  UPDATE_BALANCES: "UPDATE_BALANCES",
-  UPDATE_ACCOUNT_BALANCES: "UPDATE_ACCOUNT_BALANCES",
-} as const;
-
-// A single infrastructure job name the queue will dispatch
-export const JOB_RUN_STEP = "RUN_STEP" as const;
-

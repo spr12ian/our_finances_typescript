@@ -1,6 +1,6 @@
 /// <reference types="google-apps-script" />
 
-import { FastLog } from "@lib/logging/FastLog";
+import { FastLog } from "@logging";
 import * as queueConstants from "@queue/queueConstants";
 import { queueJob } from "@queue/queueJob";
 

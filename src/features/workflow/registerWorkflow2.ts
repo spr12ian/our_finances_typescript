@@ -1,4 +1,4 @@
-import { registerStep } from "./workflowEngine";
+import { registerStep } from "./workflowRegistry";
 import type { StepFn } from "./workflowTypes";
 
 export function registerWorkflow2(): void {

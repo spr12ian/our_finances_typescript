@@ -1,4 +1,4 @@
-import { FastLog } from "@lib/logging/FastLog";
+import { FastLog } from "@logging";
 import { getAccountSheetNames } from "../../accountSheetFunctions";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 import { registerDynamicAccountFunctions } from "../../registerDynamicAccountFunctions";

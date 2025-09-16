@@ -1,5 +1,3 @@
-/// <reference types="google-apps-script" />
-
 // ───────────────────────────────────────────────────────────────────────────────
 // Constants & schema
 // ───────────────────────────────────────────────────────────────────────────────
@@ -9,7 +7,7 @@ import * as queueConstants from "./queueConstants";
 // Public API
 // ───────────────────────────────────────────────────────────────────────────────
 /** Ensure queue & dead‑letter sheets, headers, and a minute worker trigger. */
-export function queue_ensureSetup(): void {
+export function queueSetup(): void {
   const ss = SpreadsheetApp.getActive();
   const ensureSheet = (name: string) =>
     ss.getSheetByName(name) || ss.insertSheet(name);
@@ -41,10 +39,10 @@ function ensureHeaders_(sheet: GoogleAppsScript.Spreadsheet.Sheet): void {
 function ensureWorkerTrigger_(): void {
   const triggers = ScriptApp.getProjectTriggers();
   const existing = triggers.find(
-    (t) => t.getHandlerFunction() === "queue_worker"
+    (t) => t.getHandlerFunction() === "queueWorker"
   );
   if (!existing) {
-    ScriptApp.newTrigger("queue_worker").timeBased().everyMinutes(1).create();
+    ScriptApp.newTrigger("queueWorker").timeBased().everyMinutes(1).create();
   }
 }
 
@@ -54,6 +52,6 @@ function ensureWorkerTrigger_(): void {
 (function exportToGlobal() {
   const g = globalThis as any;
   Object.assign(g, {
-    queue_ensureSetup,
+    queueSetup,
   });
 })();

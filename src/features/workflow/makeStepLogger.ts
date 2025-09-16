@@ -1,7 +1,7 @@
-// src/workflow/makeStepLogger.ts
+// @workflow/makeStepLogger.ts
 import { getErrorMessage } from "@lib/errors";
-import { FastLog } from "@lib/logging/FastLog";
-import type { StepLogger } from "@lib/logging/workflowLogger";
+import type { StepLogger } from "@logging";
+import { FastLog } from "@logging";
 
 type Ctx = {
   workflowId: string;

@@ -6,7 +6,7 @@ import type { Spreadsheet } from "@domain/Spreadsheet";
 import { isAccountSheetName } from "../../accountSheetFunctions";
 //import { AccountBalances } from "./app/sheets/AccountBalances";
 import { getErrorMessage } from "@lib/errors";
-import { FastLog } from "@lib/logging/FastLog";
+import { FastLog } from "@logging";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 import { createAccountBalances } from "./AccountBalances/AccountBalances";
 

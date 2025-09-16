@@ -1,3 +1,5 @@
+// @gas/exports/gasFunctions.ts
+
 import { getActiveSheetName, goToSheet } from "@gas";
 import {
   MetaBalanceSheet,
@@ -16,12 +18,13 @@ import {
   MetaTransactionsByDate,
   MetaUncategorisedByDate,
 } from "@lib/constants";
-import { FastLog } from "@lib/logging/FastLog";
-import { logTime } from "@lib/logTime";
+import { logTime } from "@lib/logging/logTime";
 import * as timeConstants from "@lib/timeConstants";
-import { queue_ensureSetup } from "@queue/queueSetup";
-import { queue_worker } from "@queue/queueWorker";
-import { startWorkflow } from "@workflow/workflowEngine";
+import { FastLog } from "@logging";
+import { queueSetup } from "@queue/queueSetup";
+import { queueWorker } from "@queue/queueWorker";
+import {  startWorkflow } from "@workflow/workflowEngine";
+import { setupWorkflows } from "@workflow";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 import { OurFinances } from "../../OurFinances";
 import { validateAllMenuFunctionNames } from "../../validateAllMenuFunctionNames";
@@ -91,6 +94,7 @@ export function GAS_exportFormulasToDrive() {
 }
 
 export function GAS_fixSheet() {
+  setupWorkflows();  // safe to call repeatedly; internal lock + flag
   startWorkflow("fixSheetFlow", "fixSheetStep1", {
     sheetName: getActiveSheetName(),
     startedBy: "GAS_fixSheet",
@@ -217,11 +221,11 @@ export function GAS_openAccounts() {
 }
 
 export function GAS_queueSetup(): void {
-  queue_ensureSetup();
+  queueSetup();
 }
 
 export function GAS_queueWorker(): void {
-  queue_worker();
+  queueWorker();
 }
 
 export function GAS_saveContainerIdOnce() {

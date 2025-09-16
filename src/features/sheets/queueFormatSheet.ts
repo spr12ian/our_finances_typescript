@@ -1,4 +1,4 @@
-import { FastLog } from "@lib/logging/FastLog";
+import { FastLog } from "@logging";
 import { queueJob } from "../queue/queueJob";
 import type { ParamsOf } from "../queue/queueTypes";
 

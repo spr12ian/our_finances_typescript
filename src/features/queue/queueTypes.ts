@@ -1,7 +1,7 @@
 // src/queueTypes.ts
 // Keep this file free of any runtime code that could drag in the worker.
 
-import type { RunStepJob } from "@workflow/workflowTypes";
+import type { RunStepJob } from "@workflow";
 import type * as queueConstants from "./queueConstants";
 
 // ────────────────────────────────────────────────────────────

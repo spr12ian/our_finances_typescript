@@ -1,4 +1,4 @@
-// src/workflow/logging.ts
+// workflowLogger.ts
 export interface StepLogger {
   (msg: string, ...args: any[]): void; // callable
   error: (err: unknown, ...args: any[]) => void; // properties

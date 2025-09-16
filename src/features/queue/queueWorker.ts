@@ -5,11 +5,11 @@
 // ───────────────────────────────────────────────────────────────────────────────
 import { toIso_ } from "@lib/dates";
 import * as timeConstants from "@lib/timeConstants";
-import { handleJob, type InfraJobName } from "./jobDispatcher";
+import { handleJob, type InfraJobName } from "./handleJob";
 import type { Job, JobRow, JobStatus } from "./queueTypes";
 
 import { getErrorMessage } from "@lib/errors";
-import { FastLog } from "@lib/logging/FastLog";
+import { FastLog } from "@logging";
 import {
   COL,
   DEAD_SHEET_NAME,
@@ -30,7 +30,7 @@ import {
 // ───────────────────────────────────────────────────────────────────────────────
 
 /** Time‑driven worker entrypoint (set to run each minute). */
-export function queue_worker(): void {
+export function queueWorker(): void {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(timeConstants.FIVE_SECONDS)) return; // skip if another worker holds the lock
   try {
@@ -184,7 +184,7 @@ function dispatchJob_(job: Job): void {
 function getQueueSheet_(): GoogleAppsScript.Spreadsheet.Sheet {
   const ss = SpreadsheetApp.getActive();
   const sheet = ss.getSheetByName(QUEUE_SHEET_NAME);
-  if (!sheet) throw new Error("Queue sheet missing. Run queue_ensureSetup().");
+  if (!sheet) throw new Error("Queue sheet missing. Run queueSetup().");
   return sheet;
 }
 
@@ -246,7 +246,7 @@ function parseJsonSafe_(s: string): unknown {
 (function exportToGlobal() {
   const g = globalThis as any;
   Object.assign(g, {
-    queue_worker,
+    queueWorker,
     queue_purgeDoneOlderThanDays,
   });
 })();

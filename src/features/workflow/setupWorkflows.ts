@@ -1,4 +1,5 @@
-// src/workflow/workflowHandlers.ts
+// @workflow/workflowHandlers.ts
+import { FastLog } from "@lib/logging";
 import { queueJob } from "@queue/queueJob";
 import { registerAllWorkflows } from "./registerAllWorkflows";
 import { configureWorkflowEngine, isEngineConfigured } from "./workflowEngine";
@@ -7,10 +8,11 @@ import { configureWorkflowEngine, isEngineConfigured } from "./workflowEngine";
 function withScriptLock<T>(fn: () => T): T {
   // If you run this outside GAS, stub LockService.
   // @ts-ignore
-  const lock = typeof LockService !== "undefined"
-    // @ts-ignore
-    ? LockService.getScriptLock()
-    : null;
+  const lock =
+    typeof LockService !== "undefined"
+      ? // @ts-ignore
+        LockService.getScriptLock()
+      : null;
 
   if (lock) {
     lock.tryLock(5000); // best-effort
@@ -27,6 +29,8 @@ function withScriptLock<T>(fn: () => T): T {
 let initialized = false;
 
 export function setupWorkflows(): void {
+  const fn = setupWorkflows.name;
+  const startTime = FastLog.start(fn);
   withScriptLock(() => {
     if (initialized && isEngineConfigured()) return; // idempotent
 
@@ -39,4 +43,5 @@ export function setupWorkflows(): void {
 
     initialized = true;
   });
+  FastLog.finish(fn, startTime);
 }

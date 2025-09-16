@@ -17,9 +17,12 @@
       "@gas": ["src/gas/index.ts"],
       "@gas/*": ["src/gas/*"],
       "@lib/*": ["src/lib/*"],
+      "@logging": ["src/lib/logging/index.ts"],
       "@logging/*": ["src/lib/logging/*"],
+      "@queue": ["src/features/queue/index.ts"],
       "@queue/*": ["src/features/queue/*"],
       "@sheets/*": ["src/features/sheets/*"],
+      "@workflow": ["src/features/workflow/index.ts"],
       "@workflow/*": ["src/features/workflow/*"]
     }
   },

@@ -4,7 +4,7 @@
 // Constants & schema
 // ───────────────────────────────────────────────────────────────────────────────
 import { toIso_ } from "@lib/dates";
-import { FastLog } from "@lib/logging/FastLog";
+import { FastLog } from "@logging";
 import { DEFAULT_PRIORITY, QUEUE_SHEET_NAME, STATUS } from "./queueConstants";
 import type { EnqueueOptions, JobName, JobRow } from "./queueTypes";
 
@@ -81,7 +81,7 @@ export function queueJob<Name extends JobName = JobName>(
 function getQueueSheet_(): GoogleAppsScript.Spreadsheet.Sheet {
   const ss = SpreadsheetApp.getActive();
   const sheet = ss.getSheetByName(QUEUE_SHEET_NAME);
-  if (!sheet) throw new Error("Queue sheet missing. Run queue_ensureSetup().");
+  if (!sheet) throw new Error("Queue sheet missing. Run queueSetup().");
   return sheet;
 }
 

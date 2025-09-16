@@ -1,4 +1,4 @@
-import { FastLog } from "@lib/logging/FastLog";
+import { FastLog } from "@logging";
 import { fixSheetFlow } from "./fixSheetFlow";
 
 // Call once, e.g., inside onOpen or module top-level

@@ -1,8 +1,28 @@
-// @workflow/workflowHandlers.ts
+// @workflow/setupWorkflows.ts
 import { FastLog } from "@lib/logging";
 import { queueJob } from "@queue/queueJob";
 import { registerAllWorkflows } from "./registerAllWorkflows";
-import { configureWorkflowEngine, isEngineConfigured } from "./workflowEngine";
+import { setEnqueue, isConfigured } from "./engineState";
+
+let initialized = false;
+
+export function setupWorkflows(): void {
+  const fn = setupWorkflows.name;
+  const startTime = FastLog.start(fn);
+  withScriptLock(() => {
+    if (initialized && isConfigured()) return; // idempotent
+
+    // 1) Inject the enqueue function (no queue import cycles here)
+    setEnqueue(queueJob);
+
+    // 2) Ensure the registry exists before any handlers run
+    // If your registerStep is idempotent, you can call this every time.
+    registerAllWorkflows();
+
+    initialized = true;
+  });
+  FastLog.finish(fn, startTime);
+}
 
 // GAS-only lock helper (no-op in Node tests)
 function withScriptLock<T>(fn: () => T): T {
@@ -24,24 +44,4 @@ function withScriptLock<T>(fn: () => T): T {
   } else {
     return fn();
   }
-}
-
-let initialized = false;
-
-export function setupWorkflows(): void {
-  const fn = setupWorkflows.name;
-  const startTime = FastLog.start(fn);
-  withScriptLock(() => {
-    if (initialized && isEngineConfigured()) return; // idempotent
-
-    // 1) Inject the enqueue function (no queue import cycles here)
-    configureWorkflowEngine(queueJob);
-
-    // 2) Ensure the registry exists before any handlers run
-    // If your registerStep is idempotent, you can call this every time.
-    registerAllWorkflows();
-
-    initialized = true;
-  });
-  FastLog.finish(fn, startTime);
 }

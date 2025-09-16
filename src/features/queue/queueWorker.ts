@@ -24,6 +24,7 @@ import {
   STATUS,
   WORKER_BUDGET_MS,
 } from "./queueConstants";
+import { setupWorkflows } from '@workflow';
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Public API
@@ -166,6 +167,7 @@ function dispatchJob_(job: Job): void {
   const fn = dispatchJob_.name;
   const startTime = FastLog.start(fn, job);
   try {
+    setupWorkflows();
     const { jobName, json_parameters } = job;
     handleJob(jobName as InfraJobName, json_parameters);
   } catch (err) {

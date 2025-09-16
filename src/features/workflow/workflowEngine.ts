@@ -4,6 +4,8 @@ import { getErrorMessage } from "@lib/errors";
 import { FastLog } from "@logging";
 import { JOB_RUN_STEP } from "@queue/queueConstants";
 // ⬇️ Pull the canonical types + accessors from engineState
+import { ONE_MINUTE, ONE_SECOND } from "@lib/timeConstants";
+import { MAX_ATTEMPTS } from "@queue/queueConstants";
 import {
   ENGINE_INSTANCE_ID,
   getEnqueue,
@@ -11,41 +13,12 @@ import {
   setEnqueue,
   type EnqueueFn, // <-- use the one true EnqueueFn here
 } from "./engineState";
-import type { RunStepJob } from "./workflowTypes";
-import { makeStepLogger } from './makeStepLogger';
-import { getStep } from './workflowRegistry';
-import type { StepContext } from './workflowTypes';
-import { ONE_MINUTE,ONE_SECOND } from '@lib/timeConstants';
-import { MAX_ATTEMPTS } from '@queue/queueConstants';
+import { makeStepLogger } from "./makeStepLogger";
+import { getStep } from "./workflowRegistry";
+import type { RunStepJob, StepContext } from "./workflowTypes";
 
 export function configureWorkflowEngine(fn: EnqueueFn) {
   setEnqueue(fn);
-}
-
-export function enqueueRunStep(
-  job: RunStepJob,
-  delayMs?: number,
-  priority?: number
-): void {
-  const fn = enqueueRunStep.name;
-  const startTime = FastLog.start(fn, job);
-  try {
-    const enqueue = getEnqueue();
-
-    // ✅ Use ISO string to match engineState's EnqueueOptions
-    const runAtIso =
-      delayMs && delayMs > 0
-        ? toIso_(new Date(Date.now() + delayMs))
-        : undefined;
-
-    enqueue(JOB_RUN_STEP, job, { runAt: runAtIso, priority });
-  } catch (err) {
-    const errorMessage = getErrorMessage(err);
-    FastLog.error(fn, errorMessage);
-    throw new Error(errorMessage);
-  } finally {
-    FastLog.finish(fn, startTime, job);
-  }
 }
 
 export function isEngineConfigured() {
@@ -151,23 +124,16 @@ export function runStep(job: RunStepJob): void {
     FastLog.finish(fn, startTime, `${job.workflowName}.${job.stepName}`);
   }
 }
-// Helper to start a workflow from anywhere (menu, button, queue, etc.)
+
 export function startWorkflow(
   workflowName: string,
   firstStep: string,
   input: unknown,
   initialState: Record<string, any> = {},
   priority?: number
-): string {
+) {
   const fn = startWorkflow.name;
-  const startTime = FastLog.start(
-    fn,
-    workflowName,
-    firstStep,
-    input,
-    initialState,
-    priority
-  );
+  const t0 = FastLog.start(fn, workflowName, firstStep);
   try {
     const workflowId = Utilities.getUuid();
     enqueueRunStep(
@@ -185,11 +151,31 @@ export function startWorkflow(
     );
     return workflowId;
   } catch (err) {
-    const errorMessage = getErrorMessage(err);
-    FastLog.error(fn, errorMessage);
-    throw new Error(errorMessage);
+    const msg = getErrorMessage(err);
+    FastLog.error(fn, msg);
+    throw new Error(msg);
   } finally {
-    FastLog.finish(fn, startTime);
+    FastLog.finish(fn, t0);
   }
 }
+
+function enqueueRunStep(job: RunStepJob, delayMs?: number, priority?: number) {
+  const fn = enqueueRunStep.name;
+  const t0 = FastLog.start(fn, job);
+  try {
+    const enqueue = getEnqueue();
+    const runAtIso =
+      delayMs && delayMs > 0
+        ? toIso_(new Date(Date.now() + delayMs))
+        : undefined;
+    enqueue(JOB_RUN_STEP, job, { runAt: runAtIso, priority });
+  } catch (err) {
+    const msg = getErrorMessage(err);
+    FastLog.error(fn, msg);
+    throw new Error(msg);
+  } finally {
+    FastLog.finish(fn, t0, job);
+  }
+}
+
 FastLog.log("workflowEngine loaded", { ENGINE_INSTANCE_ID });

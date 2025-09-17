@@ -1,8 +1,7 @@
-  export function goToSheet(sheetName: string) {
-    const sheet = SpreadsheetApp.getActive().getSheetByName(sheetName);
+import { getSheetByName } from "./getSheetByName";
 
-    // Check if the sheet exists before trying to activate it.
-    if (sheet) {
-      sheet.activate();
-    }
-  }
+export function goToSheet(sheetName: string): void {
+  const sheet = getSheetByName(sheetName);
+
+  sheet.activate();
+}

@@ -1,11 +1,14 @@
 // src/sheets/core/capabilities.ts
-export interface canFixSheet { fixSheet(): void }
-export interface canFormatSheet { formatSheet(): void }
-export interface canTrimSheet { trimSheet(): void }
+export interface CanFixSheet {
+  fixSheet(): void;
+}
+export interface CanFormatSheet {
+  formatSheet(): void;
+}
+export interface CanTrimSheet {
+  trimSheet(): void;
+}
 
-export const hasFixSheet = (x: unknown): x is canFixSheet =>
-  !!x && typeof (x as any).fixSheet === "function";
-export const hasFormatSheet = (x: unknown): x is canFormatSheet =>
-  !!x && typeof (x as any).formatSheet === "function";
-export const hasTrimSheet = (x: unknown): x is canTrimSheet =>
-  !!x && typeof (x as any).trimSheet === "function";
+export interface CanUpdateAccountBalance {
+  updateAccountBalance: (sheetName: string) => void;
+}

@@ -1,6 +1,6 @@
 // @gas/exports/gasFunctions.ts
 
-import { getActiveSheetName, goToSheet } from "@gas";
+import { getActiveSheetName, goToSheet, logSheetNames } from "@gas";
 import {
   MetaBalanceSheet,
   MetaBudget,
@@ -180,6 +180,10 @@ export function GAS_goToSheetTransactionsByDate() {
 
 export function GAS_helloWorld(): void {
   logTime("Hello world!");
+}
+
+export function GAS_logSheetNames(): void {
+  logSheetNames();
 }
 
 export function GAS_monthlyUpdate() {

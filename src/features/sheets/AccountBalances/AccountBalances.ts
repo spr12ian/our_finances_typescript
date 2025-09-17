@@ -2,14 +2,14 @@
 import type { Spreadsheet } from "@domain";
 import { MetaAccountBalances as Meta } from "@lib/constants";
 import {
-  Fixable,
-  Formattable,
-  Queueable,
-  Trimmable,
   type CanFixSheet,
   type CanFormatSheet,
   type CanTrimSheet,
-  type QueueOps,
+} from "../core/capabilities";
+import {
+  Fixable,
+  Formattable,
+  Trimmable,
 } from "../core/capabilityMixins";
 import { AccountBalancesCore } from "./AccountBalancesCore";
 
@@ -21,8 +21,7 @@ class CorePublic extends AccountBalancesCore {
 }
 
 // ❷ Compose on the public-ctor class
-class _AccountBalances extends Queueable(
-  Fixable(Formattable(Trimmable(CorePublic)))
+class _AccountBalances extends Fixable(Formattable(Trimmable(CorePublic))
 ) {
   // ❸ Keep the final class publicly constructible
   public constructor(name: string, spreadsheet: Spreadsheet, sheet: any) {
@@ -33,8 +32,7 @@ class _AccountBalances extends Queueable(
 export type AccountBalances = _AccountBalances &
   CanFormatSheet &
   CanTrimSheet &
-  CanFixSheet &
-  QueueOps;
+  CanFixSheet;
 
 export function createAccountBalances(
   spreadsheet: Spreadsheet

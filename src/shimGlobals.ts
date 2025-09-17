@@ -35,6 +35,7 @@ export const shimGlobals = [
   "goToSheet_SVIGBL",
   "goToSheet_SVIIRF",
   "helloWorld",
+  "logSheetNames",
   "monthlyUpdate",
   "onChange",
   "onEditTrigger",

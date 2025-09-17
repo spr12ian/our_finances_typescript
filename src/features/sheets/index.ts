@@ -1,6 +1,7 @@
 // submodule
 // export * from "./AccountBalances";
 export * from "./core";
+export * from "./sheetTypes";
 
 // single-file modules
 export { Dependencies } from "./Dependencies";

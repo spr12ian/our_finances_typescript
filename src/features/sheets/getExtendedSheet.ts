@@ -1,59 +1,13 @@
 // getExtendedSheet.ts
-import { AccountSheet } from "../../AccountSheet";
-import { BankAccounts } from "../../BankAccounts";
-//import { BankCards } from "./BankCards";
-import type { Spreadsheet } from "@domain/Spreadsheet";
-import { isAccountSheetName } from "../../accountSheetFunctions";
-//import { AccountBalances } from "./app/sheets/AccountBalances";
 import { getErrorMessage } from "@lib/errors";
 import { FastLog } from "@logging";
+import { AccountSheet } from "../../AccountSheet";
+import { BankAccounts } from "../../BankAccounts";
+import { isAccountSheetName } from "../../accountSheetFunctions";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 import { createAccountBalances } from "./AccountBalances/AccountBalances";
-
-export interface ExtendedSheet {
-  name: string;
-}
-
-export interface canFixSheet {
-  fixSheet: () => void;
-}
-
-export interface canFormatSheet {
-  formatSheet: () => void;
-}
-
-export interface canTrimSheet {
-  trimSheet: () => void;
-}
-
-export interface canUpdateAccountBalance {
-  updateAccountBalance: (sheetName: string) => void;
-}
-
-// Type guards (optional but handy)
-export const hasFixSheet = (
-  x: ExtendedSheet
-): x is ExtendedSheet & canFixSheet =>
-  typeof (x as any).fixSheet === "function";
-
-export const hasFormatSheet = (
-  x: ExtendedSheet
-): x is ExtendedSheet & canFormatSheet =>
-  typeof (x as any).formatSheet === "function";
-
-export const hasTrimSheet = (
-  x: ExtendedSheet
-): x is ExtendedSheet & canTrimSheet =>
-  typeof (x as any).trimSheet === "function";
-
-export const hasUpdateAccountBalance = (
-  x: ExtendedSheet
-): x is ExtendedSheet & canUpdateAccountBalance =>
-  typeof (x as any).updateAccountBalance === "function";
-
-// If every non-account sheet takes only spreadsheet:
-export type SheetCtor = new (spreadsheet: Spreadsheet) => ExtendedSheet;
-type SheetFactory = (spreadsheet: Spreadsheet) => ExtendedSheet;
+import { sheetFactories } from "./sheetFactories";
+import type { ExtendedSheet, SheetFactory } from "./sheetTypes";
 
 export function getExtendedSheet(sheetName: string): ExtendedSheet {
   const fn = getExtendedSheet.name;
@@ -83,22 +37,16 @@ export function getExtendedSheet(sheetName: string): ExtendedSheet {
 }
 type SheetClassConstructor = new (...args: any[]) => ExtendedSheet;
 
-export function getSheetFactory(sheetName: string): SheetFactory {
+function getSheetFactory(sheetName: string): SheetFactory {
   const fn = getSheetFactory.name;
   const startTime = FastLog.start(fn, sheetName);
   try {
     // Registry now stores FACTORIES
-    const factories: Record<string, SheetFactory> = {
-      "Account balances": createAccountBalances, // ✅ new factory sheet
-      //"Bank accounts":    (s) => new BankAccounts(s),     // ✅ wrap old ctor
-      //"Bank cards":       (s) => new BankCards(s),        // ✅ wrap old ctor
-      // add others the same way
-    };
 
-    const f = factories[sheetName];
-    if (!f)
+    const factory = sheetFactories[sheetName];
+    if (!factory)
       throw new Error(`No sheet factory found for sheetName: ${sheetName}`);
-    return f;
+    return factory;
   } finally {
     FastLog.finish(fn, startTime, sheetName);
   }

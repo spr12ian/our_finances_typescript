@@ -2,5 +2,8 @@ export { getActiveSheet } from "./getActiveSheet";
 export { getActiveSheetName } from "./getActiveSheetName";
 export { getActiveSpreadsheet } from "./getActiveSpreadsheet";
 export { getSheetByName } from "./getSheetByName";
+export { getSheets } from "./getSheets";
+export { getSheetNames } from "./getSheetNames";
 export { goToSheet } from "./goToSheet";
+export { logSheetNames } from "./logSheetNames";
 export { isGasSheet } from "./isGasSheet";

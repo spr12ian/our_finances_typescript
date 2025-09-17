@@ -4,9 +4,9 @@
 // import { Spreadsheet } from "../../domain/Spreadsheet";
 // import { queueJob } from "../queue/queueJob";
 // import type {
-//   canFixSheet,
-//   canFormatSheet,
-//   canTrimSheet,
+//   CanFixSheet,
+//   CanFormatSheet,
+//   CanTrimSheet,
 //   ExtendedSheet,
 // } from "./getExtendedSheet";
 
@@ -14,7 +14,7 @@
 //  * Class to handle the "Account balances" sheet.
 //  */
 // export class AccountBalances
-//   implements ExtendedSheet, canFixSheet, canFormatSheet, canTrimSheet
+//   implements ExtendedSheet, CanFixSheet, CanFormatSheet, CanTrimSheet
 // {
 //   readonly name: string = Meta.SHEET.NAME;
 //   private readonly sheet: Sheet;

@@ -9,6 +9,10 @@ export abstract class BaseSheet {
     public readonly sheet: Sheet
   ) {}
 
+  trimSheet() {
+    this.sheet.trimSheet();
+  }
+
   protected start(label: string, ...args: any[]) {
     return FastLog.start(`[${this.name}] ${label}`, ...args);
   }

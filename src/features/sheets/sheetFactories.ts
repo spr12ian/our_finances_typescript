@@ -7,7 +7,7 @@ import type { SheetFactory } from "./mixinTypes";
 
 export const sheetFactories: Record<string, SheetFactory> = {
   "Account balances": createAccountBalances,
-  Assets: createAssets,
+  "Assets": createAssets,
   "Bank accounts": factoryFromClass(BankAccounts).with(
     addFixSheet,
     addFormatSheet,

@@ -6,6 +6,7 @@ export function buildAccountsMenu(
   accountSheetNames: string[]
 ): void {
   const startTime = FastLog.start(buildAccountsMenu.name);
+
   // Check if any accounts are found
   if (accountSheetNames.length === 0) {
     ui.alert("No account sheets found!");
@@ -13,13 +14,15 @@ export function buildAccountsMenu(
     return;
   }
 
-  const itemArray: [string, string][] = [];
+  const accountsMenuItems: [string, string][] = [];
 
   for (const accountSheetName of accountSheetNames) {
     const funName = "dynamicAccount" + accountSheetName;
-    itemArray.push([accountSheetName, funName]);
+    accountsMenuItems.push([accountSheetName, funName]);
   }
 
-  createMenu(ui, "Accounts", itemArray);
+  const accountsMenu = createMenu(ui, "Accounts", accountsMenuItems);
+  accountsMenu.addToUi();
+  
   FastLog.finish(buildAccountsMenu.name, startTime);
 }

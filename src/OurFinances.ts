@@ -386,10 +386,6 @@ export class OurFinances {
     FastLog.log("All sheets trimmed.");
   }
 
-  trimSheet() {
-    this.#spreadsheet.activeSheet.trimSheet();
-  }
-
   updateAllDependencies() {
     const dependencies = new Dependencies(this.#spreadsheet);
     dependencies.updateAllDependencies();

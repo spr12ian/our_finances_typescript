@@ -1,16 +1,19 @@
-import {
-  MetaBudgetAdHocTransactions,
-  MetaBudgetAnnualTransactions,
-} from "@lib/constants";
 import { FastLog } from "@logging";
+import { createMenu } from "./createMenu";
+import { budgetMenuItems, transactionsMenuItems } from "./menuItems";
 
 export function buildSectionsMenu(ui: GoogleAppsScript.Base.Ui) {
   const startTime = FastLog.start(buildSectionsMenu.name);
+
+  const transactionsMenu = createMenu(ui, "Transactions", transactionsMenuItems);
+  const budgetMenu = createMenu(ui, "Budget", budgetMenuItems);
+
   ui.createMenu("Sections")
+    .addSubMenu(transactionsMenu)
+    .addSeparator()
     .addSubMenu(
       ui
-        .createMenu("Accounts")
-        .addItem("Update balance values", "updateBalanceValues")
+        .createMenu("Transaction analysis")
         .addItem(
           "Not in transaction categories",
           "goToSheetNotInTransactionCategories"
@@ -18,28 +21,10 @@ export function buildSectionsMenu(ui: GoogleAppsScript.Base.Ui) {
         .addItem("Uncategorised by date", "goToSheetUncategorisedByDate")
         .addItem("Category clash", "goToSheetCategoryClash")
         .addItem("Categories", "goToSheetCategories")
-        .addItem("Transactions by date", "goToSheetTransactionsByDate")
         .addItem("Transaction categories", "goToSheetTransactionCategories")
-        .addItem("Format account sheet", "formatAccountSheet")
-        .addItem("Update 'Transactions'", "updateTransactions")
     )
     .addSeparator()
-    .addSubMenu(
-      ui
-        .createMenu("Budget")
-        .addItem("Budget", "budget")
-        .addItem(
-          MetaBudgetAnnualTransactions.SHEET.NAME,
-          "budgetAnnualTransactions"
-        )
-        .addItem("Budget monthly transactions", "budgetMonthlyTransactions")
-        .addItem(
-          MetaBudgetAdHocTransactions.SHEET.NAME,
-          "budgetAdHocTransactions"
-        )
-        .addItem("Budget predicted spend", "budgetPredictedSpend")
-        .addItem("Budget weekly transactions", "budgetWeeklyTransactions")
-    )
+    .addSubMenu(budgetMenu)
     .addSeparator()
     .addSubMenu(
       ui

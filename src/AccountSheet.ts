@@ -75,6 +75,10 @@ export class AccountSheet {
     this.formatSheet();
     const lastRow = this.sheet.getTrueDataBounds().lastRow;
     this.sheet.setActiveRange(this.sheet.raw.getRange(lastRow, 1));
+    this.trimSheet();
+  }
+
+  trimSheet() {
     this.sheet.trimSheet();
   }
 

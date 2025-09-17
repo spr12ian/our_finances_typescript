@@ -4,9 +4,8 @@ import { MetaAssets as Meta } from "@lib/constants";
 import {
   type CanFixSheet,
   type CanFormatSheet,
-  type CanTrimSheet,
 } from "../core/capabilities";
-import { Fixable, Formattable, Trimmable } from "../core/capabilityMixins";
+import { Fixable, Formattable } from "../core/capabilityMixins";
 import { AssetsCore } from "./AssetsCore";
 
 // ❶ Public-ctor shim (no behavior change)
@@ -17,7 +16,7 @@ class CorePublic extends AssetsCore {
 }
 
 // ❷ Compose on the public-ctor class
-class _Assets extends Fixable(Formattable(Trimmable(CorePublic))) {
+class _Assets extends Fixable(Formattable(CorePublic)) {
   // ❸ Keep the final class publicly constructible
   public constructor(name: string, spreadsheet: Spreadsheet, sheet: any) {
     super(name, spreadsheet, sheet);
@@ -26,7 +25,6 @@ class _Assets extends Fixable(Formattable(Trimmable(CorePublic))) {
 
 export type Assets = _Assets &
   CanFormatSheet &
-  CanTrimSheet &
   CanFixSheet;
 
 export function createAssets(

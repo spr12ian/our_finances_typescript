@@ -271,8 +271,11 @@ export function GAS_trimAllSheets() {
 }
 
 export function GAS_trimSheet() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).trimSheet();
+  setupWorkflows(); // safe to call repeatedly; internal lock + flag
+  startWorkflow("trimSheetFlow", "trimSheetStep1", {
+    sheetName: getActiveSheetName(),
+    startedBy: "GAS_trimSheet",
+  });
 }
 
 export function GAS_updateAllDependencies() {

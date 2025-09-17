@@ -3,6 +3,7 @@ import type { Spreadsheet } from "@domain/Spreadsheet";
 
 export interface ExtendedSheet {
   name: string;
+  trimSheet(): void;
 }
 
 // If every non-account sheet takes only spreadsheet:

@@ -36,7 +36,7 @@ export const Fixable = <TBase extends Ctor>(Base: TBase) => {
     fixSheet() {
       const t0 = (this as any).start("fixSheet");
       try {
-        (this as any).update();
+        //(this as any).update();
         (this as any).sheet.fixSheet();
       } finally {
         (this as any).finish("fixSheet", t0);

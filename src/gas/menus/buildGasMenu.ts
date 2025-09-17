@@ -1,26 +1,27 @@
 import { FastLog } from "@logging";
 import { createMenu } from "./createMenu";
+import {
+  accountSheetMenuItems,
+  gasMenuItems,
+  sheetMenuItems,
+} from "./menuItems";
 
 export function buildGasMenu(ui: GoogleAppsScript.Base.Ui) {
   const startTime = FastLog.start(buildGasMenu.name);
-  const itemArray: [string, string][] = [
-    ["All accounts", "showAllAccounts"],
-    ["Apply Description replacements", "applyDescriptionReplacements"],
-    ["Balance sheet", "balanceSheet"],
-    ["Check dependencies", "updateAllDependencies"],
-    ["Convert current column to uppercase", "convertCurrentColumnToUppercase"],
-    ["Daily update", "dailyUpdate"],
-    ["Fix sheet", "fixSheet"],
-    ["Monthly update", "monthlyUpdate"],
-    ["Open accounts", "openAccounts"],
-    ["Sort sheet order", "sortSheets"],
-    ["Trim all sheets", "trimAllSheets"],
-    ["Update spreadsheet summary", "updateSpreadsheetSummary"],
-    ["Validate all menu function names", "validateAllMenuFunctionNames"],
-  ];
-  const menu = createMenu(ui, "GAS Menu", itemArray)
+
+  const accountSheetMenu = createMenu(
+    ui,
+    "Account sheet",
+    accountSheetMenuItems
+  );
+  const sheetMenu = createMenu(ui, "Sheet", sheetMenuItems);
+  const gasMenu = createMenu(ui, "GAS Menu", gasMenuItems);
+  gasMenu
     .addSeparator()
-    .addSubMenu(ui.createMenu("Sheet").addItem("Trim sheet", "trimSheet"));
-  menu.addToUi();
+    .addSubMenu(accountSheetMenu)
+    .addSeparator()
+    .addSubMenu(sheetMenu)
+    .addToUi();
+
   FastLog.finish(buildGasMenu.name, startTime);
 }

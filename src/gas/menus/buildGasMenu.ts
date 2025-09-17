@@ -18,6 +18,9 @@ export function buildGasMenu(ui: GoogleAppsScript.Base.Ui) {
     ["Update spreadsheet summary", "updateSpreadsheetSummary"],
     ["Validate all menu function names", "validateAllMenuFunctionNames"],
   ];
-  createMenu(ui, "GAS Menu", itemArray);
+  const menu = createMenu(ui, "GAS Menu", itemArray)
+    .addSeparator()
+    .addSubMenu(ui.createMenu("Sheet").addItem("Trim sheet", "trimSheet"));
+  menu.addToUi();
   FastLog.finish(buildGasMenu.name, startTime);
 }

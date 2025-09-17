@@ -1,46 +1,41 @@
-// src/sheets/AccountBalances/AccountBalances.ts
+// src/sheets/Assets/Assets.ts
 import type { Spreadsheet } from "@domain";
-import { MetaAccountBalances as Meta } from "@lib/constants";
+import { MetaAssets as Meta } from "@lib/constants";
 import {
   type CanFixSheet,
   type CanFormatSheet,
   type CanTrimSheet,
 } from "../core/capabilities";
-import {
-  Fixable,
-  Formattable,
-  Trimmable,
-} from "../core/capabilityMixins";
-import { AccountBalancesCore } from "./AccountBalancesCore";
+import { Fixable, Formattable, Trimmable } from "../core/capabilityMixins";
+import { AssetsCore } from "./AssetsCore";
 
 // ❶ Public-ctor shim (no behavior change)
-class CorePublic extends AccountBalancesCore {
+class CorePublic extends AssetsCore {
   public constructor(name: string, spreadsheet: Spreadsheet, sheet: any) {
     super(name, spreadsheet, sheet);
   }
 }
 
 // ❷ Compose on the public-ctor class
-class _AccountBalances extends Fixable(Formattable(Trimmable(CorePublic))
-) {
+class _Assets extends Fixable(Formattable(Trimmable(CorePublic))) {
   // ❸ Keep the final class publicly constructible
   public constructor(name: string, spreadsheet: Spreadsheet, sheet: any) {
     super(name, spreadsheet, sheet);
   }
 }
 
-export type AccountBalances = _AccountBalances &
+export type Assets = _Assets &
   CanFormatSheet &
   CanTrimSheet &
   CanFixSheet;
 
-export function createAccountBalances(
+export function createAssets(
   spreadsheet: Spreadsheet
-): AccountBalances {
+): Assets {
   const sheet = spreadsheet.getSheetByMeta(Meta);
-  return new _AccountBalances(
+  return new _Assets(
     Meta.SHEET.NAME,
     spreadsheet,
     sheet
-  ) as AccountBalances;
+  ) as Assets;
 }

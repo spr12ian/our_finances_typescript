@@ -4,7 +4,7 @@ export function createMenu(
   ui: GoogleAppsScript.Base.Ui,
   menuCaption: string,
   menuItemArray: [string, string][]
-) {
+): GoogleAppsScript.Base.Menu {
   const startTime = FastLog.start(createMenu.name);
 
   const menu = ui.createMenu(menuCaption);
@@ -13,7 +13,9 @@ export function createMenu(
     menu.addItem(itemName, itemFunction);
   });
 
-  menu.addToUi();
+  //menu.addToUi();
 
   FastLog.finish(createMenu.name, startTime);
+
+  return menu;
 }

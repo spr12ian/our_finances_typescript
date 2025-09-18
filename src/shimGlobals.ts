@@ -15,7 +15,6 @@ export const shimGlobals = [
   "dailyUpdate",
   "exportFormulasToDrive",
   "fixSheet",
-  "formatAccountSheet",
   "goToSheetCategories",
   "goToSheetCategoryClash",
   "goToSheetHMRCTransactionsSummary",

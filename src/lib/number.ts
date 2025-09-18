@@ -1,10 +1,10 @@
-export function columnNumberToLetter(columnNumber: number): string {
-  let dividend = columnNumber;
+/** A -> 1, Z -> 26, AA -> 27, ... */
+export function columnNumberToLetter(column: number): string {
   let letter = "";
-  while (dividend > 0) {
-    const modulo = (dividend - 1) % 26;
+  while (column > 0) {
+    const modulo = (column - 1) % 26;
     letter = String.fromCharCode(65 + modulo) + letter;
-    dividend = Math.floor((dividend - modulo) / 26);
+    column = Math.floor((column - modulo) / 26);
   }
   return letter;
 }

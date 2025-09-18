@@ -1,28 +1,30 @@
 import { FastLog } from "@logging";
 import { createMenu } from "./createMenu";
-import { budgetMenuItems, transactionsMenuItems } from "./menuItems";
+import {
+  analyzeTransactionsMenuItems,
+  budgetMenuItems,
+  transactionsMenuItems,
+} from "./menuItems";
 
 export function buildSectionsMenu(ui: GoogleAppsScript.Base.Ui) {
   const startTime = FastLog.start(buildSectionsMenu.name);
 
-  const transactionsMenu = createMenu(ui, "Transactions", transactionsMenuItems);
+  const analyzeTransactionsMenu = createMenu(
+    ui,
+    "Analyze transactions",
+    analyzeTransactionsMenuItems
+  );
+  const transactionsMenu = createMenu(
+    ui,
+    "Transactions",
+    transactionsMenuItems
+  );
   const budgetMenu = createMenu(ui, "Budget", budgetMenuItems);
 
   ui.createMenu("Sections")
-    .addSubMenu(transactionsMenu)
+    .addSubMenu(analyzeTransactionsMenu)
     .addSeparator()
-    .addSubMenu(
-      ui
-        .createMenu("Transaction analysis")
-        .addItem(
-          "Not in transaction categories",
-          "goToSheetNotInTransactionCategories"
-        )
-        .addItem("Uncategorised by date", "goToSheetUncategorisedByDate")
-        .addItem("Category clash", "goToSheetCategoryClash")
-        .addItem("Categories", "goToSheetCategories")
-        .addItem("Transaction categories", "goToSheetTransactionCategories")
-    )
+    .addSubMenu(transactionsMenu)
     .addSeparator()
     .addSubMenu(budgetMenu)
     .addSeparator()

@@ -1,5 +1,4 @@
 export * from "./asNumber";
-export * from "./columnToLetter";
 export * from "./constants";
 export * from "./dates";
 export * from "./errors";

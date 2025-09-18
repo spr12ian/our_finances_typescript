@@ -1,6 +1,7 @@
 // @gas/exports/gasFunctions.ts
 
 import { getActiveSheetName, goToSheet, logSheetNames } from "@gas";
+import { exportFormulasToDrive } from "@gas/exports/exportFormulasToDrive";
 import {
   MetaBalanceSheet,
   MetaBudget,
@@ -89,8 +90,7 @@ export function GAS_dailyUpdate() {
 }
 
 export function GAS_exportFormulasToDrive() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).exportFormulasToDrive();
+  exportFormulasToDrive();
 }
 
 export function GAS_fixSheet() {
@@ -99,11 +99,6 @@ export function GAS_fixSheet() {
     sheetName: getActiveSheetName(),
     startedBy: "GAS_fixSheet",
   });
-}
-
-export function GAS_formatAccountSheet() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).formatAccountSheet();
 }
 
 export function GAS_goToSheet_AHALIF() {

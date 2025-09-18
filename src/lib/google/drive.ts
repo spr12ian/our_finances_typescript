@@ -1,12 +1,26 @@
 import { FastLog } from "../logging/FastLog";
-export function outputToDrive(fileName: string, output: string) {
+
+/**
+ * Create or overwrite a text file in My Drive root.
+ * If multiple files share the name, updates the first match.
+ * TODO: Adjust to target a specific folder.
+ */
+export function writeTextFileToDrive(fileName: string, contents: string): void {
+  const fn = writeTextFileToDrive.name;
+  const startTime = FastLog.start(fn, fileName);
+
   // Overwrite if it already exists
-  const existing = DriveApp.getFilesByName(fileName);
-  if (existing.hasNext()) {
-    const file = existing.next();
-    file.setTrashed(true); // move old version to bin
+  const files = DriveApp.getFilesByName(fileName);
+  if (files.hasNext()) {
+    const file = files.next();
+    file.setContent(contents);
+  } else {
+    DriveApp.createFile(fileName, contents, "text/plain");
   }
 
-  DriveApp.createFile(fileName, output, "text/plain");
-  FastLog.log(`Export complete: ${fileName} created in Drive.`);
+  FastLog.finish(
+    fn,
+    startTime,
+    `Export complete: ${fileName} created in Drive.`
+  );
 }

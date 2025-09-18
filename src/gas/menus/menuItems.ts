@@ -4,7 +4,17 @@ import {
 } from "@lib/constants";
 
 export const accountSheetMenuItems: [string, string][] = [
+  ["Apply Description replacements", "applyDescriptionReplacements"],
+  ["Convert current column to uppercase", "convertCurrentColumnToUppercase"],
   ["Update balance values", "updateBalanceValues"],
+];
+
+export const analyzeTransactionsMenuItems: [string, string][] = [
+  ["Not in transaction categories", "goToSheetNotInTransactionCategories"],
+  ["Uncategorised by date", "goToSheetUncategorisedByDate"],
+  ["Category clash", "goToSheetCategoryClash"],
+  ["Categories", "goToSheetCategories"],
+  ["Transaction categories", "goToSheetTransactionCategories"],
 ];
 
 export const budgetMenuItems: [string, string][] = [
@@ -18,10 +28,8 @@ export const budgetMenuItems: [string, string][] = [
 
 export const gasMenuItems: [string, string][] = [
   ["All accounts", "showAllAccounts"],
-  ["Apply Description replacements", "applyDescriptionReplacements"],
   ["Balance sheet", "balanceSheet"],
   ["Check dependencies", "updateAllDependencies"],
-  ["Convert current column to uppercase", "convertCurrentColumnToUppercase"],
   ["Daily update", "dailyUpdate"],
   ["Fix sheet", "fixSheet"],
   ["Monthly update", "monthlyUpdate"],

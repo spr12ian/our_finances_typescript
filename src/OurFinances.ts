@@ -1,3 +1,4 @@
+import { Spreadsheet } from "@domain";
 import {
   MetaBankAccounts,
   MetaBudgetAdHocTransactions,
@@ -19,10 +20,7 @@ import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
 import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
 import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
 import { CheckFixedAmounts } from "./CheckFixedAmounts";
-import { Spreadsheet } from "@domain";
-import { columnToLetter } from "./lib/columnToLetter";
 import { getToday } from "./lib/dates";
-import { outputToDrive } from "./lib/google/drive";
 import { sendMeEmail } from "./lib/google/email";
 import { TransactionCategories } from "./TransactionCategories";
 import { Transactions } from "./Transactions";
@@ -220,43 +218,6 @@ export class OurFinances {
     });
   }
 
-  exportFormulasToDrive() {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const sheets = ss.getSheets().filter((s) => s.getName() > "BMONZO");
-    const fileName = "FormulasExport.ts";
-    let output = "";
-
-    for (const sheet of sheets) {
-      const formulas = sheet.getDataRange().getFormulas();
-      const formulaConfig = [];
-
-      for (let r = 0; r < formulas.length; r++) {
-        for (let c = 0; c < formulas[r].length; c++) {
-          const f = formulas[r][c];
-          if (f) {
-            formulaConfig.push(
-              `  { cell: "${columnToLetter(c + 1)}${
-                r + 1
-              }", formula: '${f.replace(/'/g, "\\'")}' },`
-            );
-          }
-        }
-      }
-
-      if (formulaConfig.length > 0) {
-        output += `// ---- ${sheet.getName()} ----\n`;
-        output += `FORMULA_CONFIG: [\n${formulaConfig.join(
-          "\n"
-        )}\n] as { cell: string; formula: string }[],\n`;
-        output += `SHEET: { NAME: "${sheet.getName()}", },\n\n`;
-        FastLog.log(`// ---- ${sheet.getName()} ----\n`);
-      }
-    }
-
-    // Create file in Drive
-    outputToDrive(fileName, output);
-  }
-
   fixAccountSheet() {
     FastLog.log(`Started OurFinances.fixAccountSheet`);
 
@@ -308,17 +269,6 @@ export class OurFinances {
   //   }
   //   FastLog.log(`Finished OurFinances.fixSheet`);
   // }
-
-  formatAccountSheet() {
-    const activeSheet = this.#spreadsheet.activeSheet;
-
-    if (!activeSheet) {
-      return;
-    }
-
-    const accountSheet = new AccountSheet(activeSheet, this.#spreadsheet);
-    accountSheet.formatSheet();
-  }
 
   onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
     FastLog.log(`Started OurFinances.onChange`);

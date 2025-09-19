@@ -1,9 +1,11 @@
 import type { Sheet, Spreadsheet } from "@domain";
 import { MetaAccountSheet as Meta, MetaBankAccounts } from "@lib/constants";
+import { getErrorMessage } from "@lib/errors";
 import { xLookup } from "@lib/xLookup";
 import { FastLog } from "@logging/FastLog";
 import { DescriptionReplacements } from "@sheets/DescriptionReplacements";
 
+const COLOR_FUTURE_ROWS = "#D0E0E3";
 export class AccountSheet {
   constructor(
     private readonly sheet: Sheet,
@@ -78,11 +80,16 @@ export class AccountSheet {
     this.trimSheet();
   }
 
-  trimSheet() {
-    this.sheet.trimSheet();
+  formatFutureRows(): void {
+    const futureRowsRanges = this.getFutureRowsRanges();
+    if (futureRowsRanges) {
+      futureRowsRanges.forEach((r) => r.setBackground(COLOR_FUTURE_ROWS));
+    }
   }
 
   formatSheet() {
+    const fn = this.formatSheet.name;
+    const startTime = FastLog.start(fn);
     const sheet = this.sheet;
     try {
       sheet.formatSheet();
@@ -93,6 +100,7 @@ export class AccountSheet {
         this.convertColumnToUppercase(Meta.COLUMNS.DESCRIPTION);
         this.convertColumnToUppercase(Meta.COLUMNS.NOTE);
       }
+      this.formatFutureRows();
       sheet.raw
         .autoResizeColumn(Meta.COLUMNS.DATE)
         .setColumnWidth(Meta.COLUMNS.DESCRIPTION, 500)
@@ -102,9 +110,18 @@ export class AccountSheet {
         .setColumnWidth(Meta.COLUMNS.COUNTERPARTY, 97)
         .autoResizeColumn(Meta.COLUMNS.COUNTERPARTY_DATE)
         .autoResizeColumn(Meta.COLUMNS.BALANCE);
-    } catch (error) {
-      throw error;
+      return;
+    } catch (err) {
+      const errorMessage = getErrorMessage(err);
+      FastLog.error(fn, err);
+      throw new Error(errorMessage);
+    } finally {
+      FastLog.finish(fn, startTime);
     }
+  }
+
+  getFutureRowsRanges() {
+    return this.sheet.getRangesWhereColumnEquals(Meta.COLUMNS.NOTE, "FUTURE");
   }
 
   setCounterpartyValidation(a1range: string) {
@@ -131,6 +148,10 @@ export class AccountSheet {
     this.setCounterpartyValidation("F2:F");
     sheet.setNumberFormatAsDate("A2:A", "G2:G");
     sheet.setNumberFormatAsUKCurrency("C2:D", "H2:H");
+  }
+
+  trimSheet() {
+    this.sheet.trimSheet();
   }
 
   updateBalanceValues(rowEdited?: number): void {

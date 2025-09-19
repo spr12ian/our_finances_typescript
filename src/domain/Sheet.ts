@@ -188,6 +188,28 @@ export class Sheet {
     return this.dataRange.getValues();
   }
 
+  getRangesWhereColumnEquals(col: number, match: string) {
+    const gasSheet = this.gasSheet;
+    // Get all values in the column (skipping header if needed)
+    const values = gasSheet.getRange(1, col, gasSheet.getLastRow()).getValues(); // 2D array
+
+    const rows: number[] = [];
+    values.forEach((row, i) => {
+      if (row[0] === match) {
+        rows.push(i + 1); // +1 because getValues() is 0-based, sheet rows are 1-based
+      }
+    });
+
+    if (rows.length === 0) {
+      return null; // no match
+    }
+
+    // Example: return the full row ranges for matches
+    return rows.map((r) =>
+      gasSheet.getRange(r, 1, 1, gasSheet.getLastColumn())
+    );
+  }
+
   getValue(range: string): any {
     return this.gasSheet.getRange(range).getValue();
   }
@@ -384,7 +406,8 @@ export class Sheet {
   }
 
   trimSheet(): void {
-    FastLog.log(`Started Sheet.trimSheet: ${this.name}`);
+    const fn = this.trimSheet.name;
+    const startTime = FastLog.start(fn, this.name);
 
     const { lastRow, lastColumn } = this.getTrueDataBounds();
     const gasSheet = this.gasSheet;
@@ -418,6 +441,6 @@ export class Sheet {
         `Trimmed from ${maxRows} rows × ${maxColumns} columns to ${targetRows} rows × ${targetCols} columns`
       );
     }
-    FastLog.log(`Finished Sheet.trimSheet: ${this.name}`);
+    FastLog.finish(fn, startTime, this.name);
   }
 }

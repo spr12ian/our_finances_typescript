@@ -1,7 +1,7 @@
 import { getErrorMessage } from "@lib/errors";
 import { trimSheet } from "@sheets/trimSheet";
-import { registerStep } from "./workflowRegistry";
-import type { StepFn } from "./workflowTypes";
+import { registerStep } from "../workflowRegistry";
+import type { StepFn } from "../workflowTypes";
 
 export function trimSheetFlow(): void {
   // import step implementations here to register them

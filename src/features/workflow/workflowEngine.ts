@@ -97,6 +97,11 @@ export function runStep(job: RunStepJob): void {
             reason: res.reason,
             attempt: job.attempt,
           });
+
+          const input = { body: res.reason, subject: job.stepName };
+
+          startWorkflow("sendMeEmailFlow", "sendMeEmailStep1", input);
+
           throw new Error(`runStep failed: ${String(res.reason)}`);
         }
 

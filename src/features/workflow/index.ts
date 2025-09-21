@@ -1,4 +1,4 @@
-export { fixSheetFlow } from "./fixSheetFlow";
+export { fixSheetFlow } from "./flows/fixSheetFlow";
 export { makeStepLogger } from "./makeStepLogger";
 export { registerAllWorkflows } from "./registerAllWorkflows";
 export { setupWorkflows } from "./setupWorkflows";

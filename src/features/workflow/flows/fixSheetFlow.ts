@@ -1,7 +1,7 @@
 import { getErrorMessage } from "@lib/errors";
-import { fixSheet } from "../sheets/fixSheet";
-import { registerStep } from "./workflowRegistry";
-import type { StepFn } from "./workflowTypes";
+import { fixSheet } from "../../sheets/fixSheet";
+import { registerStep } from "../workflowRegistry";
+import type { StepFn } from "../workflowTypes";
 
 export function fixSheetFlow(): void {
   // import step implementations here to register them

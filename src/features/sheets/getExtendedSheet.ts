@@ -4,6 +4,7 @@ import { FastLog } from "@logging";
 import { AccountSheet } from "../../AccountSheet";
 import { isAccountSheetName } from "../../accountSheetFunctions";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
+import { createCoreFactory } from "./Core/Core";
 import { sheetFactories } from "./sheetFactories";
 import type { ExtendedSheet, SheetFactory } from "./sheetTypes";
 
@@ -34,15 +35,20 @@ export function getExtendedSheet(sheetName: string): ExtendedSheet {
   }
 }
 
-function getSheetFactory(sheetName: string): SheetFactory {
+function getSheetFactory(
+  sheetName: string
+): SheetFactory {
   const fn = getSheetFactory.name;
   const startTime = FastLog.start(fn, sheetName);
   try {
     // Registry now stores FACTORIES
 
-    const factory = sheetFactories[sheetName];
-    if (!factory)
-      throw new Error(`No sheet factory found for sheetName: ${sheetName}`);
+    let factory = sheetFactories[sheetName];
+    if (!factory) {
+      factory = createCoreFactory(sheetName);
+    }
+
+    //throw new Error(`No sheet factory found for sheetName: ${sheetName}`);
     return factory;
   } finally {
     FastLog.finish(fn, startTime, sheetName);

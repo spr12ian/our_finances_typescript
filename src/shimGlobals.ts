@@ -13,6 +13,7 @@ export const shimGlobals = [
   "convertCurrentColumnToUppercase",
   "dailySorts",
   "dailyUpdate",
+  "example",
   "exportFormulasToDrive",
   "fixSheet",
   "goToSheetCategories",

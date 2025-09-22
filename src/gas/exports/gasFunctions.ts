@@ -1,6 +1,7 @@
 // @gas/exports/gasFunctions.ts
 
 import { getActiveSheetName, goToSheet, logSheetNames } from "@gas";
+
 import { exportFormulasToDrive } from "@gas/exports/exportFormulasToDrive";
 import {
   MetaBalanceSheet,
@@ -25,6 +26,8 @@ import { FastLog } from "@logging";
 import { queueSetup } from "@queue/queueSetup";
 import { purgeQueuesOldData, queueWorker } from "@queue/queueWorker";
 import { setupWorkflows } from "@workflow";
+import type { ExampleFlowInput } from "@workflow/flows/exampleFlow";
+import type { FixSheetFlowInput } from "@workflow/flows/fixSheetFlow";
 import { startWorkflow } from "@workflow/workflowEngine";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 import { OurFinances } from "../../OurFinances";
@@ -89,16 +92,31 @@ export function GAS_dailyUpdate() {
   new OurFinances(spreadsheet).bankAccounts.showDaily();
 }
 
+export function GAS_example() {
+  const workFlowName = "exampleFlow";
+  const firstStep = "exampleStep1";
+  const input = {
+    parameter1: "Example string",
+    parameter2: 42,
+    startedBy: "GAS_example",
+  } satisfies ExampleFlowInput;
+
+  startWF(workFlowName, firstStep, input);
+}
+
 export function GAS_exportFormulasToDrive() {
   exportFormulasToDrive();
 }
 
 export function GAS_fixSheet() {
-  setupWorkflows(); // safe to call repeatedly; internal lock + flag
-  startWorkflow("fixSheetFlow", "fixSheetStep1", {
+  const workFlowName = "fixSheetFlow";
+  const firstStep = "fixSheetStep1";
+  const input = {
     sheetName: getActiveSheetName(),
     startedBy: "GAS_fixSheet",
-  });
+  } satisfies FixSheetFlowInput;
+
+  startWF(workFlowName, firstStep, input);
 }
 
 export function GAS_goToSheet_AHALIF() {
@@ -295,4 +313,11 @@ export function GAS_updateTransactions() {
 
 export function GAS_validateAllMenuFunctionNames() {
   validateAllMenuFunctionNames();
+}
+
+// Local helper functions
+
+function startWF(workFlowName: string, firstStep: string, input: unknown) {
+  setupWorkflows(); // safe to call repeatedly; internal lock + flag
+  startWorkflow(workFlowName, firstStep, input);
 }

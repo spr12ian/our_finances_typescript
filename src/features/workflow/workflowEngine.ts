@@ -27,6 +27,7 @@ export function isEngineConfigured() {
   return isConfigured();
 }
 
+const DEFAULT_INVOCATION_BUDGET_MS = 25 * ONE_SECOND;
 export function runStep(job: RunStepJob): void {
   const fn = runStep.name;
   const startTime = FastLog.start(fn, `${job.workflowName}.${job.stepName}`, {
@@ -47,13 +48,18 @@ export function runStep(job: RunStepJob): void {
       stepName: job.stepName,
     });
 
-    const budgetMs = 25 * ONE_SECOND; // leave headroom inside Apps Script’s 6-min window
+    const budgetMs = DEFAULT_INVOCATION_BUDGET_MS; // leave headroom inside Apps Script’s 6-min window
+
+    const rawInput = job.input ?? null;
+    const input = (rawInput && typeof rawInput === "object") ? Object.freeze(rawInput as object) : rawInput;
+    const state = job.state ?? {};
+
     const ctx: StepContext = {
       workflowId: job.workflowId,
       workflowName: job.workflowName,
       stepName: job.stepName,
-      input: job.input,
-      state: job.state || {},
+      input: input,
+      state: state,
       attempt: job.attempt ?? 0,
       budgetMs,
       startedAt: Date.now(),
@@ -62,7 +68,12 @@ export function runStep(job: RunStepJob): void {
     };
 
     const res = stepFn(ctx);
-    FastLog.log(fn, res);
+    FastLog.log(fn, {
+      kind: res.kind,
+      nextStep: res.kind === "next" ? res.nextStep : undefined,
+      hasState: "state" in res,
+      delayMs: "delayMs" in res ? res.delayMs : undefined,
+    });
 
     switch (res.kind) {
       case "yield": {
@@ -89,23 +100,20 @@ export function runStep(job: RunStepJob): void {
         });
         return;
       }
-      case "fail":
-        {
-          // Let the batch handler decide attempts/backoff/dead-letter.
-          FastLog.warn(`Step failed: ${job.workflowName}.${job.stepName}`, {
-            workflowId: job.workflowId,
-            reason: res.reason,
-            attempt: job.attempt,
-          });
+      case "fail": {
+        // Let the batch handler decide attempts/backoff/dead-letter.
+        FastLog.warn(`Step failed: ${job.workflowName}.${job.stepName}`, {
+          workflowId: job.workflowId,
+          reason: res.reason,
+          attempt: job.attempt,
+        });
 
-          const input = { body: res.reason, subject: job.stepName };
+        const input = { body: res.reason, subject: job.stepName };
 
-          startWorkflow("sendMeEmailFlow", "sendMeEmailStep1", input);
+        startWorkflow("sendMeEmailFlow", "sendMeEmailStep1", input);
 
-          throw new Error(`runStep failed: ${String(res.reason)}`);
-        }
-
-        return;
+        throw new Error(`runStep failed: ${String(res.reason)}`);
+      }
     }
   } catch (err) {
     const errorMessage = getErrorMessage(err);
@@ -161,10 +169,8 @@ function enqueueRunStep(
   const t0 = FastLog.start(fn, rsp);
   try {
     const enqueue = getEnqueue();
-    const runAtIso =
-      delayMs && delayMs > 0
-        ? toIso_(new Date(Date.now() + delayMs))
-        : undefined;
+    const ms = Math.max(0, Math.floor(delayMs ?? 0));
+    const runAtIso = ms > 0 ? toIso_(new Date(Date.now() + ms)) : undefined;
 
     enqueue(rsp, { runAt: runAtIso, priority });
   } catch (err) {

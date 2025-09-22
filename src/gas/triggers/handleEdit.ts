@@ -1,5 +1,6 @@
 /// <reference types="google-apps-script" />
 
+import { getErrorMessage } from "@lib/errors";
 import { FastLog } from "@logging";
 import * as queueConstants from "@queue/queueConstants";
 import { setupWorkflows } from "@workflow";
@@ -138,26 +139,30 @@ function __getEventPartsOpt(e: SheetsOnEdit) {
 // Public entry point
 // ---------------------------
 export function handleEdit(e: SheetsOnEdit): void {
-  const startMs = Date.now();
-  FastLog.info(`handleEditTrigger started`);
-
-  let fired = false;
+  const fn = handleEdit.name;
+  const startTime = FastLog.start(fn);
 
   try {
     if (!e || !e.range || !isSingleCell(e.range)) return;
 
     const { sheetName, editBounds } = __getEventPartsOpt(e);
+    FastLog.log(fn, sheetName);
     if (
       sheetName === queueConstants.QUEUE_SHEET_NAME ||
       sheetName === queueConstants.DEAD_SHEET_NAME
     )
       return; // avoid feedback loops
 
+    FastLog.log(fn, editBounds);
     // Ultra-cheap early exits
     if (editBounds.r1 !== editBounds.r2 || editBounds.c1 !== editBounds.c2)
       return;
     // Old/new value equality (skip formula recalculate churn)
-    if ("oldValue" in e && e.oldValue === e.value) return;
+    if ("oldValue" in e) {
+      FastLog.log(fn, `e.oldValue: ${e.oldValue}`);
+      if (e.oldValue === e.value) return;
+    }
+    FastLog.log(fn, `e.value: ${e.value}`);
 
     const rules = __compileRulesOpt().filter((r) =>
       typeof r.sheet === "string"
@@ -165,8 +170,6 @@ export function handleEdit(e: SheetsOnEdit): void {
         : (r.sheet as RegExp).test(sheetName)
     );
     if (rules.length === 0) return;
-
-    // const cellKey = `${editBounds.r1}:${editBounds.c1}`;
 
     for (const rule of rules) {
       let match = false;
@@ -180,30 +183,14 @@ export function handleEdit(e: SheetsOnEdit): void {
 
       rule.fn(e);
 
-      // FastLog.info(
-      //   `handleEditTrigger rule match found on ${sheetName}:${cellKey}`
-      // );
-
-      // withReentryGuard(
-      //   `handleEditTrigger:${sheetName}:${cellKey}`,
-      //   TWO_SECONDS,
-      //   () => {
-      //     rule.fn(e);
-      //   }
-      // );
-
-      fired = true;
       if (FIRST_MATCH_ONLY) break;
     }
   } catch (err) {
-    fired = true;
-    FastLog.error(`handleEditTrigger error: ${(err as Error)?.message || err}`);
-    throw err;
+    const errorMessage = getErrorMessage(err);
+    FastLog.error(fn, errorMessage);
+    throw new Error(errorMessage);
   } finally {
-    // if (fired) FastLog.persistRing();
-    FastLog.info(
-      `handleEditTrigger ran for ${Date.now() - startMs}ms, fired: ${fired}`
-    );
+    FastLog.finish(fn, startTime);
   }
 }
 

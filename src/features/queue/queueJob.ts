@@ -7,6 +7,7 @@ import { toIso_ } from "@lib/dates";
 import { FastLog } from "@logging";
 import { DEFAULT_PRIORITY, QUEUE_SHEET_NAME, STATUS } from "./queueConstants";
 import type { EnqueueOptions, JobRow } from "./queueTypes";
+import { THREE_SECONDS } from '@lib/timeConstants';
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Public API
@@ -18,7 +19,7 @@ export function queueJob(
   options: EnqueueOptions = {}
 ): { id: string; row: number } {
   const lock = LockService.getDocumentLock();
-  if (!lock.tryLock(3000)) {
+  if (!lock.tryLock(THREE_SECONDS)) {
     // avoid re-entrancy during row allocation
     throw new Error("queueJob: Queue is busy; try again shortly.");
   }

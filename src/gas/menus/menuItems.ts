@@ -31,7 +31,6 @@ export const gasMenuItems: [string, string][] = [
   ["Balance sheet", "balanceSheet"],
   ["Check dependencies", "updateAllDependencies"],
   ["Daily update", "dailyUpdate"],
-  ["Fix sheet", "fixSheet"],
   ["Monthly update", "monthlyUpdate"],
   ["Open accounts", "openAccounts"],
   ["Sort sheet order", "sortSheets"],
@@ -41,6 +40,7 @@ export const gasMenuItems: [string, string][] = [
 ];
 
 export const sheetMenuItems: [string, string][] = [
+  ["Fix sheet", "fixSheet"],
   ["Format sheet", "formatSheet"],
   ["Trim sheet", "trimSheet"],
 ];

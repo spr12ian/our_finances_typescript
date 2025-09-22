@@ -3,6 +3,7 @@ import { FastLog } from "@lib/logging";
 import { queueJob } from "@queue/queueJob";
 import { registerAllWorkflows } from "./registerAllWorkflows";
 import { setEnqueue, isConfigured } from "./engineState";
+import { FIVE_SECONDS } from '@lib/timeConstants';
 
 let initialized = false;
 
@@ -35,7 +36,7 @@ function withScriptLock<T>(fn: () => T): T {
       : null;
 
   if (lock) {
-    lock.tryLock(5000); // best-effort
+    lock.tryLock(FIVE_SECONDS); // best-effort
     try {
       return fn();
     } finally {

@@ -1,13 +1,13 @@
 // @queue/queueWorker.ts
 
-import { toIso_ } from "@lib/dates";
+import { getSheetByName } from "@gas";
+import { parseIso_, parseIsoMaybe_, toIso_ } from "@lib/dates";
 import { getErrorMessage } from "@lib/errors";
 import * as timeConstants from "@lib/timeConstants";
 import { FastLog } from "@logging";
 import type { RunStepJob, SerializedRunStepParameters } from "@workflow";
 import { setupWorkflows } from "@workflow";
 import { runStep } from "@workflow/workflowEngine";
-import {getSheetByName} from "@gas";
 import {
   COL,
   DEAD_SHEET_NAME,
@@ -260,16 +260,6 @@ function rowToJob_(r: JobRow): Job {
   };
   FastLog.finish(fn, startTime);
   return job;
-}
-
-function parseIso_(s: string): Date {
-  return s ? new Date(s) : new Date();
-}
-
-function parseIsoMaybe_(s: string): Date | null {
-  if (!s) return null;
-  const d = new Date(s);
-  return isNaN(d.getTime()) ? null : d;
 }
 
 function parseJsonSafe_(s: string): unknown {

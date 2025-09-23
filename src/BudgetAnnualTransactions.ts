@@ -3,7 +3,6 @@ import type { Sheet, Spreadsheet } from "@domain";
 import { MetaBudgetAnnualTransactions as Meta } from "@lib/constants";
 import {
   formatLondonDate,
-  getNewDate,
   getOrdinalDateTZ,
   setupDaysIteratorTZ,
 } from "./lib/dates";
@@ -23,7 +22,7 @@ export class BudgetAnnualTransactions {
 
   // Main method to get upcoming debits
   getUpcomingDebits(howManyDaysAhead: number) {
-    const today = getNewDate();
+    const today = new Date();
     let upcomingPayments = "";
 
     // Fetch scheduled transactions and remove the header row
@@ -43,9 +42,7 @@ export class BudgetAnnualTransactions {
 
       if (Math.abs(changeAmount) > 1) {
         const formattedDaySelected = formatLondonDate(
-          new Date(date),
-          "GMT+1",
-          "dd/MM/yyyy"
+          new Date(date)
         );
 
         // Generate payment details if the date falls within the upcoming days

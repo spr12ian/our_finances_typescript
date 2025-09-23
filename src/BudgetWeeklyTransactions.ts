@@ -3,7 +3,6 @@ import type { Sheet, Spreadsheet } from "@domain";
 import { MetaBudgetWeeklyTransactions as Meta } from "@lib/constants";
 import {
   formatLondonDate,
-  getNewDate,
   getOrdinalDateTZ,
   setupDaysIteratorTZ,
 } from "./lib/dates";
@@ -23,7 +22,7 @@ export class BudgetWeeklyTransactions {
 
   getUpcomingDebits(howManyDaysAhead: number) {
     let upcomingPayments = "";
-    const today = getNewDate();
+    const today = new Date();
 
     const scheduledTransactions = this.getScheduledTransactions();
 
@@ -32,9 +31,7 @@ export class BudgetWeeklyTransactions {
         const daySelected = transaction[Meta.COLUMNS.DATE];
 
         const formattedDaySelected = formatLondonDate(
-          new Date(daySelected),
-          "GMT+1",
-          "dd/MM/yyyy"
+          new Date(daySelected)
         );
 
         // Reset the day iterator

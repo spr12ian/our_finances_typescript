@@ -1,7 +1,7 @@
 /// <reference types="google-apps-script" />
 import { Sheet, Spreadsheet } from "@domain";
 import { MetaBudgetMonthlyTransactions as Meta } from "@lib/constants";
-import { getNewDate, getOrdinalDateTZ, setupDaysIteratorTZ } from "./lib/dates";
+import { getOrdinalDateTZ, setupDaysIteratorTZ } from "./lib/dates";
 import { getAmountAsGBP } from "./lib/money";
 export class BudgetMonthlyTransactions {
   private readonly sheet: Sheet;
@@ -17,7 +17,7 @@ export class BudgetMonthlyTransactions {
 
   getUpcomingDebits(howManyDaysAhead: number) {
     let upcomingPayments = "";
-    const today = getNewDate();
+    const today = new Date();
 
     const scheduledTransactions = this.getScheduledTransactions();
 

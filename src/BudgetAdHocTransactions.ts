@@ -3,7 +3,6 @@ import type { Sheet, Spreadsheet } from "@domain";
 import { MetaBudgetAdHocTransactions as Meta } from "@lib/constants";
 import {
   formatLondonDate,
-  getNewDate,
   getOrdinalDateTZ,
   setupDaysIteratorTZ,
 } from "./lib/dates";
@@ -39,9 +38,7 @@ export class BudgetAdHocTransactions {
 
       if (Math.abs(changeAmount) > 1) {
         const formattedDaySelected = formatLondonDate(
-          new Date(transactionDate),
-          "GMT+1",
-          "dd/MM/yyyy"
+          new Date(transactionDate)
         );
 
         // Use a helper function for better readability
@@ -67,7 +64,7 @@ export class BudgetAdHocTransactions {
     transaction: string[],
     howManyDaysAhead: number
   ) {
-    const { first, iterator: days } = setupDaysIteratorTZ(getNewDate());
+    const { first, iterator: days } = setupDaysIteratorTZ(new Date());
     let day = first;
 
     for (let index = 0; index <= howManyDaysAhead; index++) {

@@ -2,6 +2,19 @@
 import { FastLog } from "./logging/FastLog";
 import { getOrdinal } from "./number";
 
+// Convenience shorthands
+export const formatLondonDate = (x: DateInput) => formatInTZ(x); // uses defaults above
+
+export const formatLondonDateTime = (x: DateInput) =>
+  formatInTZ(x, {
+    year: "numeric",
+    month: "long",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+
 const LOCALE = "en-GB" as const;
 const LONDON_TZ = "Europe/London" as const;
 
@@ -11,12 +24,19 @@ export function cloneDate(date: Date) {
   return new Date(date.getTime());
 }
 
-export function getDayName(date: Date): string {
-  return date.toLocaleDateString(LOCALE, { weekday: "long" });
+export function getDayNameInTZ(date: Date, timeZone = LONDON_TZ): string {
+  const dayName = formatInTZ(date, { weekday: "long" }, timeZone);
+  return dayName;
 }
 
 export function getDayOfMonth(date: Date): number {
+  // Gets the day-of-the-month, using local time.
   return date.getDate();
+}
+
+export function getMonthNameInTZ(date: Date, timeZone = LONDON_TZ): string {
+  const monthName = formatInTZ(date, { month: "long" }, timeZone);
+  return monthName;
 }
 
 export function getOrdinalDateTZ(x: DateInput, timeZone = LONDON_TZ) {
@@ -31,22 +51,20 @@ export function getOrdinalDateTZ(x: DateInput, timeZone = LONDON_TZ) {
   return `${getOrdinal(day)} of ${month} ${year}`;
 }
 
-export function getMonthIndex(date: Date): number {
-  return date.getMonth();
-}
-
-export function getMonthName(date: Date): string {
-  return date.toLocaleDateString(LOCALE, { month: "long" });
-}
-
-export function getNewDate(date?: string): Date {
-  return date ? new Date(date) : new Date();
-}
-
 export function getSeasonName(date: Date): string {
   const seasons = ["Winter", "Spring", "Summer", "Autumn"];
   const monthSeasons = [0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 0];
   return seasons[monthSeasons[getMonthIndex(date)]];
+}
+
+export function parseIso_(s: string): Date {
+  return s ? new Date(s) : new Date();
+}
+
+export function parseIsoMaybe_(s: string): Date | null {
+  if (!s) return null;
+  const d = new Date(s);
+  return isNaN(d.getTime()) ? null : d;
 }
 
 export function setupDaysIteratorTZ(start: Date, timeZone = LONDON_TZ) {
@@ -75,27 +93,18 @@ export function setupDaysIteratorTZ(start: Date, timeZone = LONDON_TZ) {
 
 export function toIso_(x: any): string {
   const startTime = FastLog.start(toIso_.name, x);
+
   const d = toDateSafe(x);
   const isoString = d.toISOString();
+
   FastLog.finish(toIso_.name, startTime, isoString);
   return isoString;
 }
 
-// ——— core safe parse you already have ———
-function toDateSafe(x: DateInput): Date {
-  if (x == null) return new Date();
-  if (x instanceof Date) return x;
-
-  // support epoch seconds vs ms
-  if (typeof x === "number" && x > 0 && x < 1e12) x = x * 1000;
-
-  const d = new Date(x);
-  const safeDate = Number.isNaN(d.getTime()) ? new Date() : d;
-  return safeDate;
-}
+// Local helper functions
 
 // Format in a specific time zone (default: Europe/London)
-export function formatInTZ(
+function formatInTZ(
   x: DateInput,
   options?: Intl.DateTimeFormatOptions,
   timeZone: string = LONDON_TZ
@@ -116,7 +125,7 @@ export function formatInTZ(
 }
 
 // If you want parts (useful for custom strings like “Mon 2 Sep, 13:45 BST”)
-export function formatPartsInTZ(
+function formatPartsInTZ(
   x: DateInput,
   options?: Intl.DateTimeFormatOptions,
   timeZone: string = LONDON_TZ
@@ -128,28 +137,32 @@ export function formatPartsInTZ(
   }).formatToParts(d);
 }
 
-// A local ISO-like string (no “Z”), still computed for the given TZ
-// e.g. “2025-09-22 13:05:09”
-export function toLocalIsoLike(
-  x: DateInput,
-  timeZone: string = LONDON_TZ
-): string {
-  const d = toDateSafe(x);
-  // Use a stable, sortable locale (sv-SE) for YYYY-MM-DD HH:mm:ss
-  const date = d.toLocaleDateString("sv-SE", { timeZone });
-  const time = d.toLocaleTimeString("sv-SE", { timeZone, hour12: false });
-  return `${date} ${time}`;
+function getMonthIndex(date: Date): number {
+  return date.getMonth();
 }
 
-// Convenience shorthands you’ll likely want
-export const formatLondonDate = (x: DateInput) => formatInTZ(x); // uses defaults above
+// ——— core safe parse ———
+function toDateSafe(x: DateInput): Date {
+  if (x == null) return new Date();
+  if (x instanceof Date) return x;
 
-export const formatLondonDateTime = (x: DateInput) =>
-  formatInTZ(x, {
-    year: "numeric",
-    month: "long",
-    day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
+  // support epoch seconds vs ms
+  if (typeof x === "number" && x > 0 && x < 1e12) x = x * 1000;
+
+  const d = new Date(x);
+  const safeDate = Number.isNaN(d.getTime()) ? new Date() : d;
+  return safeDate;
+}
+
+// // A local ISO-like string (no “Z”), still computed for the given TZ
+// // e.g. “2025-09-22 13:05:09”
+// export function toLocalIsoLike(
+//   x: DateInput,
+//   timeZone: string = LONDON_TZ
+// ): string {
+//   const d = toDateSafe(x);
+//   // Use a stable, sortable locale (sv-SE) for YYYY-MM-DD HH:mm:ss
+//   const date = d.toLocaleDateString("sv-SE", { timeZone });
+//   const time = d.toLocaleTimeString("sv-SE", { timeZone, hour12: false });
+//   return `${date} ${time}`;
+// }

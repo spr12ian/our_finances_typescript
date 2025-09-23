@@ -1,5 +1,4 @@
 // @workflow/workflowEngine.ts
-import { toIso_ } from "@lib/dates";
 import { getErrorMessage } from "@lib/errors";
 import { FastLog } from "@logging";
 // ⬇️ Pull the canonical types + accessors from engineState
@@ -51,7 +50,10 @@ export function runStep(job: RunStepJob): void {
     const budgetMs = DEFAULT_INVOCATION_BUDGET_MS; // leave headroom inside Apps Script’s 6-min window
 
     const rawInput = job.input ?? null;
-    const input = (rawInput && typeof rawInput === "object") ? Object.freeze(rawInput as object) : rawInput;
+    const input =
+      rawInput && typeof rawInput === "object"
+        ? Object.freeze(rawInput as object)
+        : rawInput;
     const state = job.state ?? {};
 
     const ctx: StepContext = {
@@ -170,9 +172,9 @@ function enqueueRunStep(
   try {
     const enqueue = getEnqueue();
     const ms = Math.max(0, Math.floor(delayMs ?? 0));
-    const runAtIso = ms > 0 ? toIso_(new Date(Date.now() + ms)) : undefined;
-
-    enqueue(rsp, { runAt: runAtIso, priority });
+    const runAt: Date | undefined =
+      ms > 0 ? new Date(Date.now() + ms) : undefined;
+    enqueue(rsp, { runAt, priority }); // enqueue now accepts a Date
   } catch (err) {
     const msg = getErrorMessage(err);
     FastLog.error(fn, msg);

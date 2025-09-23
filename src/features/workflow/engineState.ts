@@ -3,7 +3,7 @@
 // Authoritative options type for the engine.
 // Keep ISO strings here to match your queue layer.
 export type EnqueueOptions = {
-  runAt?: string | null; // ISO 8601 or null/undefined
+  runAt?: Date | null; // ISO 8601 or null/undefined
   priority?: number;
 };
 

@@ -1,7 +1,6 @@
 // @queue/queueWorker.ts
 
 import { getSheetByName } from "@gas";
-import { parseIso_, parseIsoMaybe_, toIso_ } from "@lib/dates";
 import { getErrorMessage } from "@lib/errors";
 import * as timeConstants from "@lib/timeConstants";
 import { FastLog } from "@logging";
@@ -66,9 +65,7 @@ function purgeQueueOlderThanDays(
   const toDelete: number[] = [];
   for (let i = 0; i < data.length; i++) {
     const status = String(data[i][COL.STATUS - 1]) as JobStatus;
-    const enqIso = String(data[i][COL.ENQUEUED_AT - 1]);
-    const enq = parseIso_(enqIso)?.getTime() ?? 0;
-    if ((status === STATUS.DONE || status === STATUS.ERROR) && enq < cutoff) {
+    if ((status === STATUS.DONE || status === STATUS.ERROR) && (asDateOrNull_(data[i][COL.ENQUEUED_AT - 1])?.getTime() ?? 0) < cutoff) {
       toDelete.push(i + 2);
     }
   }
@@ -99,8 +96,8 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
       .filter(({ row }) => {
         const status = String(row[COL.STATUS - 1]) as JobStatus;
         if (status !== STATUS.PENDING) return false;
-        const nextRun = parseIsoMaybe_(String(row[COL.NEXT_RUN_AT - 1]));
-        return !nextRun || nextRun <= now; // null = run now
+        const nextRun = asDateOrNull_(row[COL.NEXT_RUN_AT - 1]);
+        return !nextRun || nextRun.getTime() <= now.getTime();
       });
 
     if (!runnable.length) return;
@@ -110,9 +107,9 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
       const pa = Number(a.row[COL.PRIORITY - 1]) || DEFAULT_PRIORITY;
       const pb = Number(b.row[COL.PRIORITY - 1]) || DEFAULT_PRIORITY;
       if (pa !== pb) return pa - pb;
-      return String(a.row[COL.ENQUEUED_AT - 1]).localeCompare(
-        String(b.row[COL.ENQUEUED_AT - 1])
-      );
+      const ea = asDateOrNull_(a.row[COL.ENQUEUED_AT - 1])?.getTime() ?? 0;
+      const eb = asDateOrNull_(b.row[COL.ENQUEUED_AT - 1])?.getTime() ?? 0;
+      return ea - eb;
     });
 
     // claim jobs (small N, individual writes are OK)
@@ -122,7 +119,7 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
       const absRow = item.idx + 2;
       sheet.getRange(absRow, COL.STATUS).setValue(STATUS.RUNNING);
       sheet.getRange(absRow, COL.WORKER_ID).setValue(workerId);
-      sheet.getRange(absRow, COL.STARTED_AT).setValue(toIso_(new Date()));
+      sheet.getRange(absRow, COL.STARTED_AT).setValue(new Date());
     }
     SpreadsheetApp.flush();
 
@@ -166,7 +163,7 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
         const next = new Date(Date.now() + backoff + jitter);
 
         sheet.getRange(absRow, COL.ATTEMPTS).setValue(attempts);
-        sheet.getRange(absRow, COL.NEXT_RUN_AT).setValue(toIso_(next));
+        sheet.getRange(absRow, COL.NEXT_RUN_AT).setValue(next);
         sheet.getRange(absRow, COL.STATUS).setValue(STATUS.PENDING);
         sheet
           .getRange(absRow, COL.LAST_ERROR)
@@ -249,14 +246,14 @@ function rowToJob_(r: JobRow): Job {
   const job = {
     id: String(r[COL.ID - 1] ?? ""),
     json_parameters: parseJsonSafe_(String(r[COL.JSON_PARAMETERS - 1] || "{}")),
-    enqueuedAt: parseIsoMaybe_(String(r[COL.ENQUEUED_AT - 1])) ?? new Date(0),
+    enqueuedAt: asDateOrNull_(r[COL.ENQUEUED_AT - 1]) ?? new Date(0),
     priority: Number(r[COL.PRIORITY - 1]) || DEFAULT_PRIORITY,
-    nextRunAt: parseIsoMaybe_(String(r[COL.NEXT_RUN_AT - 1])) ?? new Date(0),
+    nextRunAt: asDateOrNull_(r[COL.NEXT_RUN_AT - 1]),
     attempts: Number(r[COL.ATTEMPTS - 1]) || 0,
     status: String(r[COL.STATUS - 1] ?? STATUS.PENDING) as JobStatus,
     lastError: String(r[COL.LAST_ERROR - 1] || ""),
     workerId: String(r[COL.WORKER_ID - 1] || ""),
-    startedAt: parseIsoMaybe_(String(r[COL.STARTED_AT - 1] || "")), // Date | null
+    startedAt: asDateOrNull_(r[COL.STARTED_AT - 1]),
   };
   FastLog.finish(fn, startTime);
   return job;
@@ -285,3 +282,7 @@ function toCellMsg_(x: unknown, max = MAX_CELL_LENGTH) {
     purgeQueuesOldData,
   });
 })();
+
+function asDateOrNull_(v: unknown): Date | null {
+  return v instanceof Date && !isNaN(v.getTime()) ? v : null;
+}

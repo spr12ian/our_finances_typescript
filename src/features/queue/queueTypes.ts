@@ -7,19 +7,14 @@ type _StatusKey = keyof typeof queueConstants.STATUS;
 export type JobStatus = (typeof queueConstants.STATUS)[_StatusKey];
 
 // ────────────────────────────────────────────────────────────
-// Primitives / aliases (use `type`)
-// ────────────────────────────────────────────────────────────
-type _IsoString = string;
-
-// ────────────────────────────────────────────────────────────
 // Object shapes (use `interface`)
 // ────────────────────────────────────────────────────────────
 
-export interface EnqueueOptions {
+export interface QueueEnqueueOptions {
   /** Higher number = higher priority (default 50) */
   priority?: number;
   /** ISO string or null (default: run immediately) */
-  runAt?: string | null;
+  runAt?: Date | null;
   /** Max retry attempts if handler throws (default 3) */
   maxAttempts?: number;
   /** Optional dedupe key if you plan to dedupe externally */
@@ -31,7 +26,7 @@ export interface Job {
   json_parameters: unknown;
   enqueuedAt: Date;
   priority: number;
-  nextRunAt: Date;
+  nextRunAt: Date|null;
   attempts: number;
   status: JobStatus;
   lastError: string;
@@ -46,12 +41,12 @@ export interface Job {
 export type JobRow = [
   id: string,
   json_parameters: string,
-  enqueued_at: _IsoString,
+  enqueued_at: Date,
   priority: number,
-  next_run_at: _IsoString,
+  next_run_at: Date|"",
   attempts: number,
   status: JobStatus,
   last_error: string,
   worker_id: string,
-  started_at: _IsoString | "" // empty until first run
+  started_at: Date | "" // empty until first run
 ];

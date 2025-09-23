@@ -1,6 +1,7 @@
 // import { LOCALE } from "./constants";
-import { FastLog } from "./logging/FastLog";
 import { getOrdinal } from "./number";
+
+export const DISPLAY_DATE_FORMAT = "yyyy-mm-dd hh:mm";
 
 // Convenience shorthands
 export const formatLondonDate = (x: DateInput) => formatInTZ(x); // uses defaults above
@@ -57,15 +58,15 @@ export function getSeasonName(date: Date): string {
   return seasons[monthSeasons[getMonthIndex(date)]];
 }
 
-export function parseIso_(s: string): Date {
-  return s ? new Date(s) : new Date();
-}
+// function parseIso_(s: string): Date {
+//   return s ? new Date(s) : new Date();
+// }
 
-export function parseIsoMaybe_(s: string): Date | null {
-  if (!s) return null;
-  const d = new Date(s);
-  return isNaN(d.getTime()) ? null : d;
-}
+// function parseIsoMaybe_(s: string): Date | null {
+//   if (!s) return null;
+//   const d = new Date(s);
+//   return isNaN(d.getTime()) ? null : d;
+// }
 
 export function setupDaysIteratorTZ(start: Date, timeZone = LONDON_TZ) {
   const d = new Date(start);
@@ -91,15 +92,15 @@ export function setupDaysIteratorTZ(start: Date, timeZone = LONDON_TZ) {
   };
 }
 
-export function toIso_(x: any): string {
-  const startTime = FastLog.start(toIso_.name, x);
+// function toIso_(x: any): string {
+//   const startTime = FastLog.start(toIso_.name, x);
 
-  const d = toDateSafe(x);
-  const isoString = d.toISOString();
+//   const d = toDateSafe(x);
+//   const isoString = d.toISOString();
 
-  FastLog.finish(toIso_.name, startTime, isoString);
-  return isoString;
-}
+//   FastLog.finish(toIso_.name, startTime, isoString);
+//   return isoString;
+// }
 
 // Local helper functions
 

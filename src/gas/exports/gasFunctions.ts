@@ -36,6 +36,7 @@ import { withReentryGuard } from "../../withReentryGuard";
 import { handleEdit } from "../triggers/handleEdit";
 import { handleOpen } from "../triggers/handleOpen";
 import { onOpen } from "./onOpen";
+import {ensureQueueDateFormats} from "@queue/queueSetup";
 
 export function GAS_applyDescriptionReplacements() {
   const spreadsheet = getFinancesSpreadsheet();
@@ -90,6 +91,10 @@ export function GAS_dailySorts() {
 export function GAS_dailyUpdate() {
   const spreadsheet = getFinancesSpreadsheet();
   new OurFinances(spreadsheet).bankAccounts.showDaily();
+}
+
+export function GAS_ensureQueueDateFormats() {
+  ensureQueueDateFormats();
 }
 
 export function GAS_example() {

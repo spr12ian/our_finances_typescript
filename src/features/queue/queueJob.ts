@@ -3,11 +3,10 @@
 // ───────────────────────────────────────────────────────────────────────────────
 // Constants & schema
 // ───────────────────────────────────────────────────────────────────────────────
-import { toIso_ } from "@lib/dates";
+import { THREE_SECONDS } from "@lib/timeConstants";
 import { FastLog } from "@logging";
 import { DEFAULT_PRIORITY, QUEUE_SHEET_NAME, STATUS } from "./queueConstants";
-import type { EnqueueOptions, JobRow } from "./queueTypes";
-import { THREE_SECONDS } from '@lib/timeConstants';
+import type { QueueEnqueueOptions, JobRow } from "./queueTypes";
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Public API
@@ -16,7 +15,7 @@ import { THREE_SECONDS } from '@lib/timeConstants';
 /** Enqueue a job */
 export function queueJob(
   parameters: unknown,
-  options: EnqueueOptions = {}
+  options: QueueEnqueueOptions = {}
 ): { id: string; row: number } {
   const lock = LockService.getDocumentLock();
   if (!lock.tryLock(THREE_SECONDS)) {
@@ -36,15 +35,19 @@ export function queueJob(
         : DEFAULT_PRIORITY;
 
     const id = generateId_();
-    const isoNow = toIso_(new Date());
-    const isoRunAt = toIso_(options.runAt);
+    const dateNow = new Date();
+    // Normalize: Date -> Date; null/undefined/anything else -> ""
+    const runAtCell: Date | "" =
+      options.runAt instanceof Date && !isNaN(options.runAt.getTime())
+        ? options.runAt
+        : "";
 
     const rowValues: JobRow = [
       id,
       JSON.stringify(parameters ?? {}),
-      isoNow,
+      dateNow,
       priority,
-      isoRunAt,
+      runAtCell,
       0,
       STATUS.PENDING,
       "",

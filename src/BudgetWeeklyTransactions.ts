@@ -4,8 +4,8 @@ import { MetaBudgetWeeklyTransactions as Meta } from "@lib/constants";
 import {
   getFormattedDate,
   getNewDate,
-  getOrdinalDate,
-  setupDaysIterator,
+  getOrdinalDateTZ,
+  setupDaysIteratorTZ,
 } from "./lib/dates";
 import { getAmountAsGBP } from "./lib/money";
 
@@ -38,13 +38,13 @@ export class BudgetWeeklyTransactions {
         );
 
         // Reset the day iterator
-        const { first, iterator: days } = setupDaysIterator(today);
+        const { first, iterator: days } = setupDaysIteratorTZ(today);
         let day = first;
         for (let index = 0; index <= howManyDaysAhead; index++) {
           const dayDay = day.day;
 
           if (formattedDaySelected === dayDay) {
-            upcomingPayments += `\t${getOrdinalDate(day.date)}`;
+            upcomingPayments += `\t${getOrdinalDateTZ(day.date)}`;
             upcomingPayments += ` ${getAmountAsGBP(
               transaction[Meta.COLUMNS.DEBIT_AMOUNT]
             )}`;

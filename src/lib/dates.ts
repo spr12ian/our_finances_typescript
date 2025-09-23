@@ -3,19 +3,9 @@ import { FastLog } from "./logging/FastLog";
 import { getOrdinal } from "./number";
 
 const LOCALE = "en-GB" as const;
+const LONDON_TZ = "Europe/London" as const;
 
-type DateInput = Date | string | number | undefined | null;
-
-// 1) Utility: forbid extra keys on object literals
-type Strict<T extends object> = T & Record<Exclude<string, keyof T>, never>;
-
-// 2) Defaults: literal, read-only, and validated against the real type
-const DEFAULT_DATE_OPTIONS = {
-  weekday: "long",
-  year: "numeric",
-  month: "long",
-  day: "numeric",
-} as const satisfies Partial<Intl.DateTimeFormatOptions>;
+type DateInput = Date | string | number | null | undefined;
 
 export function cloneDate(date: Date) {
   return new Date(date.getTime());
@@ -29,8 +19,16 @@ export function getDayOfMonth(date: Date): number {
   return date.getDate();
 }
 
-export function getDtf() {
-  return new Intl.DateTimeFormat(LOCALE);
+export function getOrdinalDateTZ(x: DateInput, timeZone = LONDON_TZ) {
+  const parts = formatPartsInTZ(
+    x,
+    { day: "numeric", month: "long", year: "numeric" },
+    timeZone
+  );
+  const day = Number(parts.find((p) => p.type === "day")!.value);
+  const month = parts.find((p) => p.type === "month")!.value!;
+  const year = parts.find((p) => p.type === "year")!.value!;
+  return `${getOrdinal(day)} of ${month} ${year}`;
 }
 
 // https://developers.google.com/apps-script/reference/utilities/utilities#formatDate(Date,String,String)
@@ -50,71 +48,34 @@ export function getNewDate(date?: string): Date {
   return date ? new Date(date) : new Date();
 }
 
-export function getOrdinalDate(date: Date): string {
-  return `${getOrdinal(getDayOfMonth(date))} of ${getMonthName(
-    date
-  )} ${date.getFullYear()}`;
-}
-
 export function getSeasonName(date: Date): string {
   const seasons = ["Winter", "Spring", "Summer", "Autumn"];
   const monthSeasons = [0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 0];
   return seasons[monthSeasons[getMonthIndex(date)]];
 }
 
-// 3) Function: only known Intl.DateTimeFormatOptions keys allowed
-export function getToday(
-  overrides?: Strict<Partial<Intl.DateTimeFormatOptions>>
-): string {
-  const options: Intl.DateTimeFormatOptions = {
-    ...DEFAULT_DATE_OPTIONS,
-    ...overrides,
-  };
-
-  const date = new Date();
-  try {
-    return new Intl.DateTimeFormat(LOCALE, options).format(date);
-  } catch {
-    return date.toLocaleDateString(LOCALE, options);
-  }
-}
-
-export function setupDaysIterator(startDate: Date) {
-  const getNextResult = (iteratorDate: Date) => {
-    const date = new Date(iteratorDate);
-    return {
-      date,
-      day: date.toLocaleDateString(LOCALE),
-      dayName: getDayName(date),
-      dayOfMonth: getDayOfMonth(date),
-      season: getSeasonName(date),
-    };
-  };
-
-  const iteratorDate = new Date(startDate);
-  const first = getNextResult(iteratorDate);
-
-  const iterator = {
-    next: () => {
-      iteratorDate.setDate(iteratorDate.getDate() + 1);
-      return getNextResult(iteratorDate);
+export function setupDaysIteratorTZ(start: Date, timeZone = LONDON_TZ) {
+  const d = new Date(start);
+  const snapshot = () => ({
+    date: new Date(d),
+    day: formatInTZ(d, {}, timeZone),
+    dayName: formatInTZ(d, { weekday: "long" }, timeZone),
+    dayOfMonth: Number(
+      formatPartsInTZ(d, { day: "numeric" }, timeZone).find(
+        (p) => p.type === "day"
+      )!.value
+    ),
+    season: getSeasonName(d), // or compute via parts if you want strict tz
+  });
+  return {
+    first: snapshot(),
+    iterator: {
+      next: () => {
+        d.setDate(d.getDate() + 1);
+        return snapshot();
+      },
     },
   };
-
-  return { first, iterator };
-}
-
-function toDateSafe(x: DateInput): Date {
-  if (x == null) return new Date();
-  if (x instanceof Date) return x;
-
-  // handle epoch seconds vs ms
-  if (typeof x === "number" && x > 0 && x < 1e12) x = x * 1000;
-
-  const d = new Date(x);
-
-  const safeDate = Number.isNaN(d.getTime()) ? new Date() : d;
-  return safeDate;
 }
 
 export function toIso_(x: any): string {
@@ -124,3 +85,76 @@ export function toIso_(x: any): string {
   FastLog.finish(toIso_.name, startTime, isoString);
   return isoString;
 }
+
+// ——— core safe parse you already have ———
+function toDateSafe(x: DateInput): Date {
+  if (x == null) return new Date();
+  if (x instanceof Date) return x;
+
+  // support epoch seconds vs ms
+  if (typeof x === "number" && x > 0 && x < 1e12) x = x * 1000;
+
+  const d = new Date(x);
+  const safeDate = Number.isNaN(d.getTime()) ? new Date() : d;
+  return safeDate;
+}
+
+// Format in a specific time zone (default: Europe/London)
+export function formatInTZ(
+  x: DateInput,
+  options?: Intl.DateTimeFormatOptions,
+  timeZone: string = LONDON_TZ
+): string {
+  const d = toDateSafe(x);
+  // Merge with your defaults if you like
+  const fmt = new Intl.DateTimeFormat(LOCALE, {
+    timeZone,
+    ...{
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    },
+    ...options,
+  });
+  return fmt.format(d);
+}
+
+// If you want parts (useful for custom strings like “Mon 2 Sep, 13:45 BST”)
+export function formatPartsInTZ(
+  x: DateInput,
+  options?: Intl.DateTimeFormatOptions,
+  timeZone: string = LONDON_TZ
+) {
+  const d = toDateSafe(x);
+  return new Intl.DateTimeFormat(LOCALE, {
+    timeZone,
+    ...(options ?? {}),
+  }).formatToParts(d);
+}
+
+// A local ISO-like string (no “Z”), still computed for the given TZ
+// e.g. “2025-09-22 13:05:09”
+export function toLocalIsoLike(
+  x: DateInput,
+  timeZone: string = LONDON_TZ
+): string {
+  const d = toDateSafe(x);
+  // Use a stable, sortable locale (sv-SE) for YYYY-MM-DD HH:mm:ss
+  const date = d.toLocaleDateString("sv-SE", { timeZone });
+  const time = d.toLocaleTimeString("sv-SE", { timeZone, hour12: false });
+  return `${date} ${time}`;
+}
+
+// Convenience shorthands you’ll likely want
+export const formatLondonDate = (x: DateInput) => formatInTZ(x); // uses defaults above
+
+export const formatLondonDateTime = (x: DateInput) =>
+  formatInTZ(x, {
+    year: "numeric",
+    month: "long",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });

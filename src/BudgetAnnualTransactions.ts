@@ -4,8 +4,8 @@ import { MetaBudgetAnnualTransactions as Meta } from "@lib/constants";
 import {
   getFormattedDate,
   getNewDate,
-  getOrdinalDate,
-  setupDaysIterator,
+  getOrdinalDateTZ,
+  setupDaysIteratorTZ,
 } from "./lib/dates";
 import { getAmountAsGBP } from "./lib/money";
 export class BudgetAnnualTransactions {
@@ -81,12 +81,12 @@ export class BudgetAnnualTransactions {
     today: Date,
     howManyDaysAhead: number
   ) {
-    const { first, iterator: days } = setupDaysIterator(today);
+    const { first, iterator: days } = setupDaysIteratorTZ(today);
     let day = first;
 
     for (let index = 0; index <= howManyDaysAhead; index++) {
       if (formattedDaySelected === day.day) {
-        return `\t${getOrdinalDate(day.date)} ${getAmountAsGBP(
+        return `\t${getOrdinalDateTZ(day.date)} ${getAmountAsGBP(
           changeAmount
         )} from ${fromAccount} by ${paymentType} ${description}\n`;
       }

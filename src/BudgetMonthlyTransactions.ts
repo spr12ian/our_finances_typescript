@@ -1,7 +1,7 @@
 /// <reference types="google-apps-script" />
 import { Sheet, Spreadsheet } from "@domain";
 import { MetaBudgetMonthlyTransactions as Meta } from "@lib/constants";
-import { getNewDate, getOrdinalDate, setupDaysIterator } from "./lib/dates";
+import { getNewDate, getOrdinalDateTZ, setupDaysIteratorTZ } from "./lib/dates";
 import { getAmountAsGBP } from "./lib/money";
 export class BudgetMonthlyTransactions {
   private readonly sheet: Sheet;
@@ -25,7 +25,7 @@ export class BudgetMonthlyTransactions {
       upcomingPayments += `\nMonthly payment due:\n`;
       // Get the dates for the upcoming days
       const upcomingDays: any[] = [];
-      const { first, iterator: days } = setupDaysIterator(today);
+      const { first, iterator: days } = setupDaysIteratorTZ(today);
       let day = first;
       for (let index = 0; index <= howManyDaysAhead; index++) {
         upcomingDays.push(day);
@@ -38,7 +38,7 @@ export class BudgetMonthlyTransactions {
 
           upcomingDays.forEach((day) => {
             if (transactionDate.toDateString() === day.date.toDateString()) {
-              upcomingPayments += `\t${getOrdinalDate(day.date)} `;
+              upcomingPayments += `\t${getOrdinalDateTZ(day.date)} `;
               upcomingPayments += `${getAmountAsGBP(
                 transaction[Meta.COLUMNS.DEBIT_AMOUNT]
               )} from `;

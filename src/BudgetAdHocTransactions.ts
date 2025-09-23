@@ -4,8 +4,8 @@ import { MetaBudgetAdHocTransactions as Meta } from "@lib/constants";
 import {
   getFormattedDate,
   getNewDate,
-  getOrdinalDate,
-  setupDaysIterator,
+  getOrdinalDateTZ,
+  setupDaysIteratorTZ,
 } from "./lib/dates";
 import { getAmountAsGBP } from "./lib/money";
 export class BudgetAdHocTransactions {
@@ -67,13 +67,13 @@ export class BudgetAdHocTransactions {
     transaction: string[],
     howManyDaysAhead: number
   ) {
-    const { first, iterator: days } = setupDaysIterator(getNewDate());
+    const { first, iterator: days } = setupDaysIteratorTZ(getNewDate());
     let day = first;
 
     for (let index = 0; index <= howManyDaysAhead; index++) {
       if (formattedDaySelected === day.day) {
         // Generate payment detail string
-        return `\t${getOrdinalDate(day.date)} ${getAmountAsGBP(
+        return `\t${getOrdinalDateTZ(day.date)} ${getAmountAsGBP(
           changeAmount
         )} from ${transaction[Meta.COLUMNS.FROM_ACCOUNT]} by ${
           transaction[Meta.COLUMNS.PAYMENT_TYPE]

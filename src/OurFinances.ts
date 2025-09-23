@@ -20,7 +20,7 @@ import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
 import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
 import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
 import { CheckFixedAmounts } from "./CheckFixedAmounts";
-import { getToday } from "./lib/dates";
+import { formatLondonDate } from "./lib/dates";
 import { sendMeEmail } from "./lib/google/email";
 import { TransactionCategories } from "./TransactionCategories";
 import { Transactions } from "./Transactions";
@@ -295,7 +295,7 @@ export class OurFinances {
     const fixedAmountMismatches = this.fixedAmountMismatches;
     const upcomingDebits = this.upcomingDebits;
 
-    const subject = `Our finances daily email: ${getToday()}`;
+    const subject = `Our finances daily email: ${formatLondonDate(new Date())}`;
 
     // Initialize the email body
     let emailBody = ``;

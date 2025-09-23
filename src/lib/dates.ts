@@ -31,11 +31,6 @@ export function getOrdinalDateTZ(x: DateInput, timeZone = LONDON_TZ) {
   return `${getOrdinal(day)} of ${month} ${year}`;
 }
 
-// https://developers.google.com/apps-script/reference/utilities/utilities#formatDate(Date,String,String)
-export function getFormattedDate(date: Date, timeZone: string, format: string) {
-  return Utilities.formatDate(date, timeZone, format);
-}
-
 export function getMonthIndex(date: Date): number {
   return date.getMonth();
 }

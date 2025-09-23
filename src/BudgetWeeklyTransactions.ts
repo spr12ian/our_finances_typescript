@@ -2,7 +2,7 @@
 import type { Sheet, Spreadsheet } from "@domain";
 import { MetaBudgetWeeklyTransactions as Meta } from "@lib/constants";
 import {
-  getFormattedDate,
+  formatLondonDate,
   getNewDate,
   getOrdinalDateTZ,
   setupDaysIteratorTZ,
@@ -31,7 +31,7 @@ export class BudgetWeeklyTransactions {
       if (Math.abs(transaction[Meta.COLUMNS.DEBIT_AMOUNT]) > 1) {
         const daySelected = transaction[Meta.COLUMNS.DATE];
 
-        const formattedDaySelected = getFormattedDate(
+        const formattedDaySelected = formatLondonDate(
           new Date(daySelected),
           "GMT+1",
           "dd/MM/yyyy"

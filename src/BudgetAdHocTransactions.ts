@@ -2,7 +2,7 @@
 import type { Sheet, Spreadsheet } from "@domain";
 import { MetaBudgetAdHocTransactions as Meta } from "@lib/constants";
 import {
-  getFormattedDate,
+  formatLondonDate,
   getNewDate,
   getOrdinalDateTZ,
   setupDaysIteratorTZ,
@@ -38,7 +38,7 @@ export class BudgetAdHocTransactions {
       const transactionDate = transaction[Meta.COLUMNS.DATE];
 
       if (Math.abs(changeAmount) > 1) {
-        const formattedDaySelected = getFormattedDate(
+        const formattedDaySelected = formatLondonDate(
           new Date(transactionDate),
           "GMT+1",
           "dd/MM/yyyy"

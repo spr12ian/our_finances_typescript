@@ -8,6 +8,7 @@ import {
   MetaDescriptionReplacements,
   MetaTransactionCategories,
 } from "@lib/constants";
+import { toHtmlBody } from "@lib/html/htmlFunctions";
 import { FastLog } from "@logging/FastLog";
 import { Dependencies } from "@sheets/Dependencies";
 import { SpreadsheetSummary } from "@sheets/SpreadsheetSummary";
@@ -21,7 +22,7 @@ import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
 import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
 import { CheckFixedAmounts } from "./CheckFixedAmounts";
 import { formatLondonDate } from "./lib/dates";
-import { sendMeEmail } from "./lib/google/email";
+import { sendMeHtmlEmail } from "./lib/google/email";
 import { TransactionCategories } from "./TransactionCategories";
 import { Transactions } from "./Transactions";
 
@@ -318,7 +319,7 @@ export class OurFinances {
     emailBody += `\n\nSent from (sendDailyEmail): ${this.url}\n`;
 
     // Send the email
-    sendMeEmail(subject, emailBody);
+    sendMeHtmlEmail(subject, toHtmlBody(emailBody));
   }
 
   showAllAccounts() {

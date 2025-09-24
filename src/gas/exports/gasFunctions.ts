@@ -265,7 +265,7 @@ export function GAS_saveContainerIdOnce() {
 export function GAS_sendDailyEmail() {
   withReentryGuard(
     "SEND_DAILY_EMAIL_RUNNING",
-    timeConstants.FIVE_MINUTES,
+    timeConstants.THIRTY_SECONDS,
     () => {
       const spreadsheet = getFinancesSpreadsheet();
       new OurFinances(spreadsheet).sendDailyEmail();

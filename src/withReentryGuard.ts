@@ -1,8 +1,15 @@
 // Fast local memory + cross-instance cache.
+
+import { TWO_SECONDS } from "@lib/timeConstants";
+
 // Do NOT delete the key; let TTL expire.
 const __localReentry = new Map();
 
-export function withReentryGuard(key:string, ttlMs:number, fn:() => void) {
+export function withReentryGuard(
+  key: string,
+  ttlMs: number = TWO_SECONDS,
+  fn: () => void
+) {
   const now = Date.now();
 
   // 1) Super-fast same-container guard

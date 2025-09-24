@@ -2,6 +2,7 @@
 import { getErrorMessage } from "@lib/errors";
 import { FastLog } from "@logging";
 // ⬇️ Pull the canonical types + accessors from engineState
+import { toHtmlBody, toHtmlParagraph } from "@lib/html/htmlFunctions";
 import { ONE_SECOND } from "@lib/timeConstants";
 import {
   ENGINE_INSTANCE_ID,
@@ -109,10 +110,10 @@ export function runStep(job: RunStepJob): void {
           reason: res.reason,
           attempt: job.attempt,
         });
+        const body = toHtmlBody(toHtmlParagraph(res.reason));
+        const input = { htmlBody: body, subject: job.stepName };
 
-        const input = { body: res.reason, subject: job.stepName };
-
-        startWorkflow("sendMeEmailFlow", "sendMeEmailStep1", input);
+        startWorkflow("sendMeHtmlEmailFlow", "sendMeHtmlEmailStep1", input);
 
         throw new Error(`runStep failed: ${String(res.reason)}`);
       }

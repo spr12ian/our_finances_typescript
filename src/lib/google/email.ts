@@ -4,14 +4,31 @@ import { FastLog } from "../logging/FastLog";
 // A pragmatic regex; don’t chase full RFC 5322.
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export type EmailAddressType = string & { readonly __brand: "EmailAddress" };
+type EmailAddressType = string & { readonly __brand: "EmailAddress" };
 
-export function asEmail(s: string): EmailAddressType {
+export function sendMeHtmlEmail(
+  subject: string,
+  html: string,
+  options: GoogleAppsScript.Gmail.GmailAdvancedOptions = {}
+): void {
+  const myEmailAddress = getMyEmailAddress();
+  if (!myEmailAddress) return;
+
+  const textFallback = htmlToText(html) || subject; // must not be empty
+  sendEmail(myEmailAddress, subject, textFallback, {
+    ...options,
+    htmlBody: html,
+  });
+}
+
+// Local helper functions
+
+function asEmail(s: string): EmailAddressType {
   if (!EMAIL_RE.test(s)) throw new Error(`Invalid email address: ${s}`);
   return s as EmailAddressType;
 }
 
-export function getMyEmailAddress(): EmailAddressType | null {
+function getMyEmailAddress(): EmailAddressType | null {
   // Use optional chaining to safely access the email address
   const myEmailAddress = getPrivateData()?.["MY_EMAIL_ADDRESS"];
 
@@ -54,6 +71,16 @@ function getPrivateData(): Record<string, string> | undefined {
   return keyValuePairs;
 }
 
+// Minimal HTML helper (auto-makes a decent text fallback)
+function htmlToText(html: string): string {
+  return html
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<\/(p|div|li|tr)>/gi, "\n")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
 function sendEmail(
   recipient: EmailAddressType,
   subject: string,
@@ -61,16 +88,4 @@ function sendEmail(
   options: GoogleAppsScript.Gmail.GmailAdvancedOptions = {}
 ) {
   return GmailApp.sendEmail(recipient, subject, body, options);
-}
-
-export function sendMeEmail(
-  subject: string,
-  emailBody: string,
-  options: GoogleAppsScript.Gmail.GmailAdvancedOptions = {}
-): void {
-  const body = `${subject}\n\n${emailBody}`;
-  const myEmailAddress = getMyEmailAddress();
-  if (myEmailAddress) {
-    sendEmail(myEmailAddress, subject, body, options);
-  }
 }

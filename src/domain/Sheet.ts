@@ -7,6 +7,7 @@ import { FastLog } from "@logging/FastLog";
 export class Sheet {
   #afterHeaderRange?: GoogleAppsScript.Spreadsheet.Range;
   #dataRange?: GoogleAppsScript.Spreadsheet.Range;
+  #dataRows?: any[][];
   #headerRange?: GoogleAppsScript.Spreadsheet.Range;
   #trueBounds?: { lastRow: number; lastColumn: number };
   private readonly gasSheet: GoogleAppsScript.Spreadsheet.Sheet;
@@ -49,6 +50,13 @@ export class Sheet {
       this.#dataRange = this.gasSheet.getDataRange();
     }
     return this.#dataRange;
+  }
+
+  get dataRows(): any[][] {
+    if (!this.#dataRows) {
+      this.#dataRows = this.dataRange.getValues().slice(1);
+    }
+    return this.#dataRows;
   }
 
   get firstRowRange(): GoogleAppsScript.Spreadsheet.Range {

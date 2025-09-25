@@ -14,15 +14,23 @@ import { goToSheetLastRow } from "./goToSheetLastRow";
 export function registerDynamicAccountFunctions(
   accountSheetNames: string[]
 ): void {
-  for (const name of accountSheetNames) {
-    const functionName = `dynamicAccount${name}`;
+  const fn = registerDynamicAccountFunctions.name;
+  const startTime = FastLog.start(fn);
 
-    // Ensure we don’t overwrite existing global properties
-    if (Object.prototype.hasOwnProperty.call(globalThis, functionName)) {
-      FastLog.warn(`⚠️ Skipping existing function: ${functionName}`);
-      continue;
+  try {
+    for (const name of accountSheetNames) {
+      const functionName = `dynamicAccount${name}`;
+      FastLog.log(fn, `functionName: ${functionName}`);
+
+      // Ensure we don’t overwrite existing global properties
+      if (Object.prototype.hasOwnProperty.call(globalThis, functionName)) {
+        FastLog.warn(`⚠️ Skipping existing function: ${functionName}`);
+        continue;
+      }
+
+      (globalThis as any)[functionName] = () => goToSheetLastRow(name);
     }
-
-    (globalThis as any)[functionName] = () => goToSheetLastRow(name);
+  } finally {
+    FastLog.finish(fn, startTime);
   }
 }

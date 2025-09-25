@@ -1,95 +1,45 @@
 /// <reference types="google-apps-script" />
-import type { Sheet, Spreadsheet } from "@domain";
+import type { Spreadsheet } from "@domain";
 import { MetaBudgetAnnualTransactions as Meta } from "@lib/constants";
 import {
-  formatLondonDate,
-  getOrdinalDateTZ,
-  setupDaysIteratorTZ,
-} from "./lib/dates";
-import { getAmountAsGBP } from "./lib/money";
-export class BudgetAnnualTransactions {
-  private readonly sheet: Sheet;
-  constructor(private readonly spreadsheet: Spreadsheet) {
-    this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
-  }
+  TransactionsBase,
+  type BudgetMeta,
+  type DateStrategy,
+} from "@sheets/budget/TransactionsBase";
+import type { UpcomingDebitRow } from "@sheets/budgetTypes";
+import { setupDaysIteratorTZ } from "./lib/dates";
 
-  // Get all scheduled transactions from the sheet
-  getScheduledTransactions() {
-    const values = this.sheet.dataRange.getValues();
-    // Lose the header row
-    return values.slice(1);
-  }
 
-  // Main method to get upcoming debits
-  getUpcomingDebits(howManyDaysAhead: number) {
-    const today = new Date();
-    let upcomingPayments = "";
 
-    // Fetch scheduled transactions and remove the header row
-    const scheduledTransactions = this.getScheduledTransactions();
 
-    if (!scheduledTransactions.length) return upcomingPayments;
-
-    // Iterate over each transaction and filter the valid ones
-    scheduledTransactions.forEach((transaction) => {
-      const {
-        [Meta.COLUMNS.DATE]: date,
-        [Meta.COLUMNS.CHANGE_AMOUNT]: changeAmount,
-        [Meta.COLUMNS.DESCRIPTION]: description,
-        [Meta.COLUMNS.FROM_ACCOUNT]: fromAccount,
-        [Meta.COLUMNS.PAYMENT_TYPE]: paymentType,
-      } = transaction;
-
-      if (Math.abs(changeAmount) > 1) {
-        const formattedDaySelected = formatLondonDate(
-          new Date(date)
-        );
-
-        // Generate payment details if the date falls within the upcoming days
-        const paymentDetails = this._generatePaymentDetails(
-          formattedDaySelected,
-          changeAmount,
-          fromAccount,
-          paymentType,
-          description,
-          today,
-          howManyDaysAhead
-        );
-        if (paymentDetails) {
-          upcomingPayments += paymentDetails;
-        }
-      }
-    });
-
-    if (upcomingPayments.length) {
-      upcomingPayments = "\nAnnual payment(s) due:\n" + upcomingPayments;
+/** Same date strategy as Weekly: match by London-label across N days */
+const annualStrategy: DateStrategy = {
+  mode: "label-match",
+  makeTargetDates(today, howManyDaysAhead) {
+    const { first, iterator } = setupDaysIteratorTZ(today);
+    const out: Date[] = [];
+    let d = first;
+    for (let i = 0; i <= howManyDaysAhead; i++) {
+      out.push(d.date);
+      d = iterator.next(); // next() returns the DayInfo directly (no .value)
     }
+    return out;
+  },
+};
 
-    return upcomingPayments;
+export class BudgetAnnualTransactions extends TransactionsBase<BudgetMeta> {
+  constructor(spreadsheet: Spreadsheet) {
+    super(spreadsheet, Meta, annualStrategy);
   }
 
-  // Helper method to generate payment details
-  _generatePaymentDetails(
-    formattedDaySelected: string,
-    changeAmount: number,
-    fromAccount: string,
-    paymentType: string,
-    description: string,
-    today: Date,
-    howManyDaysAhead: number
-  ) {
-    const { first, iterator: days } = setupDaysIteratorTZ(today);
-    let day = first;
+  // If Annual needs special row filtering later (e.g., skip markers),
+  // override isCandidateRow(row: any[]): boolean { ... } here.
 
-    for (let index = 0; index <= howManyDaysAhead; index++) {
-      if (formattedDaySelected === day.day) {
-        return `\t${getOrdinalDateTZ(day.date)} ${getAmountAsGBP(
-          changeAmount
-        )} from ${fromAccount} by ${paymentType} ${description}\n`;
-      }
-      day = days.next();
-    }
-
-    return null;
+  public getUpcomingDebits(
+    howManyDaysAhead: number,
+    today = new Date()
+  ): UpcomingDebitRow[] {
+    return super.getUpcomingDebits(howManyDaysAhead, today);
   }
+  
 }

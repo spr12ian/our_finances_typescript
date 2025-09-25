@@ -19,6 +19,14 @@ export const formatLondonDateTime = (x: DateInput) =>
 const LOCALE = "en-GB" as const;
 const LONDON_TZ = "Europe/London" as const;
 
+export type DayInfo = {
+  date: Date;
+  day: string;
+  dayName: string;
+  dayOfMonth: number;
+  season: string;
+};
+
 type DateInput = Date | string | number | null | undefined;
 
 export function cloneDate(date: Date) {
@@ -58,17 +66,10 @@ export function getSeasonName(date: Date): string {
   return seasons[monthSeasons[getMonthIndex(date)]];
 }
 
-// function parseIso_(s: string): Date {
-//   return s ? new Date(s) : new Date();
-// }
-
-// function parseIsoMaybe_(s: string): Date | null {
-//   if (!s) return null;
-//   const d = new Date(s);
-//   return isNaN(d.getTime()) ? null : d;
-// }
-
-export function setupDaysIteratorTZ(start: Date, timeZone = LONDON_TZ) {
+export function setupDaysIteratorTZ(start: Date, timeZone = LONDON_TZ): {
+  first: DayInfo;
+  iterator: { next(): DayInfo };
+} {
   const d = new Date(start);
   const snapshot = () => ({
     date: new Date(d),
@@ -91,16 +92,6 @@ export function setupDaysIteratorTZ(start: Date, timeZone = LONDON_TZ) {
     },
   };
 }
-
-// function toIso_(x: any): string {
-//   const startTime = FastLog.start(toIso_.name, x);
-
-//   const d = toDateSafe(x);
-//   const isoString = d.toISOString();
-
-//   FastLog.finish(toIso_.name, startTime, isoString);
-//   return isoString;
-// }
 
 // Local helper functions
 

@@ -47,7 +47,7 @@ export const shimGlobals = [
   "queueSetup",
   "queueWorker",
   "saveContainerIdOnce",
-  "sendDailyEmail",
+  "sendDailyHtmlEmail",
   "showAllAccounts",
   "sortSheets",
   "trimAllSheets",

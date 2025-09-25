@@ -1,4 +1,5 @@
 import { Spreadsheet } from "@domain";
+import { toHtmlBody } from "@lib/html/htmlFunctions";
 import { FastLog } from "../logging/FastLog";
 
 // A pragmatic regex; don’t chase full RFC 5322.
@@ -14,10 +15,13 @@ export function sendMeHtmlEmail(
   const myEmailAddress = getMyEmailAddress();
   if (!myEmailAddress) return;
 
-  const textFallback = htmlToText(html) || subject; // must not be empty
+  const htmlBody = toHtmlBody(html);
+
+  const textFallback = htmlToText(htmlBody) || subject; // must not be empty
+
   sendEmail(myEmailAddress, subject, textFallback, {
     ...options,
-    htmlBody: html,
+    htmlBody,
   });
 }
 

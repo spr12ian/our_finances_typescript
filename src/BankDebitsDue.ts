@@ -1,37 +1,32 @@
+/// <reference types="google-apps-script" />
 import type { Sheet, Spreadsheet } from "@domain";
 import { asNumber } from "./lib/asNumber";
 import { getAmountAsGBP } from "./lib/money";
 import { xLookup } from "./lib/xLookup";
+import type { BankDebitDueRow } from '@sheets/budgetTypes';
 
 export class BankDebitsDue {
-  private sheet: Sheet;
+  private readonly sheet: Sheet;
   private _howManyDaysAhead?: number;
 
-  static get COL_ACCOUNT_KEY() {
-    return 0;
-  }
-  static get COL_CHANGE_AMOUNT() {
-    return 1;
-  }
+  static readonly COL_ACCOUNT_KEY = 0;
+  static readonly COL_CHANGE_AMOUNT = 1;
 
-  static get SHEET() {
-    return {
-      NAME: "Bank debits due",
-    };
-  }
+  static readonly SHEET = { NAME: "Bank debits due" as const };
+
   constructor(spreadsheet: Spreadsheet) {
     try {
       this.sheet = spreadsheet.getSheet(BankDebitsDue.SHEET.NAME);
     } catch (error) {
-      let message =
-        "Unknown error accessing '" + BankDebitsDue.SHEET.NAME + "'";
-      if (error instanceof Error) {
-        message = error.message;
-      }
-      throw new Error(`Sheet initialization failed: ${message}`);
+      const msg =
+        error instanceof Error
+          ? error.message
+          : `Unknown error accessing '${BankDebitsDue.SHEET.NAME}'`;
+      throw new Error(`Sheet initialization failed: ${msg}`);
     }
   }
 
+  /** Value from the sheet: F:G with "Look ahead" label */
   get howManyDaysAhead(): number {
     if (typeof this._howManyDaysAhead === "undefined") {
       const searchValue = "Look ahead";
@@ -46,25 +41,41 @@ export class BankDebitsDue {
     return this._howManyDaysAhead;
   }
 
-  getScheduledTransactions() {
-    return this.sheet.dataRange.getValues();
+  /** Headerless data rows (preferred over dataRange.getValues().slice(1)) */
+  private get dataRows(): any[][] {
+    return this.sheet.dataRows;
   }
 
-  getUpcomingDebits() {
-    let upcomingPayments = `Due in the next ${this.howManyDaysAhead} days:`;
+  /** Core: return structured rows; leave string formatting to caller */
+  getUpcomingDebitsSummary(): BankDebitDueRow[] {
+    const rows: BankDebitDueRow[] = [];
 
-    const scheduledTransactions = this.getScheduledTransactions();
+    for (const r of this.dataRows) {
+      const accountKey = String(r[BankDebitsDue.COL_ACCOUNT_KEY] ?? "").trim();
+      const changeAmount = asNumber(r[BankDebitsDue.COL_CHANGE_AMOUNT]) ?? 0;
 
-    // Filter and format valid upcoming debits
-    scheduledTransactions.forEach((transaction) => {
-      const accountKey = transaction[BankDebitsDue.COL_ACCOUNT_KEY]?.trim(); // Optional chaining and trim
-      const changeAmount = transaction[BankDebitsDue.COL_CHANGE_AMOUNT];
+      if (!accountKey) continue;
+      if (Math.abs(changeAmount) <= 1) continue;
 
-      if (accountKey && Math.abs(changeAmount) > 1) {
-        upcomingPayments += `\n\t${accountKey} ${getAmountAsGBP(changeAmount)}`;
-      }
-    });
+      rows.push({
+        account: accountKey,
+        amount: getAmountAsGBP(changeAmount),
+      });
+    }
 
-    return upcomingPayments;
+    return rows;
   }
+}
+
+/** Optional helper to render the section text (keep UI outside the class) */
+export function renderBankDebitsDueSection(
+  rows: BankDebitDueRow[],
+  lookaheadDays: number
+): string {
+  if (!rows.length) return "";
+  let s = `Due in the next ${lookaheadDays} days:`;
+  for (const r of rows) {
+    s += `\n\t${r.account} ${r.amount}`;
+  }
+  return s;
 }

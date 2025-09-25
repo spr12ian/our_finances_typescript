@@ -1,14 +1,7 @@
-// renderUpcomingDebitsHtml.ts
+import type { BankDebitDueRow } from "@sheets/budgetTypes";
 
-type upcomingDebitRow = {
-  date: string;
-  amount: string;
-  from: string;
-  by: string;
-  description: string;
-};
-
-export function renderUpcomingDebitsHtml(rows: upcomingDebitRow[]): Html {
+export function renderBankDebitsDueSummaryHtml(rows: BankDebitDueRow[]): Html {
+  if (rows.length === 0) return "";
   const esc = (s: string) =>
     String(s).replace(
       /[&<>"]/g,
@@ -24,17 +17,13 @@ export function renderUpcomingDebitsHtml(rows: upcomingDebitRow[]): Html {
   return `
 <table style="border-collapse:collapse;font-family:ui-monospace,Consolas,Menlo,monospace;">
   <thead>
-    <tr>${th("Date")}${th("Amount", "right")}${th("From")}${th("By")}${th(
-    "Description"
-  )}</tr>
+    <tr>${th("Account")}${th("Amount", "right")}</tr>
   </thead>
   <tbody>
     ${rows
       .map(
         (r) => `<tr>
-      ${td(r.date)}${td(r.amount, "right")}${td(r.from)}${td(r.by)}${td(
-          r.description
-        )}
+      ${td(r.account)}${td(r.amount, "right")}
     </tr>`
       )
       .join("")}

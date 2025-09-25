@@ -5,7 +5,7 @@ import { buildSectionsMenu } from "@gas/menus/buildSectionsMenu";
 
 const BUILDERS = [buildGasMenu, buildSectionsMenu];
 
-const IGNORE_NAMES: string[] = ["onChange", "onEdit", "onOpen"];  // Simple triggers
+const IGNORE_NAMES: string[] = ["onChange", "onEdit", "onOpen"]; // Simple triggers
 IGNORE_NAMES.push("dailySorts"); // Trigger
 IGNORE_NAMES.push("exportFormulasToDrive"); // Manual, replacing some formulas ongoing
 IGNORE_NAMES.push("helloWorld"); // Manual, to test build
@@ -13,7 +13,7 @@ IGNORE_NAMES.push("onEditTrigger"); // Trigger
 IGNORE_NAMES.push("onOpenTrigger"); // Trigger
 IGNORE_NAMES.push("purgeQueuesOldData"); // Trigger
 IGNORE_NAMES.push("queueWorker"); // Trigger
-IGNORE_NAMES.push("sendDailyEmail"); // Trigger
+IGNORE_NAMES.push("sendDailyHtmlEmail"); // Trigger
 
 type Item = { caption: string; functionName: string };
 type MenuLike = GoogleAppsScript.Base.Menu & {

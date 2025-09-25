@@ -2,7 +2,7 @@
 import { getErrorMessage } from "@lib/errors";
 import { FastLog } from "@logging";
 // ⬇️ Pull the canonical types + accessors from engineState
-import { toHtmlBody, toHtmlParagraph } from "@lib/html/htmlFunctions";
+import { toHtmlParagraph } from "@lib/html/htmlFunctions";
 import { ONE_SECOND } from "@lib/timeConstants";
 import {
   ENGINE_INSTANCE_ID,
@@ -110,8 +110,8 @@ export function runStep(job: RunStepJob): void {
           reason: res.reason,
           attempt: job.attempt,
         });
-        const body = toHtmlBody(toHtmlParagraph(res.reason));
-        const input = { htmlBody: body, subject: job.stepName };
+        const htmlReason = toHtmlParagraph(res.reason);
+        const input = { htmlBody: htmlReason, subject: job.stepName };
 
         startWorkflow("sendMeHtmlEmailFlow", "sendMeHtmlEmailStep1", input);
 

@@ -23,7 +23,7 @@ import {
 import { logTime } from "@lib/logging/logTime";
 import * as timeConstants from "@lib/timeConstants";
 import { FastLog } from "@logging";
-import { queueSetup } from "@queue/queueSetup";
+import { ensureQueueDateFormats, queueSetup } from "@queue/queueSetup";
 import { purgeQueuesOldData, queueWorker } from "@queue/queueWorker";
 import { setupWorkflows } from "@workflow";
 import type { ExampleFlowInput } from "@workflow/flows/exampleFlow";
@@ -36,7 +36,6 @@ import { withReentryGuard } from "../../withReentryGuard";
 import { handleEdit } from "../triggers/handleEdit";
 import { handleOpen } from "../triggers/handleOpen";
 import { onOpen } from "./onOpen";
-import {ensureQueueDateFormats} from "@queue/queueSetup";
 
 export function GAS_applyDescriptionReplacements() {
   const spreadsheet = getFinancesSpreadsheet();
@@ -262,13 +261,13 @@ export function GAS_saveContainerIdOnce() {
   );
 }
 
-export function GAS_sendDailyEmail() {
+export function GAS_sendDailyHtmlEmail() {
   withReentryGuard(
     "SEND_DAILY_EMAIL_RUNNING",
     timeConstants.THIRTY_SECONDS,
     () => {
       const spreadsheet = getFinancesSpreadsheet();
-      new OurFinances(spreadsheet).sendDailyEmail();
+      new OurFinances(spreadsheet).sendDailyHtmlEmail();
     }
   );
 }

@@ -8,8 +8,17 @@ import {
   MetaDescriptionReplacements,
   MetaTransactionCategories,
 } from "@lib/constants";
-import { toHtmlBody } from "@lib/html/htmlFunctions";
+import {
+  htmlHorizontalRule,
+  toHtmlH1,
+  toHtmlH2,
+  toHtmlH3,
+  toHtmlParagraph,
+} from "@lib/html/htmlFunctions";
+import { renderBankDebitsDueSummaryHtml } from "@lib/html/renderBankDebitsDueSummaryHtml";
+import { renderUpcomingDebitsAsHtmlTable } from "@lib/html/renderUpcomingDebitsAsHtmlTable";
 import { FastLog } from "@logging/FastLog";
+import type { UpcomingDebit } from "@sheets/budgetTypes";
 import { Dependencies } from "@sheets/Dependencies";
 import { SpreadsheetSummary } from "@sheets/SpreadsheetSummary";
 import { AccountSheet } from "./AccountSheet";
@@ -45,13 +54,6 @@ export class OurFinances {
   constructor(spreadsheet: Spreadsheet) {
     this.#spreadsheet = spreadsheet;
   }
-
-  // get accountBalances() {
-  //   if (typeof this.#accountBalances === "undefined") {
-  //     this.#accountBalances = new AccountBalances(this.#spreadsheet);
-  //   }
-  //   return this.#accountBalances;
-  // }
 
   get bankAccounts() {
     if (typeof this.#bankAccounts === "undefined") {
@@ -151,15 +153,28 @@ export class OurFinances {
     return this.#transactions;
   }
 
-  get upcomingDebits() {
+  get upcomingDebits(): UpcomingDebit[] {
     const howManyDaysAhead = this.bankDebitsDue.howManyDaysAhead;
     // Collect upcoming debits from different sources
     return [
-      this.bankDebitsDue.getUpcomingDebits(),
-      this.budgetAdhocTransactions.getUpcomingDebits(howManyDaysAhead),
-      this.budgetAnnualTransactions.getUpcomingDebits(howManyDaysAhead),
-      this.budgetMonthlyTransactions.getUpcomingDebits(howManyDaysAhead),
-      this.budgetWeeklyTransactions.getUpcomingDebits(howManyDaysAhead),
+      {
+        section: "Ad hoc",
+        rows: this.budgetAdhocTransactions.getUpcomingDebits(howManyDaysAhead),
+      },
+      {
+        section: "Annual",
+        rows: this.budgetAnnualTransactions.getUpcomingDebits(howManyDaysAhead),
+      },
+      {
+        section: "Monthly",
+        rows: this.budgetMonthlyTransactions.getUpcomingDebits(
+          howManyDaysAhead
+        ),
+      },
+      {
+        section: "Weekly",
+        rows: this.budgetWeeklyTransactions.getUpcomingDebits(howManyDaysAhead),
+      },
     ];
   }
 
@@ -234,43 +249,6 @@ export class OurFinances {
     FastLog.log(`Finished OurFinances.fixAccountSheet`);
   }
 
-  // fixSheet() {
-  //   FastLog.log(`Started OurFinances.fixSheet`);
-
-  //   const activeSheet = this.#spreadsheet.activeSheet;
-  //   if (!activeSheet) {
-  //     FastLog.log("No active sheet found.");
-  //     return;
-  //   }
-
-  //   // Define a strongly typed mapping from sheet name to action
-  //   const sheetActions: Record<string, () => void> = {
-  //     [MetaAccountBalances.SHEET.NAME]: () => this.accountBalances.fixSheet(),
-  //     // [MetaBankAccounts.SHEET.NAME]: () => this.bankAccounts.fixSheet(),
-  //     // [MetaBudgetAdHocTransactions.SHEET.NAME]: () => this.budgetAdhocTransactions.fixSheet(),
-  //     // [MetaBudgetAnnualTransactions.SHEET.NAME]: () => this.budgetAnnualTransactions.fixSheet(),
-  //     // [MetaBudgetMonthlyTransactions.SHEET.NAME]: () => this.budgetMonthlyTransactions.fixSheet(),
-  //     // [MetaBudgetWeeklyTransactions.SHEET.NAME]: () => this.budgetWeeklyTransactions.fixSheet(),
-  //     // [MetaDescriptionReplacements.SHEET.NAME]: () => this.descriptionReplacements.fixSheet(),
-  //     // [MetaTransactionCategories.SHEET.NAME]: () => this.transactionCategories.fixSheet(),
-  //   } as const;
-
-  //   // Look up the action based on sheet name
-  //   const action = sheetActions[activeSheet.name as keyof typeof sheetActions];
-
-  //   if (action) {
-  //     action();
-  //   } else {
-  //     if (activeSheet.name.startsWith("_")) {
-  //       FastLog.log(`Sheet ${activeSheet.name} is an account sheet.`);
-  //       this.fixAccountSheet();
-  //     } else {
-  //       activeSheet.fixSheet();
-  //     }
-  //   }
-  //   FastLog.log(`Finished OurFinances.fixSheet`);
-  // }
-
   onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
     FastLog.log(`Started OurFinances.onChange`);
     const ignored = new Set([
@@ -292,34 +270,49 @@ export class OurFinances {
     FastLog.log(`Finished OurFinances.onChange`);
   }
 
-  sendDailyEmail(): void {
+  sendDailyHtmlEmail(): void {
     const fixedAmountMismatches = this.fixedAmountMismatches;
     const upcomingDebits = this.upcomingDebits;
 
     const subject = `Our finances daily email: ${formatLondonDate(new Date())}`;
 
-    // Initialize the email body
-    let emailBody = ``;
+    // Build array of lines first
+    const lines: string[] = [];
+
+    lines.push(toHtmlH1(subject));
 
     if (fixedAmountMismatches.length > 0) {
-      emailBody += `Fixed amount mismatches\n`;
-      // Concatenate the fixedAmountMismatches into the email body
-      emailBody += fixedAmountMismatches.join("\n");
-      emailBody += `\n\n`;
+      lines.push(toHtmlH3("Fixed amount mismatches"));
+      for (const mismatch of fixedAmountMismatches) {
+        lines.push(mismatch);
+      }
     }
 
-    if (upcomingDebits.length) {
-      emailBody += `Upcoming debits\n`;
-      // Concatenate the debits into the email body
-      emailBody += upcomingDebits.join("\n");
-      emailBody += `\n\n`;
+    if (upcomingDebits.length > 0) {
+      lines.push(toHtmlH2(toHtmlH2("Upcoming debits")));
+      lines.push(
+        renderBankDebitsDueSummaryHtml(
+          this.bankDebitsDue.getUpcomingDebitsSummary()
+        )
+      );
+      for (const debits of upcomingDebits) {
+        if (debits.rows.length) {
+          lines.push(toHtmlH3(debits.section));
+          lines.push(renderUpcomingDebitsAsHtmlTable(debits.rows));
+        }
+      }
     }
 
-    // Append the spreadsheet URL
-    emailBody += `\n\nSent from (sendDailyEmail): ${this.url}\n`;
+    lines.push(htmlHorizontalRule());
 
-    // Send the email
-    sendMeHtmlEmail(subject, toHtmlBody(emailBody));
+    // Add footer with spreadsheet URL
+    lines.push(`Sent from (sendDailyHtmlEmail): ${this.url}`);
+
+    // Generate HTML body: wrap each line in <p>
+    const htmlBody = lines.map((line) => toHtmlParagraph(line)).join("");
+
+    // Send email
+    sendMeHtmlEmail(subject, htmlBody);
   }
 
   showAllAccounts() {

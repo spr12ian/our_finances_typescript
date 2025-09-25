@@ -19,12 +19,7 @@ export const MetaAccountBalances = {
       formula: '={"Balance (£)"; ARRAYFORMULA(IF(A2:A<>"", B2:B - C2:C, ""))}',
     },
   ] as { cell: string; formula: string }[],
-  HEADERS: [
-    "Account",
-    "Credit (£)",
-    "Debit (£)",
-    "Nett (£)",
-  ],
+  HEADERS: ["Account", "Credit (£)", "Debit (£)", "Nett (£)"],
   ROW_DATA_STARTS: 2,
   SHEET: {
     NAME: "Account balances",
@@ -123,7 +118,7 @@ export const MetaBudget = {
 
 export const MetaBudgetAdHocTransactions = {
   COLUMNS: {
-    CHANGE_AMOUNT: 3,
+    DEBIT_AMOUNT: 3,
     DATE: 0,
     DESCRIPTION: 1,
     FROM_ACCOUNT: 6,
@@ -138,7 +133,7 @@ export const MetaBudgetAnnualTransactions = {
   COLUMNS: {
     DATE: 0,
     DESCRIPTION: 1,
-    CHANGE_AMOUNT: 3,
+    DEBIT_AMOUNT: 3,
     FROM_ACCOUNT: 4,
     PAYMENT_TYPE: 5,
   },

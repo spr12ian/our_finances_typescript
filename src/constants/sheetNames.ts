@@ -1,5 +1,10 @@
 // @constants/sheetNames.ts
 // The sheetnames list was generated using the logSheetNames function
+// then cut and pasted here to avoid a runtime dependency.
+// It should be updated whenever sheets are added or removed.
+// The list is in alphabetical order.
+// It includes hidden and system sheets.
+// Last updated 2025-09-30
 export const sheetNames = [
   "$Queue",
   "$QueueDead",

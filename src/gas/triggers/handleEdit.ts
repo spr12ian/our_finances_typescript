@@ -20,6 +20,7 @@ type OnEditRule = {
 /** Keep this lean and at top-level so it's initialized once */
 const ON_EDIT_RULES: OnEditRule[] = [
   { sheet: /^_/, range: "C2:D", fn: updateBalanceValues },
+  { sheet: /^_/, range: ["B2:B", "E2:E"], fn: toUpperCase },
 ];
 
 // Optional: stop after the first matching rule to avoid duplicate work.
@@ -195,6 +196,26 @@ export function handleEdit(e: SheetsOnEdit): void {
 }
 
 /* ── Example handlers ───────────────────────────────────── */
+
+function toUpperCase(e: SheetsOnEdit): void {
+  const fn = toUpperCase.name;
+  const startTime = FastLog.start(fn, e.range.getA1Notation());
+
+  try {
+    if (!isSingleCellActuallyChanged(e)) return;
+    const range = e.range;
+    const value = range.getValue();
+    if (typeof value === "string" && value !== value.toUpperCase()) {
+      range.setValue(value.toUpperCase());
+    }
+  } catch (err) {
+    const errorMessage = getErrorMessage(err);
+    FastLog.error(fn, errorMessage);
+    throw new Error(errorMessage);
+  } finally {
+    FastLog.finish(fn, startTime);
+  }
+}
 
 function updateBalanceValues(e: SheetsOnEdit): void {
   FastLog.log("updateBalanceValues hit on", e.range.getA1Notation());

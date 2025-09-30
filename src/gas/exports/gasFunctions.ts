@@ -123,7 +123,7 @@ export function GAS_fixSheet() {
   startWF(workFlowName, firstStep, input);
 }
 
-export function GAS_goToSheet_AHALIF() {
+export function GAS_dynamicAccount_AHALIF() {
   goToSheet("_AHALIF");
 }
 
@@ -135,19 +135,19 @@ export function GAS_goToSheetCategoryClash() {
   goToSheet(MetaCategoryClash.SHEET.NAME);
 }
 
-export function GAS_goToSheet_CVITRA() {
+export function GAS_dynamicAccount_CVITRA() {
   goToSheet("_CVITRA");
 }
 
-export function GAS_goToSheet_SVI2TJ() {
+export function GAS_dynamicAccount_SVI2TJ() {
   goToSheet("_SVI2TJ");
 }
 
-export function GAS_goToSheet_SVIGBL() {
+export function GAS_dynamicAccount_SVIGBL() {
   goToSheet("_SVIGBL");
 }
 
-export function GAS_goToSheet_SVIIRF() {
+export function GAS_dynamicAccount_SVIIRF() {
   goToSheet("_SVIIRF");
 }
 

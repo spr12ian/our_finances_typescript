@@ -11,15 +11,15 @@ import { goToSheetLastRow } from "./goToSheetLastRow";
  *
  * Example: `dynamicAccount_AHALIF()` activates `_AHALIF` sheet last row.
  */
-export function registerDynamicAccountFunctions(
+export function registerGeneratedAccountFunctions(
   accountSheetNames: string[]
 ): void {
-  const fn = registerDynamicAccountFunctions.name;
+  const fn = registerGeneratedAccountFunctions.name;
   const startTime = FastLog.start(fn);
 
   try {
     for (const name of accountSheetNames) {
-      const functionName = `dynamicAccount${name}`;
+      const functionName = `goToSheetLastRow${name}`;
       FastLog.log(fn, `functionName: ${functionName}`);
 
       // Ensure we don’t overwrite existing global properties

@@ -1,12 +1,15 @@
-/// <reference types="google-apps-script" />
+// Code.ts
+// Application entry point – executed when the script is loaded.
 import { FastLog } from "@logging/FastLog";
 import * as GAS from "./gas/exports";
-import { exportToGlobalThis } from "./gas/exports/exportToGlobal";
 import { shimGlobals } from "./shimGlobals";
 
-/**
- * Application entry point – executed when the script is loaded.
- */
+// Attach ALL GAS_* exports (covers both account + non-account)
+for (const [key, fn] of Object.entries(GAS as Record<string, unknown>)) {
+  if (typeof fn === "function" && key.startsWith("GAS_")) {
+    (globalThis as any)[key] = fn;
+  }
+}
 
 // ────────────────────────────────────────────────────────────
 // Register trigger handlers
@@ -17,16 +20,11 @@ for (const name of shimGlobals) {
   const key = `GAS_${name}`;
   const fn = (GAS as Record<string, unknown>)[key];
   if (typeof fn === "function") {
-    // @ts-expect-error: dynamic assignment to globalThis
-    globalThis[key] = fn;
     globalsToExport[name] = fn;
   } else {
     FastLog.warn(`⚠️ GAS function not found: ${key}`);
   }
 }
-exportToGlobalThis(globalsToExport);
-
-// FastLog.log("✅ Global functions registered.");
 
 // Export this list for the shim generator
 (globalThis as any).__exportedGlobals__ = Object.keys(globalsToExport).sort();

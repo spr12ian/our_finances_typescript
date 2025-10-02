@@ -1,84 +1,166 @@
 /**
- * Script to extract GAS-prefixed function names from TypeScript source files
- * and generate shimGlobals.ts and index.ts files.
- *
- * This script scans all .ts files in the src directory, collects functions
- * that are exported with the prefix "GAS_", and generates two files:
- * - shimGlobals.ts: Contains an array of function names without the "GAS_" prefix.
- * - index.ts: Re-exports the GAS-prefixed functions for use in other modules.
+ * Minimal GAS export extractor (refactored + attach + smoke test):
+ * - Reads only: src/gas/exports/gasFunctions.ts and gasAccountFunctions.ts
+ * - Finds:      export function GAS_* ( ... )
+ * - Writes:     src/shimGlobals.ts (NON-ACCOUNT names only)
+ *               src/gas/exports/index.ts (both groups)
+ *               src/gas/exports/attachGASGlobals.ts (side-effect module that attaches GAS_* to globalThis + log)
  */
 
-// Config
-import fs from "fs";
+import fs from "node:fs";
 import path from "node:path";
 import { FastLog } from "@logging/FastLog";
 import { getDirname } from "./esmPath";
 
 const __dirname = getDirname(import.meta.url);
 
-const GAS_EXPORTS = path.resolve(__dirname, "../src/gas/exports/index.ts");
-
-const SHIM_GLOBALS = path.resolve(__dirname, "../src/shimGlobals.ts");
+// ────────────────────────────────────────────────────────────
+// Config — adjust if you move files
+// ────────────────────────────────────────────────────────────
 const SRC_DIR = path.resolve(__dirname, "../src");
+const SHIM_GLOBALS = path.join(SRC_DIR, "shimGlobals.ts");
+const EXPORTS_DIR = path.join(SRC_DIR, "gas", "exports");
+const GAS_FUNCTIONS_TS = path.join(EXPORTS_DIR, "gasFunctions.ts");
+const GAS_ACCOUNT_FUNCTIONS_TS = path.join(EXPORTS_DIR, "gasAccountFunctions.ts");
+const GAS_EXPORTS_INDEX = path.join(EXPORTS_DIR, "index.ts");
+const GAS_ATTACH_GLOBALS = path.join(EXPORTS_DIR, "attachGASGlobals.ts");
 
-// Regex to match top-level exported functions named GASxxx
-const exportFunctionRegex =
-  /^\s*export\s+(?:function|const)\s+(GAS_\w+)\s*(?:\(|=)/gm;
+// Account bucket (full) prefix and plain prefix
+const ACCOUNT_PREFIX_FULL = "GAS_goToSheetLastRow_";
+const ACCOUNT_PREFIX_PLAIN = "goToSheetLastRow_";
 
-// Recursively find all .ts files in a directory
-function getAllTsFiles(dir: string): string[] {
-  const entries = fs.readdirSync(dir, { withFileTypes: true });
-  return entries.flatMap((entry) => {
-    const res = path.resolve(dir, entry.name);
-    return entry.isDirectory()
-      ? getAllTsFiles(res)
-      : res.endsWith(".ts")
-      ? [res]
-      : [];
-  });
+// Simple matcher for your current style
+const RE_EXPORT_FN = /\bexport\s+function\s+(GAS_[A-Za-z0-9_]+)\s*\(/g;
+
+// ────────────────────────────────────────────────────────────
+// Helpers
+// ────────────────────────────────────────────────────────────
+function readIfExists(file: string): string {
+  return fs.existsSync(file) ? fs.readFileSync(file, "utf8") : "";
 }
 
-// Collect GAS-prefixed function names from .ts files
-const gasFunctions = new Set<string>();
-
-for (const file of getAllTsFiles(SRC_DIR)) {
-  const content = fs.readFileSync(file, "utf8");
-  const matches = [...content.matchAll(exportFunctionRegex)];
-  for (const match of matches) {
-    gasFunctions.add(match[1]);
-  }
+function writeIfChanged(file: string, content: string): boolean {
+  const prev = fs.existsSync(file) ? fs.readFileSync(file, "utf8") : null;
+  if (prev === content) return false;
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, content, "utf8");
+  return true;
 }
 
-// Sort and strip "GAS" prefix
-const sortedNames = [...gasFunctions].sort();
-const shimGlobals = sortedNames.map((name) => name.slice(4));
+function findGasFunctions(source: string): string[] {
+  const out = new Set<string>();
+  for (const m of source.matchAll(RE_EXPORT_FN)) out.add(m[1]);
+  return [...out].sort((a, b) => a.localeCompare(b));
+}
 
-// Emit shimGlobals.ts
-const shimLines = [
+// ────────────────────────────────────────────────────────────
+// Collect from the two known files
+// ────────────────────────────────────────────────────────────
+const src1 = readIfExists(GAS_FUNCTIONS_TS);
+const src2 = readIfExists(GAS_ACCOUNT_FUNCTIONS_TS);
+
+const names1 = findGasFunctions(src1);
+const names2 = findGasFunctions(src2);
+
+// union of full GAS_* names
+const allFull = Array.from(new Set([...names1, ...names2])).sort((a, b) => a.localeCompare(b));
+
+// split into full account/non-account
+const accountFull = allFull.filter((n) => n.startsWith(ACCOUNT_PREFIX_FULL));
+const nonAccountFull = allFull.filter((n) => !n.startsWith(ACCOUNT_PREFIX_FULL));
+
+// derive plain names (drop 'GAS_')
+const toPlain = (full: string) => full.slice(4);
+const allPlain = allFull.map(toPlain);
+
+// split into plain account/non-account
+const accountPlain = allPlain.filter((n) => n.startsWith(ACCOUNT_PREFIX_PLAIN));
+const nonAccountPlain = allPlain.filter((n) => !n.startsWith(ACCOUNT_PREFIX_PLAIN));
+
+// ────────────────────────────────────────────────────────────
+// Emit shimGlobals.ts — ONLY NON-ACCOUNT plain names
+// ────────────────────────────────────────────────────────────
+const shimGlobalsContent = [
   "// Auto-generated by extractGASFunctionsFromSrc.ts — do not edit manually",
+  "// eslint-disable",
   "",
   "export const shimGlobals = [",
-  ...shimGlobals.map((name) => `  "${name}",`),
+  ...nonAccountPlain.map((n) => `  \"${n}\",`),
   "] as const;",
   "",
   "export type ExportedGlobal = (typeof shimGlobals)[number];",
-];
-
-fs.writeFileSync(SHIM_GLOBALS, shimLines.join("\n"), "utf8");
-
-FastLog.log(`✅ Found ${shimGlobals.length} GAS functions`);
-FastLog.log(`✅ Wrote to: ${SHIM_GLOBALS}`);
-
-// Emit index.ts
-const lines = [
-  "// Auto-generated by extractGASFunctionsFromSrc.ts — do not edit manually",
   "",
-  "export {",
-  ...shimGlobals.map((name) => `  GAS_${name},`),
-  "} from './gasFunctions';",
-];
-lines.push("");
+].join("\n");
 
-fs.writeFileSync(GAS_EXPORTS, lines.join("\n"), "utf8");
+const shimChanged = writeIfChanged(SHIM_GLOBALS, shimGlobalsContent);
+FastLog.log(`${shimChanged ? "✅" : "ℹ️"} ${shimChanged ? "Wrote" : "No changes in"}: ${SHIM_GLOBALS} (count: ${nonAccountPlain.length})`);
 
-FastLog.log(`✅ Wrote to: ${GAS_EXPORTS}`);
+// ────────────────────────────────────────────────────────────
+// Emit src/gas/exports/index.ts (barrel re-export) — BOTH GROUPS (full GAS_* names)
+// ────────────────────────────────────────────────────────────
+const header = [
+  "// Auto-generated by extractGASFunctionsFromSrc.ts — do not edit manually",
+  "// eslint-disable",
+  "",
+].join("\n");
+
+const exportNonAccount =
+  nonAccountFull.length === 0
+    ? "// (no non-account GAS_ exports found)"
+    : [
+        "export {",
+        ...nonAccountFull.map((name) => `  ${name},`),
+        "} from './gasFunctions';",
+      ].join("\n");
+
+const exportAccount =
+  accountFull.length === 0
+    ? "// (no account GAS_ exports found)"
+    : [
+        "export {",
+        ...accountFull.map((name) => `  ${name},`),
+        "} from './gasAccountFunctions';",
+      ].join("\n");
+
+const exportsContent = [header, exportNonAccount, "", exportAccount, ""].join("\n");
+const exportsChanged = writeIfChanged(GAS_EXPORTS_INDEX, exportsContent);
+FastLog.log(`${exportsChanged ? "✅" : "ℹ️"} ${exportsChanged ? "Wrote" : "No changes in"}: ${GAS_EXPORTS_INDEX}`);
+
+// ────────────────────────────────────────────────────────────
+// Emit src/gas/exports/attachGASGlobals.ts — side-effect module to expose GAS_* on globalThis with a smoke test
+// ────────────────────────────────────────────────────────────
+const attachContent = [
+  "// Auto-generated by extractGASFunctionsFromSrc.ts — do not edit manually",
+  "// Purpose: attach all exported GAS_* functions to globalThis for shim.gs wrappers, with a small smoke test log",
+  "import * as GAS from './index';",
+  "",
+  "(function attachGASGlobals(){",
+  "  const g = (globalThis as unknown as Record<string, unknown>);",
+  "  let attached = 0;",
+  "  for (const [key, val] of Object.entries(GAS)) {",
+  "    if (typeof key === 'string' && key.startsWith('GAS_') && typeof val === 'function') {",
+  "      g[key] = val as unknown;",
+  "      attached++;",
+  "    }",
+  "  }",
+  "  const logStr = `attachGASGlobals: attached ${attached} GAS_* function${attached === 1 ? '' : 's'}`;",
+  "  try { (console as any)?.log?.(logStr); } catch {}",
+  "  try { (globalThis as any)?.Logger?.log?.(logStr); } catch {}",
+  "  (g as any).__GAS_ATTACH_SUMMARY = {",
+  "    attached,",
+  "    totalExports: Object.keys(GAS).length,",
+  "    timestamp: (new Date()).toISOString(),",
+  "  };",
+  "})();",
+  "",
+].join("\n");
+
+const attachChanged = writeIfChanged(GAS_ATTACH_GLOBALS, attachContent);
+FastLog.log(`${attachChanged ? "✅" : "ℹ️"} ${attachChanged ? "Wrote" : "No changes in"}: ${GAS_ATTACH_GLOBALS}`);
+
+// ────────────────────────────────────────────────────────────
+// Summary
+// ────────────────────────────────────────────────────────────
+FastLog.log(`✅ Total GAS_* functions found: ${allFull.length}`);
+FastLog.log(`   ├─ Non-account: ${nonAccountFull.length}`);
+FastLog.log(`   └─ Account:     ${accountFull.length}`);

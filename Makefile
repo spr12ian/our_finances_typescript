@@ -12,6 +12,8 @@ TREE_EXCLUDES := '.git|.hatch|.mypy_cache|.pytest_cache|.ruff_cache|.venv|node_m
 	build \
 	clean \
 	dev \
+	extract-gas-functions \
+	generate-gas-account-functions \
 	install \
 	lint \
 	prepare-gas \
@@ -42,8 +44,11 @@ copy-appsscript: build ## Copy appsscript.json into $(BUILD_DIR)
 dev: ## Run rollup watch and GAS auto-deploy concurrently
 	npm run dev
 
-extract-gas-functions: clean ## Extract GAS_ functions from src
+extract-gas-functions: generate-gas-account-functions ## Extract GAS_ functions from src
 	npm run extract-gas-functions
+
+generate-gas-account-functions: clean ## Extract GAS_ functions from src
+	npm run generate-gas-account-functions
 
 install: ## Ensure clasp and dependencies are ready
 	@echo "📦 Installing dev dependencies..."

@@ -31,14 +31,24 @@ const MAX_CELL_LENGTH = 2000;
 
 /** Time‑driven worker entrypoint (set to run each minute). */
 export function queueWorker(): void {
-  const lock = LockService.getScriptLock();
-  if (!lock.tryLock(timeConstants.FIVE_SECONDS)) return; // skip if another worker holds the lock
+  const fn = queueWorker.name;
+  const startTime = FastLog.start(fn);
   try {
-    processQueueBatch_(MAX_BATCH, WORKER_BUDGET_MS);
-  } finally {
+    const lock = LockService.getScriptLock();
+    if (!lock.tryLock(timeConstants.FIVE_SECONDS)) return; // skip if another worker holds the lock
     try {
-      lock.releaseLock();
-    } catch (_) {}
+      processQueueBatch_(MAX_BATCH, WORKER_BUDGET_MS);
+    } finally {
+      try {
+        lock.releaseLock();
+      } catch (_) {}
+    }
+  } catch (err) {
+    const errorMessage = getErrorMessage(err);
+    FastLog.error(fn, errorMessage);
+    throw new Error(errorMessage);
+  } finally {
+    FastLog.finish(fn, startTime);
   }
 }
 
@@ -65,7 +75,10 @@ function purgeQueueOlderThanDays(
   const toDelete: number[] = [];
   for (let i = 0; i < data.length; i++) {
     const status = String(data[i][COL.STATUS - 1]) as JobStatus;
-    if ((status === STATUS.DONE || status === STATUS.ERROR) && (asDateOrNull_(data[i][COL.ENQUEUED_AT - 1])?.getTime() ?? 0) < cutoff) {
+    if (
+      (status === STATUS.DONE || status === STATUS.ERROR) &&
+      (asDateOrNull_(data[i][COL.ENQUEUED_AT - 1])?.getTime() ?? 0) < cutoff
+    ) {
       toDelete.push(i + 2);
     }
   }
@@ -220,10 +233,16 @@ function dispatchJob_(job: Job): void {
 // Helpers
 // ───────────────────────────────────────────────────────────────────────────────
 function getQueueSheet_(): GoogleAppsScript.Spreadsheet.Sheet {
-  const ss = SpreadsheetApp.getActive();
-  const sheet = ss.getSheetByName(QUEUE_SHEET_NAME);
-  if (!sheet) throw new Error("Queue sheet missing. Run queueSetup().");
-  return sheet;
+  const fn = getQueueSheet_.name;
+  const startTime = FastLog.start(fn);
+  try {
+    const ss = SpreadsheetApp.getActive();
+    const sheet = ss.getSheetByName(QUEUE_SHEET_NAME);
+    if (!sheet) throw new Error("Queue sheet missing. Run queueSetup().");
+    return sheet;
+  } finally {
+    FastLog.finish(fn, startTime);
+  }
 }
 
 function moveToDeadIfConfigured_(absRow: number): void {

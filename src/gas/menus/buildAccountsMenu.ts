@@ -1,7 +1,7 @@
 import { FastLog } from "@logging";
 import { getAccountSheetNames } from "../../accountSheetFunctions";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
-import { registerDynamicAccountFunctions } from "../../registerDynamicAccountFunctions";
+// import { registerGeneratedAccountFunctions } from "../../registerGeneratedAccountFunctions";
 import { createMenu } from "./createMenu";
 
 export function buildAccountsMenu(ui: GoogleAppsScript.Base.Ui): void {
@@ -22,14 +22,14 @@ export function buildAccountsMenu(ui: GoogleAppsScript.Base.Ui): void {
     const accountsMenuItems: [string, string][] = [];
 
     for (const accountSheetName of accountSheetNames) {
-      const funName = "dynamicAccount" + accountSheetName;
+      const funName = "goToSheetLastRow" + accountSheetName;
       accountsMenuItems.push([accountSheetName, funName]);
     }
 
     const accountsMenu = createMenu(ui, "Accounts", accountsMenuItems);
     accountsMenu.addToUi();
 
-    registerDynamicAccountFunctions(accountSheetNames);
+    // registerGeneratedAccountFunctions(accountSheetNames);
   } finally {
     FastLog.finish(fn, startTime);
   }

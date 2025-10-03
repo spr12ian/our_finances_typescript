@@ -1,30 +1,31 @@
-// Code.ts
-// Application entry point – executed when the script is loaded.
+// Code.ts — minimal entry point
 import { FastLog } from "@logging/FastLog";
 import * as GAS from "./gas/exports";
+import "./gas/exports/attachGASGlobals"; // side-effect: attaches all GAS_* to globalThis
 import { shimGlobals } from "./shimGlobals";
 
-// Attach ALL GAS_* exports (covers both account + non-account)
-for (const [key, fn] of Object.entries(GAS as Record<string, unknown>)) {
-  if (typeof fn === "function" && key.startsWith("GAS_")) {
-    (globalThis as any)[key] = fn;
+(() => {
+  const g = globalThis as any;
+
+  // Expose selected names (from shimGlobals) without the GAS_ prefix for shim.gs wrappers
+  const missing: string[] = [];
+
+  for (const name of shimGlobals) {
+    const key = `GAS_${name}`;
+    const fn = (GAS as Record<string, unknown>)[key];
+    if (typeof fn === "function") {
+      g[name] = fn; // e.g. globalThis.balanceSheet -> GAS_balanceSheet
+    } else {
+      missing.push(key);
+    }
   }
-}
 
-// ────────────────────────────────────────────────────────────
-// Register trigger handlers
-// ────────────────────────────────────────────────────────────
-const globalsToExport: Record<string, unknown> = {};
-
-for (const name of shimGlobals) {
-  const key = `GAS_${name}`;
-  const fn = (GAS as Record<string, unknown>)[key];
-  if (typeof fn === "function") {
-    globalsToExport[name] = fn;
-  } else {
-    FastLog.warn(`⚠️ GAS function not found: ${key}`);
+  if (missing.length) {
+    FastLog.warn(`⚠️ GAS functions not found: ${missing.join(", ")}`);
   }
-}
 
-// Export this list for the shim generator
-(globalThis as any).__exportedGlobals__ = Object.keys(globalsToExport).sort();
+  // Keep a sorted list of what we actually exported (handy for sanity checks / menus)
+  g.__exportedGlobals__ = shimGlobals
+    .filter((n) => typeof (GAS as any)[`GAS_${n}`] === "function")
+    .sort();
+})();

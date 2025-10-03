@@ -30,7 +30,7 @@ const ACCOUNT_PREFIX_FULL = "GAS_goToSheetLastRow_";
 const ACCOUNT_PREFIX_PLAIN = "goToSheetLastRow_";
 
 // Simple matcher for your current style
-const RE_EXPORT_FN = /\bexport\s+function\s+(GAS_[A-Za-z0-9_]+)\s*\(/g;
+const RE_EXPORT_FN = /\bexport\s+function\s+(GAS_[A-Za-z0-9_$]+)\s*\(/g;
 
 // ────────────────────────────────────────────────────────────
 // Helpers

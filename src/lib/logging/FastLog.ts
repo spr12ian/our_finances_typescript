@@ -28,6 +28,35 @@ let memRing: LogRecord[] | null = null;
 let errorCount = 0;
 let statusSheetCache: GoogleAppsScript.Spreadsheet.Sheet | null = null;
 
+export function logStart(methodName: string, contextName: string) {
+  const start = FastLog.start(methodName, contextName);
+  return () => FastLog.finish(methodName, start);
+}
+
+// ────────────────────────────────────────────────────────────
+// Public API (exported for TS/module use; also mirrored to globalThis)
+// ────────────────────────────────────────────────────────────
+export const FastLog = {
+  // type LogLevel = "none" | "error" | "info" | "warn" | "log";
+  log: (...p: unknown[]) => log("log", ...p),
+  warn: (...p: unknown[]) => log("warn", ...p),
+  info: (...p: unknown[]) => log("info", ...p),
+  error: (...p: unknown[]) => log("error", ...p),
+  start: (...p: unknown[]): Date => {
+    const now = new Date();
+    log("start", ...p);
+    return now;
+  },
+  finish: (label: unknown, startTime: Date, ...rest: unknown[]): void => {
+    const ms = Date.now() - (startTime?.getTime?.() ?? Date.now());
+    // Append ", <duration>" to the end of the message
+    log("finish", `${safeString(label)}, ${formatDurationMs(ms)}`, ...rest);
+  },
+  persistRing,
+  manualSnapshot,
+  clear: clearRing,
+};
+
 // ——— internals ———
 function getRing(): LogRecord[] {
   if (memRing) return memRing;
@@ -149,31 +178,6 @@ function formatDurationMs(ms: number): string {
   // e.g. "845 ms", "2.13 s"
   return ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(2)} s`;
 }
-
-
-// ────────────────────────────────────────────────────────────
-// Public API (exported for TS/module use; also mirrored to globalThis)
-// ────────────────────────────────────────────────────────────
-export const FastLog = {
-  // type LogLevel = "none" | "error" | "info" | "warn" | "log";
-  log: (...p: unknown[]) => log("log", ...p),
-  warn: (...p: unknown[]) => log("warn", ...p),
-  info: (...p: unknown[]) => log("info", ...p),
-  error: (...p: unknown[]) => log("error", ...p),
-  start: (...p: unknown[]): Date => {
-    const now = new Date();
-    log("start", ...p);
-    return now;
-  },
-  finish: (label: unknown, startTime: Date, ...rest: unknown[]): void => {
-    const ms = Date.now() - (startTime?.getTime?.() ?? Date.now());
-    // Append ", <duration>" to the end of the message
-    log("finish", `${safeString(label)}, ${formatDurationMs(ms)}`, ...rest);
-  },
-  persistRing,
-  manualSnapshot,
-  clear: clearRing,
-};
 
 // Optional: make available at runtime even if bundler wraps in IIFE
 (globalThis as any).FastLog = FastLog;

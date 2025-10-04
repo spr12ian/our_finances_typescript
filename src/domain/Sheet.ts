@@ -1,4 +1,4 @@
-import { FastLog } from "@logging/FastLog";
+import { FastLog, logStart } from "@logging/FastLog";
 
 /**
  * Thin wrapper around a GAS Sheet.
@@ -66,12 +66,27 @@ export class Sheet {
   }
 
   get headerRange(): GoogleAppsScript.Spreadsheet.Range {
-    if (!this.#headerRange) {
-      const lastColumn = this.getTrueDataBounds().lastColumn; // uses cache
-      let frozenRows = this.gasSheet.getFrozenRows() || 1;
-      this.#headerRange = this.gasSheet.getRange(1, 1, frozenRows, lastColumn);
+    const logFinish = logStart("headerRange", this.name);
+    try {
+      if (!this.#headerRange) {
+        let frozenRows = this.gasSheet.getFrozenRows() || 1;
+        if (frozenRows < 1) {
+          // always at least one frozen/header row
+          this.gasSheet.setFrozenRows(1);
+          frozenRows = 1;
+        }
+        const lastColumn = this.getTrueDataBounds().lastColumn; // uses cache
+        this.#headerRange = this.gasSheet.getRange(
+          1,
+          1,
+          frozenRows,
+          lastColumn
+        );
+      }
+      return this.#headerRange;
+    } finally {
+      logFinish();
     }
-    return this.#headerRange;
   }
 
   get name(): string {
@@ -140,16 +155,16 @@ export class Sheet {
   }
 
   fixSheet(): void {
-    FastLog.log(`Started Sheet.fixSheet: ${this.name}`);
+    const logFinish = logStart(this.fixSheet.name, this.name);
 
     this.trimSheet();
     this.formatSheet();
 
-    FastLog.log(`Finished Sheet.fixSheet: ${this.name}`);
+    logFinish();
   }
 
   formatAfterHeader(): void {
-    FastLog.log(`Started Sheet.formatAfterHeader: ${this.name}`);
+    const logFinish = logStart(this.formatAfterHeader.name, this.name);
 
     let afterHeaderRange = this.afterHeaderRange;
     afterHeaderRange
@@ -162,11 +177,11 @@ export class Sheet {
       .setVerticalAlignment("top")
       .setWrap(true);
 
-    FastLog.log(`Finished Sheet.formatAfterHeader: ${this.name}`);
+    logFinish();
   }
 
   formatHeader(): void {
-    FastLog.log(`Started Sheet.formatHeader: ${this.name}`);
+    const logFinish = logStart(this.formatHeader.name, this.name);
 
     let headerRange = this.headerRange;
     headerRange
@@ -180,16 +195,16 @@ export class Sheet {
       .setVerticalAlignment("middle")
       .setWrap(true);
 
-    FastLog.log(`Finished Sheet.formatHeader: ${this.name}`);
+    logFinish();
   }
 
   formatSheet(): void {
-    FastLog.log(`Started Sheet.formatSheet: ${this.name}`);
+    const logFinish = logStart(this.formatSheet.name, this.name);
 
     this.formatHeader();
     this.formatAfterHeader();
 
-    FastLog.log(`Finished Sheet.formatSheet: ${this.name}`);
+    logFinish();
   }
 
   getAllValues(): any[][] {
@@ -239,52 +254,57 @@ export class Sheet {
    * @returns {{ lastRow: number, lastColumn: number }}
    */
   getTrueDataBounds(): { lastRow: number; lastColumn: number } {
-    if (this.#trueBounds) return this.#trueBounds;
+    const logFinish = logStart(this.getTrueDataBounds.name, this.name);
+    try {
+      if (this.#trueBounds) return this.#trueBounds;
 
-    const sheet = this.gasSheet;
-    const frozenRows = sheet.getFrozenRows();
-    const frozenCols = sheet.getFrozenColumns();
+      const sheet = this.gasSheet;
+      const frozenRows = sheet.getFrozenRows();
+      const frozenCols = sheet.getFrozenColumns();
 
-    // --- Last Row ---
-    const maxRows = sheet.getMaxRows();
-    const lastCol = sheet.getLastColumn();
-    let lastRow = frozenRows; // if only frozen rows contain data
+      // --- Last Row ---
+      const maxRows = sheet.getMaxRows();
+      const lastCol = sheet.getLastColumn();
+      let lastRow = frozenRows; // if only frozen rows contain data
 
-    if (maxRows > frozenRows) {
-      const height = maxRows - frozenRows;
-      const values = sheet
-        .getRange(frozenRows + 1, 1, height, lastCol)
-        .getDisplayValues();
-      for (let i = values.length - 1; i >= 0; i--) {
-        if (values[i].some((v) => v !== "")) {
-          lastRow = frozenRows + i + 1;
-          break;
-        }
-      }
-    }
-
-    // --- Last Column ---
-    const maxCols = sheet.getMaxColumns();
-    const lastRowForCols = sheet.getLastRow();
-    let lastColumn = frozenCols; // if only frozen cols contain data
-
-    if (maxCols > frozenCols && lastRowForCols > 0) {
-      const width = maxCols - frozenCols;
-      const values = sheet
-        .getRange(1, frozenCols + 1, lastRowForCols, width)
-        .getDisplayValues();
-      for (let c = values[0].length - 1; c >= 0; c--) {
-        for (let r = 0; r < values.length; r++) {
-          if (values[r][c] !== "") {
-            lastColumn = frozenCols + c + 1;
-            c = -1; // break outer loop
+      if (maxRows > frozenRows) {
+        const height = maxRows - frozenRows;
+        const values = sheet
+          .getRange(frozenRows + 1, 1, height, lastCol)
+          .getDisplayValues();
+        for (let i = values.length - 1; i >= 0; i--) {
+          if (values[i].some((v) => v !== "")) {
+            lastRow = frozenRows + i + 1;
             break;
           }
         }
       }
+
+      // --- Last Column ---
+      const maxCols = sheet.getMaxColumns();
+      const lastRowForCols = sheet.getLastRow();
+      let lastColumn = frozenCols; // if only frozen cols contain data
+
+      if (maxCols > frozenCols && lastRowForCols > 0) {
+        const width = maxCols - frozenCols;
+        const values = sheet
+          .getRange(1, frozenCols + 1, lastRowForCols, width)
+          .getDisplayValues();
+        for (let c = values[0].length - 1; c >= 0; c--) {
+          for (let r = 0; r < values.length; r++) {
+            if (values[r][c] !== "") {
+              lastColumn = frozenCols + c + 1;
+              c = -1; // break outer loop
+              break;
+            }
+          }
+        }
+      }
+      this.#trueBounds = { lastRow, lastColumn };
+      return this.#trueBounds;
+    } finally {
+      logFinish();
     }
-    this.#trueBounds = { lastRow, lastColumn };
-    return this.#trueBounds;
   }
 
   hideColumn(column: GoogleAppsScript.Spreadsheet.Range): void {
@@ -414,8 +434,7 @@ export class Sheet {
   }
 
   trimSheet(): void {
-    const fn = this.trimSheet.name;
-    const startTime = FastLog.start(fn, this.name);
+    const logFinish = logStart(this.trimSheet.name, this.name);
 
     const { lastRow, lastColumn } = this.getTrueDataBounds();
     const gasSheet = this.gasSheet;
@@ -449,6 +468,6 @@ export class Sheet {
         `Trimmed from ${maxRows} rows × ${maxColumns} columns to ${targetRows} rows × ${targetCols} columns`
       );
     }
-    FastLog.finish(fn, startTime, this.name);
+    logFinish();
   }
 }

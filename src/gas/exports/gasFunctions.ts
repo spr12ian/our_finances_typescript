@@ -87,7 +87,7 @@ export function GAS_dailySorts() {
   });
 }
 
-export function GAS_dailyUpdate() {
+export function GAS_showDailyAccounts() {
   const spreadsheet = getFinancesSpreadsheet();
   new OurFinances(spreadsheet).bankAccounts.showDaily();
 }
@@ -183,7 +183,7 @@ export function GAS_logSheetNames(): void {
   logSheetNames();
 }
 
-export function GAS_monthlyUpdate() {
+export function GAS_showMonthlyAccounts() {
   const spreadsheet = getFinancesSpreadsheet();
   new OurFinances(spreadsheet).bankAccounts.showMonthly();
 }
@@ -215,7 +215,7 @@ export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
   FastLog.finish(GAS_onOpen.name, startTime);
 }
 
-export function GAS_openAccounts() {
+export function GAS_showOpenAccounts() {
   const spreadsheet = getFinancesSpreadsheet();
   const ourFinances = new OurFinances(spreadsheet);
   ourFinances.bankAccounts.showOpenAccounts();

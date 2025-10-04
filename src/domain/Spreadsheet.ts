@@ -16,6 +16,23 @@ export class Spreadsheet {
     SpreadsheetApp.getUi().alert(message);
   }
 
+  static flush(): void {
+    SpreadsheetApp.flush();
+  }
+
+  /** Static factory: open active spreadsheet */
+  static getActive(): Spreadsheet {
+    FastLog.log("Getting active spreadsheet");
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    if (!ss) throw new Error("Unable to obtain a spreadsheet instance");
+
+    const spreadsheet = new Spreadsheet(ss);
+
+    FastLog.log(`Opened spreadsheet: ${ss.getName()} (ID: ${ss.getId()})`);
+    return spreadsheet;
+  }
+
   /** Static factory: open by ID */
   static openById(id: string): Spreadsheet {
     FastLog.log(`Opening spreadsheet by ID: ${id}`);
@@ -30,19 +47,6 @@ export class Spreadsheet {
     const spreadsheet = new Spreadsheet(ss);
 
     FastLog.log(`Opened spreadsheet: ${ss.getName()} (ID: ${id})`);
-    return spreadsheet;
-  }
-
-  /** Static factory: open active spreadsheet */
-  static getActive(): Spreadsheet {
-    FastLog.log("Getting active spreadsheet");
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-
-    if (!ss) throw new Error("Unable to obtain a spreadsheet instance");
-
-    const spreadsheet = new Spreadsheet(ss);
-
-    FastLog.log(`Opened spreadsheet: ${ss.getName()} (ID: ${ss.getId()})`);
     return spreadsheet;
   }
 

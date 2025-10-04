@@ -1,4 +1,5 @@
-import type { Sheet, Spreadsheet } from "@domain";
+import type { Sheet } from "@domain";
+import { Spreadsheet } from "@domain";
 import { MetaBankAccounts as Meta } from "@lib/constants";
 import { FastLog } from "@logging/FastLog";
 import { isAccountSheet } from "./accountSheetFunctions";
@@ -33,6 +34,41 @@ export class BankAccounts {
 
       filter.setColumnFilterCriteria(item.column, criteria);
     });
+  }
+
+  private filterByFrequency(frequency: string) {
+    let hideFrequencies: string[] = [];
+    let hideOwners: string[] = [];
+
+    switch (frequency) {
+      case Meta.FREQUENCY.DAILY:
+        hideFrequencies.push(Meta.FREQUENCY.MONTHLY);
+        hideFrequencies.push(Meta.FREQUENCY.NEVER);
+        hideOwners.push(Meta.OWNER_CODES.BRIAN);
+        hideOwners.push(Meta.OWNER_CODES.CHARLIE);
+        hideOwners.push(Meta.OWNER_CODES.LINDA_H);
+        break;
+      case Meta.FREQUENCY.MONTHLY:
+        hideFrequencies.push(Meta.FREQUENCY.DAILY);
+        hideFrequencies.push(Meta.FREQUENCY.NEVER);
+        hideOwners.push(Meta.OWNER_CODES.BRIAN);
+        hideOwners.push(Meta.OWNER_CODES.CHARLIE);
+        hideOwners.push(Meta.OWNER_CODES.LINDA_H);
+        break;
+      default:
+        throw new Error(`Unexpected frequency: ${frequency}`);
+    }
+
+    if (this.sheet.raw.getLastRow() >= 2) {
+      const filters: FilterSpec[] = [
+        {
+          column: Meta.COLUMNS.CHECK_BALANCE_FREQUENCY,
+          hideValues: hideFrequencies,
+        },
+        { column: Meta.COLUMNS.OWNER_CODE, hideValues: hideOwners },
+      ];
+      this.applyFilters(filters);
+    }
   }
 
   getDataRange() {
@@ -77,52 +113,67 @@ export class BankAccounts {
     gasSpreadsheet.setActiveSheet(gasSheet, true);
 
     gasSheet.showColumns(1, gasSheet.getLastColumn());
+  }
+
+  showAllAccounts() {
+    this.showAll();
     SpreadsheetApp.flush();
   }
 
   showDaily() {
-    FastLog.log("Started BankAccounts.showDaily");
-    this.showAll();
-    const colCheckBalanceFrequency = Meta.COLUMNS.CHECK_BALANCE_FREQUENCY;
-    const colOwnerCode = Meta.COLUMNS.OWNER_CODE;
-    const hideOwnerCodes = [
-      Meta.OWNER_CODES.BRIAN,
-      Meta.OWNER_CODES.CHARLIE,
-      Meta.OWNER_CODES.LINDA_H,
-    ];
-    const filters = [
-      { column: colOwnerCode, hideValues: hideOwnerCodes },
-      { column: colCheckBalanceFrequency, hideValues: ["Monthly", "Never"] },
-    ];
+    const fn = this.showDaily.name;
+    const startTime = FastLog.start(fn);
+    try {
+      const HIDE_COLUMNS = ["C:L", "N:O", "Q:Q", "S:AN", "AQ:AQ"];
 
-    this.applyFilters(filters);
+      // Reset the view to a known state
+      this.showAll();
 
-    const columnsToHide = ["C:L", "N:O", "Q:Q", "S:AN", "AQ:AQ"];
-    this.hideColumns(columnsToHide);
-    FastLog.log("Finished BankAccounts.showDaily");
+      // Hide columns relevant to the daily view in one batch
+      this.hideColumns(HIDE_COLUMNS);
+
+      this.filterByFrequency(Meta.FREQUENCY.DAILY);
+    } finally {
+      Spreadsheet.flush(); // single flush at end of the view change
+      FastLog.finish(fn, startTime);
+    }
   }
 
   showMonthly() {
-    this.showAll();
-    const filters = [
-      { column: 3, hideValues: ["C", "L"] }, // Filter by Owner Code (Column C)
-      { column: 12, hideValues: ["Daily", "Never"] }, // Filter by Check Balance Frequency (Column L)
-    ];
+    const fn = this.showMonthly.name;
+    const startTime = FastLog.start(fn);
+    try {
+      const HIDE_COLUMNS = ["C:L", "N:O", "Q:Q", "S:U", "W:AJ"];
 
-    this.applyFilters(filters);
+      this.showAll();
 
-    const columnsToHide = ["C:L", "N:O", "Q:Q", "S:U", "W:AJ"];
-    this.hideColumns(columnsToHide);
+      this.hideColumns(HIDE_COLUMNS);
+
+      this.filterByFrequency(Meta.FREQUENCY.MONTHLY);
+    } finally {
+      Spreadsheet.flush(); // single flush at end of the view change
+      FastLog.finish(fn, startTime);
+    }
   }
 
   showOpenAccounts() {
-    this.showAll();
-    const filters = [
-      { column: 3, hideValues: ["C", "L"] }, // Filter by Owner Code (Column C)
-      { column: 11, hideValues: null }, // Filter by Date Closed (Column K)
-    ];
+    const fn = this.showOpenAccounts.name;
+    const startTime = FastLog.start(fn);
+    try {
+      this.showAll();
+      const filters = [
+        {
+          column: Meta.COLUMNS.OWNER_CODE,
+          hideValues: [Meta.OWNER_CODES.CHARLIE, Meta.OWNER_CODES.LINDA_H],
+        },
+        { column: Meta.COLUMNS.DATE_CLOSED, hideValues: null },
+      ];
 
-    this.applyFilters(filters);
+      this.applyFilters(filters);
+    } finally {
+      Spreadsheet.flush(); // single flush at end of the view change
+      FastLog.finish(fn, startTime);
+    }
   }
 
   updateLastUpdatedByKey(key: string) {

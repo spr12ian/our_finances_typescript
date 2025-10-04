@@ -96,9 +96,16 @@ export const MetaBankAccounts = {
   COLUMNS: {
     KEY: 1,
     OWNER_CODE: 3,
+    DATE_CLOSED: 11,
     CHECK_BALANCE_FREQUENCY: 12,
     BALANCE_UPDATED: 19,
     KEY_LABEL: "A",
+  },
+  FREQUENCY: {
+    DAILY: "Daily",
+    MONTHLY: "Monthly",
+    NEVER: "Never",
+    WEEKLY: "Weekly",
   },
   OWNER_CODES: {
     BRIAN: "A",

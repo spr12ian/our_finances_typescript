@@ -316,7 +316,7 @@ export class OurFinances {
   }
 
   showAllAccounts() {
-    this.bankAccounts.showAll();
+    this.bankAccounts.showAllAccounts();
   }
 
   sortSheets() {

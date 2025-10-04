@@ -4,7 +4,7 @@ import {
 } from "@lib/constants";
 
 export const accountSheetMenuItems: [string, string][] = [
-  ["Apply Description replacements", "applyDescriptionReplacements"],
+  ["Apply description replacements", "applyDescriptionReplacements"],
   ["Convert current column to uppercase", "convertCurrentColumnToUppercase"],
   ["Update balance values", "updateBalanceValues"],
 ];
@@ -17,6 +17,13 @@ export const analyzeTransactionsMenuItems: [string, string][] = [
   ["Transaction categories", "goToSheetTransactionCategories"],
 ];
 
+export const bankAccountsSheetMenuItems: [string, string][] = [
+  ["Show all accounts", "showAllAccounts"],
+  ["Show daily accounts", "showDailyAccounts"],
+  ["Show monthly accounts", "showMonthlyAccounts"],
+  ["Show open accounts", "showOpenAccounts"],
+];
+
 export const budgetMenuItems: [string, string][] = [
   ["Budget", "budget"],
   [MetaBudgetAnnualTransactions.SHEET.NAME, "budgetAnnualTransactions"],
@@ -27,12 +34,8 @@ export const budgetMenuItems: [string, string][] = [
 ];
 
 export const gasMenuItems: [string, string][] = [
-  ["All accounts", "showAllAccounts"],
   ["Balance sheet", "balanceSheet"],
   ["Check dependencies", "updateAllDependencies"],
-  ["Daily update", "dailyUpdate"],
-  ["Monthly update", "monthlyUpdate"],
-  ["Open accounts", "openAccounts"],
   ["Sort sheet order", "sortSheets"],
   ["Trim all sheets", "trimAllSheets"],
   ["Update spreadsheet summary", "updateSpreadsheetSummary"],

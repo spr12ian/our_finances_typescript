@@ -103,7 +103,9 @@ export const MetaBankAccounts = {
   OWNER_CODES: {
     BRIAN: "A",
     CHARLIE: "C",
-    LINDA: "L",
+    IAN_B: "B",
+    IAN_S: "S",
+    LINDA_H: "L",
   },
   SHEET: {
     NAME: "Bank accounts",

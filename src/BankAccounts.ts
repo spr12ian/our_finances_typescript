@@ -88,7 +88,7 @@ export class BankAccounts {
     const hideOwnerCodes = [
       Meta.OWNER_CODES.BRIAN,
       Meta.OWNER_CODES.CHARLIE,
-      Meta.OWNER_CODES.LINDA,
+      Meta.OWNER_CODES.LINDA_H,
     ];
     const filters = [
       { column: colOwnerCode, hideValues: hideOwnerCodes },

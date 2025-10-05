@@ -1,6 +1,8 @@
 // src/sheets/core/mixins.ts
 
+import { logStart } from '@lib/logging/FastLog';
 import type { CanFixSheet, CanFormatSheet, CanTrimSheet } from "./capabilities";
+import { Sheet } from '@domain/Sheet';
 
 export type Ctor<T = {}> = abstract new (...args: any[]) => T;
 
@@ -18,7 +20,12 @@ export const addFormatSheet = <T extends object>(
 ): T & CanFormatSheet => {
   return Object.assign(obj, {
     formatSheet() {
-      // formatting logic
+      const finish = logStart("formatSheet", "addFormatSheet");
+      try {
+        (Sheet.prototype.formatSheet as (this: any) => void).call(this);
+      } finally {
+        finish();
+      }
     },
   });
 };

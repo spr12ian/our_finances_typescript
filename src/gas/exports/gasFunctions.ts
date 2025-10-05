@@ -25,9 +25,9 @@ import * as timeConstants from "@lib/timeConstants";
 import { FastLog } from "@logging";
 import { ensureQueueDateFormats, queueSetup } from "@queue/queueSetup";
 import { purgeQueuesOldData, queueWorker } from "@queue/queueWorker";
+import type { FixSheetFlowInput, FormatSheetFlowInput } from "@workflow";
 import { setupWorkflows } from "@workflow";
 import type { ExampleFlowInput } from "@workflow/flows/exampleFlow";
-import type { FixSheetFlowInput } from "@workflow/flows/fixSheetFlow";
 import { startWorkflow } from "@workflow/workflowEngine";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 import { OurFinances } from "../../OurFinances";
@@ -119,6 +119,17 @@ export function GAS_fixSheet() {
     sheetName: getActiveSheetName(),
     startedBy: "GAS_fixSheet",
   } satisfies FixSheetFlowInput;
+
+  startWF(workFlowName, firstStep, input);
+}
+
+export function GAS_formatSheet() {
+  const workFlowName = "formatSheetFlow";
+  const firstStep = "formatSheetStep1";
+  const input = {
+    sheetName: getActiveSheetName(),
+    startedBy: "GAS_formatSheet",
+  } satisfies FormatSheetFlowInput;
 
   startWF(workFlowName, firstStep, input);
 }

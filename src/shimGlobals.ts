@@ -17,6 +17,7 @@ export const shimGlobals = [
   "example",
   "exportFormulasToDrive",
   "fixSheet",
+  "formatSheet",
   "goToSheetCategories",
   "goToSheetCategoryClash",
   "goToSheetHMRC_B",

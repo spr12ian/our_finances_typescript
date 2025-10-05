@@ -4,6 +4,7 @@ export * from "./dates";
 export * from "./errors";
 export * from "./google";
 export * from "./intersectsWatchedCols";
+export * from "./isCtor";
 export * from "./log";
 export * from "./logging";
 export * from "./logging/logTime";

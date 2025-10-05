@@ -8,6 +8,7 @@ export class Sheet {
   #afterHeaderRange?: GoogleAppsScript.Spreadsheet.Range;
   #dataRange?: GoogleAppsScript.Spreadsheet.Range;
   #dataRows?: any[][];
+  #firstRow?: any[][];
   #headerRange?: GoogleAppsScript.Spreadsheet.Range;
   #trueBounds?: { lastRow: number; lastColumn: number };
   private readonly gasSheet: GoogleAppsScript.Spreadsheet.Sheet;
@@ -34,7 +35,12 @@ export class Sheet {
   get afterHeaderRange(): GoogleAppsScript.Spreadsheet.Range {
     if (!this.#afterHeaderRange) {
       const lastColumn = this.getTrueDataBounds().lastColumn; // uses cache
-      let frozenRows = this.gasSheet.getFrozenRows() || 1;
+      let frozenRows = this.gasSheet.getFrozenRows();
+      if (frozenRows < 1) {
+        // always at least one frozen/header row
+        this.gasSheet.setFrozenRows(1);
+        frozenRows = 1;
+      }
       this.#afterHeaderRange = this.gasSheet.getRange(
         frozenRows + 1,
         1,
@@ -57,6 +63,13 @@ export class Sheet {
       this.#dataRows = this.dataRange.getValues().slice(1);
     }
     return this.#dataRows;
+  }
+
+  get firstRow(): any[][] {
+    if (!this.#firstRow) {
+      this.#firstRow = this.firstRowRange.getValues();
+    }
+    return this.#firstRow;
   }
 
   get firstRowRange(): GoogleAppsScript.Spreadsheet.Range {
@@ -173,9 +186,40 @@ export class Sheet {
       .setFontFamily("Arial")
       .setFontSize(10)
       .setFontWeight("normal")
-      .setHorizontalAlignment("left")
       .setVerticalAlignment("top")
       .setWrap(true);
+
+    const firstRow = this.firstRow;
+    if (firstRow.length > 0) {
+      const firstRowValues = firstRow[0];
+      const numColumns = firstRowValues.length;
+      for (let col = 0; col < numColumns; col++) {
+        const value = firstRowValues[col];
+        if (typeof value === "string") {
+          const trimmed = value.trim().toLowerCase();
+          const columnDataRange = this.gasSheet.getRange(
+            afterHeaderRange.getRow(),
+            col + 1,
+            afterHeaderRange.getNumRows(),
+            1
+          );
+          // Apply formatting based on header content
+          if (trimmed.startsWith("date")) {
+            columnDataRange
+              .setNumberFormat("dd/MM/yyyy")
+              .setHorizontalAlignment("center");
+          } else if (trimmed.endsWith("(£)")) {
+            columnDataRange
+              .setNumberFormat("£#,##0.00")
+              .setHorizontalAlignment("right");
+          } else {
+            // Default to text
+            columnDataRange.setNumberFormat("@")
+              .setHorizontalAlignment("left");
+          }
+        }
+      }
+    }
 
     logFinish();
   }

@@ -1,5 +1,5 @@
 // augmentAllSheets.ts
-import type { Ctor } from "../addCommonMethods";
+import type { Ctor } from "../features/sheets/addCommonMethods";
 
 export function isCtor(x: any): x is Ctor {
   try {

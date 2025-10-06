@@ -1,11 +1,6 @@
-// submodule
-// export * from "./AccountBalances";
-export * from "./core";
-export * from "./sheetTypes";
+// index.ts
 
-// single-file modules
+export { BankAccounts } from "./BankAccounts";
 export { Dependencies } from "./Dependencies";
 export { DescriptionReplacements } from "./DescriptionReplacements";
-export { fixSheet } from "./fixSheet";
-export { getExtendedSheet } from "./getExtendedSheet";
 export { SpreadsheetSummary } from "./SpreadsheetSummary";

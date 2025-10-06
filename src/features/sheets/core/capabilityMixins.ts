@@ -1,10 +1,9 @@
 // src/sheets/core/capabilityMixins.ts
 
-import type { Ctor } from "./mixins";
 import type { CanFixSheet, CanFormatSheet, CanTrimSheet } from "./capabilities";
 
 // Capabilities are *mixins* that expect BaseSheet protected API on `this`
-
+export type Ctor<T = {}> = abstract new (...args: any[]) => T;
 export const Formattable = <TBase extends Ctor>(Base: TBase) => {
   abstract class Mixin extends Base {
     formatSheet() {
@@ -19,7 +18,6 @@ export const Formattable = <TBase extends Ctor>(Base: TBase) => {
   return Mixin as unknown as Ctor<InstanceType<TBase> & CanFormatSheet>;
 };
 
-
 export const Trimmable = <TBase extends Ctor>(Base: TBase) => {
   abstract class Mixin extends Base {
     trimSheet() {
@@ -28,7 +26,6 @@ export const Trimmable = <TBase extends Ctor>(Base: TBase) => {
   }
   return Mixin as unknown as Ctor<InstanceType<TBase> & CanTrimSheet>;
 };
-
 
 export const Fixable = <TBase extends Ctor>(Base: TBase) => {
   abstract class Mixin extends Base {
@@ -45,6 +42,3 @@ export const Fixable = <TBase extends Ctor>(Base: TBase) => {
   }
   return Mixin as unknown as Ctor<InstanceType<TBase> & CanFixSheet>;
 };
-
-
-

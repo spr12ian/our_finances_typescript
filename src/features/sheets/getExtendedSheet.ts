@@ -35,9 +35,7 @@ export function getExtendedSheet(sheetName: string): ExtendedSheet {
   }
 }
 
-function getSheetFactory(
-  sheetName: string
-): SheetFactory {
+function getSheetFactory(sheetName: string): SheetFactory {
   const fn = getSheetFactory.name;
   const startTime = FastLog.start(fn, sheetName);
   try {

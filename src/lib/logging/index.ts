@@ -1,3 +1,3 @@
-export { FastLog } from "./FastLog";
+export { FastLog, logStart } from "./FastLog";
 export { logTime } from "./logTime";
 export * from "./workflowLogger";

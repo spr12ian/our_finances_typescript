@@ -1,5 +1,7 @@
 // index.ts
 
+export { AccountBalances } from "./AccountBalances";
+export { Assets } from "./Assets";
 export { BankAccounts } from "./BankAccounts";
 export { Dependencies } from "./Dependencies";
 export { DescriptionReplacements } from "./DescriptionReplacements";

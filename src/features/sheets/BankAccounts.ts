@@ -1,7 +1,7 @@
 import type { Sheet } from "@domain";
 import { Spreadsheet } from "@domain";
 import { MetaBankAccounts as Meta } from "@lib/constants";
-import { FastLog } from "@logging/FastLog";
+import { logStart } from "@logging";
 import { isAccountSheet } from "../../accountSheetFunctions";
 
 type FilterSpec = {
@@ -12,7 +12,7 @@ export class BankAccounts {
   private readonly sheet: Sheet;
 
   constructor(private readonly spreadsheet: Spreadsheet) {
-    this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
+    this.sheet = this.spreadsheet.getSheetByMeta(Meta);
   }
 
   applyFilters(filters: FilterSpec[]) {
@@ -122,7 +122,7 @@ export class BankAccounts {
 
   showDaily() {
     const fn = this.showDaily.name;
-    const startTime = FastLog.start(fn);
+    const finish = logStart(fn, `: ${this.sheet.name}`);
     try {
       const HIDE_COLUMNS = ["C:L", "N:O", "Q:Q", "S:AN", "AQ:AQ"];
 
@@ -135,13 +135,12 @@ export class BankAccounts {
       this.filterByFrequency(Meta.FREQUENCY.DAILY);
     } finally {
       Spreadsheet.flush(); // single flush at end of the view change
-      FastLog.finish(fn, startTime);
+      finish();
     }
   }
 
   showMonthly() {
-    const fn = this.showMonthly.name;
-    const startTime = FastLog.start(fn);
+    const finish = logStart(this.showMonthly.name, this.constructor.name);
     try {
       const HIDE_COLUMNS = ["C:L", "N:O", "Q:Q", "S:U", "W:AJ"];
 
@@ -152,13 +151,12 @@ export class BankAccounts {
       this.filterByFrequency(Meta.FREQUENCY.MONTHLY);
     } finally {
       Spreadsheet.flush(); // single flush at end of the view change
-      FastLog.finish(fn, startTime);
+      finish();
     }
   }
 
   showOpenAccounts() {
-    const fn = this.showOpenAccounts.name;
-    const startTime = FastLog.start(fn);
+    const finish = logStart(this.showOpenAccounts.name, this.constructor.name);
     try {
       this.showAll();
       const filters = [
@@ -172,7 +170,7 @@ export class BankAccounts {
       this.applyFilters(filters);
     } finally {
       Spreadsheet.flush(); // single flush at end of the view change
-      FastLog.finish(fn, startTime);
+      finish();
     }
   }
 

@@ -1,6 +1,6 @@
 // factoryFromClass.ts
-import type { Ctor, SheetFactory } from "../features/sheets/sheetFactoryTypes";
 import type { Spreadsheet } from "@domain";
+import type { Ctor, SheetFactory } from "./sheetFactoryTypes";
 
 type FactoryWithBuild<T> = SheetFactory<T> & { build: SheetFactory<T> };
 

@@ -1,16 +1,14 @@
 // sheetFactories.ts
 
-import { factoryFromClass } from "@lib/factoryFromClass";
 import { FastLog } from "@lib/logging";
-import { BankAccounts } from "@sheets/BankAccounts";
-import { createAccountBalances } from "./AccountBalances/AccountBalances";
-import { createAssets } from "./Assets/Assets";
+import * as SheetClasses from "../sheets";
+import { factoryFromClass } from "./factoryFromClass";
 import type { SheetFactory } from "./sheetFactoryTypes";
 
 export const sheetFactories: Record<string, SheetFactory> = {
-  "Account balances": createAccountBalances,
-  Assets: createAssets,
-  "Bank accounts": factoryFromClass(BankAccounts),
+  "Account balances": factoryFromClass(SheetClasses.AccountBalances),
+  "Assets": factoryFromClass(SheetClasses.Assets),
+  "Bank accounts": factoryFromClass(SheetClasses.BankAccounts),
 };
 FastLog.info(
   "sheetFactories",

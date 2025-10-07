@@ -1,9 +1,13 @@
 /// <reference types="google-apps-script" />
 import type { Spreadsheet } from "@domain";
 import { MetaBudgetWeeklyTransactions as Meta } from "@lib/constants";
-import { setupDaysIteratorTZ } from "./lib/dates";
+import {
+  TransactionsBase,
+  type BudgetMeta,
+  type DateStrategy,
+} from "@sheets/budget/TransactionsBase";
 import type { UpcomingDebitRow } from "@sheets/budgetTypes";
-import { TransactionsBase, type BudgetMeta, type DateStrategy } from "@sheets/budget/TransactionsBase";
+import { setupDaysIteratorTZ } from "../../../lib/dates";
 
 const weeklyStrategy: DateStrategy = {
   mode: "label-match",
@@ -25,7 +29,10 @@ export class BudgetWeeklyTransactions extends TransactionsBase<BudgetMeta> {
   }
 
   // Optionally override isCandidateRow(...) if weekly needs extra guards.
-  public getUpcomingDebits(howManyDaysAhead: number, today = new Date()): UpcomingDebitRow[] {
+  public getUpcomingDebits(
+    howManyDaysAhead: number,
+    today = new Date()
+  ): UpcomingDebitRow[] {
     return super.getUpcomingDebits(howManyDaysAhead, today);
   }
 }

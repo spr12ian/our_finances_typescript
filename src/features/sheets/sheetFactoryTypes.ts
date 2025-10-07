@@ -3,4 +3,4 @@
 import type { Spreadsheet } from "@domain";
 
 export type SheetFactory<T = any> = (s: Spreadsheet) => T;
-export type Ctor<T> = new (s: Spreadsheet) => T;
+export type SheetConstructor<T> = new (s: Spreadsheet) => T;

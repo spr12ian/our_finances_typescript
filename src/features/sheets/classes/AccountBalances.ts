@@ -1,7 +1,7 @@
 import type { Spreadsheet } from "@domain";
 import { MetaAccountBalances as Meta } from "@lib/constants";
 import { FastLog, logStart } from "@logging";
-import { BaseSheet } from './core';
+import { BaseSheet } from '../core';
 
 /**
  * Class to handle the "Account balances" sheet.

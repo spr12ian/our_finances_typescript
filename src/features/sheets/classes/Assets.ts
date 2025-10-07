@@ -1,6 +1,6 @@
 import type { Spreadsheet } from "@domain";
 import { MetaAssets as Meta } from "@lib/constants";
-import { BaseSheet } from './core';
+import { BaseSheet } from "../core";
 
 export class Assets extends BaseSheet {
   constructor(spreadsheet: Spreadsheet) {

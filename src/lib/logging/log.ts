@@ -1,6 +1,6 @@
 /// <reference types="google-apps-script" />
 
-import { FastLog } from "./logging/FastLog";
+import { FastLog } from "./FastLog";
 
 // ──────────────────────────────────────────
 // Configuration

@@ -1,5 +1,6 @@
 // Code.ts — minimal entry point
 import { FastLog } from "@logging/FastLog";
+import "./features/sheets/augmentAllSheets"; // side-effect: addCommonMethods to all sheet classes
 import * as GAS from "./gas/exports";
 import "./gas/exports/attachGASGlobals"; // side-effect: attaches all GAS_* to globalThis
 import { shimGlobals } from "./shimGlobals";

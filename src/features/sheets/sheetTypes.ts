@@ -7,5 +7,7 @@ export interface ExtendedSheet {
 }
 
 // If every non-account sheet takes only spreadsheet:
-export type SheetCtor = new (spreadsheet: Spreadsheet) => ExtendedSheet;
+export type SheetSheetConstructor = new (
+  spreadsheet: Spreadsheet
+) => ExtendedSheet;
 export type SheetFactory = (spreadsheet: Spreadsheet) => ExtendedSheet;

@@ -1,9 +1,9 @@
 /// <reference types="google-apps-script" />
 import type { Sheet, Spreadsheet } from "@domain";
-import { asNumber } from "./lib/asNumber";
-import { getAmountAsGBP } from "./lib/money";
-import { xLookup } from "./lib/xLookup";
-import type { BankDebitDueRow } from '@sheets/budgetTypes';
+import type { BankDebitDueRow } from "@sheets/budgetTypes";
+import { asNumber } from "../../../lib/asNumber";
+import { getAmountAsGBP } from "../../../lib/money";
+import { xLookup } from "../../../lib/xLookup";
 
 export class BankDebitsDue {
   private readonly sheet: Sheet;

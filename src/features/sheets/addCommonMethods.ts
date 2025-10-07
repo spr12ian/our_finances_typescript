@@ -1,13 +1,15 @@
 // Keep this tiny and runtime-safe
 import { logStart } from "@lib/logging/FastLog";
 
-export type Ctor<T = any> = new (...args: any[]) => T;
+export type SheetConstructor<T = any> = new (...args: any[]) => T;
 type CanFixSheet = { fixSheet(): void };
 type CanFormatSheet = { formatSheet(): void };
 type CanTrimSheet = { trimSheet(): void };
 
-export function addCommonMethods<C extends Ctor>(Ctor: C): C {
-  const proto = Ctor.prototype as any;
+export function addCommonMethods<C extends SheetConstructor>(
+  SheetConstructor: C
+): C {
+  const proto = SheetConstructor.prototype as any;
 
   if (typeof proto.fixSheet !== "function") {
     Object.defineProperty(proto, "fixSheet", {
@@ -15,9 +17,14 @@ export function addCommonMethods<C extends Ctor>(Ctor: C): C {
       writable: true,
       enumerable: false,
       value: function fixSheet(this: { sheet?: unknown; name?: string }) {
-        const finish = logStart("fixSheet", this?.name ?? Ctor.name ?? "");
+        const finish = logStart(
+          "fixSheet",
+          this?.name ?? SheetConstructor.name ?? ""
+        );
         try {
-          const target = (this as any).sheet as Partial<CanFixSheet> | undefined;
+          const target = (this as any).sheet as
+            | Partial<CanFixSheet>
+            | undefined;
           if (target && typeof target.fixSheet === "function") {
             return target.fixSheet(); // delegate to the real Sheet
           }
@@ -35,9 +42,14 @@ export function addCommonMethods<C extends Ctor>(Ctor: C): C {
       writable: true,
       enumerable: false,
       value: function formatSheet(this: { sheet?: unknown; name?: string }) {
-        const finish = logStart("formatSheet", this?.name ?? Ctor.name ?? "");
+        const finish = logStart(
+          "formatSheet",
+          this?.name ?? SheetConstructor.name ?? ""
+        );
         try {
-          const target = (this as any).sheet as Partial<CanFormatSheet> | undefined;
+          const target = (this as any).sheet as
+            | Partial<CanFormatSheet>
+            | undefined;
           if (target && typeof target.formatSheet === "function") {
             return target.formatSheet(); // delegate to the real Sheet
           }
@@ -55,9 +67,14 @@ export function addCommonMethods<C extends Ctor>(Ctor: C): C {
       writable: true,
       enumerable: false,
       value: function trimSheet(this: { sheet?: unknown; name?: string }) {
-        const finish = logStart("trimSheet", this?.name ?? Ctor.name ?? "");
+        const finish = logStart(
+          "trimSheet",
+          this?.name ?? SheetConstructor.name ?? ""
+        );
         try {
-          const target = (this as any).sheet as Partial<CanTrimSheet> | undefined;
+          const target = (this as any).sheet as
+            | Partial<CanTrimSheet>
+            | undefined;
           if (target && typeof target.trimSheet === "function") {
             return target.trimSheet(); // delegate to the real Sheet
           }
@@ -69,5 +86,5 @@ export function addCommonMethods<C extends Ctor>(Ctor: C): C {
     });
   }
 
-  return Ctor;
+  return SheetConstructor;
 }

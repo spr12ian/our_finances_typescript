@@ -1,5 +1,5 @@
 import { FastLog } from "@logging";
-import { getAccountSheetNames } from "../../accountSheetFunctions";
+import { getAccountSheetNames } from "../../features/sheets/accountSheetFunctions";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 // import { registerGeneratedAccountFunctions } from "../../registerGeneratedAccountFunctions";
 import { createMenu } from "./createMenu";

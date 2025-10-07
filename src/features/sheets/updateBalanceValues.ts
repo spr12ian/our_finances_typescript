@@ -1,9 +1,9 @@
 // updateBalanceValues.ts
 import { getErrorMessage } from "@lib/errors";
 import { FastLog } from "@logging/FastLog";
-import { AccountSheet } from "src/AccountSheet";
-import { isAccountSheetName } from "../../accountSheetFunctions";
+import { AccountSheet } from "@sheets/classes/AccountSheet";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
+import { isAccountSheetName } from "./accountSheetFunctions";
 
 export function updateBalanceValues(sheetName: string, row: number): boolean {
   const fn = updateBalanceValues.name;

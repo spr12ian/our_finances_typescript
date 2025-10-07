@@ -1,12 +1,12 @@
 // getExtendedSheet.ts
 import { getErrorMessage } from "@lib/errors";
 import { FastLog } from "@logging";
-import { AccountSheet } from "../../AccountSheet";
-import { isAccountSheetName } from "../../accountSheetFunctions";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
+import { isAccountSheetName } from "./accountSheetFunctions";
+import { AccountSheet } from "./classes/AccountSheet";
+import { createGenericSheet } from "./classes/GenericSheet";
 import { sheetFactories } from "./sheetFactories";
 import type { ExtendedSheet, SheetFactory } from "./sheetTypes";
-import { createGenericSheet } from "./GenericSheet";
 
 export function getExtendedSheet(sheetName: string): ExtendedSheet {
   const fn = getExtendedSheet.name;

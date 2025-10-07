@@ -2,7 +2,7 @@ import type { Sheet } from "@domain";
 import { Spreadsheet } from "@domain";
 import { MetaBankAccounts as Meta } from "@lib/constants";
 import { logStart } from "@logging";
-import { isAccountSheet } from "../../accountSheetFunctions";
+import { isAccountSheet } from "../accountSheetFunctions";
 
 type FilterSpec = {
   column: number;

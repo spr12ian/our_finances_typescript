@@ -19,21 +19,21 @@ import { renderBankDebitsDueSummaryHtml } from "@lib/html/renderBankDebitsDueSum
 import { renderUpcomingDebitsAsHtmlTable } from "@lib/html/renderUpcomingDebitsAsHtmlTable";
 import { FastLog } from "@logging/FastLog";
 import type { UpcomingDebit } from "@sheets/budgetTypes";
-import { Dependencies } from "@sheets/Dependencies";
-import { SpreadsheetSummary } from "@sheets/SpreadsheetSummary";
-import { AccountSheet } from "./AccountSheet";
-import { isAccountSheet } from "./accountSheetFunctions";
-import { BankDebitsDue } from "./BankDebitsDue";
-import { BudgetAdHocTransactions } from "./BudgetAdHocTransactions";
-import { BudgetAnnualTransactions } from "./BudgetAnnualTransactions";
-import { BudgetMonthlyTransactions } from "./BudgetMonthlyTransactions";
-import { BudgetWeeklyTransactions } from "./BudgetWeeklyTransactions";
-import { CheckFixedAmounts } from "./CheckFixedAmounts";
-import { BankAccounts } from "./features/sheets/BankAccounts";
+import { Dependencies } from "@sheets/classes/Dependencies";
+import { SpreadsheetSummary } from "@sheets/classes/SpreadsheetSummary";
+import { BudgetAnnualTransactions } from "@sheets/classes/BudgetAnnualTransactions";
+import { isAccountSheet } from "./features/sheets/accountSheetFunctions";
+import { AccountSheet } from "./features/sheets/classes/AccountSheet";
+import { BankAccounts } from "./features/sheets/classes/BankAccounts";
+import { BankDebitsDue } from "./features/sheets/classes/BankDebitsDue";
+import { BudgetAdHocTransactions } from "./features/sheets/classes/BudgetAdHocTransactions";
+import { BudgetMonthlyTransactions } from "./features/sheets/classes/BudgetMonthlyTransactions";
+import { BudgetWeeklyTransactions } from "./features/sheets/classes/BudgetWeeklyTransactions";
+import { CheckFixedAmounts } from "./features/sheets/classes/CheckFixedAmounts";
 import { formatLondonDate } from "./lib/dates";
 import { sendMeHtmlEmail } from "./lib/google/email";
-import { TransactionCategories } from "./TransactionCategories";
-import { Transactions } from "./Transactions";
+import { TransactionCategories } from "./features/sheets/classes/TransactionCategories";
+import { Transactions } from "./features/sheets/classes/Transactions";
 
 export class OurFinances {
   #dependencies?: Dependencies;

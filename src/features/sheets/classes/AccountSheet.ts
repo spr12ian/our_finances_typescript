@@ -3,7 +3,7 @@ import { MetaAccountSheet as Meta, MetaBankAccounts } from "@lib/constants";
 import { getErrorMessage } from "@lib/errors";
 import { xLookup } from "@lib/xLookup";
 import { FastLog } from "@logging/FastLog";
-import { DescriptionReplacements } from "@sheets/DescriptionReplacements";
+import { DescriptionReplacements } from "@sheets/classes/DescriptionReplacements";
 
 const COLOR_FUTURE_ROWS = "#D0E0E3";
 export class AccountSheet {

@@ -1,5 +1,5 @@
 // Keep this tiny and runtime-safe
-import { logStart } from "@lib/logging/FastLog";
+import { methodStart } from "@lib/logging/FastLog";
 
 export type SheetConstructor<T = any> = new (...args: any[]) => T;
 type CanFixSheet = { fixSheet(): void };
@@ -17,7 +17,7 @@ export function addCommonMethods<C extends SheetConstructor>(
       writable: true,
       enumerable: false,
       value: function fixSheet(this: { sheet?: unknown; name?: string }) {
-        const finish = logStart(
+        const finish = methodStart(
           "fixSheet",
           this?.name ?? SheetConstructor.name ?? ""
         );
@@ -42,7 +42,7 @@ export function addCommonMethods<C extends SheetConstructor>(
       writable: true,
       enumerable: false,
       value: function formatSheet(this: { sheet?: unknown; name?: string }) {
-        const finish = logStart(
+        const finish = methodStart(
           "formatSheet",
           this?.name ?? SheetConstructor.name ?? ""
         );
@@ -67,7 +67,7 @@ export function addCommonMethods<C extends SheetConstructor>(
       writable: true,
       enumerable: false,
       value: function trimSheet(this: { sheet?: unknown; name?: string }) {
-        const finish = logStart(
+        const finish = methodStart(
           "trimSheet",
           this?.name ?? SheetConstructor.name ?? ""
         );

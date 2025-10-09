@@ -28,7 +28,12 @@ let memRing: LogRecord[] | null = null;
 let errorCount = 0;
 let statusSheetCache: GoogleAppsScript.Spreadsheet.Sheet | null = null;
 
-export function logStart(methodName: string, contextName: string) {
+export function functionStart(functionName: string) {
+  const start = FastLog.start(functionName);
+  return () => FastLog.finish(functionName, start);
+}
+
+export function methodStart(methodName: string, contextName: string) {
   const start = FastLog.start(methodName, contextName);
   return () => FastLog.finish(methodName, start);
 }

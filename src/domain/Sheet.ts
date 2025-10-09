@@ -1,4 +1,4 @@
-import { FastLog, logStart } from "@logging/FastLog";
+import { FastLog, methodStart } from "@logging/FastLog";
 
 /**
  * Thin wrapper around a GAS Sheet.
@@ -79,7 +79,7 @@ export class Sheet {
   }
 
   get headerRange(): GoogleAppsScript.Spreadsheet.Range {
-    const logFinish = logStart("headerRange", this.name);
+    const logFinish = methodStart("headerRange", this.name);
     try {
       if (!this.#headerRange) {
         let frozenRows = this.gasSheet.getFrozenRows() || 1;
@@ -168,7 +168,7 @@ export class Sheet {
   }
 
   fixSheet(): void {
-    const logFinish = logStart(this.fixSheet.name, this.name);
+    const logFinish = methodStart(this.fixSheet.name, this.name);
 
     this.trimSheet();
     this.formatSheet();
@@ -177,7 +177,7 @@ export class Sheet {
   }
 
   formatAfterHeader(): void {
-    const logFinish = logStart(this.formatAfterHeader.name, this.name);
+    const logFinish = methodStart(this.formatAfterHeader.name, this.name);
 
     let afterHeaderRange = this.afterHeaderRange;
     afterHeaderRange
@@ -218,8 +218,7 @@ export class Sheet {
               .setHorizontalAlignment("right");
           } else {
             // Default to text
-            columnDataRange.setNumberFormat("@")
-              .setHorizontalAlignment("left");
+            columnDataRange.setNumberFormat("@").setHorizontalAlignment("left");
           }
         }
       }
@@ -229,7 +228,7 @@ export class Sheet {
   }
 
   formatHeader(): void {
-    const logFinish = logStart(this.formatHeader.name, this.name);
+    const logFinish = methodStart(this.formatHeader.name, this.name);
 
     let headerRange = this.headerRange;
     headerRange
@@ -247,7 +246,7 @@ export class Sheet {
   }
 
   formatSheet(): void {
-    const logFinish = logStart(this.formatSheet.name, this.name);
+    const logFinish = methodStart(this.formatSheet.name, this.name);
 
     this.formatHeader();
     this.formatAfterHeader();
@@ -302,7 +301,7 @@ export class Sheet {
    * @returns {{ lastRow: number, lastColumn: number }}
    */
   getTrueDataBounds(): { lastRow: number; lastColumn: number } {
-    const logFinish = logStart(this.getTrueDataBounds.name, this.name);
+    const logFinish = methodStart(this.getTrueDataBounds.name, this.name);
     try {
       if (this.#trueBounds) return this.#trueBounds;
 
@@ -482,7 +481,7 @@ export class Sheet {
   }
 
   trimSheet(): void {
-    const logFinish = logStart(this.trimSheet.name, this.name);
+    const logFinish = methodStart(this.trimSheet.name, this.name);
 
     const { lastRow, lastColumn } = this.getTrueDataBounds();
     const gasSheet = this.gasSheet;

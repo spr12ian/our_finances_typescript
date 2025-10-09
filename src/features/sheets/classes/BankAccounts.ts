@@ -1,7 +1,7 @@
 import type { Sheet } from "@domain";
 import { Spreadsheet } from "@domain";
 import { MetaBankAccounts as Meta } from "@lib/constants";
-import { logStart } from "@logging";
+import { methodStart } from "@logging";
 import { isAccountSheet } from "../accountSheetFunctions";
 
 type FilterSpec = {
@@ -122,7 +122,7 @@ export class BankAccounts {
 
   showDaily() {
     const fn = this.showDaily.name;
-    const finish = logStart(fn, `: ${this.sheet.name}`);
+    const finish = methodStart(fn, `: ${this.sheet.name}`);
     try {
       const HIDE_COLUMNS = ["C:L", "N:O", "Q:Q", "S:AN", "AQ:AQ"];
 
@@ -140,7 +140,7 @@ export class BankAccounts {
   }
 
   showMonthly() {
-    const finish = logStart(this.showMonthly.name, this.constructor.name);
+    const finish = methodStart(this.showMonthly.name, this.constructor.name);
     try {
       const HIDE_COLUMNS = ["C:L", "N:O", "Q:Q", "S:U", "W:AJ"];
 
@@ -156,7 +156,10 @@ export class BankAccounts {
   }
 
   showOpenAccounts() {
-    const finish = logStart(this.showOpenAccounts.name, this.constructor.name);
+    const finish = methodStart(
+      this.showOpenAccounts.name,
+      this.constructor.name
+    );
     try {
       this.showAll();
       const filters = [

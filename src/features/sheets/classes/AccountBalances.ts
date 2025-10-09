@@ -1,13 +1,12 @@
 import type { Spreadsheet } from "@domain";
 import { MetaAccountBalances as Meta } from "@lib/constants";
-import { FastLog, logStart } from "@logging";
-import { BaseSheet } from '../core';
+import { FastLog, methodStart } from "@logging";
+import { BaseSheet } from "../core";
 
 /**
  * Class to handle the "Account balances" sheet.
  */
 export class AccountBalances extends BaseSheet {
-
   constructor(spreadsheet: Spreadsheet) {
     super(Meta.SHEET.NAME, spreadsheet);
   }
@@ -17,14 +16,14 @@ export class AccountBalances extends BaseSheet {
   }
 
   fixSheet(): void {
-    const finish = logStart(this.fixSheet.name, this.constructor.name);
+    const finish = methodStart(this.fixSheet.name, this.constructor.name);
     this.update();
     this.sheet.fixSheet();
     finish();
   }
 
   update(): void {
-    const finish = logStart(this.update.name, this.constructor.name);
+    const finish = methodStart(this.update.name, this.constructor.name);
     try {
       const values = this.spreadsheet
         .getSheet("Transactions")

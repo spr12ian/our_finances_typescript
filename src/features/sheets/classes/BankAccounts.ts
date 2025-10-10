@@ -1,8 +1,9 @@
 import type { Sheet } from "@domain";
 import { Spreadsheet } from "@domain";
 import { MetaBankAccounts as Meta } from "@lib/constants";
-import { methodStart } from "@logging";
+import { FastLog, methodStart } from "@logging";
 import { isAccountSheet } from "../accountSheetFunctions";
+import { AccountSheets } from "./AccountSheets";
 
 type FilterSpec = {
   column: number;
@@ -13,6 +14,11 @@ export class BankAccounts {
 
   constructor(private readonly spreadsheet: Spreadsheet) {
     this.sheet = this.spreadsheet.getSheetByMeta(Meta);
+    this.validateKeys();
+  }
+
+  get keys(): string[] {
+    return this.sheet.getColumnData(Meta.COLUMNS.KEY).slice(1); // skip header
   }
 
   applyFilters(filters: FilterSpec[]) {
@@ -177,8 +183,31 @@ export class BankAccounts {
     }
   }
 
+  // updateAllAccountSheetBalances(): void {
+  //   const finish = methodStart(
+  //     this.updateAllAccountSheetBalances.name,
+  //     this.constructor.name
+  //   );
+  //   const names = this.sheet.getColumnData(Meta.COLUMNS.ACCOUNT_NAME).slice(1); // skip header
+  //   // Note: assumes account names are unique and match the sheet names (minus leading apostrophe)
+  //   // (enforced by data validation in the account name column)
+  //   // Get all sheets once to avoid repeated calls inside the loop
+  //   const accountSheets = getAccountSheets(this.spreadsheet);
+  //   const accountSheetMap: Record<string, Sheet> = {};
+  //   accountSheets.forEach((sheet) => {
+  //     accountSheetMap[sheet.name.slice(1)] = sheet; // key is name without leading apostrophe
+  //   });
+
+  //   accountSheetMap.forEach((sheet) => {
+  //     const s = new AccountSheet(sheet, this.spreadsheet);
+  //     s.currentEndingBalance;
+  //   });
+
+  //   finish();
+  // }
+
   updateLastUpdatedByKey(key: string) {
-    const row = this.sheet.findRowByKey(Meta.COLUMNS.KEY_LABEL, key);
+    const row = this.sheet.findRowByKey(Meta.LABELS.KEY_LABEL, key);
 
     const lastUpdateCell = this.sheet.raw.getRange(
       row,
@@ -191,6 +220,71 @@ export class BankAccounts {
     if (isAccountSheet(sheet)) {
       const key = sheet.getSheetName().slice(1);
       this.updateLastUpdatedByKey(key);
+    }
+  }
+
+  validateKeys(): void {
+    const finish = methodStart(this.validateKeys.name, this.constructor.name);
+    try {
+      const accountSheetKeys = this.accountSheetKeys();
+
+      const keys = this.keys; // already skips header row
+      FastLog.log("Validating bank account keys:", keys);
+      if (keys.length === 0) {
+        throw new Error("No keys found in bank accounts sheet");
+      }
+
+      if (keys.some((key) => !key || key.trim() === "")) {
+        throw new Error("Empty key found in bank accounts sheet");
+      }
+
+      if (new Set(keys).size !== keys.length) {
+        throw new Error("Duplicate keys found in bank accounts sheet");
+      }
+
+      // Validate that each account sheet has a corresponding key and vice versa
+      // Get all account sheet names once to avoid repeated calls inside the loop
+      // Account sheet names start with an underscore
+      // Keys do not have the leading underscore
+      // So we compare account sheet names without the leading underscore to the keys
+      // to ensure they match exactly
+
+      const invalidNames = keys.filter(
+        (name) => name && !accountSheetKeys.includes(name)
+      );
+
+      if (invalidNames.length > 0) {
+        throw new Error(
+          `Invalid account sheet names: ${invalidNames.join(", ")}`
+        );
+      }
+
+      const missingNames = accountSheetKeys.filter(
+        (name) => name && !keys.includes(name)
+      );
+
+      if (missingNames.length > 0) {
+        throw new Error(
+          `Missing account sheet names: ${missingNames.join(", ")}`
+        );
+      }
+    } finally {
+      finish();
+    }
+  }
+
+  private accountSheetKeys() {
+    const finish = methodStart(
+      this.accountSheetKeys.name,
+      this.constructor.name
+    );
+    try {
+      const accountSheets = new AccountSheets(this.spreadsheet);
+      const accountSheetKeys = accountSheets.accountSheetKeys;
+      FastLog.log("accountSheetKeys: ", accountSheetKeys);
+      return accountSheetKeys;
+    } finally {
+      finish();
     }
   }
 }

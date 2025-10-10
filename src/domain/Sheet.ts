@@ -14,17 +14,6 @@ export class Sheet {
   private readonly gasSheet: GoogleAppsScript.Spreadsheet.Sheet;
   // private meta: { SHEET: { NAME: string } } | null = null;
 
-  // Call this after any mutating operation:
-  private changed() {
-    this.invalidate();
-  }
-
-  private invalidate() {
-    this.#dataRange = undefined;
-    this.#trueBounds = undefined;
-    this.#headerRange = undefined;
-  }
-
   /**
    * ⚠️ Internal constructor – prefer `Spreadsheet.getSheet(sheetName)` for safety.
    */
@@ -256,6 +245,35 @@ export class Sheet {
 
   getAllValues(): any[][] {
     return this.dataRange.getValues();
+  }
+
+  /**
+   * Returns all values from a column, excluding the header.
+   * @param columnIndex - 1-based index of the column (A = 1).
+   */
+  getColumnData(columnIndex: number): string[] {
+    const sheet = this.gasSheet;
+    const numRows = sheet.getLastRow() - 1;
+    if (numRows <= 0) return [];
+
+    const data = sheet.getRange(2, columnIndex, numRows).getValues();
+    return data.map((row) => String(row[0]));
+  }
+
+  /**
+   * Returns all values from a column identified by its header name.
+   * @param columnName - The header label of the column.
+   */
+  getColumnDataByName(columnName: string): string[] {
+    const sheet = this.gasSheet;
+    const headers = sheet.getDataRange().getValues()[0];
+    const colIndex = headers.indexOf(columnName) + 1; // Convert to 1-based
+
+    if (colIndex === 0) {
+      throw new Error(`Column "${columnName}" not found.`);
+    }
+
+    return this.getColumnData(colIndex);
   }
 
   getRangesWhereColumnEquals(col: number, match: string) {
@@ -516,5 +534,11 @@ export class Sheet {
       );
     }
     logFinish();
+  }
+  // Call this after any mutating operation:
+  private changed() {
+    this.#dataRange = undefined;
+    this.#trueBounds = undefined;
+    this.#headerRange = undefined;
   }
 }

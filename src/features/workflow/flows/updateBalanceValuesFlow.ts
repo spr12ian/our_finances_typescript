@@ -1,4 +1,4 @@
-// @workflow/flows/updateBalanceValuesFlow.ts
+// @workflow/flows/updateAccountSheetBalancesFlow.ts
 import { getErrorMessage } from "@lib/errors";
 import { ONE_MINUTE, ONE_SECOND } from "@lib/timeConstants";
 import { registerStep } from "../workflowRegistry";
@@ -12,15 +12,31 @@ export type UpdateBalanceValuesFlowInput = {
   startedBy?: string;
 };
 
-export function updateBalanceValuesFlow(): void {
-  registerStep("updateBalanceValuesFlow", "updateBalanceValuesStep1", updateBalanceValuesStep1);
-  registerStep("updateBalanceValuesFlow", "updateBalanceValuesStep2", updateBalanceValuesStep2);
-  registerStep("updateBalanceValuesFlow", "updateBalanceValuesStep3", updateBalanceValuesStep3);
-  registerStep("updateBalanceValuesFlow", "updateBalanceValuesStep4", updateBalanceValuesStep4);
+export function updateAccountSheetBalancesFlow(): void {
+  registerStep(
+    "updateAccountSheetBalancesFlow",
+    "updateAccountSheetBalancesStep1",
+    updateAccountSheetBalancesStep1
+  );
+  registerStep(
+    "updateAccountSheetBalancesFlow",
+    "updateAccountSheetBalancesStep2",
+    updateAccountSheetBalancesStep2
+  );
+  registerStep(
+    "updateAccountSheetBalancesFlow",
+    "updateAccountSheetBalancesStep3",
+    updateAccountSheetBalancesStep3
+  );
+  registerStep(
+    "updateAccountSheetBalancesFlow",
+    "updateAccountSheetBalancesStep4",
+    updateAccountSheetBalancesStep4
+  );
 }
 
-const updateBalanceValuesStep1: StepFn = ({ input, state, log }) => {
-  const fn = updateBalanceValuesStep1.name;
+const updateAccountSheetBalancesStep1: StepFn = ({ input, state, log }) => {
+  const fn = updateAccountSheetBalancesStep1.name;
   const startTime = log.start(fn);
   try {
     const { sheetName, row, startedBy } = input as UpdateBalanceValuesFlowInput;
@@ -29,10 +45,10 @@ const updateBalanceValuesStep1: StepFn = ({ input, state, log }) => {
     log("row:", row);
     log("startedBy:", startedBy);
 
-    state.e1 = updateBalanceValues(sheetName, row);
+    state.e1 = updateAccountSheetBalances(sheetName, row);
 
     // NOTE: no `input` in the result; `state` is allowed on `next`
-    return { kind: "next", nextStep: "updateBalanceValuesStep2", state };
+    return { kind: "next", nextStep: "updateAccountSheetBalancesStep2", state };
   } catch (err) {
     log.error(err);
     return { kind: "fail", reason: getErrorMessage(err), retryable: true };
@@ -41,20 +57,20 @@ const updateBalanceValuesStep1: StepFn = ({ input, state, log }) => {
   }
 };
 
-const updateBalanceValuesStep2: StepFn = ({ input, state, log }) => {
-  const fn = updateBalanceValuesStep2.name;
+const updateAccountSheetBalancesStep2: StepFn = ({ input, state, log }) => {
+  const fn = updateAccountSheetBalancesStep2.name;
   const startTime = log.start(fn);
   try {
-    log("Starting updateBalanceValuesStep2");
+    log("Starting updateAccountSheetBalancesStep2");
     const { sheetName, row } = input as UpdateBalanceValuesFlowInput;
     log("input:", input);
     log("state:", state);
     log("sheetName:", sheetName);
     log("row:", row);
 
-    state.e2 = updateBalanceValues2(sheetName, row);
+    state.e2 = updateAccountSheetBalances2(sheetName, row);
 
-    return { kind: "next", nextStep: "updateBalanceValuesStep3", state };
+    return { kind: "next", nextStep: "updateAccountSheetBalancesStep3", state };
   } catch (err) {
     log.error(err);
     return { kind: "fail", reason: getErrorMessage(err), retryable: true };
@@ -63,11 +79,11 @@ const updateBalanceValuesStep2: StepFn = ({ input, state, log }) => {
   }
 };
 
-const updateBalanceValuesStep3: StepFn = ({ input, state, log }) => {
-  const fn = updateBalanceValuesStep3.name;
+const updateAccountSheetBalancesStep3: StepFn = ({ input, state, log }) => {
+  const fn = updateAccountSheetBalancesStep3.name;
   const startTime = log.start(fn);
   try {
-    log("Starting updateBalanceValuesStep3");
+    log("Starting updateAccountSheetBalancesStep3");
     const { sheetName, row } = input as UpdateBalanceValuesFlowInput;
     log("input:", input);
     log("state:", state);
@@ -78,14 +94,22 @@ const updateBalanceValuesStep3: StepFn = ({ input, state, log }) => {
     state.yieldCount = count;
 
     // do your poll/work here; set state.ready=true when done
-    state.e3 = updateBalanceValues3(sheetName, row);
+    state.e3 = updateAccountSheetBalances3(sheetName, row);
 
     if (state.ready) {
-      return { kind: "next", nextStep: "updateBalanceValuesStep4", state };
+      return {
+        kind: "next",
+        nextStep: "updateAccountSheetBalancesStep4",
+        state,
+      };
     }
 
     if (count >= MAX_YIELD_STEPS) {
-      return { kind: "next", nextStep: "updateBalanceValuesStep4", state };
+      return {
+        kind: "next",
+        nextStep: "updateAccountSheetBalancesStep4",
+        state,
+      };
     }
 
     // not ready yet — back off
@@ -99,18 +123,18 @@ const updateBalanceValuesStep3: StepFn = ({ input, state, log }) => {
   }
 };
 
-const updateBalanceValuesStep4: StepFn = ({ input, state, log }) => {
-  const fn = updateBalanceValuesStep4.name;
+const updateAccountSheetBalancesStep4: StepFn = ({ input, state, log }) => {
+  const fn = updateAccountSheetBalancesStep4.name;
   const startTime = log.start(fn);
   try {
-    log("Starting updateBalanceValuesStep4");
+    log("Starting updateAccountSheetBalancesStep4");
     const { sheetName, row } = input as UpdateBalanceValuesFlowInput;
     log("input:", input);
     log("sheetName:", sheetName);
     log("row:", row);
     log("Final totals:", state.totals);
 
-    state.e4 = updateBalanceValues4(sheetName, row);
+    state.e4 = updateAccountSheetBalances4(sheetName, row);
 
     // `complete` supports `output`, not `state`
     const output = {
@@ -129,15 +153,15 @@ const updateBalanceValuesStep4: StepFn = ({ input, state, log }) => {
   }
 };
 
-function updateBalanceValues(sheetName: string, row: number): string {
+function updateAccountSheetBalances(sheetName: string, row: number): string {
   return `${sheetName} ${row}`;
 }
-function updateBalanceValues2(sheetName: string, row: number): string {
+function updateAccountSheetBalances2(sheetName: string, row: number): string {
   return `${sheetName} ${row}`;
 }
-function updateBalanceValues3(sheetName: string, row: number): string {
+function updateAccountSheetBalances3(sheetName: string, row: number): string {
   return `${sheetName} ${row}`;
 }
-function updateBalanceValues4(sheetName: string, row: number): string {
+function updateAccountSheetBalances4(sheetName: string, row: number): string {
   return `${sheetName} ${row}`;
 }

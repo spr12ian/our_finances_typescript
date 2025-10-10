@@ -291,9 +291,9 @@ export function GAS_updateAllDependencies() {
   new OurFinances(spreadsheet).updateAllDependencies();
 }
 
-export function GAS_updateBalanceValues() {
+export function GAS_updateAccountSheetBalances() {
   const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).updateBalanceValues();
+  new OurFinances(spreadsheet).updateAccountSheetBalances();
 }
 
 export function GAS_updateSpreadsheetSummary() {

@@ -19,9 +19,9 @@ import { renderBankDebitsDueSummaryHtml } from "@lib/html/renderBankDebitsDueSum
 import { renderUpcomingDebitsAsHtmlTable } from "@lib/html/renderUpcomingDebitsAsHtmlTable";
 import { FastLog } from "@logging/FastLog";
 import type { UpcomingDebit } from "@sheets/budgetTypes";
+import { BudgetAnnualTransactions } from "@sheets/classes/BudgetAnnualTransactions";
 import { Dependencies } from "@sheets/classes/Dependencies";
 import { SpreadsheetSummary } from "@sheets/classes/SpreadsheetSummary";
-import { BudgetAnnualTransactions } from "@sheets/classes/BudgetAnnualTransactions";
 import { isAccountSheet } from "./features/sheets/accountSheetFunctions";
 import { AccountSheet } from "./features/sheets/classes/AccountSheet";
 import { BankAccounts } from "./features/sheets/classes/BankAccounts";
@@ -30,10 +30,10 @@ import { BudgetAdHocTransactions } from "./features/sheets/classes/BudgetAdHocTr
 import { BudgetMonthlyTransactions } from "./features/sheets/classes/BudgetMonthlyTransactions";
 import { BudgetWeeklyTransactions } from "./features/sheets/classes/BudgetWeeklyTransactions";
 import { CheckFixedAmounts } from "./features/sheets/classes/CheckFixedAmounts";
-import { formatLondonDate } from "./lib/dates";
-import { sendMeHtmlEmail } from "./lib/google/email";
 import { TransactionCategories } from "./features/sheets/classes/TransactionCategories";
 import { Transactions } from "./features/sheets/classes/Transactions";
+import { formatLondonDate } from "./lib/dates";
+import { sendMeHtmlEmail } from "./lib/google/email";
 
 export class OurFinances {
   #dependencies?: Dependencies;
@@ -260,7 +260,7 @@ export class OurFinances {
       switch (e.changeType) {
         case "REMOVE_ROW":
           FastLog.log(`Row removed`);
-          this.updateBalanceValues();
+          this.updateAccountSheetBalances();
           break;
         default:
           FastLog.log(`Unhandled change event: ${JSON.stringify(e, null, 2)}`);
@@ -335,8 +335,8 @@ export class OurFinances {
     dependencies.updateAllDependencies();
   }
 
-  updateBalanceValues(rowEdited?: number) {
-    FastLog.log(`Started OurFinances.updateBalanceValues`);
+  updateAccountSheetBalances(rowEdited?: number) {
+    FastLog.log(`Started OurFinances.updateAccountSheetBalances`);
 
     const activeSheet = this.#spreadsheet.activeSheet;
     if (!activeSheet) {
@@ -347,10 +347,10 @@ export class OurFinances {
     if (isAccountSheet(activeSheet)) {
       FastLog.log(`Sheet ${activeSheet.name} is an account sheet.`);
       const accountSheet = new AccountSheet(activeSheet, this.#spreadsheet);
-      accountSheet.updateBalanceValues(rowEdited);
+      accountSheet.updateAccountSheetBalances(rowEdited);
     }
 
-    FastLog.log(`Finished OurFinances.updateBalanceValues`);
+    FastLog.log(`Finished OurFinances.updateAccountSheetBalances`);
   }
 
   updateSpreadsheetSummary() {

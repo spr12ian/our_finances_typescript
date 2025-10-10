@@ -2,6 +2,7 @@ import type { Sheet, Spreadsheet } from "@domain";
 import { ACCOUNT_PREFIX } from "@lib/constants";
 
 let cachedAccountSheets: Sheet[] | null = null;
+let cachedAccountSheetKeys: string[] | null = null;
 let cachedAccountSheetNames: string[] | null = null;
 
 /**
@@ -20,6 +21,24 @@ export function getAccountSheets(
   );
 
   return cachedAccountSheets;
+}
+
+/**
+ * Retrieves all account sheet keys (sheetName minus leading underscore).
+ * Uses caching to avoid recomputation. Pass `true` to force refresh.
+ */
+export function getAccountSheetKeys(
+  spreadsheet: Spreadsheet,
+  forceRefresh = false
+): string[] {
+  if (!forceRefresh && cachedAccountSheetKeys !== null) {
+    return cachedAccountSheetKeys;
+  }
+  cachedAccountSheetKeys = getAccountSheets(spreadsheet, forceRefresh).map(
+    (sheet) => sheet.name.slice(1)
+  );
+
+  return cachedAccountSheetKeys;
 }
 
 /**

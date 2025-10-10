@@ -1,4 +1,4 @@
-/// <reference types="google-apps-script" />
+// BudgetAdHocTransactions.ts
 import type { Spreadsheet } from "@domain";
 import { MetaBudgetAdHocTransactions as Meta } from "@lib/constants";
 import { ONE_DAY } from "@lib/timeConstants";

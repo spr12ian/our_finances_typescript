@@ -1,20 +1,15 @@
-/// <reference types="google-apps-script" />
+// TransactionsBase.ts
 import type { Sheet, Spreadsheet } from "@domain";
-import type { UpcomingDebitRow } from "@sheets/budgetTypes";
+import { col0 } from "@lib/columns";
 import { formatLondonDate, getOrdinalDateTZ } from "@lib/dates";
 import { getAmountAsGBP } from "@lib/money";
 import { ONE_DAY } from "@lib/timeConstants";
+import type { BudgetColumns, UpcomingDebitRow } from "@sheets/budgetTypes";
 
 /** Minimal meta contract each sheet uses */
 export type BudgetMeta = {
   SHEET: { NAME: string };
-  COLUMNS: {
-    DATE: number;
-    DEBIT_AMOUNT: number;
-    FROM_ACCOUNT: number;
-    PAYMENT_TYPE: number;
-    DESCRIPTION: number;
-  };
+  COLUMNS: BudgetColumns;
 };
 
 export type DateMatchMode = "label-match" | "range-check";
@@ -56,26 +51,34 @@ export abstract class TransactionsBase<M extends BudgetMeta> {
 
   /** Hook to filter out rows that shouldn’t be considered (e.g., blank dates) */
   protected isCandidateRow(row: any[]): boolean {
-    const dateVal = row[this.meta.COLUMNS.DATE];
+    const dateVal = row[col0(this.meta.COLUMNS, "DATE")];
     return dateVal !== "" && dateVal != null;
   }
 
   /** Convert a qualifying row into an `UpcomingDebitRow` */
   protected toUpcomingDebitRow(rawDate: Date, row: any[]): UpcomingDebitRow {
-    const { COLUMNS: C } = this.meta;
-    const amount = Number(row[C.DEBIT_AMOUNT]) || 0;
+    const C = this.meta.COLUMNS;
+    const amtIdx = col0(C, "DEBIT_AMOUNT");
+    const fromIdx = col0(C, "FROM_ACCOUNT");
+    const byIdx = col0(C, "PAYMENT_TYPE");
+    const descIdx = col0(C, "DESCRIPTION");
+
+    const amount = Number(row[amtIdx]) || 0;
     return {
       date: getOrdinalDateTZ(rawDate),
       amount: getAmountAsGBP(amount),
-      from: String(row[C.FROM_ACCOUNT] ?? ""),
-      by: String(row[C.PAYMENT_TYPE] ?? ""),
-      description: String(row[C.DESCRIPTION] ?? ""),
+      from: String(row[fromIdx] ?? ""),
+      by: String(row[byIdx] ?? ""),
+      description: String(row[descIdx] ?? ""),
     };
   }
 
   /** Public: shared “engine” that both subclasses call */
-  public getUpcomingDebits(howManyDaysAhead: number, today = new Date()): UpcomingDebitRow[] {
-    const { COLUMNS: C } = this.meta;
+  public getUpcomingDebits(
+    howManyDaysAhead: number,
+    today = new Date()
+  ): UpcomingDebitRow[] {
+    const C = this.meta.COLUMNS;
     const rows: UpcomingDebitRow[] = [];
     const targets = this.strategy.makeTargetDates(today, howManyDaysAhead);
     const targetLabelToDate = buildTargetLabelToDateMap(targets);
@@ -85,23 +88,24 @@ export abstract class TransactionsBase<M extends BudgetMeta> {
         ? new Date(today.getTime() + howManyDaysAhead * ONE_DAY)
         : null;
 
+    const dateIdx = col0(C, "DATE");
+    const debitIdx = col0(C, "DEBIT_AMOUNT");
+
     for (const row of this.dataRows) {
       if (!this.isCandidateRow(row)) continue;
 
-      const changeAmount = Number(row[C.DEBIT_AMOUNT]) || 0;
+      const changeAmount = Number(row[debitIdx]) || 0;
       if (Math.abs(changeAmount) <= 1) continue;
 
-      const rawCell = row[C.DATE];
-      const rowDate = new Date(rawCell);
+      const rawCell = row[dateIdx];
+      const rowDate = rawCell instanceof Date ? rawCell : new Date(rawCell);
 
       if (this.strategy.mode === "label-match") {
-        // Match by label to any of the target dates
         const label = formatLondonDate(rowDate);
         const matched = targetLabelToDate.get(label);
         if (!matched) continue;
         rows.push(this.toUpcomingDebitRow(matched, row));
       } else {
-        // Range check: today <= rowDate <= horizonEnd
         if (!horizonEnd) continue;
         if (rowDate >= today && rowDate <= horizonEnd) {
           rows.push(this.toUpcomingDebitRow(rowDate, row));

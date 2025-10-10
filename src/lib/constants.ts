@@ -1,13 +1,16 @@
+import type { OneBased } from "../types/oneBased";
+import { oneBased } from "../types/oneBased";
+
 export const ACCOUNT_PREFIX = "_";
 export const LOCALE = "en-GB" as const;
 
 export const MetaAccountBalances = {
   COLUMNS: {
-    ACCOUNT: 1,
-    CREDIT: 2,
-    DEBIT: 3,
-    NETT: 4,
-  },
+    ACCOUNT: oneBased(1),
+    CREDIT: oneBased(2),
+    DEBIT: oneBased(3),
+    NETT: oneBased(4),
+  } as const satisfies Record<string, OneBased<number>>,
   FORMULA_CONFIG: [
     {
       cell: "A1",
@@ -21,22 +24,20 @@ export const MetaAccountBalances = {
   ] as { cell: string; formula: string }[],
   HEADERS: ["Account", "Credit (£)", "Debit (£)", "Nett (£)"],
   ROW_DATA_STARTS: 2,
-  SHEET: {
-    NAME: "Account balances",
-  },
+  SHEET: { NAME: "Account balances" },
 };
 
 export const MetaAccountSheet = {
   COLUMNS: {
-    DATE: 1,
-    DESCRIPTION: 2,
-    CREDIT: 3,
-    DEBIT: 4,
-    NOTE: 5,
-    COUNTERPARTY: 6,
-    COUNTERPARTY_DATE: 7,
-    BALANCE: 8,
-  },
+    DATE: oneBased(1),
+    DESCRIPTION: oneBased(2),
+    CREDIT: oneBased(3),
+    DEBIT: oneBased(4),
+    NOTE: oneBased(5),
+    COUNTERPARTY: oneBased(6),
+    COUNTERPARTY_DATE: oneBased(7),
+    BALANCE: oneBased(8),
+  } as const satisfies Record<string, OneBased<number>>,
   ROW_DATA_STARTS: 2,
   HEADERS: [
     "Date",
@@ -87,19 +88,20 @@ export const MetaBMONZO = {
 };
 
 export const MetaBalanceSheet = {
-  SHEET: {
-    NAME: "Balance sheet",
-  },
+  SHEET: { NAME: "Balance sheet" },
 };
 
+// Split KEY_LABEL out so COLUMNS can be strictly numeric & branded
 export const MetaBankAccounts = {
   COLUMNS: {
-    KEY: 1,
-    OWNER_CODE: 3,
-    DATE_CLOSED: 11,
-    CHECK_BALANCE_FREQUENCY: 12,
-    BALANCE_UPDATED: 19,
-    KEY_LABEL: "A",
+    KEY: oneBased(1),
+    OWNER_CODE: oneBased(3),
+    DATE_CLOSED: oneBased(11),
+    CHECK_BALANCE_FREQUENCY: oneBased(12),
+    BALANCE_UPDATED: oneBased(19),
+  } as const satisfies Record<string, OneBased<number>>,
+  LABELS: {
+    KEY_LABEL: "A" as const,
   },
   FREQUENCY: {
     DAILY: "Daily",
@@ -114,143 +116,116 @@ export const MetaBankAccounts = {
     IAN_S: "S",
     LINDA_H: "L",
   },
-  SHEET: {
-    NAME: "Bank accounts",
-  },
+  SHEET: { NAME: "Bank accounts" },
 };
 
 export const MetaBudget = {
-  SHEET: {
-    NAME: "Budget",
-  },
+  SHEET: { NAME: "Budget" },
 };
 
 export const MetaBudgetAdHocTransactions = {
+  SHEET: { NAME: "Budget ad hoc transactions" },
   COLUMNS: {
-    DEBIT_AMOUNT: 3,
-    DATE: 0,
-    DESCRIPTION: 1,
-    FROM_ACCOUNT: 6,
-    PAYMENT_TYPE: 7,
-  },
-  SHEET: {
-    NAME: "Budget ad hoc transactions",
-  },
+    DATE:         oneBased(1),
+    DESCRIPTION:  oneBased(2),
+    DEBIT_AMOUNT: oneBased(4),
+    NOTE:         oneBased(5),
+    FROM_ACCOUNT: oneBased(7),
+    PAYMENT_TYPE: oneBased(8),
+  } as const satisfies Record<string, OneBased<number>>,
 };
 
 export const MetaBudgetAnnualTransactions = {
   COLUMNS: {
-    DATE: 0,
-    DESCRIPTION: 1,
-    DEBIT_AMOUNT: 3,
-    FROM_ACCOUNT: 4,
-    PAYMENT_TYPE: 5,
-  },
-  SHEET: {
-    NAME: "Budget annual transactions",
-  },
+    DATE: oneBased(1),
+    DESCRIPTION: oneBased(2),
+    DEBIT_AMOUNT: oneBased(4),
+    FROM_ACCOUNT: oneBased(5),
+    PAYMENT_TYPE: oneBased(6),
+  } as const satisfies Record<string, OneBased<number>>,
+  SHEET: { NAME: "Budget annual transactions" },
 };
 
 export const MetaBudgetMonthlyTransactions = {
   COLUMNS: {
-    DATE: 0,
-    DESCRIPTION: 1,
-    DEBIT_AMOUNT: 3,
-    FROM_ACCOUNT: 6,
-    PAYMENT_TYPE: 9,
-  },
-  SHEET: {
-    NAME: "Budget monthly transactions",
-  },
+    DATE: oneBased(1),
+    DESCRIPTION: oneBased(2),
+    DEBIT_AMOUNT: oneBased(4),
+    FROM_ACCOUNT: oneBased(7),
+    PAYMENT_TYPE: oneBased(10),
+  } as const satisfies Record<string, OneBased<number>>,
+  SHEET: { NAME: "Budget monthly transactions" },
 };
 
 export const MetaBudgetPredictedSpend = {
   COLUMNS: {
-    AD_HOC: 8,
-    ANNUAL: 7,
-    BALANCE: 2,
-    CHANGE: 3,
-    DATE: 1,
-    DAY: 0,
-    FOUR_WEEKLY: 5,
-    MONTHLY: 6,
-    WEEKLY: 4,
-  },
-  SHEET: {
-    NAME: "Budget predicted spend",
-  },
+    AD_HOC: oneBased(9),
+    ANNUAL: oneBased(8),
+    BALANCE: oneBased(3),
+    CHANGE: oneBased(4),
+    DATE: oneBased(2),
+    DAY: oneBased(1),
+    FOUR_WEEKLY: oneBased(6),
+    MONTHLY: oneBased(7),
+    WEEKLY: oneBased(5),
+  } as const satisfies Record<string, OneBased<number>>,
+  SHEET: { NAME: "Budget predicted spend" },
 };
 
 export const MetaBudgetWeeklyTransactions = {
   COLUMNS: {
-    DATE: 0,
-    DESCRIPTION: 1,
-    DEBIT_AMOUNT: 3,
-    FROM_ACCOUNT: 6,
-    PAYMENT_TYPE: 15,
-  },
-  SHEET: {
-    NAME: "Budget weekly transactions",
-  },
+    DATE: oneBased(1),
+    DESCRIPTION: oneBased(2),
+    DEBIT_AMOUNT: oneBased(4),
+    FROM_ACCOUNT: oneBased(7),
+    PAYMENT_TYPE: oneBased(16),
+  } as const satisfies Record<string, OneBased<number>>,
+  SHEET: { NAME: "Budget weekly transactions" },
 };
 
 export const MetaCategories = {
-  SHEET: {
-    NAME: "Categories",
-  },
+  SHEET: { NAME: "Categories" },
 };
 
 export const MetaCategoryClash = {
-  SHEET: {
-    NAME: "Category clash",
-  },
+  SHEET: { NAME: "Category clash" },
 };
 
 export const MetaCheckFixedAmounts = {
   COLUMNS: {
-    TAX_YEAR: 0,
-    CATEGORY: 1,
-    FIXED_AMOUNT: 2,
-    DYNAMIC_AMOUNT: 3,
-    TOLERANCE: 4,
-    MISMATCH: 5,
-  },
+    TAX_YEAR: oneBased(1),
+    CATEGORY: oneBased(2),
+    FIXED_AMOUNT: oneBased(3),
+    DYNAMIC_AMOUNT: oneBased(5),
+    TOLERANCE: oneBased(6),
+    MISMATCH: oneBased(7),
+  } as const satisfies Record<string, OneBased<number>>,
   SHEET: {
     NAME: "Check fixed amounts",
-    MIN_COLUMNS: 6, // Minimum expected columns
-    HEADER_ROW: 1, // Number of header rows to skip
+    MIN_COLUMNS: 6,
+    HEADER_ROW: 1,
   },
 };
 
 export const MetaDescriptionReplacements = {
-  SHEET: {
-    NAME: "Description replacements",
-  },
+  SHEET: { NAME: "Description replacements" },
 };
 
 export const MetaHMRC_B = {
-  SHEET: {
-    NAME: "HMRC B",
-    HEADER_ROW: 1, // Number of header rows to skip
-  },
+  SHEET: { NAME: "HMRC B", HEADER_ROW: 1 },
 };
 
 export const MetaHMRC_S = {
   COLUMNS: {
-    QUESTIONS: 0,
-    CATEGORY: 1,
-    LATEST_TAX_YEAR: 2,
-  },
-  SHEET: {
-    NAME: "HMRC S",
-    HEADER_ROW: 1, // Number of header rows to skip
-  },
+    QUESTIONS: oneBased(1),
+    CATEGORY: oneBased(2),
+    LATEST_TAX_YEAR: oneBased(3),
+  } as const satisfies Record<string, OneBased<number>>,
+  SHEET: { NAME: "HMRC S", HEADER_ROW: 1 },
 };
 
 export const MetaNotInTransactionCategories = {
-  SHEET: {
-    NAME: "Not in transaction categories",
-  },
+  SHEET: { NAME: "Not in transaction categories" },
 };
 
 export const MetaSSACRD = {
@@ -265,17 +240,13 @@ export const MetaSSACRD = {
         '={"Balance (£)";ArrayFormula(IF(LEN(C2:C)+LEN(D2:D),MMULT(TRANSPOSE(IF(TRANSPOSE(ROW(C2:C))>=ROW(C2:C),C2:C-D2:D,0)),SIGN(ROW(A2:A))),IFERROR(1/0)))} ',
     },
   ] as { cell: string; formula: string }[],
-  NUM_COLUMNS: 4, // Number of columns in the Transaction categories sheet
-  SHEET: {
-    NAME: "Transaction categories",
-  },
-  START_ROW: 2, // Skip header row
+  NUM_COLUMNS: 4,
+  SHEET: { NAME: "Transaction categories" },
+  START_ROW: 2,
 };
 
 export const MetaTransactions = {
-  SHEET: {
-    NAME: "Transactions",
-  },
+  SHEET: { NAME: "Transactions" },
 };
 
 export const MetaTransactionCategories = {
@@ -291,21 +262,15 @@ export const MetaTransactionCategories = {
         '={"XLOOKUP category"; ARRAYFORMULA(IF(LEN(A2:A), IF(LEN(C2:C), C2:C, "Uncategorised"), ))}',
     },
   ] as { cell: string; formula: string }[],
-  NUM_COLUMNS: 4, // Number of columns in the Transaction categories sheet
-  SHEET: {
-    NAME: "Transaction categories",
-  },
-  START_ROW: 2, // Skip header row
+  NUM_COLUMNS: 4,
+  SHEET: { NAME: "Transaction categories" },
+  START_ROW: 2,
 };
 
 export const MetaTransactionsByDate = {
-  SHEET: {
-    NAME: "Transactions by date",
-  },
+  SHEET: { NAME: "Transactions by date" },
 };
 
 export const MetaUncategorisedByDate = {
-  SHEET: {
-    NAME: "Uncategorised by date",
-  },
+  SHEET: { NAME: "Uncategorised by date" },
 };

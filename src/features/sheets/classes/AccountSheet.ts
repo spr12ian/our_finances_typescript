@@ -2,7 +2,7 @@ import type { Sheet, Spreadsheet } from "@domain";
 import { MetaAccountSheet as Meta, MetaBankAccounts } from "@lib/constants";
 import { getErrorMessage } from "@lib/errors";
 import { xLookup } from "@lib/xLookup";
-import { FastLog } from "@logging/FastLog";
+import { FastLog, methodStart } from "@logging/FastLog";
 import { DescriptionReplacements } from "@sheets/classes/DescriptionReplacements";
 
 const COLOR_FUTURE_ROWS = "#D0E0E3";
@@ -18,6 +18,11 @@ export class AccountSheet {
 
   get accountName(): string {
     return this.name.slice(1);
+  }
+
+  get currentEndingBalance(): number {
+    const lastRow = this.sheet.getTrueDataBounds().lastRow;
+    return this.sheet.raw.getRange(lastRow, Meta.COLUMNS.BALANCE).getValue();
   }
 
   get name(): string {
@@ -72,7 +77,7 @@ export class AccountSheet {
   }
 
   fixSheet() {
-    this.updateBalanceValues();
+    this.updateAccountSheetBalances();
     this.fixHeaders();
     this.formatSheet();
     const lastRow = this.sheet.getTrueDataBounds().lastRow;
@@ -154,7 +159,8 @@ export class AccountSheet {
     this.sheet.trimSheet();
   }
 
-  updateBalanceValues(rowEdited?: number): void {
+  updateAccountSheetBalances(rowEdited?: number): void {
+    const finish = methodStart(this.updateAccountSheetBalances.name, this.accountName);
     const COLUMNS = Meta.COLUMNS;
     const ROW_DATA_STARTS = Meta.ROW_DATA_STARTS;
     const gasSheet = this.sheet.raw;
@@ -208,7 +214,7 @@ export class AccountSheet {
       .getRange(row + firstDiffIndex, COLUMNS.BALANCE, slice.length, 1)
       .setValues(slice);
 
-    FastLog.log(`Updated balance values for ${this.accountName}`);
+    finish();
   }
 
   validateFrozenRows() {

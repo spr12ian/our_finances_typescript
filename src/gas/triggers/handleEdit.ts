@@ -19,7 +19,7 @@ type OnEditRule = {
 
 /** Keep this lean and at top-level so it's initialized once */
 const ON_EDIT_RULES: OnEditRule[] = [
-  { sheet: /^_/, range: "C2:D", fn: updateBalanceValues },
+  { sheet: /^_/, range: "C2:D", fn: updateAccountSheetBalances },
   { sheet: /^_/, range: ["B2:B", "E2:E"], fn: toUpperCase },
 ];
 
@@ -217,20 +217,24 @@ function toUpperCase(e: SheetsOnEdit): void {
   }
 }
 
-function updateBalanceValues(e: SheetsOnEdit): void {
-  FastLog.log("updateBalanceValues hit on", e.range.getA1Notation());
+function updateAccountSheetBalances(e: SheetsOnEdit): void {
+  FastLog.log("updateAccountSheetBalances hit on", e.range.getA1Notation());
   if (!isSingleCellActuallyChanged(e)) return;
 
   try {
     const r = e.range;
     setupWorkflows(); // safe to call repeatedly; internal lock + flag
-    startWorkflow("updateBalanceValuesFlow", "updateBalanceValuesStep1", {
-      sheetName: r.getSheet().getName(),
-      row: r.getRow(),
-      startedBy: "updateBalanceValues",
-    });
+    startWorkflow(
+      "updateAccountSheetBalancesFlow",
+      "updateAccountSheetBalancesStep1",
+      {
+        sheetName: r.getSheet().getName(),
+        row: r.getRow(),
+        startedBy: "updateAccountSheetBalances",
+      }
+    );
   } catch (err) {
-    FastLog.error("updateBalanceValues error", err);
+    FastLog.error("updateAccountSheetBalances error", err);
   }
 }
 

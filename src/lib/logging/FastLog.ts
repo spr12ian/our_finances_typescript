@@ -38,6 +38,11 @@ export function methodStart(methodName: string, contextName: string) {
   return () => FastLog.finish(methodName, start);
 }
 
+export function propertyStart(propertyName: string, contextName: string) {
+  const start = FastLog.start(propertyName, contextName);
+  return () => FastLog.finish(propertyName, start);
+}
+
 // ────────────────────────────────────────────────────────────
 // Public API (exported for TS/module use; also mirrored to globalThis)
 // ────────────────────────────────────────────────────────────

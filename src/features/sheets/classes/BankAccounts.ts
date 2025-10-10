@@ -1,7 +1,7 @@
 import type { Sheet } from "@domain";
 import { Spreadsheet } from "@domain";
 import { MetaBankAccounts as Meta } from "@lib/constants";
-import { FastLog, methodStart } from "@logging";
+import { FastLog, methodStart, propertyStart } from "@logging";
 import { isAccountSheet } from "../accountSheetFunctions";
 import { AccountSheets } from "./AccountSheets";
 
@@ -19,6 +19,31 @@ export class BankAccounts {
 
   get keys(): string[] {
     return this.sheet.getColumnData(Meta.COLUMNS.KEY).slice(1); // skip header
+  }
+
+  get openAccounts(): any[][] {
+    const finish = propertyStart("openAccounts", this.constructor.name);
+    try {
+      const data = this.getValues();
+      const dateClosedIndex = Meta.COLUMNS.DATE_CLOSED - 1; // zero-based index
+
+      const openAccounts = data.filter((row, index) => {
+        // Always include the header row
+        if (index === 0) return true;
+        // Include rows where the Date Closed column is empty
+        return !row[dateClosedIndex];
+      });
+
+      FastLog.log(
+        `Found ${openAccounts.length - 1} open accounts out of ${
+          data.length - 1
+        } total accounts.`
+      );
+
+      return openAccounts;
+    } finally {
+      finish();
+    }
   }
 
   applyFilters(filters: FilterSpec[]) {
@@ -226,48 +251,60 @@ export class BankAccounts {
   validateKeys(): void {
     const finish = methodStart(this.validateKeys.name, this.constructor.name);
     try {
-      const accountSheetKeys = this.accountSheetKeys();
-
-      const keys = this.keys; // already skips header row
+      // All keys from the 'Bank accounts' sheet (column A, header skipped by .keys)
+      const keys = this.keys
+        .map((k) => (k ?? "").trim())
+        .filter((k) => k.length > 0);
       FastLog.log("Validating bank account keys:", keys);
+
       if (keys.length === 0) {
         throw new Error("No keys found in bank accounts sheet");
       }
-
-      if (keys.some((key) => !key || key.trim() === "")) {
-        throw new Error("Empty key found in bank accounts sheet");
-      }
-
       if (new Set(keys).size !== keys.length) {
         throw new Error("Duplicate keys found in bank accounts sheet");
       }
 
-      // Validate that each account sheet has a corresponding key and vice versa
-      // Get all account sheet names once to avoid repeated calls inside the loop
-      // Account sheet names start with an underscore
-      // Keys do not have the leading underscore
-      // So we compare account sheet names without the leading underscore to the keys
-      // to ensure they match exactly
-
-      const invalidNames = keys.filter(
-        (name) => name && !accountSheetKeys.includes(name)
+      // Keys of sheets that start with '_' (returned WITHOUT the underscore)
+      const accountSheetKeys = this.accountSheetKeys().map((k) =>
+        (k ?? "").trim()
       );
+      const keysSet = new Set(keys);
+      const sheetKeysSet = new Set(accountSheetKeys);
 
-      if (invalidNames.length > 0) {
+      // 1) Every OPEN key must have a corresponding account sheet (i.e., sheet '_'+key exists)
+      const openKeys = this.getOpenKeys();
+      const openMissingSheets = openKeys.filter((k) => !sheetKeysSet.has(k));
+      if (openMissingSheets.length > 0) {
+        // Present as sheet names (with underscore) for clarity
+        const missingSheetNames = openMissingSheets.map((k) => `_${k}`);
         throw new Error(
-          `Invalid account sheet names: ${invalidNames.join(", ")}`
+          `Missing account sheets for open accounts: ${missingSheetNames.join(
+            ", "
+          )}`
         );
       }
 
-      const missingNames = accountSheetKeys.filter(
-        (name) => name && !keys.includes(name)
-      );
-
-      if (missingNames.length > 0) {
+      // 2) Every underscore-prefixed sheet must have a corresponding row on 'Bank accounts'
+      const orphanSheets = accountSheetKeys.filter((k) => !keysSet.has(k));
+      if (orphanSheets.length > 0) {
+        // Present as keys and sheet names for clarity
+        const orphanSheetNames = orphanSheets.map((k) => `_${k}`);
         throw new Error(
-          `Missing account sheet names: ${missingNames.join(", ")}`
+          `Sheets with no matching 'Bank accounts' row: ${orphanSheetNames.join(
+            ", "
+          )} (missing keys: ${orphanSheets.join(", ")})`
         );
       }
+
+      // Optional: basic hygiene — warn (not error) if CLOSED keys still have sheets
+      // Uncomment if you want to flag these:
+      // const closedKeys = keys.filter((k) => !openKeys.includes(k));
+      // const closedButHasSheet = closedKeys.filter((k) => sheetKeysSet.has(k));
+      // if (closedButHasSheet.length) {
+      //   FastLog.warn(
+      //     `Closed accounts still have sheets: ${closedButHasSheet.map((k)=>'_'+k).join(", ")}`
+      //   );
+      // }
     } finally {
       finish();
     }
@@ -286,5 +323,15 @@ export class BankAccounts {
     } finally {
       finish();
     }
+  }
+
+  // Add this helper inside BankAccounts
+  private getOpenKeys(): string[] {
+    const keyIdx = Meta.COLUMNS.KEY - 1;
+    // openAccounts includes the header row at [0], so skip it
+    return this.openAccounts
+      .slice(1)
+      .map((row) => String(row[keyIdx] ?? "").trim())
+      .filter((k) => k.length > 0);
   }
 }

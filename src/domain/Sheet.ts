@@ -145,6 +145,10 @@ export class Sheet {
     this.changed();
   }
 
+  filterRows(predicate: (row: any[], rowIndex: number) => boolean) {
+    return this.dataRows.filter(predicate);
+  }
+
   findRowByKey(searchColumn: string, keyValue: string): number {
     const colA1 = `${searchColumn}:${searchColumn}`;
     const r = this.gasSheet.getRange(colA1);

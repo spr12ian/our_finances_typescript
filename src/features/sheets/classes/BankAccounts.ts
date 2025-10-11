@@ -3,6 +3,7 @@ import { Spreadsheet } from "@domain";
 import { MetaBankAccounts as Meta } from "@lib/constants";
 import { FastLog, methodStart, propertyStart } from "@logging";
 import { isAccountSheet } from "../accountSheetFunctions";
+import { AccountSheet } from "./AccountSheet";
 import { AccountSheets } from "./AccountSheets";
 
 type FilterSpec = {
@@ -10,15 +11,21 @@ type FilterSpec = {
   hideValues: string[] | null;
 };
 export class BankAccounts {
+  #keys?: string[];
   private readonly sheet: Sheet;
 
   constructor(private readonly spreadsheet: Spreadsheet) {
     this.sheet = this.spreadsheet.getSheetByMeta(Meta);
-    this.validateKeys();
+    // this.validateKeys();
+    this.updateAllOpenBalances();
   }
 
   get keys(): string[] {
-    return this.sheet.getColumnData(Meta.COLUMNS.KEY).slice(1); // skip header
+    if (!this.#keys) {
+      // skips header
+      this.#keys = this.sheet.getColumnData(Meta.COLUMNS.KEY);
+    }
+    return this.#keys;
   }
 
   get openAccounts(): any[][] {
@@ -208,28 +215,51 @@ export class BankAccounts {
     }
   }
 
-  // updateAllAccountSheetBalances(): void {
-  //   const finish = methodStart(
-  //     this.updateAllAccountSheetBalances.name,
-  //     this.constructor.name
-  //   );
-  //   const names = this.sheet.getColumnData(Meta.COLUMNS.ACCOUNT_NAME).slice(1); // skip header
-  //   // Note: assumes account names are unique and match the sheet names (minus leading apostrophe)
-  //   // (enforced by data validation in the account name column)
-  //   // Get all sheets once to avoid repeated calls inside the loop
-  //   const accountSheets = getAccountSheets(this.spreadsheet);
-  //   const accountSheetMap: Record<string, Sheet> = {};
-  //   accountSheets.forEach((sheet) => {
-  //     accountSheetMap[sheet.name.slice(1)] = sheet; // key is name without leading apostrophe
-  //   });
+  updateAllOpenBalances(): void {
+    const finish = methodStart(
+      this.updateAllOpenBalances.name,
+      this.constructor.name
+    );
+    try {
+      const openKeys = this.getOpenKeys();
+      if (openKeys.length === 0) {
+        FastLog.log("No open accounts to update.");
+        return;
+      }
+      FastLog.log(
+        `Updating balances for open accounts: ${openKeys.join(", ")}`
+      );
 
-  //   accountSheetMap.forEach((sheet) => {
-  //     const s = new AccountSheet(sheet, this.spreadsheet);
-  //     s.currentEndingBalance;
-  //   });
+      for (const key of openKeys) {
+        const sheetName = `_${key}`;
+        const sheet = this.spreadsheet.getSheet(sheetName);
+        if (sheet) {
+          const accountSheet = new AccountSheet(sheet, this.spreadsheet);
+          const balance = accountSheet.currentEndingBalance;
 
-  //   finish();
-  // }
+          // Use Utilities.formatString for reliable currency formatting in GAS
+          const pretty = Utilities.formatString("£%.2f", balance);
+
+          FastLog.log(
+            `Account ${key} (${sheetName}) current ending balance: ${pretty}`
+          );
+
+          // this.sheet.setCellValueByKey(
+          //   Meta.COLUMNS.BALANCE,
+          //   key,
+          //   balance
+          // );
+          this.updateLastUpdatedByKey(key);
+        } else {
+          FastLog.warn(`No sheet found for account key: ${key}`);
+        }
+      }
+
+      FastLog.log("Finished updating all open account balances.");
+    } finally {
+      finish();
+    }
+  }
 
   updateLastUpdatedByKey(key: string) {
     const row = this.sheet.findRowByKey(Meta.LABELS.KEY_LABEL, key);
@@ -268,12 +298,14 @@ export class BankAccounts {
       const accountSheetKeys = this.accountSheetKeys().map((k) =>
         (k ?? "").trim()
       );
-      const keysSet = new Set(keys);
-      const sheetKeysSet = new Set(accountSheetKeys);
+      const bankAccountsSet = new Set(keys);
+      const accountSheetsSet = new Set(accountSheetKeys);
 
       // 1) Every OPEN key must have a corresponding account sheet (i.e., sheet '_'+key exists)
       const openKeys = this.getOpenKeys();
-      const openMissingSheets = openKeys.filter((k) => !sheetKeysSet.has(k));
+      const openMissingSheets = openKeys.filter(
+        (k) => !accountSheetsSet.has(k)
+      );
       if (openMissingSheets.length > 0) {
         // Present as sheet names (with underscore) for clarity
         const missingSheetNames = openMissingSheets.map((k) => `_${k}`);
@@ -285,7 +317,9 @@ export class BankAccounts {
       }
 
       // 2) Every underscore-prefixed sheet must have a corresponding row on 'Bank accounts'
-      const orphanSheets = accountSheetKeys.filter((k) => !keysSet.has(k));
+      const orphanSheets = accountSheetKeys.filter(
+        (k) => !bankAccountsSet.has(k)
+      );
       if (orphanSheets.length > 0) {
         // Present as keys and sheet names for clarity
         const orphanSheetNames = orphanSheets.map((k) => `_${k}`);
@@ -296,15 +330,18 @@ export class BankAccounts {
         );
       }
 
-      // Optional: basic hygiene — warn (not error) if CLOSED keys still have sheets
-      // Uncomment if you want to flag these:
-      // const closedKeys = keys.filter((k) => !openKeys.includes(k));
-      // const closedButHasSheet = closedKeys.filter((k) => sheetKeysSet.has(k));
-      // if (closedButHasSheet.length) {
-      //   FastLog.warn(
-      //     `Closed accounts still have sheets: ${closedButHasSheet.map((k)=>'_'+k).join(", ")}`
-      //   );
-      // }
+      // warn (not error) if CLOSED keys still have sheets
+      const closedKeys = keys.filter((k) => !openKeys.includes(k));
+      const closedButHasSheet = closedKeys.filter((k) =>
+        accountSheetsSet.has(k)
+      );
+      if (closedButHasSheet.length) {
+        FastLog.warn(
+          `Closed accounts still have sheets: ${closedButHasSheet
+            .map((k) => "_" + k)
+            .join(", ")}`
+        );
+      }
     } finally {
       finish();
     }

@@ -6,7 +6,6 @@ import * as SheetClasses from "./classes";
 import type { SheetConstructor, SheetFactory } from "./sheetFactoryTypes";
 
 export const sheetFactories: Record<string, SheetFactory> = {
-  "Account balances": factoryFromClass(SheetClasses.AccountBalances),
   Assets: factoryFromClass(SheetClasses.Assets),
   "Bank accounts": factoryFromClass(SheetClasses.BankAccounts),
 };

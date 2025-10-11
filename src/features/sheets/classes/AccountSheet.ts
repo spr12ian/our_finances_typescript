@@ -21,8 +21,31 @@ export class AccountSheet {
   }
 
   get currentEndingBalance(): number {
-    const lastRow = this.sheet.getTrueDataBounds().lastRow;
-    return this.sheet.raw.getRange(lastRow, Meta.COLUMNS.BALANCE).getValue();
+    const { lastRow } = this.sheet.getTrueDataBounds();
+    const v = this.sheet.raw.getRange(lastRow, Meta.COLUMNS.BALANCE).getValue();
+
+    // Coerce to number safely
+    let n: number;
+
+    if (typeof v === "number") {
+      n = v;
+    } else if (typeof v === "string") {
+      // Strip currency symbols, commas, spaces
+      const cleaned = v.replace(/[^\d.+-]/g, "");
+      n = cleaned.length ? Number(cleaned) : NaN;
+    } else {
+      n = NaN; // dates/booleans/blank -> not usable as a balance
+    }
+
+    if (!Number.isFinite(n)) {
+      // Log and normalise to 0 (or throw if you prefer)
+      FastLog.warn(
+        `currentEndingBalance not numeric at row ${lastRow}: ${String(v)}`
+      );
+      return 0; // or: throw new Error("Balance is not numeric")
+    }
+
+    return n;
   }
 
   get name(): string {
@@ -160,7 +183,10 @@ export class AccountSheet {
   }
 
   updateAccountSheetBalances(rowEdited?: number): void {
-    const finish = methodStart(this.updateAccountSheetBalances.name, this.accountName);
+    const finish = methodStart(
+      this.updateAccountSheetBalances.name,
+      this.accountName
+    );
     const COLUMNS = Meta.COLUMNS;
     const ROW_DATA_STARTS = Meta.ROW_DATA_STARTS;
     const gasSheet = this.sheet.raw;

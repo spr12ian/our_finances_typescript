@@ -94,11 +94,12 @@ export const MetaBalanceSheet = {
 // Split KEY_LABEL out so COLUMNS can be strictly numeric & branded
 export const MetaBankAccounts = {
   COLUMNS: {
+    BALANCE: oneBased(13),
+    BALANCE_UPDATED: oneBased(19),
+    CHECK_BALANCE_FREQUENCY: oneBased(12),
+    DATE_CLOSED: oneBased(11),
     KEY: oneBased(1),
     OWNER_CODE: oneBased(3),
-    DATE_CLOSED: oneBased(11),
-    CHECK_BALANCE_FREQUENCY: oneBased(12),
-    BALANCE_UPDATED: oneBased(19),
   } as const satisfies Record<string, OneBased<number>>,
   LABELS: {
     KEY_LABEL: "A" as const,

@@ -231,34 +231,45 @@ export class BankAccounts {
       );
 
       for (const key of openKeys) {
-        const sheetName = `_${key}`;
-        const sheet = this.spreadsheet.getSheet(sheetName);
-        if (sheet) {
-          const accountSheet = new AccountSheet(sheet, this.spreadsheet);
-          const balance = accountSheet.currentEndingBalance;
-
-          // Use Utilities.formatString for reliable currency formatting in GAS
-          const pretty = Utilities.formatString("£%.2f", balance);
-
-          FastLog.log(
-            `Account ${key} (${sheetName}) current ending balance: ${pretty}`
-          );
-
-          // this.sheet.setCellValueByKey(
-          //   Meta.COLUMNS.BALANCE,
-          //   key,
-          //   balance
-          // );
-          this.updateLastUpdatedByKey(key);
-        } else {
-          FastLog.warn(`No sheet found for account key: ${key}`);
-        }
+        this.updateKeyBalance(key);
       }
 
       FastLog.log("Finished updating all open account balances.");
     } finally {
       finish();
     }
+  }
+
+  private updateKeyBalance(key: string) {
+    const sheetName = `_${key}`;
+    const sheet = this.spreadsheet.getSheet(sheetName);
+    if (sheet) {
+      const accountSheet = new AccountSheet(sheet, this.spreadsheet);
+      const balance = accountSheet.currentEndingBalance;
+
+      // Use Utilities.formatString for reliable currency formatting in GAS
+      const pretty = Utilities.formatString("£%.2f", balance);
+
+      FastLog.log(
+        `Account ${key} (${sheetName}) current ending balance: ${pretty}`
+      );
+
+
+      this.updateBalanceByKey(key, balance);
+      this.updateLastUpdatedByKey(key);
+    } else {
+      FastLog.warn(`No sheet found for account key: ${key}`);
+    }
+  }
+
+  updateBalanceByKey(key: string, balance: number) {
+    const row = this.sheet.findRowByKey(Meta.LABELS.KEY_LABEL, key);
+
+    const balanceCell = this.sheet.raw.getRange(
+      row,
+      Meta.COLUMNS.BALANCE_UPDATED
+    );
+    balanceCell.setValue(balance);
   }
 
   updateLastUpdatedByKey(key: string) {

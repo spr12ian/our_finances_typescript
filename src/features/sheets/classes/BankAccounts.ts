@@ -265,7 +265,7 @@ export class BankAccounts {
 
     const balanceCell = this.sheet.raw.getRange(
       row,
-      Meta.COLUMNS.BALANCE_UPDATED
+      Meta.COLUMNS.BALANCE
     );
     balanceCell.setValue(balance);
   }

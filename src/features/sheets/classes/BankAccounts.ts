@@ -10,8 +10,26 @@ type FilterSpec = {
   column: number;
   hideValues: string[] | null;
 };
+
+type UpdateKeyBalanceOptions = {
+  /** treat equal within tolerance as "no change" (defaults 0.005 ~ half a penny) */
+  tolerance?: number;
+  /** if true, don't write—just report what would happen */
+  dryRun?: boolean;
+};
+
+type UpdateKeyBalanceResult = {
+  key: string;
+  changed: boolean;
+  from: number;
+  to: number;
+  row: number;
+  reason?: string;
+};
 export class BankAccounts {
   #keys?: string[];
+  #rowByKey?: Map<string, number>;
+
   private readonly sheet: Sheet;
 
   constructor(private readonly spreadsheet: Spreadsheet) {
@@ -213,60 +231,82 @@ export class BankAccounts {
     }
   }
 
-  updateAllOpenBalances(): void {
+  updateKeyBalance(
+    key: string,
+    opts: UpdateKeyBalanceOptions = {}
+  ): UpdateKeyBalanceResult {
     const finish = methodStart(
-      this.updateAllOpenBalances.name,
+      this.updateKeyBalance.name,
       this.constructor.name
     );
+    const { tolerance = 0.005, dryRun = false } = opts;
+
     try {
-      const openKeys = this.getOpenKeys();
-      if (openKeys.length === 0) {
-        FastLog.log("No open accounts to update.");
-        return;
+      const row = this.getRowForKey(key);
+
+      // Read current stored balance
+      const currentCell = this.sheet.raw.getRange(row, Meta.COLUMNS.BALANCE);
+      const current = Number(currentCell.getValue());
+      if (!Number.isFinite(current)) {
+        throw new Error(
+          `Stored balance for '${key}' is not numeric (got: ${String(current)})`
+        );
       }
+
+      // Get live balance from account sheet
+      const sheetName = `_${key}`;
+      const sheet = this.spreadsheet.getSheet(sheetName);
+      if (!sheet) {
+        const reason = `No sheet found for account key: ${key}`;
+        FastLog.warn(reason);
+        return { key, changed: false, from: current, to: current, row, reason };
+      }
+
+      const accountSheet = new AccountSheet(sheet, this.spreadsheet);
+      const live = Number(accountSheet.currentEndingBalance);
+      if (!Number.isFinite(live)) {
+        throw new Error(
+          `Live balance for '${key}' is not numeric (got: ${String(live)})`
+        );
+      }
+
+      // Early-out if equal within tolerance
+      if (BankAccounts.nearlyEqual(current, live, tolerance)) {
+        FastLog.log(
+          `Balance for '${key}' already up to date (Δ ≤ ${tolerance}): ${current}`
+        );
+        return { key, changed: false, from: current, to: live, row };
+      }
+
       FastLog.log(
-        `Updating balances for open accounts: ${openKeys.join(", ")}`
+        `Updating '${key}': ${current} → ${live}${dryRun ? " (dry-run)" : ""}`
       );
 
-      for (const key of openKeys) {
-        this.updateKeyBalance(key);
+      if (!dryRun) {
+        // Non-adjacent columns → two writes
+        this.sheet.raw.getRange(row, Meta.COLUMNS.BALANCE).setValue(live);
+        this.sheet.raw
+          .getRange(row, Meta.COLUMNS.BALANCE_UPDATED)
+          .setValue(new Date());
+        // (No flush here; let caller batch/flush)
       }
 
-      FastLog.log("Finished updating all open account balances.");
+      return { key, changed: !dryRun, from: current, to: live, row };
     } finally {
       finish();
     }
   }
 
-  updateKeyBalance(key: string) {
-    const sheetName = `_${key}`;
-    const sheet = this.spreadsheet.getSheet(sheetName);
-    if (sheet) {
-      const accountSheet = new AccountSheet(sheet, this.spreadsheet);
-      const balance = accountSheet.currentEndingBalance;
+  getBalanceByKey(key: string): number {
+    const row = this.sheet.findRowByKey(Meta.LABELS.KEY_LABEL, key);
 
-      // Use Utilities.formatString for reliable currency formatting in GAS
-      const pretty = Utilities.formatString("£%.2f", balance);
-
-      FastLog.log(
-        `Account ${key} (${sheetName}) current ending balance: ${pretty}`
-      );
-
-
-      this.updateBalanceByKey(key, balance);
-      this.updateLastUpdatedByKey(key);
-    } else {
-      FastLog.warn(`No sheet found for account key: ${key}`);
-    }
+    return this.sheet.raw.getRange(row, Meta.COLUMNS.BALANCE).getValue();
   }
 
   updateBalanceByKey(key: string, balance: number) {
     const row = this.sheet.findRowByKey(Meta.LABELS.KEY_LABEL, key);
 
-    const balanceCell = this.sheet.raw.getRange(
-      row,
-      Meta.COLUMNS.BALANCE
-    );
+    const balanceCell = this.sheet.raw.getRange(row, Meta.COLUMNS.BALANCE);
     balanceCell.setValue(balance);
   }
 
@@ -378,5 +418,20 @@ export class BankAccounts {
       .slice(1)
       .map((row) => String(row[keyIdx] ?? "").trim())
       .filter((k) => k.length > 0);
+  }
+
+  private getRowForKey(key: string): number {
+    if (!this.#rowByKey) this.#rowByKey = new Map();
+    const cached = this.#rowByKey.get(key);
+    if (cached) return cached;
+
+    const row = this.sheet.findRowByKey(Meta.LABELS.KEY_LABEL, key);
+    if (!row || row < 2) throw new Error(`Row not found for key '${key}'`);
+    this.#rowByKey.set(key, row);
+    return row;
+  }
+
+  private static nearlyEqual(a: number, b: number, tolerance: number): boolean {
+    return Math.abs(a - b) <= tolerance;
   }
 }

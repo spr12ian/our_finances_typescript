@@ -9,7 +9,6 @@ export const sheetNames = [
   "$Queue",
   "$QueueDead",
   "$Status",
-  "Account balances",
   "Assets",
   "BMONZO",
   "Balance sheet",

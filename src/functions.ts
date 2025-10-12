@@ -78,16 +78,6 @@ export function isSingleCell(range: GoogleAppsScript.Spreadsheet.Range) {
   return range.getNumColumns() === 1 && range.getNumRows() === 1;
 }
 
-export function setLastUpdatedOnAccountBalanceChange(sheet: Sheet) {
-  if (isAccountSheet(sheet)) {
-    const key = sheet.getSheetName().slice(1);
-    const spreadsheet = getFinancesSpreadsheet();
-    const bankAccounts = new OurFinances(spreadsheet).bankAccounts;
-
-    bankAccounts.updateLastUpdatedByKey(key);
-  }
-}
-
 export function toValidFunctionName(str: string): string {
   // Remove non-alphanumeric characters, except for letters and digits, replace them with underscores
   let validName = str.trim().replace(/[^a-zA-Z0-9]/g, "_");

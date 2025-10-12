@@ -4,29 +4,6 @@ import { oneBased } from "../types/oneBased";
 export const ACCOUNT_PREFIX = "_";
 export const LOCALE = "en-GB" as const;
 
-export const MetaAccountBalances = {
-  COLUMNS: {
-    ACCOUNT: oneBased(1),
-    CREDIT: oneBased(2),
-    DEBIT: oneBased(3),
-    NETT: oneBased(4),
-  } as const satisfies Record<string, OneBased<number>>,
-  FORMULA_CONFIG: [
-    {
-      cell: "A1",
-      formula:
-        "=QUERY('Transactions'!A1:E,\"SELECT A,SUM(D),SUM(E) GROUP BY A\")",
-    },
-    {
-      cell: "D1",
-      formula: '={"Balance (£)"; ARRAYFORMULA(IF(A2:A<>"", B2:B - C2:C, ""))}',
-    },
-  ] as { cell: string; formula: string }[],
-  HEADERS: ["Account", "Credit (£)", "Debit (£)", "Nett (£)"],
-  ROW_DATA_STARTS: 2,
-  SHEET: { NAME: "Account balances" },
-};
-
 export const MetaAccountSheet = {
   COLUMNS: {
     DATE: oneBased(1),
@@ -127,10 +104,10 @@ export const MetaBudget = {
 export const MetaBudgetAdHocTransactions = {
   SHEET: { NAME: "Budget ad hoc transactions" },
   COLUMNS: {
-    DATE:         oneBased(1),
-    DESCRIPTION:  oneBased(2),
+    DATE: oneBased(1),
+    DESCRIPTION: oneBased(2),
     DEBIT_AMOUNT: oneBased(4),
-    NOTE:         oneBased(5),
+    NOTE: oneBased(5),
     FROM_ACCOUNT: oneBased(7),
     PAYMENT_TYPE: oneBased(8),
   } as const satisfies Record<string, OneBased<number>>,

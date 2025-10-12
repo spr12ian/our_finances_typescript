@@ -37,7 +37,6 @@ import { sendMeHtmlEmail } from "./lib/google/email";
 
 export class OurFinances {
   #dependencies?: Dependencies;
-  // #accountBalances?: AccountBalances;
   #bankAccounts?: BankAccounts;
   #bankDebitsDue?: BankDebitsDue;
   #budgetAnnualTransactions?: BudgetAnnualTransactions;

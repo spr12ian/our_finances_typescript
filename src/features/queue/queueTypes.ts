@@ -23,10 +23,10 @@ export interface QueueEnqueueOptions {
 
 export interface Job {
   id: string;
-  json_parameters: unknown;
+  payload: unknown;
   enqueuedAt: Date;
   priority: number;
-  nextRunAt: Date|null;
+  nextRunAt: Date | null;
   attempts: number;
   status: JobStatus;
   lastError: string;
@@ -40,10 +40,10 @@ export interface Job {
 
 export type JobRow = [
   id: string,
-  json_parameters: string,
+  payload: string,
   enqueued_at: Date,
   priority: number,
-  next_run_at: Date|"",
+  next_run_at: Date | "",
   attempts: number,
   status: JobStatus,
   last_error: string,

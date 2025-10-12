@@ -207,9 +207,9 @@ function dispatchJob_(job: Job): void {
   const startTime = FastLog.start(fn, job);
   try {
     setupWorkflows();
-    const { json_parameters } = job;
+    const { payload } = job;
 
-    const p = (json_parameters as Partial<SerializedRunStepParameters>) || {};
+    const p = (payload as Partial<SerializedRunStepParameters>) || {};
     const rsj: RunStepJob = {
       workflowId: String(p.workflowId),
       workflowName: String(p.workflowName),
@@ -264,7 +264,7 @@ function rowToJob_(r: JobRow): Job {
   const startTime = FastLog.start(fn, r);
   const job = {
     id: String(r[COL.ID - 1] ?? ""),
-    json_parameters: parseJsonSafe_(String(r[COL.JSON_PARAMETERS - 1] || "{}")),
+    payload: parseJsonSafe_(String(r[COL.JSON_PARAMETERS - 1] || "{}")),
     enqueuedAt: asDateOrNull_(r[COL.ENQUEUED_AT - 1]) ?? new Date(0),
     priority: Number(r[COL.PRIORITY - 1]) || DEFAULT_PRIORITY,
     nextRunAt: asDateOrNull_(r[COL.NEXT_RUN_AT - 1]),

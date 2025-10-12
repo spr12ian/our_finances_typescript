@@ -20,21 +20,21 @@ export const STATUS = {
 
 // Column map to avoid magic numbers
 export const COL = {
-  ID: 1,                    // id: string
-  JSON_PARAMETERS: 2,       // parameters: unknown (JSON string in sheet)
-  ENQUEUED_AT: 3,           // enqueuedAt: Date
-  PRIORITY: 4,              // priority: number
-  NEXT_RUN_AT: 5,           // nextRunAt: Date
-  ATTEMPTS: 6,              // attempts: number
-  STATUS: 7,                // status: JobStatus
-  LAST_ERROR: 8,            // lastError: string
-  WORKER_ID: 9,             // workerId: string
-  STARTED_AT: 10,           // startedAt?: Date | null
+  ID: 1, // id: string
+  JSON_PARAMETERS: 2, // parameters: unknown (JSON string in sheet)
+  ENQUEUED_AT: 3, // enqueuedAt: Date
+  PRIORITY: 4, // priority: number
+  NEXT_RUN_AT: 5, // nextRunAt: Date
+  ATTEMPTS: 6, // attempts: number
+  STATUS: 7, // status: JobStatus
+  LAST_ERROR: 8, // lastError: string
+  WORKER_ID: 9, // workerId: string
+  STARTED_AT: 10, // startedAt?: Date | null
 } as const;
 
 export const HEADERS: string[] = [
   "id",
-  "json_parameters",
+  "payload",
   "enqueued_at",
   "priority",
   "next_run_at",

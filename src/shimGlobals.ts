@@ -51,8 +51,10 @@ export const shimGlobals = [
   "trimSheet",
   "updateAccountSheetBalances",
   "updateAllDependencies",
+  "updateOpenBalances",
   "updateSpreadsheetSummary",
   "updateTransactions",
+  "validateAccountKeys",
   "validateAllMenuFunctionNames",
 ] as const;
 

@@ -7,8 +7,8 @@ export function registerAllWorkflows(): void {
   flow.exampleFlow();
   flow.fixSheetFlow();
   flow.formatSheetFlow();
-  flow.bankAccountsBalancesFlow();
   flow.sendMeHtmlEmailFlow();
   flow.trimSheetFlow();
+  flow.updateOpenBalancesFlow();
   finish();
 }

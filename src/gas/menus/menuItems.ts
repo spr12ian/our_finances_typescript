@@ -22,6 +22,8 @@ export const bankAccountsSheetMenuItems: [string, string][] = [
   ["Show daily accounts", "showDailyAccounts"],
   ["Show monthly accounts", "showMonthlyAccounts"],
   ["Show open accounts", "showOpenAccounts"],
+  ["Update open account balances", "updateOpenBalances"],
+  ["Validate account keys", "validateAccountKeys"],
 ];
 
 export const budgetMenuItems: [string, string][] = [

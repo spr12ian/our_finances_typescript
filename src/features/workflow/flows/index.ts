@@ -3,4 +3,4 @@ export { fixSheetFlow } from "./fixSheetFlow";
 export { formatSheetFlow } from "./formatSheetFlow";
 export { sendMeHtmlEmailFlow } from "./sendMeHtmlEmailFlow";
 export { trimSheetFlow } from "./trimSheetFlow";
-export { bankAccountsBalancesFlow } from "./updateBankAccountsBalancesFlow";
+export { updateOpenBalancesFlow } from "./updateOpenBalancesFlow";

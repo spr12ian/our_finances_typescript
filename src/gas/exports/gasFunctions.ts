@@ -25,7 +25,8 @@ import * as timeConstants from "@lib/timeConstants";
 import { FastLog } from "@logging";
 import { ensureQueueDateFormats, queueSetup } from "@queue/queueSetup";
 import { purgeQueuesOldData, queueWorker } from "@queue/queueWorker";
-import type { FixSheetFlowInput, FormatSheetFlowInput } from "@workflow";
+import { validateAccountKeys } from "@sheets/validateAccountKeys";
+import type { FixSheetFlowInput, FormatSheetFlowInput, UpdateOpenBalancesFlowInput } from "@workflow";
 import { setupWorkflows } from "@workflow";
 import type { ExampleFlowInput } from "@workflow/flows/exampleFlow";
 import { startWorkflow } from "@workflow/workflowEngine";
@@ -296,6 +297,16 @@ export function GAS_updateAccountSheetBalances() {
   new OurFinances(spreadsheet).updateAccountSheetBalances();
 }
 
+export function GAS_updateOpenBalances() {
+  const workFlowName = "updateOpenBalancesFlow";
+  const firstStep = "init";
+  const input = {
+    startedBy: "GAS_updateOpenBalances",
+  } satisfies UpdateOpenBalancesFlowInput;
+
+  startWF(workFlowName, firstStep, input);
+}
+
 export function GAS_updateSpreadsheetSummary() {
   const spreadsheet = getFinancesSpreadsheet();
   new OurFinances(spreadsheet).updateSpreadsheetSummary();
@@ -304,6 +315,10 @@ export function GAS_updateSpreadsheetSummary() {
 export function GAS_updateTransactions() {
   const spreadsheet = getFinancesSpreadsheet();
   new OurFinances(spreadsheet).updateTransactions();
+}
+
+export function GAS_validateAccountKeys() {
+  validateAccountKeys();
 }
 
 export function GAS_validateAllMenuFunctionNames() {

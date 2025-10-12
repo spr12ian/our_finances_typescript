@@ -16,8 +16,6 @@ export class BankAccounts {
 
   constructor(private readonly spreadsheet: Spreadsheet) {
     this.sheet = this.spreadsheet.getSheetByMeta(Meta);
-    // this.validateKeys();
-    this.updateAllOpenBalances();
   }
 
   get keys(): string[] {
@@ -240,7 +238,7 @@ export class BankAccounts {
     }
   }
 
-  private updateKeyBalance(key: string) {
+  updateKeyBalance(key: string) {
     const sheetName = `_${key}`;
     const sheet = this.spreadsheet.getSheet(sheetName);
     if (sheet) {
@@ -373,8 +371,7 @@ export class BankAccounts {
     }
   }
 
-  // Add this helper inside BankAccounts
-  private getOpenKeys(): string[] {
+  getOpenKeys(): string[] {
     const keyIdx = Meta.COLUMNS.KEY - 1;
     // openAccounts includes the header row at [0], so skip it
     return this.openAccounts

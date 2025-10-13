@@ -1,9 +1,9 @@
 import type { Sheet, Spreadsheet } from "@domain";
-import { FastLog } from "@logging/FastLog";
+import { FastLog, methodStart } from "@logging";
 
 export abstract class BaseSheet {
   /** Public sheet display name (useful for menus/logs). */
-  public readonly name: string;
+  public readonly sheetName: string;
 
   /** Subclasses can access the spreadsheet if needed. */
   protected readonly spreadsheet: Spreadsheet;
@@ -12,18 +12,18 @@ export abstract class BaseSheet {
   protected readonly sheet: Sheet;
 
   constructor(sheetName: string, spreadsheet: Spreadsheet) {
-    this.name = sheetName;
+    this.sheetName = sheetName;
     this.spreadsheet = spreadsheet;
     this.sheet = this.spreadsheet.getSheet(sheetName);
   }
 
   /** Run a block with start/finish logging. */
   protected withLog<T>(label: string, fn: () => T): T {
-    const t0 = this.start(label);
+    const finish = methodStart(label, this.sheetName);
     try {
       return fn();
     } finally {
-      this.finish(label, t0);
+      finish();
     }
   }
 
@@ -51,14 +51,14 @@ export abstract class BaseSheet {
     return this.withLog("trimSheet", () => this.sheet.trimSheet());
   }
 
-  protected start(label: string, ...args: unknown[]) {
-    return FastLog.start(`[${this.name}] ${label}`, ...args);
-  }
-  protected finish(label: string, t0: Date) {
-    FastLog.finish(`[${this.name}] ${label}`, t0);
-  }
+  // protected start(label: string, ...args: unknown[]) {
+  //   return FastLog.start(`[${this.sheetName}] ${label}`, ...args);
+  // }
+  // protected finish(label: string, t0: Date) {
+  //   FastLog.finish(`[${this.sheetName}] ${label}`, t0);
+  // }
 
   /** Convenient per-sheet logger. */
   protected log = (m: string, ...a: unknown[]) =>
-    FastLog.log(`[${this.name}] ${m}`, ...a);
+    FastLog.log(`[${this.sheetName}] ${m}`, ...a);
 }

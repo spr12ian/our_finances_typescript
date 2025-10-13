@@ -5,6 +5,16 @@ export const ACCOUNT_PREFIX = "_";
 export const LOCALE = "en-GB" as const;
 
 export const MetaAccountSheet = {
+  COLUMN_WIDTHS: {
+    DATE: 110,
+    DESCRIPTION: 500,
+    CREDIT: 110,
+    DEBIT: 110,
+    NOTE: 170,
+    COUNTERPARTY: 110,
+    COUNTERPARTY_DATE: 110,
+    BALANCE: 110,
+  },
   COLUMNS: {
     DATE: oneBased(1),
     DESCRIPTION: oneBased(2),

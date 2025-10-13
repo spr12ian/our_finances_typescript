@@ -4,20 +4,20 @@ import { getErrorMessage } from "@lib/errors";
 import { xLookup } from "@lib/xLookup";
 import { FastLog, methodStart } from "@logging/FastLog";
 import { DescriptionReplacements } from "@sheets/classes/DescriptionReplacements";
+import { BaseSheet } from "../core";
 
 const COLOR_FUTURE_ROWS = "#D0E0E3";
-export class AccountSheet {
-  constructor(
-    private readonly sheet: Sheet,
-    private readonly spreadsheet: Spreadsheet
-  ) {
+export class AccountSheet extends BaseSheet {
+  constructor(readonly sheet: Sheet, readonly spreadsheet: Spreadsheet) {
     if (sheet.name[0] !== "_") {
       throw new Error(`${sheet.name} is NOT an account sheet`);
     }
+
+    super(sheet.name, spreadsheet);
   }
 
-  get accountName(): string {
-    return this.name.slice(1);
+  get accountKey(): string {
+    return this.sheetName.slice(1);
   }
 
   get currentEndingBalance(): number {
@@ -46,10 +46,6 @@ export class AccountSheet {
     }
 
     return n;
-  }
-
-  get name(): string {
-    return this.sheet.name;
   }
 
   addDefaultNotes() {
@@ -81,19 +77,15 @@ export class AccountSheet {
     range.setValues(values);
   }
 
-  handleEditTrigger() {
-    FastLog.log("AccountSheet.handleEditTrigger");
-  }
-
   fixHeaders() {
     const headerRange = this.sheet.getRange("A1:H1");
     const label = xLookup(
-      this.accountName,
+      this.accountKey,
       this.spreadsheet.getSheet(MetaBankAccounts.SHEET.NAME),
       "A",
       "AP"
     );
-    const description = `Description (${label}) ${this.accountName}`;
+    const description = `Description (${label}) ${this.accountKey}`;
     const headers = [Meta.HEADERS];
     headers[0][Meta.COLUMNS.DESCRIPTION - 1] = description;
     headerRange.setValues(headers);
@@ -117,7 +109,7 @@ export class AccountSheet {
 
   formatSheet() {
     const fn = this.formatSheet.name;
-    const startTime = FastLog.start(fn);
+    const finish = methodStart(fn, this.accountKey);
     const sheet = this.sheet;
     try {
       sheet.formatSheet();
@@ -130,26 +122,30 @@ export class AccountSheet {
       }
       this.formatFutureRows();
       sheet.raw
-        .autoResizeColumn(Meta.COLUMNS.DATE)
-        .setColumnWidth(Meta.COLUMNS.DESCRIPTION, 500)
-        .autoResizeColumn(Meta.COLUMNS.CREDIT)
-        .autoResizeColumn(Meta.COLUMNS.DEBIT)
-        .setColumnWidth(Meta.COLUMNS.NOTE, 170)
-        .setColumnWidth(Meta.COLUMNS.COUNTERPARTY, 97)
-        .autoResizeColumn(Meta.COLUMNS.COUNTERPARTY_DATE)
-        .autoResizeColumn(Meta.COLUMNS.BALANCE);
+        .setColumnWidth(Meta.COLUMNS.DATE, Meta.COLUMN_WIDTHS.DATE)
+        .setColumnWidth(Meta.COLUMNS.DESCRIPTION, Meta.COLUMN_WIDTHS.DESCRIPTION)
+        .setColumnWidth(Meta.COLUMNS.CREDIT, Meta.COLUMN_WIDTHS.CREDIT)
+        .setColumnWidth(Meta.COLUMNS.DEBIT, Meta.COLUMN_WIDTHS.DEBIT)
+        .setColumnWidth(Meta.COLUMNS.NOTE, Meta.COLUMN_WIDTHS.NOTE)
+        .setColumnWidth(Meta.COLUMNS.COUNTERPARTY, Meta.COLUMN_WIDTHS.COUNTERPARTY)
+        .setColumnWidth(Meta.COLUMNS.COUNTERPARTY_DATE, Meta.COLUMN_WIDTHS.COUNTERPARTY_DATE)
+        .setColumnWidth(Meta.COLUMNS.BALANCE, Meta.COLUMN_WIDTHS.BALANCE);
       return;
     } catch (err) {
       const errorMessage = getErrorMessage(err);
       FastLog.error(fn, err);
       throw new Error(errorMessage);
     } finally {
-      FastLog.finish(fn, startTime);
+      finish();
     }
   }
 
   getFutureRowsRanges() {
     return this.sheet.getRangesWhereColumnEquals(Meta.COLUMNS.NOTE, "FUTURE");
+  }
+
+  handleEditTrigger() {
+    FastLog.log("AccountSheet.handleEditTrigger");
   }
 
   setCounterpartyValidation(a1range: string) {
@@ -178,14 +174,10 @@ export class AccountSheet {
     sheet.setNumberFormatAsUKCurrency("C2:D", "H2:H");
   }
 
-  trimSheet() {
-    this.sheet.trimSheet();
-  }
-
   updateAccountSheetBalances(rowEdited?: number): void {
     const finish = methodStart(
       this.updateAccountSheetBalances.name,
-      this.accountName
+      this.accountKey
     );
     const COLUMNS = Meta.COLUMNS;
     const ROW_DATA_STARTS = Meta.ROW_DATA_STARTS;
@@ -231,7 +223,7 @@ export class AccountSheet {
     }
 
     if (firstDiffIndex === -1) {
-      FastLog.log(`No changes to balance for ${this.accountName}`);
+      FastLog.log(`No changes to balance for ${this.accountKey}`);
       return;
     }
 
@@ -254,7 +246,7 @@ export class AccountSheet {
     const lastColumn = this.sheet.raw.getLastColumn();
     if (lastColumn < Meta.MINIMUM_COLUMNS) {
       throw new Error(
-        `Sheet ${this.name} requires at least ${Meta.MINIMUM_COLUMNS} columns, but found ${lastColumn}`
+        `Sheet ${this.sheetName} requires at least ${Meta.MINIMUM_COLUMNS} columns, but found ${lastColumn}`
       );
     }
   }

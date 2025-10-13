@@ -48,15 +48,6 @@ export class AccountSheet extends BaseSheet {
     return n;
   }
 
-  addDefaultNotes() {
-    this.addNoteToCell("F1", "Counterparty");
-    this.addNoteToCell("G1", "Counterparty date");
-  }
-
-  addNoteToCell(a1CellRange: string, note: string) {
-    this.sheet.getRange(a1CellRange).setNote(note);
-  }
-
   applyDescriptionReplacements() {
     const descriptionReplacements = new DescriptionReplacements(
       this.spreadsheet
@@ -92,12 +83,18 @@ export class AccountSheet extends BaseSheet {
   }
 
   fixSheet() {
+    this.validateSheet();
     this.updateAccountSheetBalances();
+    this.convertColumnsToUppercase();
+
+    this.setDataValidations();
+
     this.fixHeaders();
     this.formatSheet();
+    this.trimSheet();
+
     const lastRow = this.sheet.getTrueDataBounds().lastRow;
     this.sheet.setActiveRange(this.sheet.raw.getRange(lastRow, 1));
-    this.trimSheet();
   }
 
   formatFutureRows(): void {
@@ -113,23 +110,9 @@ export class AccountSheet extends BaseSheet {
     const sheet = this.sheet;
     try {
       sheet.formatSheet();
-      this.validateSheet();
-      this.setSheetFormatting();
       this.addDefaultNotes();
-      if (sheet.name !== "_SVI2TJ" && sheet.name !== "_SVIIRF") {
-        this.convertColumnToUppercase(Meta.COLUMNS.DESCRIPTION);
-        this.convertColumnToUppercase(Meta.COLUMNS.NOTE);
-      }
       this.formatFutureRows();
-      sheet.raw
-        .setColumnWidth(Meta.COLUMNS.DATE, Meta.COLUMN_WIDTHS.DATE)
-        .setColumnWidth(Meta.COLUMNS.DESCRIPTION, Meta.COLUMN_WIDTHS.DESCRIPTION)
-        .setColumnWidth(Meta.COLUMNS.CREDIT, Meta.COLUMN_WIDTHS.CREDIT)
-        .setColumnWidth(Meta.COLUMNS.DEBIT, Meta.COLUMN_WIDTHS.DEBIT)
-        .setColumnWidth(Meta.COLUMNS.NOTE, Meta.COLUMN_WIDTHS.NOTE)
-        .setColumnWidth(Meta.COLUMNS.COUNTERPARTY, Meta.COLUMN_WIDTHS.COUNTERPARTY)
-        .setColumnWidth(Meta.COLUMNS.COUNTERPARTY_DATE, Meta.COLUMN_WIDTHS.COUNTERPARTY_DATE)
-        .setColumnWidth(Meta.COLUMNS.BALANCE, Meta.COLUMN_WIDTHS.BALANCE);
+      this.setColumnWidths(sheet);
       return;
     } catch (err) {
       const errorMessage = getErrorMessage(err);
@@ -146,32 +129,6 @@ export class AccountSheet extends BaseSheet {
 
   handleEditTrigger() {
     FastLog.log("AccountSheet.handleEditTrigger");
-  }
-
-  setCounterpartyValidation(a1range: string) {
-    const range = this.sheet.getRange(a1range);
-    const validationRange = `'${MetaBankAccounts.SHEET.NAME}'!$A$2:$A`;
-    const rule = SpreadsheetApp.newDataValidation()
-      .requireValueInRange(
-        this.sheet.raw.getParent().getRange(validationRange),
-        true
-      )
-      .setAllowInvalid(false)
-      .setHelpText("Please select a valid counterparty.")
-      .build();
-
-    range.setDataValidation(rule);
-  }
-
-  setSheetFormatting() {
-    const sheet = this.sheet;
-    const dataRange = sheet.dataRange;
-
-    dataRange.clearDataValidations();
-
-    this.setCounterpartyValidation("F2:F");
-    sheet.setNumberFormatAsDate("A2:A", "G2:G");
-    sheet.setNumberFormatAsUKCurrency("C2:D", "H2:H");
   }
 
   updateAccountSheetBalances(rowEdited?: number): void {
@@ -235,14 +192,70 @@ export class AccountSheet extends BaseSheet {
     finish();
   }
 
-  validateFrozenRows() {
+  private addDefaultNotes() {
+    this.setCellNote("F1", "Counterparty");
+    this.setCellNote("G1", "Counterparty date");
+  }
+
+  private convertColumnsToUppercase() {
+    if (this.sheetName !== "_SVI2TJ" && this.sheetName !== "_SVIIRF") {
+      this.convertColumnToUppercase(Meta.COLUMNS.DESCRIPTION);
+      this.convertColumnToUppercase(Meta.COLUMNS.NOTE);
+    }
+  }
+
+  private setColumnWidths(sheet: Sheet) {
+    sheet.raw
+      .setColumnWidth(Meta.COLUMNS.DATE, Meta.COLUMN_WIDTHS.DATE)
+      .setColumnWidth(Meta.COLUMNS.DESCRIPTION, Meta.COLUMN_WIDTHS.DESCRIPTION)
+      .setColumnWidth(Meta.COLUMNS.CREDIT, Meta.COLUMN_WIDTHS.CREDIT)
+      .setColumnWidth(Meta.COLUMNS.DEBIT, Meta.COLUMN_WIDTHS.DEBIT)
+      .setColumnWidth(Meta.COLUMNS.NOTE, Meta.COLUMN_WIDTHS.NOTE)
+      .setColumnWidth(
+        Meta.COLUMNS.COUNTERPARTY,
+        Meta.COLUMN_WIDTHS.COUNTERPARTY
+      )
+      .setColumnWidth(
+        Meta.COLUMNS.COUNTERPARTY_DATE,
+        Meta.COLUMN_WIDTHS.COUNTERPARTY_DATE
+      )
+      .setColumnWidth(Meta.COLUMNS.BALANCE, Meta.COLUMN_WIDTHS.BALANCE);
+  }
+
+  private setCounterpartyValidation(a1range: string) {
+    const range = this.sheet.getRange(a1range);
+    const validationRange = `'${MetaBankAccounts.SHEET.NAME}'!$A$2:$A`;
+    const rule = SpreadsheetApp.newDataValidation()
+      .requireValueInRange(
+        this.sheet.raw.getParent().getRange(validationRange),
+        true
+      )
+      .setAllowInvalid(false)
+      .setHelpText("Please select a valid counterparty.")
+      .build();
+
+    range.setDataValidation(rule);
+  }
+
+  private setDataValidations() {
+    const sheet = this.sheet;
+    const dataRange = sheet.dataRange;
+
+    dataRange.clearDataValidations();
+
+    this.setCounterpartyValidation("F2:F");
+    // sheet.setNumberFormatAsDate("A2:A", "G2:G");
+    // sheet.setNumberFormatAsUKCurrency("C2:D", "H2:H");
+  }
+
+  private validateFrozenRows() {
     const frozenRows = this.sheet.raw.getFrozenRows();
     if (frozenRows !== 1) {
       throw new Error(`There should be 1 frozen row; found ${frozenRows}`);
     }
   }
 
-  validateMinimumColumns() {
+  private validateMinimumColumns() {
     const lastColumn = this.sheet.raw.getLastColumn();
     if (lastColumn < Meta.MINIMUM_COLUMNS) {
       throw new Error(
@@ -251,7 +264,7 @@ export class AccountSheet extends BaseSheet {
     }
   }
 
-  validateSheet() {
+  private validateSheet() {
     this.validateMinimumColumns();
     this.validateFrozenRows();
   }

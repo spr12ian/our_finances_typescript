@@ -6,14 +6,14 @@ export const LOCALE = "en-GB" as const;
 
 export const MetaAccountSheet = {
   COLUMN_WIDTHS: {
-    DATE: 110,
-    DESCRIPTION: 500,
-    CREDIT: 110,
-    DEBIT: 110,
-    NOTE: 170,
+    DATE: 99,
+    DESCRIPTION: 490,
+    CREDIT: 99,
+    DEBIT: 99,
+    NOTE: 165,
     COUNTERPARTY: 110,
-    COUNTERPARTY_DATE: 110,
-    BALANCE: 110,
+    COUNTERPARTY_DATE: 99,
+    BALANCE: 105,
   },
   COLUMNS: {
     DATE: oneBased(1),

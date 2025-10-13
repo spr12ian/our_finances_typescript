@@ -41,6 +41,12 @@ export abstract class BaseSheet {
     );
   }
 
+  setCellNote(cellRangeA1format: string, note: string) {
+    return this.withLog("setCellNote", () =>
+      this.sheet.getRange(cellRangeA1format).setNote(note)
+    );
+  }
+
   setCellValue(cellRangeA1format: string, value: any): void {
     return this.withLog("setCellValue", () =>
       this.sheet.setCellValue(cellRangeA1format, value)

@@ -2,7 +2,7 @@
 import type { Spreadsheet } from "@domain/Spreadsheet";
 
 export interface ExtendedSheet {
-  name: string;
+  sheetName: string;
   trimSheet(): void;
 }
 

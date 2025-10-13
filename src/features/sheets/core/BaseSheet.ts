@@ -35,6 +35,18 @@ export abstract class BaseSheet {
     return this.withLog("formatSheet", () => this.sheet.formatSheet());
   }
 
+  getCellValue(cellRangeA1format: string): any {
+    return this.withLog("getCellValue", () =>
+      this.sheet.getCellValue(cellRangeA1format)
+    );
+  }
+
+  setCellValue(cellRangeA1format: string, value: any): void {
+    return this.withLog("setCellValue", () =>
+      this.sheet.setCellValue(cellRangeA1format, value)
+    );
+  }
+
   trimSheet() {
     return this.withLog("trimSheet", () => this.sheet.trimSheet());
   }

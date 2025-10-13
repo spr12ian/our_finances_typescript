@@ -44,6 +44,58 @@ export class BankAccounts {
     return this.#keys;
   }
 
+  get totalOurMoneyBalance(): number {
+    const finish = propertyStart("totalOurMoneyBalance", this.constructor.name);
+    try {
+      const rows = this.getValues(); // includes header
+      if (!rows || rows.length < 2) return 0; // no data rows
+
+      // Convert once from 1-based to 0-based
+      const balanceCol = Meta.COLUMNS.BALANCE - 1;
+      const ourMoneyCol = Meta.COLUMNS.OUR_MONEY - 1;
+
+      // Mirror the original sheet logic if needed
+      const MIN_BALANCE = 0; // set to 1 if you want "balance > 1" like your QUERY
+
+      const isTrue = (v: unknown): boolean => {
+        if (v === true) return true;
+        if (typeof v === "number") return v === 1;
+        if (typeof v === "string") {
+          const s = v.trim().toLowerCase();
+          return s === "true" || s === "1" || s === "yes" || s === "y";
+        }
+        return false;
+      };
+
+      const toNumberOrNaN = (v: unknown): number => {
+        if (typeof v === "number") return v; // already numeric
+        if (typeof v === "string") {
+          const t = v.trim();
+          if (!t) return NaN; // treat empty as missing, not 0
+          const n = Number(t.replace(/[,£]/g, "")); // strip commas/£ if present
+          return Number.isFinite(n) ? n : NaN;
+        }
+        return NaN;
+      };
+
+      let total = 0;
+      // Classic for-loop is fastest in GAS
+      for (let r = 1; r < rows.length; r++) {
+        // skip header row 0
+        const row = rows[r];
+        const balance = toNumberOrNaN(row[balanceCol]);
+        if (!(balance > MIN_BALANCE)) continue; // also excludes NaN
+        if (!isTrue(row[ourMoneyCol])) continue;
+        total += balance;
+      }
+
+      FastLog.log(`Calculated total our money balance: ${total}`);
+      return total;
+    } finally {
+      finish();
+    }
+  }
+
   get openAccounts(): any[][] {
     const finish = propertyStart("openAccounts", this.constructor.name);
     try {
@@ -119,7 +171,7 @@ export class BankAccounts {
           column: Meta.COLUMNS.CHECK_BALANCE_FREQUENCY,
           hideValues: hideFrequencies,
         },
-        { column: Meta.COLUMNS.OWNER_CODE, hideValues: hideOwners },
+        { column: Meta.COLUMNS.OUR_MONEY, hideValues: hideOwners },
       ];
       this.applyFilters(filters);
     }
@@ -218,7 +270,7 @@ export class BankAccounts {
       this.showAll();
       const filters = [
         {
-          column: Meta.COLUMNS.OWNER_CODE,
+          column: Meta.COLUMNS.OUR_MONEY,
           hideValues: [Meta.OWNER_CODES.CHARLIE, Meta.OWNER_CODES.LINDA_H],
         },
         { column: Meta.COLUMNS.DATE_CLOSED, hideValues: null },

@@ -10,7 +10,7 @@
     "@rollup/plugin-commonjs": "^25.0.0",
     "@rollup/plugin-node-resolve": "^15.0.2",
     "@rollup/plugin-typescript": "^11.1.2",
-    "@types/google-apps-script": "^1.0.99",
+    "@types/google-apps-script": "^2.0.5",
     "@types/google-apps-script-oauth2": "^38.0.0",
     "@types/google.script.client-side": "^0.1.1",
     "@typescript-eslint/eslint-plugin": "^8.0.0",

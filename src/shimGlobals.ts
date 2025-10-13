@@ -37,6 +37,7 @@ export const shimGlobals = [
   "onEditTrigger",
   "onOpen",
   "onOpenTrigger",
+  "onSelectionChange",
   "purgeQueuesOldData",
   "queueSetup",
   "queueWorker",

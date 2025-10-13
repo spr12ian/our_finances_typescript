@@ -30,6 +30,13 @@ export const MetaAccountSheet = {
 };
 
 export const MetaAssets = {
+  CELLS: {
+    BANK_ACCOUNTS_VALUE: "B2",
+    INVESTMENTS_VALUE: "B3",
+    OWED_TO_US_VALUE: "B6",
+    PENSIONS_VALUE: "B5",
+    PROPERTY_VALUE: "B4",
+  } as const satisfies Record<string, string>,
   FORMULA_CONFIG: [
     {
       cell: "B2",
@@ -71,12 +78,13 @@ export const MetaBalanceSheet = {
 // Split KEY_LABEL out so COLUMNS can be strictly numeric & branded
 export const MetaBankAccounts = {
   COLUMNS: {
-    BALANCE: oneBased(13),
-    BALANCE_UPDATED: oneBased(19),
-    CHECK_BALANCE_FREQUENCY: oneBased(12),
-    DATE_CLOSED: oneBased(11),
-    KEY: oneBased(1),
-    OWNER_CODE: oneBased(3),
+    BALANCE: oneBased(13), // Column M
+    BALANCE_UPDATED: oneBased(19), // Column S
+    CHECK_BALANCE_FREQUENCY: oneBased(12), // Column L
+    DATE_CLOSED: oneBased(11), // Column K
+    KEY: oneBased(1), // Column A
+    OUR_MONEY: oneBased(38), // Column AL
+    OWNER_CODE: oneBased(3), // Column C
   } as const satisfies Record<string, OneBased<number>>,
   LABELS: {
     KEY_LABEL: "A" as const,

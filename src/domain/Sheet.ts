@@ -302,8 +302,8 @@ export class Sheet {
     );
   }
 
-  getValue(range: string): any {
-    return this.gasSheet.getRange(range).getValue();
+  getCellValue(cellRangeA1format: string): any {
+    return this.gasSheet.getRange(cellRangeA1format).getValue();
   }
 
   getRange(a1Notation: string): GoogleAppsScript.Spreadsheet.Range {
@@ -452,8 +452,8 @@ export class Sheet {
     });
   }
 
-  setValue(range: string, value: any): void {
-    this.gasSheet.getRange(range).setValue(value);
+  setCellValue(cellRangeA1format: string, value: any): void {
+    this.gasSheet.getRange(cellRangeA1format).setValue(value);
     this.changed();
   }
 

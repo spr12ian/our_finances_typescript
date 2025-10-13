@@ -22,7 +22,7 @@ import {
 } from "@lib/constants";
 import { logTime } from "@lib/logging/logTime";
 import * as timeConstants from "@lib/timeConstants";
-import { FastLog } from "@logging";
+import { FastLog, functionStart } from "@logging";
 import { ensureQueueDateFormats, queueSetup } from "@queue/queueSetup";
 import { purgeQueuesOldData, queueWorker } from "@queue/queueWorker";
 import { validateAccountKeys } from "@sheets/validateAccountKeys";
@@ -37,6 +37,7 @@ import { withReentryGuard } from "../../withReentryGuard";
 import { handleEdit } from "../triggers/handleEdit";
 import { handleOpen } from "../triggers/handleOpen";
 import { onOpen } from "./onOpen";
+import { onSelectionChange } from './onSelectionChange';
 
 export function GAS_applyDescriptionReplacements() {
   const spreadsheet = getFinancesSpreadsheet();
@@ -225,6 +226,12 @@ export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
   const startTime = FastLog.start(GAS_onOpen.name, e);
   onOpen(e);
   FastLog.finish(GAS_onOpen.name, startTime);
+}
+
+export function GAS_onSelectionChange(e: any): void {
+  const finish = functionStart(GAS_onSelectionChange.name);
+  onSelectionChange(e);
+  finish();
 }
 
 export function GAS_showOpenAccounts() {

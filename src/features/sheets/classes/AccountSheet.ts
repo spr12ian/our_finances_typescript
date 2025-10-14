@@ -205,21 +205,29 @@ export class AccountSheet extends BaseSheet {
   }
 
   private setColumnWidths(sheet: Sheet) {
-    sheet.raw
-      .setColumnWidth(Meta.COLUMNS.DATE, Meta.COLUMN_WIDTHS.DATE)
-      .setColumnWidth(Meta.COLUMNS.DESCRIPTION, Meta.COLUMN_WIDTHS.DESCRIPTION)
-      .setColumnWidth(Meta.COLUMNS.CREDIT, Meta.COLUMN_WIDTHS.CREDIT)
-      .setColumnWidth(Meta.COLUMNS.DEBIT, Meta.COLUMN_WIDTHS.DEBIT)
-      .setColumnWidth(Meta.COLUMNS.NOTE, Meta.COLUMN_WIDTHS.NOTE)
-      .setColumnWidth(
-        Meta.COLUMNS.COUNTERPARTY,
-        Meta.COLUMN_WIDTHS.COUNTERPARTY
-      )
-      .setColumnWidth(
-        Meta.COLUMNS.COUNTERPARTY_DATE,
-        Meta.COLUMN_WIDTHS.COUNTERPARTY_DATE
-      )
-      .setColumnWidth(Meta.COLUMNS.BALANCE, Meta.COLUMN_WIDTHS.BALANCE);
+    const finish = methodStart(this.setColumnWidths.name, this.accountKey);
+    try {
+      sheet.raw
+        .setColumnWidth(Meta.COLUMNS.DATE, Meta.COLUMN_WIDTHS.DATE)
+        .setColumnWidth(
+          Meta.COLUMNS.DESCRIPTION,
+          Meta.COLUMN_WIDTHS.DESCRIPTION
+        )
+        .setColumnWidth(Meta.COLUMNS.CREDIT, Meta.COLUMN_WIDTHS.CREDIT)
+        .setColumnWidth(Meta.COLUMNS.DEBIT, Meta.COLUMN_WIDTHS.DEBIT)
+        .setColumnWidth(Meta.COLUMNS.NOTE, Meta.COLUMN_WIDTHS.NOTE)
+        .setColumnWidth(
+          Meta.COLUMNS.COUNTERPARTY,
+          Meta.COLUMN_WIDTHS.COUNTERPARTY
+        )
+        .setColumnWidth(
+          Meta.COLUMNS.COUNTERPARTY_DATE,
+          Meta.COLUMN_WIDTHS.COUNTERPARTY_DATE
+        )
+        .setColumnWidth(Meta.COLUMNS.BALANCE, Meta.COLUMN_WIDTHS.BALANCE);
+    } finally {
+      finish();
+    }
   }
 
   private setCounterpartyValidation(a1range: string) {

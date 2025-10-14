@@ -36,6 +36,7 @@ export function queueJob(
 
     const id = generateId_();
     const dateNow = new Date();
+    FastLog.log(fn, `Enqueuing job id=${id} at ${dateNow} (${dateNow.toISOString()})`);
     // Normalize: Date -> Date; null/undefined/anything else -> ""
     const runAtCell: Date | "" =
       options.runAt instanceof Date && !isNaN(options.runAt.getTime())

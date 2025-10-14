@@ -17,6 +17,10 @@ export abstract class BaseSheet {
     this.sheet = this.spreadsheet.getSheet(sheetName);
   }
 
+  get dataRows(): any[][] {
+    return this.sheet.dataRows;
+  }
+
   /** Run a block with start/finish logging. */
   protected withLog<T>(label: string, fn: () => T): T {
     const finish = methodStart(label, this.sheetName);

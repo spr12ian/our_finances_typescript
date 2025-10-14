@@ -2,6 +2,7 @@ import type { Spreadsheet } from "@domain";
 import { MetaAssets as Meta } from "@lib/constants";
 import { BaseSheet } from "../core";
 import { BankAccounts } from "./BankAccounts";
+import { Shares } from "./Shares";
 
 export class Assets extends BaseSheet {
   constructor(spreadsheet: Spreadsheet) {
@@ -19,6 +20,11 @@ export class Assets extends BaseSheet {
   get newBankAccountsAssetValue(): number {
     const bankAccounts = new BankAccounts(this.spreadsheet);
     return bankAccounts.totalOurMoneyBalance;
+  }
+
+  get newInvestmentsAssetValue(): number {
+    const shares = new Shares(this.spreadsheet);
+    return shares.totalValue;
   }
 
   get owedToUsAssetValue(): number {
@@ -40,7 +46,7 @@ export class Assets extends BaseSheet {
 
   update(): void {
     this.updateBankAccountsValue(this.newBankAccountsAssetValue);
-    // this.updateInvestmentsValue(this.newInvestmentsAssetValue);
+    this.updateInvestmentsValue(this.newInvestmentsAssetValue);
     // this.updateOwedToUsValue(this.newOwedToUsAssetValue);
     // this.updatePensionsValue(this.newPensionsAssetValue);
     // this.updatePropertyValue(this.newPropertyAssetValue);

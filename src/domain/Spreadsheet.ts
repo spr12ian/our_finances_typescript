@@ -51,6 +51,10 @@ export class Spreadsheet {
   }
 
   // ─── Metadata ────────────────────────────────────────────────
+  get id(): string {
+    return this.ss.getId();
+  }
+
   get name(): string {
     return this.ss.getName();
   }

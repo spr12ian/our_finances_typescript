@@ -5,11 +5,11 @@ import { AccountSheet } from "@sheets/classes/AccountSheet";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 import { isAccountSheetName } from "./accountSheetFunctions";
 
-export function updateAccountSheetBalances(
+export function updateBalanceValues(
   sheetName: string,
   row: number
 ): boolean {
-  const fn = updateAccountSheetBalances.name;
+  const fn = updateBalanceValues.name;
   const startTime = FastLog.start(fn, sheetName);
   try {
     if (isAccountSheetName(sheetName)) {

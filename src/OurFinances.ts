@@ -248,26 +248,7 @@ export class OurFinances {
     FastLog.log(`Finished OurFinances.fixAccountSheet`);
   }
 
-  onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
-    FastLog.log(`Started OurFinances.onChange`);
-    const ignored = new Set([
-      "FORMAT",
-      // add others you don't need
-    ]);
 
-    if (!ignored.has(e.changeType as string)) {
-      switch (e.changeType) {
-        case "REMOVE_ROW":
-          FastLog.log(`Row removed`);
-          this.updateAccountSheetBalances();
-          break;
-        default:
-          FastLog.log(`Unhandled change event: ${JSON.stringify(e, null, 2)}`);
-      }
-    }
-
-    FastLog.log(`Finished OurFinances.onChange`);
-  }
 
   sendDailyHtmlEmail(): void {
     const fixedAmountMismatches = this.fixedAmountMismatches;

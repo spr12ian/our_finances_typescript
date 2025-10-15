@@ -26,7 +26,11 @@ import { FastLog, functionStart } from "@logging";
 import { ensureQueueDateFormats, queueSetup } from "@queue/queueSetup";
 import { purgeQueuesOldData, queueWorker } from "@queue/queueWorker";
 import { validateAccountKeys } from "@sheets/validateAccountKeys";
-import type { FixSheetFlowInput, FormatSheetFlowInput, UpdateOpenBalancesFlowInput } from "@workflow";
+import type {
+  FixSheetFlowInput,
+  FormatSheetFlowInput,
+  UpdateOpenBalancesFlowInput,
+} from "@workflow";
 import { setupWorkflows } from "@workflow";
 import type { ExampleFlowInput } from "@workflow/flows/exampleFlow";
 import { startWorkflow } from "@workflow/workflowEngine";
@@ -36,8 +40,9 @@ import { validateAllMenuFunctionNames } from "../../validateAllMenuFunctionNames
 import { withReentryGuard } from "../../withReentryGuard";
 import { handleEdit } from "../triggers/handleEdit";
 import { handleOpen } from "../triggers/handleOpen";
+import { onChange } from "./onChange";
 import { onOpen } from "./onOpen";
-import { onSelectionChange } from './onSelectionChange';
+import { onSelectionChange } from "./onSelectionChange";
 
 export function GAS_applyDescriptionReplacements() {
   const spreadsheet = getFinancesSpreadsheet();
@@ -202,10 +207,11 @@ export function GAS_showMonthlyAccounts() {
 }
 
 export function GAS_onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
-  withReentryGuard("ONCHANGE_RUNNING", timeConstants.ONE_MINUTE, () => {
-    const spreadsheet = getFinancesSpreadsheet(e);
-    new OurFinances(spreadsheet).onChange(e);
-  });
+  const finish = functionStart(GAS_onChange.name);
+
+  onChange(e);
+
+  finish();
 }
 
 export function GAS_onEditTrigger(
@@ -223,9 +229,9 @@ export function GAS_onOpenTrigger(
 }
 
 export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
-  const startTime = FastLog.start(GAS_onOpen.name, e);
+  const finish = functionStart(GAS_onOpen.name);
   onOpen(e);
-  FastLog.finish(GAS_onOpen.name, startTime);
+  finish();
 }
 
 export function GAS_onSelectionChange(e: any): void {

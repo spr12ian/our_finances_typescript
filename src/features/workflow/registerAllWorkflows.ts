@@ -9,6 +9,7 @@ export function registerAllWorkflows(): void {
   flow.formatSheetFlow();
   flow.sendMeHtmlEmailFlow();
   flow.trimSheetFlow();
+  flow.updateBalanceValuesFlow();
   flow.updateOpenBalancesFlow();
   finish();
 }

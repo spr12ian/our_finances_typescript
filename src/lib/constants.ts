@@ -6,7 +6,7 @@ export const LOCALE = "en-GB" as const;
 
 export const MetaAccountSheet = {
   COLUMN_WIDTHS: {
-    DATE: 99,
+    DATE: 90,
     DESCRIPTION: 490,
     CREDIT: 99,
     DEBIT: 99,

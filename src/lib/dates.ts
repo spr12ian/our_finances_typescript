@@ -1,7 +1,7 @@
 // import { LOCALE } from "./constants";
 import { getOrdinal } from "./number";
 
-export const DISPLAY_DATE_FORMAT = "yyyy-mm-dd hh:mm";
+export const DISPLAY_DATE_FORMAT = "yyyy-mm-dd hh:mm:ss";
 
 // Convenience shorthands
 export const formatLondonDate = (x: DateInput) => formatInTZ(x); // uses defaults above
@@ -146,15 +146,13 @@ function toDateSafe(x: DateInput): Date {
   return safeDate;
 }
 
-// // A local ISO-like string (no “Z”), still computed for the given TZ
-// // e.g. “2025-09-22 13:05:09”
-// export function toLocalIsoLike(
-//   x: DateInput,
-//   timeZone: string = LONDON_TZ
-// ): string {
-//   const d = toDateSafe(x);
-//   // Use a stable, sortable locale (sv-SE) for YYYY-MM-DD HH:mm:ss
-//   const date = d.toLocaleDateString("sv-SE", { timeZone });
-//   const time = d.toLocaleTimeString("sv-SE", { timeZone, hour12: false });
-//   return `${date} ${time}`;
-// }
+export function toLocalIsoLike(
+  x: DateInput,
+  timeZone: string = LONDON_TZ
+): string {
+  const d = toDateSafe(x);
+  // Use a stable, sortable locale (sv-SE) for YYYY-MM-DD HH:mm:ss
+  const date = d.toLocaleDateString("sv-SE", { timeZone });
+  const time = d.toLocaleTimeString("sv-SE", { timeZone, hour12: false });
+  return `${date} ${time}`;
+}

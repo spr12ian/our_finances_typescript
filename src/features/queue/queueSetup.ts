@@ -1,6 +1,11 @@
 // @queue/queueSetup.ts
 import { DISPLAY_DATE_FORMAT } from "@lib/dates";
-import { COL, DEAD_SHEET_NAME, HEADERS, QUEUE_SHEET_NAME } from "./queueConstants";
+import {
+  COL,
+  DEAD_SHEET_NAME,
+  HEADERS,
+  QUEUE_SHEET_NAME,
+} from "./queueConstants";
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Public API
@@ -19,16 +24,21 @@ export function ensureQueueDateFormats() {
 }
 
 function ensureQueueDateFormats_(sheet: GoogleAppsScript.Spreadsheet.Sheet) {
+  const last = Math.max(2, sheet.getLastRow());
+  const rows = last - 1;
+  if (rows <= 0) return;
+
   sheet
-    .getRange(2, COL.ENQUEUED_AT, sheet.getMaxRows(), 1)
+    .getRange(2, COL.ENQUEUED_AT, rows, 1)
     .setNumberFormat(DISPLAY_DATE_FORMAT);
   sheet
-    .getRange(2, COL.NEXT_RUN_AT, sheet.getMaxRows(), 1)
+    .getRange(2, COL.NEXT_RUN_AT, rows, 1)
     .setNumberFormat(DISPLAY_DATE_FORMAT);
   sheet
-    .getRange(2, COL.STARTED_AT, sheet.getMaxRows(), 1)
+    .getRange(2, COL.STARTED_AT, rows, 1)
     .setNumberFormat(DISPLAY_DATE_FORMAT);
 }
+
 /** Ensure queue & dead‑letter sheets, headers, and a minute worker trigger. */
 export function queueSetup(): void {
   const ss = SpreadsheetApp.getActive();

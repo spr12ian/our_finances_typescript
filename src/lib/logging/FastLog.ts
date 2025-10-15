@@ -29,18 +29,21 @@ let errorCount = 0;
 let statusSheetCache: GoogleAppsScript.Spreadsheet.Sheet | null = null;
 
 export function functionStart(functionName: string) {
-  const start = FastLog.start(functionName);
-  return () => FastLog.finish(functionName, start);
+  const msg = `function ${functionName}`;
+  const start = FastLog.start(msg);
+  return () => FastLog.finish(msg, start);
 }
 
 export function methodStart(methodName: string, contextName: string) {
-  const start = FastLog.start(methodName, contextName);
-  return () => FastLog.finish(methodName, start);
+  const msg = `${contextName}.${methodName}`;
+  const start = FastLog.start(msg);
+  return () => FastLog.finish(msg, start);
 }
 
 export function propertyStart(propertyName: string, contextName: string) {
-  const start = FastLog.start(propertyName, contextName);
-  return () => FastLog.finish(propertyName, start);
+  const msg = `get ${contextName}.${propertyName}`;
+  const start = FastLog.start(msg);
+  return () => FastLog.finish(msg, start);
 }
 
 // ────────────────────────────────────────────────────────────

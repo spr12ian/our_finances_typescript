@@ -3,7 +3,7 @@
 import { getSheetByName } from "@gas";
 import { getErrorMessage } from "@lib/errors";
 import * as timeConstants from "@lib/timeConstants";
-import { FastLog } from "@logging";
+import { FastLog, functionStart } from "@logging";
 import type { RunStepJob, SerializedRunStepParameters } from "@workflow";
 import { setupWorkflows } from "@workflow";
 import { runStep } from "@workflow/workflowEngine";
@@ -91,7 +91,7 @@ function purgeQueueOlderThanDays(
 // ───────────────────────────────────────────────────────────────────────────────
 function processQueueBatch_(maxJobs: number, budgetMs: number): void {
   const fn = processQueueBatch_.name;
-  const startTime = FastLog.start(fn);
+  const finish = functionStart(fn);
   try {
     const started = Date.now();
     const now = new Date();
@@ -198,7 +198,7 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
     FastLog.error(fn, errorMessage);
     throw new Error(errorMessage);
   } finally {
-    FastLog.finish(fn, startTime);
+    finish();
   }
 }
 
@@ -303,5 +303,9 @@ function toCellMsg_(x: unknown, max = MAX_CELL_LENGTH) {
 })();
 
 function asDateOrNull_(v: unknown): Date | null {
+  FastLog.log("asDateOrNull_", { v });
+  if (typeof v === "string") {
+    FastLog.warn("asDateOrNull_ v is a string");
+  }
   return v instanceof Date && !isNaN(v.getTime()) ? v : null;
 }

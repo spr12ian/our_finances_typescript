@@ -12,7 +12,7 @@ export const DISPLAY_DATE_FORMAT = "dd MMM yyyy HH:mm:ss";
 
 
 // Convenience shorthands
-export const formatLondonDate = (x: DateInput) => formatInTZ(x); // uses defaults above
+export const formatLondonDate = (x: DateInput) => formatInTZ(x);
 
 export const formatLondonDateTime = (x: DateInput) =>
   formatInTZ(x, {

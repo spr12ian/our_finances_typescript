@@ -1,7 +1,15 @@
 // import { LOCALE } from "./constants";
 import { getOrdinal } from "./number";
 
-export const DISPLAY_DATE_FORMAT = "yyyy-mm-dd hh:mm:ss";
+// Dates in cells should be in UTC (Z) to avoid timezone issues.
+
+// Standard display format for dates in logs and UI (Google Sheets cells).
+// user-friendly, not easily sortable or parseable
+// e.g., 25 Dec 2023 14:30:00
+// N.B. Google sheets automatically applies timezone conversion in cells
+export const DISPLAY_DATE_FORMAT = "dd MMM yyyy HH:mm:ss";
+
+
 
 // Convenience shorthands
 export const formatLondonDate = (x: DateInput) => formatInTZ(x); // uses defaults above
@@ -66,7 +74,10 @@ export function getSeasonName(date: Date): string {
   return seasons[monthSeasons[getMonthIndex(date)]];
 }
 
-export function setupDaysIteratorTZ(start: Date, timeZone = LONDON_TZ): {
+export function setupDaysIteratorTZ(
+  start: Date,
+  timeZone = LONDON_TZ
+): {
   first: DayInfo;
   iterator: { next(): DayInfo };
 } {
@@ -155,4 +166,34 @@ export function toLocalIsoLike(
   const date = d.toLocaleDateString("sv-SE", { timeZone });
   const time = d.toLocaleTimeString("sv-SE", { timeZone, hour12: false });
   return `${date} ${time}`;
+}
+
+export function toLocalIsoLikeWithMs(
+  x: DateInput,
+  timeZone: string = LONDON_TZ
+): string {
+  const d = toDateSafe(x);
+
+  // Get date and time parts in stable format
+  const date = d.toLocaleDateString("sv-SE", { timeZone });
+  const timeParts = d
+    .toLocaleTimeString("sv-SE", {
+      timeZone,
+      hour12: false,
+    })
+    .split(":");
+
+  // Extract milliseconds using Intl.DateTimeFormat
+  const ms =
+    new Intl.DateTimeFormat("en-GB", {
+      timeZone,
+      fractionalSecondDigits: 3,
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+    })
+      .formatToParts(d)
+      .find((p) => p.type === "fractionalSecond")?.value ?? "000";
+
+  return `${date} ${timeParts.join(":")}.${ms}`;
 }

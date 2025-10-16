@@ -1,12 +1,13 @@
 // queueJob.ts
 
 // ───────────────────────────────────────────────────────────────────────────────
-// Constants & schema
+// Imports & constants
 // ───────────────────────────────────────────────────────────────────────────────
 import { THREE_SECONDS } from "@lib/timeConstants";
 import { FastLog } from "@logging";
 import { DEFAULT_PRIORITY, QUEUE_SHEET_NAME, STATUS } from "./queueConstants";
 import type { QueueEnqueueOptions, JobRow } from "./queueTypes";
+import { DateHelper } from "@lib/DateHelper";
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Public API
@@ -19,61 +20,60 @@ export function queueJob(
 ): { id: string; row: number } {
   const lock = LockService.getDocumentLock();
   if (!lock.tryLock(THREE_SECONDS)) {
-    // avoid re-entrancy during row allocation
     throw new Error("queueJob: Queue is busy; try again shortly.");
   }
 
   const fn = queueJob.name;
-  const startTime = FastLog.start(fn, {
-    parameters,
-    options,
-  });
+  const startTime = FastLog.start(fn, { parameters, options });
+
   try {
     const priority =
-      typeof options?.priority === "number"
-        ? options!.priority
-        : DEFAULT_PRIORITY;
+      typeof options?.priority === "number" ? options.priority : DEFAULT_PRIORITY;
 
     const id = generateId_();
-    const dateNow = new Date();
-    FastLog.log(fn, `Enqueuing job id=${id} at ${dateNow} (${dateNow.toISOString()})`);
-    // Normalize: Date -> Date; null/undefined/anything else -> ""
+
+    // UTC-normalized enqueue time
+    const enqueuedAt = new Date();
+    const displayEnqueuedAt = DateHelper.formatForLog(enqueuedAt);
+
+    // Optional runAt normalization
     const runAtCell: Date | "" =
       options.runAt instanceof Date && !isNaN(options.runAt.getTime())
-        ? options.runAt
+        ? new Date(options.runAt.toISOString())
         : "";
 
+    FastLog.log(fn, `Enqueuing job id=${id} at ${displayEnqueuedAt}`);
+
     const rowValues: JobRow = [
-      id,
-      JSON.stringify(parameters ?? {}),
-      dateNow,
-      priority,
-      runAtCell,
-      0,
-      STATUS.PENDING,
-      "",
-      "",
-      "",
+      id,                                 // A: id
+      JSON.stringify(parameters ?? {}),   // B: payload
+      enqueuedAt,                         // C: enqueued_at
+      priority,                           // D: priority
+      runAtCell,                          // E: run_at
+      0,                                  // F: attempts
+      STATUS.PENDING,                     // G: status
+      "",                                 // H: started_at
+      "",                                 // I: finished_at
+      "",                                 // J: error
     ];
 
     const sheet = getQueueSheet_();
-
-    // Determine the row BEFORE writing and write atomically
     const rowIndex = sheet.getLastRow() + 1;
     sheet.getRange(rowIndex, 1, 1, rowValues.length).setValues([rowValues]);
+
+    // Apply human-readable date formats
+    sheet.getRange(rowIndex, 3).setNumberFormat(DateHelper.DISPLAY_DATE_FORMAT);
+    sheet.getRange(rowIndex, 5).setNumberFormat(DateHelper.DISPLAY_DATE_FORMAT);
+
+    FastLog.log(fn, `Job ${id} successfully enqueued on row ${rowIndex}`);
 
     return { id, row: rowIndex };
   } catch (err) {
     FastLog.error(fn, err);
     throw err;
   } finally {
-    try {
-      lock.releaseLock();
-    } catch (_e) {}
-
-    try {
-      FastLog.finish(fn, startTime);
-    } catch {}
+    try { lock.releaseLock(); } catch {}
+    try { FastLog.finish(fn, startTime); } catch {}
   }
 }
 

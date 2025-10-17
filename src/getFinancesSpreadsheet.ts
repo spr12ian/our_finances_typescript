@@ -47,7 +47,7 @@ export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
     "";
 
   // Candidate sources that don’t require extra scopes
-  const active = SpreadsheetApp.getActiveSpreadsheet() || null;
+  const active = Spreadsheet.getActiveWithBackoff() || null;
   const src = (e as any)?.source as
     | GoogleAppsScript.Spreadsheet.Spreadsheet
     | undefined;
@@ -94,7 +94,7 @@ export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
   }
 
   try {
-    const gas = SpreadsheetApp.openById(configuredId); // requires scopes
+    const gas = Spreadsheet.openByIdWithBackoff(configuredId); // requires scopes
     return wrapAndMemoize(gas, configuredId);
   } catch (err: any) {
     const msg = String(err?.message ?? "");

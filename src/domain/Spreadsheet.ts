@@ -1,3 +1,4 @@
+import { withBackoff } from "@lib/withBackoff";
 import { FastLog } from "@logging/FastLog";
 import { Sheet } from "./Sheet";
 
@@ -23,14 +24,28 @@ export class Spreadsheet {
   /** Static factory: open active spreadsheet */
   static getActive(): Spreadsheet {
     FastLog.log("Getting active spreadsheet");
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-    if (!ss) throw new Error("Unable to obtain a spreadsheet instance");
+    const ss = Spreadsheet.getActiveWithBackoff();
+
+    if (!ss)
+      throw new Error("Unable to obtain a spreadsheet instance (getActive)");
 
     const spreadsheet = new Spreadsheet(ss);
 
     FastLog.log(`Opened spreadsheet: ${ss.getName()} (ID: ${ss.getId()})`);
     return spreadsheet;
+  }
+
+  static getActiveWithBackoff() {
+    const RETRIES = 8;
+    return withBackoff(
+      () => {
+        Utilities.sleep(Math.floor(Math.random() * 150));
+        return SpreadsheetApp.getActiveSpreadsheet();
+      },
+      "getActiveWithBackoff",
+      RETRIES
+    );
   }
 
   /** Static factory: open by ID */
@@ -40,14 +55,28 @@ export class Spreadsheet {
     if (typeof id !== "string") {
       throw new Error("Spreadsheet ID must be a string");
     }
-    const ss = SpreadsheetApp.openById(id);
 
-    if (!ss) throw new Error("Unable to obtain a spreadsheet instance");
+    const ss = Spreadsheet.openByIdWithBackoff(id);
+
+    if (!ss)
+      throw new Error("Unable to obtain a spreadsheet instance (openById)");
 
     const spreadsheet = new Spreadsheet(ss);
 
     FastLog.log(`Opened spreadsheet: ${ss.getName()} (ID: ${id})`);
     return spreadsheet;
+  }
+
+  static openByIdWithBackoff(id: string) {
+    const RETRIES = 8;
+    return withBackoff(
+      () => {
+        Utilities.sleep(Math.floor(Math.random() * 150));
+        return SpreadsheetApp.openById(id);
+      },
+      "openByIdWithBackoff",
+      RETRIES
+    );
   }
 
   // ─── Metadata ────────────────────────────────────────────────

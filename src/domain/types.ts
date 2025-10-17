@@ -13,3 +13,5 @@ export type AllEventsWithSource = Extract<
   SheetsAny,
   { source: GoogleAppsScript.Spreadsheet.Spreadsheet }
 >;
+
+export type SpreadsheetT = GoogleAppsScript.Spreadsheet.Spreadsheet;

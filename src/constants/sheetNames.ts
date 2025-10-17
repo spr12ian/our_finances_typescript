@@ -89,8 +89,6 @@ export const sheetNames = [
   "Our money history",
   "PMT",
   "Pension UK Gov",
-  "Pension Vanguard",
-  "Pension Zurich",
   "Pensions",
   "People",
   "Property",

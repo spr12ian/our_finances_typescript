@@ -4,6 +4,7 @@ import { BaseSheet } from "../core";
 import { BankAccounts } from "./BankAccounts";
 import { Property } from "./Property";
 import { Shares } from "./Shares";
+import { MoneyOwedToUs } from './MoneyOwedToUs';
 
 export class Assets extends BaseSheet {
   constructor(spreadsheet: Spreadsheet) {
@@ -26,6 +27,11 @@ export class Assets extends BaseSheet {
   get newInvestmentsAssetValue(): number {
     const shares = new Shares(this.spreadsheet);
     return shares.totalValue;
+  }
+
+  get newOwedToUsAssetValue(): number {
+    const moneyOwedToUs = new MoneyOwedToUs(this.spreadsheet);
+    return moneyOwedToUs.totalValue;
   }
 
   get newPropertyAssetValue(): number {
@@ -53,7 +59,7 @@ export class Assets extends BaseSheet {
   update(): void {
     this.updateBankAccountsValue(this.newBankAccountsAssetValue);
     this.updateInvestmentsValue(this.newInvestmentsAssetValue);
-    // this.updateOwedToUsValue(this.newOwedToUsAssetValue);
+    this.updateOwedToUsValue(this.newOwedToUsAssetValue);
     // this.updatePensionsValue(this.newPensionsAssetValue);
     this.updatePropertyValue(this.newPropertyAssetValue);
   }

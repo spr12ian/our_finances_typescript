@@ -47,26 +47,6 @@ export const MetaAssets = {
     PENSIONS_VALUE: "B5",
     PROPERTY_VALUE: "B4",
   } as const satisfies Record<string, string>,
-  FORMULA_CONFIG: [
-    {
-      cell: "B2",
-      formula:
-        "=QUERY('Bank accounts'!$M$1:$AL,\"SELECT SUM(M) WHERE M > 1 AND AL = TRUE LABEL SUM(M) ''\")",
-    },
-    { cell: "B3", formula: "=Shares!F4" },
-    { cell: "B4", formula: "='Money owed to us'!B2" },
-    {
-      cell: "B5",
-      formula:
-        "=XLOOKUP(\"Institution Total\",'Pension Vanguard'!A2:A,'Pension Vanguard'!D2:D)",
-    },
-    {
-      cell: "B6",
-      formula:
-        "=XLOOKUP(\"Fund value\",'Pension Zurich'!A2:A,'Pension Zurich'!B2:B)",
-    },
-    { cell: "B7", formula: "=Property!C2" },
-  ] as { cell: string; formula: string }[],
   SHEET: { NAME: "Assets" },
 };
 
@@ -218,6 +198,13 @@ export const MetaHMRC_S = {
     LATEST_TAX_YEAR: oneBased(3),
   } as const satisfies Record<string, OneBased<number>>,
   SHEET: { NAME: "HMRC S", HEADER_ROW: 1 },
+};
+
+export const MetaMoneyOwedToUs = {
+  COLUMNS: {
+    OWED_TO_US_AMOUNT: oneBased(2), // Column B
+  } as const satisfies Record<string, OneBased<number>>,
+  SHEET: { NAME: "Money owed to us" },
 };
 
 export const MetaNotInTransactionCategories = {

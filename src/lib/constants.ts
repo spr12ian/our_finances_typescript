@@ -224,6 +224,13 @@ export const MetaNotInTransactionCategories = {
   SHEET: { NAME: "Not in transaction categories" },
 };
 
+export const MetaProperty = {
+  COLUMNS: {
+    PROPERTY_VALUE: oneBased(3), // Column C
+  } as const satisfies Record<string, OneBased<number>>,
+  SHEET: { NAME: "Property" },
+};
+
 export const MetaShares = {
   COLUMNS: {
     BALANCE: oneBased(6), // Column F

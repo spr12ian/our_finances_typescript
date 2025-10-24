@@ -23,6 +23,7 @@ import {
   WORKER_BUDGET_MS,
 } from "./queueConstants";
 import type { Job, JobRow, JobStatus } from "./queueTypes";
+import { withScriptLock } from "@lib/withScriptLock";
 
 const MAX_CELL_LENGTH = 2000;
 
@@ -37,15 +38,9 @@ export function queueWorker(): void {
     at: DateHelper.formatForLog(new Date()),
   });
   try {
-    const lock = LockService.getScriptLock();
-    if (!lock.tryLock(timeConstants.FIVE_SECONDS)) return; // skip if another worker holds the lock
-    try {
+    withScriptLock(() => {
       processQueueBatch_(MAX_BATCH, WORKER_BUDGET_MS);
-    } finally {
-      try {
-        lock.releaseLock();
-      } catch {}
-    }
+    });
   } catch (err) {
     const errorMessage = getErrorMessage(err);
     FastLog.error(fn, errorMessage);
@@ -360,8 +355,8 @@ function coerceCellToUtcDate_(v: unknown): Date | null {
     // Try ISO first (with Z/offset), then our display format "dd MMM yyyy HH:mm[:ss]"
     const iso = new Date(v);
     if (!isNaN(iso.getTime()) && /[zZ]|[+\-]\d{2}:\d{2}$/.test(v)) return iso;
-    const disp = DateHelper.parseDisplayToUtc(v);
-    return disp ?? null;
+    const display = DateHelper.parseDisplayToUtc(v);
+    return display ?? null;
   }
   return null;
 }

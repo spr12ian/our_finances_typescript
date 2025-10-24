@@ -3,32 +3,85 @@
 // ───────────────────────────────────────────────────────────────────────────────
 // Imports & constants
 // ───────────────────────────────────────────────────────────────────────────────
+import { DateHelper } from "@lib/DateHelper";
 import { THREE_SECONDS } from "@lib/timeConstants";
+import { withDocumentLock } from "@lib/WithDocumentLock";
 import { FastLog } from "@logging";
 import { DEFAULT_PRIORITY, QUEUE_SHEET_NAME, STATUS } from "./queueConstants";
-import type { QueueEnqueueOptions, JobRow } from "./queueTypes";
-import { DateHelper } from "@lib/DateHelper";
+import type { JobRow, QueueEnqueueOptions } from "./queueTypes";
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Public API
 // ───────────────────────────────────────────────────────────────────────────────
 
 /** Enqueue a job */
+
 export function queueJob(
   parameters: unknown,
   options: QueueEnqueueOptions = {}
+): { id: string; row: number } | undefined {
+  // withDocumentLock returns a function → call it
+  return withDocumentLock<{ id: string; row: number }>(
+    "queueJob",
+    () => doQueueJob(parameters, options),
+    THREE_SECONDS
+  )();
+}
+
+// Small bounded retry with backoff; never returns undefined
+export function queueJobMust(
+  parameters: unknown,
+  options: QueueEnqueueOptions = {}
 ): { id: string; row: number } {
-  const lock = LockService.getDocumentLock();
-  if (!lock.tryLock(THREE_SECONDS)) {
-    throw new Error("queueJob: Queue is busy; try again shortly.");
+  // 1) a few fast attempts (non-blocking)
+  for (let i = 0; i < 3; i++) {
+    const r = queueJob(parameters, options); // ← your soft version (T | undefined)
+    if (r) return r;
+    Utilities.sleep(100); // 100 ms
   }
 
-  const fn = queueJob.name;
-  const startTime = FastLog.start(fn, { parameters, options });
+  // 2) last chance: run the critical section with a longer lock timeout
+  const attempt = withDocumentLock<{ id: string; row: number }>(
+    "queueJobMust",
+    () => doQueueJob(parameters, options), // call the inner implementation
+    2000 // a bit more patience than THREE_SECONDS if you want
+  )();
+
+  if (attempt) return attempt;
+
+  // 3) If still nothing, log and throw: the engine *requires* a definitive id/row
+  FastLog.error("queueJobMust", "Exhausted retries; queue is still busy.");
+  throw new Error("queueJobMust: queue busy after retries");
+}
+
+// ───────────────────────────────────────────────────────────────────────────────
+// Helpers
+// ───────────────────────────────────────────────────────────────────────────────
+
+function generateId_(): string {
+  return Utilities.getUuid();
+}
+
+function getQueueSheet_(): GoogleAppsScript.Spreadsheet.Sheet {
+  const ss = SpreadsheetApp.getActive();
+  const sheet = ss.getSheetByName(QUEUE_SHEET_NAME);
+  if (!sheet) throw new Error("Queue sheet missing. Run queueSetup().");
+  return sheet;
+}
+
+function doQueueJob(
+  parameters: unknown,
+  options: QueueEnqueueOptions = {}
+): { id: string; row: number } {
+  const functionName = queueJob.name;
+
+  const startTime = FastLog.start(functionName, { parameters, options });
 
   try {
     const priority =
-      typeof options?.priority === "number" ? options.priority : DEFAULT_PRIORITY;
+      typeof options?.priority === "number"
+        ? options.priority
+        : DEFAULT_PRIORITY;
 
     const id = generateId_();
 
@@ -42,19 +95,19 @@ export function queueJob(
         ? new Date(options.runAt.toISOString())
         : "";
 
-    FastLog.log(fn, `Enqueuing job id=${id} at ${displayEnqueuedAt}`);
+    FastLog.log(functionName, `Enqueuing job id=${id} at ${displayEnqueuedAt}`);
 
     const rowValues: JobRow = [
-      id,                                 // A: id
-      JSON.stringify(parameters ?? {}),   // B: payload
-      enqueuedAt,                         // C: enqueued_at
-      priority,                           // D: priority
-      runAtCell,                          // E: run_at
-      0,                                  // F: attempts
-      STATUS.PENDING,                     // G: status
-      "",                                 // H: started_at
-      "",                                 // I: finished_at
-      "",                                 // J: error
+      id, // A: id
+      JSON.stringify(parameters ?? {}), // B: payload
+      enqueuedAt, // C: enqueued_at
+      priority, // D: priority
+      runAtCell, // E: run_at
+      0, // F: attempts
+      STATUS.PENDING, // G: status
+      "", // H: started_at
+      "", // I: finished_at
+      "", // J: error
     ];
 
     const sheet = getQueueSheet_();
@@ -65,28 +118,20 @@ export function queueJob(
     sheet.getRange(rowIndex, 3).setNumberFormat(DateHelper.DISPLAY_DATE_FORMAT);
     sheet.getRange(rowIndex, 5).setNumberFormat(DateHelper.DISPLAY_DATE_FORMAT);
 
-    FastLog.log(fn, `Job ${id} successfully enqueued on row ${rowIndex}`);
+    FastLog.log(
+      functionName,
+      `Job ${id} successfully enqueued on row ${rowIndex}`
+    );
 
     return { id, row: rowIndex };
   } catch (err) {
-    FastLog.error(fn, err);
+    FastLog.error(functionName, err);
     throw err;
   } finally {
-    try { lock.releaseLock(); } catch {}
-    try { FastLog.finish(fn, startTime); } catch {}
+    try {
+    } catch {}
+    try {
+      FastLog.finish(functionName, startTime);
+    } catch {}
   }
-}
-
-// ───────────────────────────────────────────────────────────────────────────────
-// Helpers
-// ───────────────────────────────────────────────────────────────────────────────
-function getQueueSheet_(): GoogleAppsScript.Spreadsheet.Sheet {
-  const ss = SpreadsheetApp.getActive();
-  const sheet = ss.getSheetByName(QUEUE_SHEET_NAME);
-  if (!sheet) throw new Error("Queue sheet missing. Run queueSetup().");
-  return sheet;
-}
-
-function generateId_(): string {
-  return Utilities.getUuid();
 }

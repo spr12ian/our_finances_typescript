@@ -1,14 +1,15 @@
 // @workflow/setupWorkflows.ts
 import { FastLog } from "@lib/logging";
-import { FIVE_SECONDS } from "@lib/timeConstants";
-import { queueJob } from "@queue/queueJob";
-import type { EnqueueFn,EnqueueOptions } from "./engineState";
+import { withScriptLock } from "@lib/withScriptLock";
+import { queueJobMust } from "@queue/queueJob";
+import type { EnqueueFn, EnqueueOptions } from "./engineState";
 import { isConfigured, setEnqueue } from "./engineState";
 import { registerAllWorkflows } from "./registerAllWorkflows";
 import type { RunStepJob } from "./workflowTypes";
 
 let initialized = false;
 
+// safe to call repeatedly; internal lock + flag
 export function setupWorkflows(): void {
   const fn = setupWorkflows.name;
   const startTime = FastLog.start(fn);
@@ -30,7 +31,7 @@ export function setupWorkflows(): void {
           : null;
 
       // map EngineOpts -> QueueEnqueueOptions (you can add defaults here if you want)
-      return queueJob(rsp, {
+      return queueJobMust(rsp, {
         runAt,
         priority: opts?.priority,
         // maxAttempts / dedupeKey can be added here if your engine later exposes them
@@ -46,26 +47,4 @@ export function setupWorkflows(): void {
     initialized = true;
   });
   FastLog.finish(fn, startTime);
-}
-
-// GAS-only lock helper (no-op in Node tests)
-function withScriptLock<T>(fn: () => T): T {
-  // If you run this outside GAS, stub LockService.
-  // @ts-ignore
-  const lock =
-    typeof LockService !== "undefined"
-      ? // @ts-ignore
-        LockService.getScriptLock()
-      : null;
-
-  if (lock) {
-    lock.tryLock(FIVE_SECONDS); // best-effort
-    try {
-      return fn();
-    } finally {
-      lock.releaseLock();
-    }
-  } else {
-    return fn();
-  }
 }

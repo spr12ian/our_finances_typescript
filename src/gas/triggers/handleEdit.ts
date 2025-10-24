@@ -1,10 +1,8 @@
-/// <reference types="google-apps-script" />
+// handleEdit.ts
 
 import { getErrorMessage } from "@lib/errors";
 import { FastLog } from "@logging";
-import * as queueConstants from "@queue/queueConstants";
-import { setupWorkflows } from "@workflow";
-import { startWorkflow } from "@workflow/workflowEngine";
+import { onEditRecalcBalances } from "../../features/account/handlers/onEditRecalcBalances";
 
 type SheetsOnEdit = GoogleAppsScript.Events.SheetsOnEdit;
 
@@ -19,7 +17,7 @@ type OnEditRule = {
 
 /** Keep this lean and at top-level so it's initialized once */
 const ON_EDIT_RULES: OnEditRule[] = [
-  { sheet: /^_/, range: "C2:D", fn: updateAccountSheetBalances },
+  { sheet: /^_/, range: "C2:D", fn: onEditRecalcBalances }, // Recalc balance when credit/debit changes (sync, range-aware)
   { sheet: /^_/, range: ["B2:B", "E2:E"], fn: toUpperCase },
 ];
 
@@ -136,35 +134,59 @@ function __getEventPartsOpt(e: SheetsOnEdit) {
   return { sheetName, editBounds: { r1, c1, r2, c2 } as Bounds };
 }
 
-// ---------------------------
-// Public entry point
-// ---------------------------
+// ─────────────────────────────────────────────────────────
+// non-blocking lock + light preamble + tiny debounce
+// ─────────────────────────────────────────────────────────
 export function handleEdit(e: SheetsOnEdit): void {
-  const fn = handleEdit.name;
-  const startTime = FastLog.start(fn);
+  const functionName = handleEdit.name;
+  const t0 = FastLog.start(functionName);
+
+  // ---- Non-blocking re-entry guard (fail fast if something else is running) ----
+  const lock = LockService.getDocumentLock();
+  if (lock.tryLock(50)) {
+    FastLog.log(`Lock acquired: ${functionName}`);
+  } else {
+    FastLog.log(functionName, "busy lock → skip (debounced)");
+    FastLog.finish(functionName, t0);
+    return;
+  }
 
   try {
-    if (!e || !e.range || !isSingleCell(e.range)) return;
+    // Ultra-cheap sanity checks; use only the event object
+    if (!e || !e.range) return;
+
+    const range = e.range;
+
+    // ── tiny per-cell debounce to suppress “write → re-trigger storm”
+    const cache = CacheService.getDocumentCache();
+    if (cache) {
+      const debounceKey = `debounce:${range
+        .getSheet()
+        .getSheetId()}:${range.getRow()}:${range.getColumn()}`;
+      if (cache.get(debounceKey)) {
+        // We've just handled this exact cell very recently; skip
+        return;
+      }
+      cache.put(debounceKey, "1", 1); // 1-second TTL
+    }
+
+    // Prefer early exits before any logging of large objects
+    if (!isSingleCell(range)) return; // Your rules currently expect single-cell edits
+
+    // Old/new equality guard (avoid churn from formatting)
+    if (
+      "oldValue" in e &&
+      normalizeForChangeCheck(e.value) === normalizeForChangeCheck(e.oldValue)
+    ) {
+      return;
+    }
 
     const { sheetName, editBounds } = __getEventPartsOpt(e);
-    FastLog.log(fn, sheetName);
-    if (
-      sheetName === queueConstants.QUEUE_SHEET_NAME ||
-      sheetName === queueConstants.DEAD_SHEET_NAME
-    )
-      return; // avoid feedback loops
 
-    FastLog.log(fn, editBounds);
-    // Ultra-cheap early exits
-    if (editBounds.r1 !== editBounds.r2 || editBounds.c1 !== editBounds.c2)
-      return;
-    // Old/new value equality (skip formula recalculate churn)
-    if ("oldValue" in e) {
-      FastLog.log(fn, `e.oldValue: ${e.oldValue}`);
-      if (e.oldValue === e.value) return;
-    }
-    FastLog.log(fn, `e.value: ${e.value}`);
+    // Avoid feedback loops with queue sheets (do not import heavy modules here)
+    if (sheetName === "_QUEUE" || sheetName === "_DEAD") return;
 
+    // Dispatch
     const rules = __compileRulesOpt().filter((r) =>
       typeof r.sheet === "string"
         ? r.sheet === sheetName
@@ -172,6 +194,7 @@ export function handleEdit(e: SheetsOnEdit): void {
     );
     if (rules.length === 0) return;
 
+    // Find first intersecting rule and run
     for (const rule of rules) {
       let match = false;
       for (const b of rule.bounds) {
@@ -183,16 +206,29 @@ export function handleEdit(e: SheetsOnEdit): void {
       if (!match) continue;
 
       rule.fn(e);
-
       if (FIRST_MATCH_ONLY) break;
     }
   } catch (err) {
-    const errorMessage = getErrorMessage(err);
-    FastLog.error(fn, errorMessage);
-    throw new Error(errorMessage);
+    FastLog.error(functionName, getErrorMessage(err));
+    // Do NOT rethrow in a trigger; just log.
   } finally {
-    FastLog.finish(fn, startTime);
+    try {
+      lock.releaseLock();
+    } catch (_) {}
+    FastLog.finish(functionName, t0);
   }
+}
+
+function isSingleCell(range: GoogleAppsScript.Spreadsheet.Range): boolean {
+  return range.getNumRows() === 1 && range.getNumColumns() === 1;
+}
+// ── PATCHED: pulled out from isSingleCellActuallyChanged() so we can use it early
+function normalizeForChangeCheck(s: string | undefined): string {
+  if (s == null) return "";
+  const t = s.trim();
+  const n = Number(t.replace(/,/g, ""));
+  if (!Number.isNaN(n) && t !== "") return String(n);
+  return t;
 }
 
 /* ── Example handlers ───────────────────────────────────── */
@@ -215,31 +251,6 @@ function toUpperCase(e: SheetsOnEdit): void {
   } finally {
     FastLog.finish(fn, startTime);
   }
-}
-
-function updateAccountSheetBalances(e: SheetsOnEdit): void {
-  FastLog.log("updateAccountSheetBalances hit on", e.range.getA1Notation());
-  if (!isSingleCellActuallyChanged(e)) return;
-
-  try {
-    const r = e.range;
-    setupWorkflows(); // safe to call repeatedly; internal lock + flag
-    startWorkflow(
-      "updateAccountSheetBalancesFlow",
-      "updateAccountSheetBalancesStep1",
-      {
-        sheetName: r.getSheet().getName(),
-        row: r.getRow(),
-        startedBy: "updateAccountSheetBalances",
-      }
-    );
-  } catch (err) {
-    FastLog.error("updateAccountSheetBalances error", err);
-  }
-}
-
-function isSingleCell(range: GoogleAppsScript.Spreadsheet.Range): boolean {
-  return range.getNumRows() === 1 && range.getNumColumns() === 1;
 }
 
 function isSingleCellActuallyChanged(e: SheetsOnEdit): boolean {

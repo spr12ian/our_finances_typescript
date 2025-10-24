@@ -2,11 +2,11 @@ import type { Sheet, Spreadsheet } from "@domain";
 import { MetaAccountSheet as Meta, MetaBankAccounts } from "@lib/constants";
 import { getErrorMessage } from "@lib/errors";
 import { xLookup } from "@lib/xLookup";
-import { FastLog, methodStart } from "@logging/FastLog";
 import { DescriptionReplacements } from "@sheets/classes/DescriptionReplacements";
 import { BaseSheet } from "../core";
 
 const COLOR_FUTURE_ROWS = "#D0E0E3";
+
 export class AccountSheet extends BaseSheet {
   constructor(readonly sheet: Sheet, readonly spreadsheet: Spreadsheet) {
     if (sheet.name[0] !== "_") {
@@ -39,7 +39,7 @@ export class AccountSheet extends BaseSheet {
 
     if (!Number.isFinite(n)) {
       // Log and normalise to 0 (or throw if you prefer)
-      FastLog.warn(
+      this.warn(
         `currentEndingBalance not numeric at row ${lastRow}: ${String(v)}`
       );
       return 0; // or: throw new Error("Balance is not numeric")
@@ -105,8 +105,8 @@ export class AccountSheet extends BaseSheet {
   }
 
   formatSheet() {
-    const fn = this.formatSheet.name;
-    const finish = methodStart(fn, this.accountKey);
+    const methodName = this.formatSheet.name;
+    const finish = this.start(methodName);
     const sheet = this.sheet;
     try {
       sheet.formatSheet();
@@ -116,7 +116,7 @@ export class AccountSheet extends BaseSheet {
       return;
     } catch (err) {
       const errorMessage = getErrorMessage(err);
-      FastLog.error(fn, err);
+      this.error(methodName, err);
       throw new Error(errorMessage);
     } finally {
       finish();
@@ -128,14 +128,11 @@ export class AccountSheet extends BaseSheet {
   }
 
   handleEditTrigger() {
-    FastLog.log("AccountSheet.handleEditTrigger");
+    this.log("AccountSheet.handleEditTrigger");
   }
 
   updateAccountSheetBalances(rowEdited?: number): void {
-    const finish = methodStart(
-      this.updateAccountSheetBalances.name,
-      this.accountKey
-    );
+    const finish = this.start(this.updateAccountSheetBalances.name);
     const COLUMNS = Meta.COLUMNS;
     const ROW_DATA_STARTS = Meta.ROW_DATA_STARTS;
     const gasSheet = this.sheet.raw;
@@ -180,7 +177,7 @@ export class AccountSheet extends BaseSheet {
     }
 
     if (firstDiffIndex === -1) {
-      FastLog.log(`No changes to balance for ${this.accountKey}`);
+      this.log(`No changes to balance for ${this.accountKey}`);
       return;
     }
 
@@ -205,8 +202,12 @@ export class AccountSheet extends BaseSheet {
   }
 
   private setColumnWidths(sheet: Sheet) {
-    const finish = methodStart(this.setColumnWidths.name, this.accountKey);
+    const finish = this.start(this.setColumnWidths.name);
     try {
+
+      const dateWidth = this.getColumnWidth(Meta.COLUMNS.DATE);
+      this.log(`dateWidth: ${dateWidth}`);
+
       sheet.raw
         .setColumnWidth(Meta.COLUMNS.DATE, Meta.COLUMN_WIDTHS.DATE)
         .setColumnWidth(

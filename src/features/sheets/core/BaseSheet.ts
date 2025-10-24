@@ -1,5 +1,5 @@
 import type { Sheet, Spreadsheet } from "@domain";
-import { FastLog, methodStart } from "@logging";
+import { FastLog, WithLog, methodStart } from "@logging";
 
 export abstract class BaseSheet {
   /** Public sheet display name (useful for menus/logs). */
@@ -21,44 +21,39 @@ export abstract class BaseSheet {
     return this.sheet.dataRows;
   }
 
-  /** Run a block with start/finish logging. */
-  protected withLog<T>(label: string, fn: () => T): T {
-    const finish = methodStart(label, this.sheetName);
-    try {
-      return fn();
-    } finally {
-      finish();
-    }
-  }
-
+  @WithLog()
   fixSheet() {
-    return this.withLog("fixSheet", () => this.sheet.fixSheet());
+    return this.sheet.fixSheet();
   }
 
+  @WithLog()
   formatSheet() {
-    return this.withLog("formatSheet", () => this.sheet.formatSheet());
+    return this.sheet.formatSheet();
   }
 
+  @WithLog()
   getCellValue(cellRangeA1format: string): any {
-    return this.withLog("getCellValue", () =>
-      this.sheet.getCellValue(cellRangeA1format)
-    );
+    return this.sheet.getCellValue(cellRangeA1format);
   }
 
+  @WithLog()
+  getColumnWidth(column: number): number {
+    return this.sheet.getColumnWidth(column);
+  }
+
+  @WithLog()
   setCellNote(cellRangeA1format: string, note: string) {
-    return this.withLog("setCellNote", () =>
-      this.sheet.getRange(cellRangeA1format).setNote(note)
-    );
+    return this.sheet.getRange(cellRangeA1format).setNote(note);
   }
 
+  @WithLog()
   setCellValue(cellRangeA1format: string, value: any): void {
-    return this.withLog("setCellValue", () =>
-      this.sheet.setCellValue(cellRangeA1format, value)
-    );
+    return this.sheet.setCellValue(cellRangeA1format, value);
   }
 
+  @WithLog()
   trimSheet() {
-    return this.withLog("trimSheet", () => this.sheet.trimSheet());
+    return this.sheet.trimSheet();
   }
 
   // protected start(label: string, ...args: unknown[]) {
@@ -68,7 +63,13 @@ export abstract class BaseSheet {
   //   FastLog.finish(`[${this.sheetName}] ${label}`, t0);
   // }
 
-  /** Convenient per-sheet logger. */
+  /** Convenient per-sheet loggers. */
+  protected error = (m: string, ...a: unknown[]) =>
+    FastLog.error(`[${this.sheetName}] ${m}`, ...a);
   protected log = (m: string, ...a: unknown[]) =>
     FastLog.log(`[${this.sheetName}] ${m}`, ...a);
+  protected start = (methodName: string) =>
+    methodStart(methodName, this.sheetName);
+  protected warn = (m: string, ...a: unknown[]) =>
+    FastLog.warn(`[${this.sheetName}] ${m}`, ...a);
 }

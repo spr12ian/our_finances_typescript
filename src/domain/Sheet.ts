@@ -280,6 +280,16 @@ export class Sheet {
     return this.getColumnData(colIndex);
   }
 
+  /**
+   * Returns the pixel width of a column in a Sheet.
+   *
+   * @param {number} column - 1-based column index
+   * @returns {number} - Column width in pixels
+   */
+  getColumnWidth(column: number): number {
+    return this.gasSheet.getColumnWidth(column);
+  }
+
   getRangesWhereColumnEquals(col: number, match: string) {
     const gasSheet = this.gasSheet;
     // Get all values in the column (skipping header if needed)

@@ -57,7 +57,7 @@ function startFlow(sheet: Sheet) {
 
   if (isAccountSheet(sheet)) {
     FastLog.log(`Sheet ${sheet.name} is an account sheet.`);
-    setupWorkflows(); // safe to call repeatedly; internal lock + flag
+    setupWorkflows();
     startWorkflow(
       "updateAccountSheetBalancesFlow",
       "updateAccountSheetBalancesStep1",

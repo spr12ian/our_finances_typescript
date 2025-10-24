@@ -1,19 +1,9 @@
-// handleEdit.ts
+// @gas/triggers/handleEdit.ts
 
 import { getErrorMessage } from "@lib/errors";
-import { FastLog } from "@logging";
+import { withDocumentLock } from "@lib/WithDocumentLock";
+import { FastLog, functionStart } from "@logging";
 import { onEditRecalcBalances } from "../../features/account/handlers/onEditRecalcBalances";
-
-type SheetsOnEdit = GoogleAppsScript.Events.SheetsOnEdit;
-
-type OnEditRule = {
-  /** Sheet name to match, or a regex like /^_/ */
-  sheet: string | RegExp;
-  /** A1 notation for the watched region on that sheet (e.g. "C:C", "B2:D", "A1:Z1000") */
-  range: string | string[];
-  /** Handler to invoke when the edited range intersects the watched range */
-  fn: (e: SheetsOnEdit) => void;
-};
 
 /** Keep this lean and at top-level so it's initialized once */
 const ON_EDIT_RULES: OnEditRule[] = [
@@ -33,6 +23,85 @@ type CompiledRule = {
   note?: string;
 };
 let __COMPILED_RULES_OPT: CompiledRule[] | null = null;
+
+// ─────────────────────────────────────────────────────────
+// non-blocking lock + light preamble + tiny debounce
+// ─────────────────────────────────────────────────────────
+export function handleEdit(e: SheetsOnEdit): void {
+  const functionName = handleEdit.name;
+  const finish = functionStart(functionName);
+
+  try {
+    // Ultra-cheap sanity checks; use only the event object
+    if (!e || !e.range) return;
+
+    const range = e.range;
+
+    // ── tiny per-cell debounce to suppress “write → re-trigger storm”
+    const cache = CacheService.getDocumentCache();
+    if (cache) {
+      const debounceKey = `debounce:${range
+        .getSheet()
+        .getSheetId()}:${range.getRow()}:${range.getColumn()}`;
+      if (cache.get(debounceKey)) return; // recently handled: skip
+      cache.put(debounceKey, "1", 1); // 1-second TTL
+    }
+
+    // Prefer early exits before any logging of large objects
+    if (!isSingleCell(range)) return; // rules expect single cell
+    if (
+      "oldValue" in e &&
+      normalizeForChangeCheck(e.value) === normalizeForChangeCheck(e.oldValue)
+    ) {
+      return; // no value change
+    }
+
+    const { sheetName, editBounds } = __getEventPartsOpt(e);
+
+    // Avoid feedback loops with queue sheets
+    if (sheetName === "_QUEUE" || sheetName === "_DEAD") return;
+
+    // Dispatch (pure computation—no locks yet)
+    const rules = __compileRulesOpt().filter((r) =>
+      typeof r.sheet === "string"
+        ? r.sheet === sheetName
+        : (r.sheet as RegExp).test(sheetName)
+    );
+    if (rules.length === 0) return;
+
+    for (const rule of rules) {
+      let match = false;
+      for (const b of rule.bounds) {
+        if (__intersectsBoundsOpt(editBounds, b)) {
+          match = true;
+          break;
+        }
+      }
+      if (!match) continue;
+
+      // ⬇️ Acquire a short, non-blocking DocumentLock ONLY around the mutation.
+      const run = withDocumentLock<void>(
+        "handleEdit", // label in your logs
+        () => rule.fn(e), // the actual work (may read/write the sheet)
+        50 // 50ms tryLock → skip if busy
+      );
+
+      const ok = run(); // returns undefined if busy (we skip gracefully)
+      if (ok === undefined) {
+        FastLog.warn("handleEdit: doc lock busy — skipped rule execution");
+      }
+
+      if (FIRST_MATCH_ONLY) break;
+    }
+  } catch (err) {
+    FastLog.error(functionName, getErrorMessage(err));
+    // Do NOT rethrow in a trigger; just log.
+  } finally {
+    finish();
+  }
+}
+
+
 
 function __colToIndexOpt(col: string): number {
   let n = 0;
@@ -132,91 +201,6 @@ function __getEventPartsOpt(e: SheetsOnEdit) {
   const c2 = c1 + range.getNumColumns() - 1;
   const sheetName = range.getSheet().getName();
   return { sheetName, editBounds: { r1, c1, r2, c2 } as Bounds };
-}
-
-// ─────────────────────────────────────────────────────────
-// non-blocking lock + light preamble + tiny debounce
-// ─────────────────────────────────────────────────────────
-export function handleEdit(e: SheetsOnEdit): void {
-  const functionName = handleEdit.name;
-  const t0 = FastLog.start(functionName);
-
-  // ---- Non-blocking re-entry guard (fail fast if something else is running) ----
-  const lock = LockService.getDocumentLock();
-  if (lock.tryLock(50)) {
-    FastLog.log(`Lock acquired: ${functionName}`);
-  } else {
-    FastLog.log(functionName, "busy lock → skip (debounced)");
-    FastLog.finish(functionName, t0);
-    return;
-  }
-
-  try {
-    // Ultra-cheap sanity checks; use only the event object
-    if (!e || !e.range) return;
-
-    const range = e.range;
-
-    // ── tiny per-cell debounce to suppress “write → re-trigger storm”
-    const cache = CacheService.getDocumentCache();
-    if (cache) {
-      const debounceKey = `debounce:${range
-        .getSheet()
-        .getSheetId()}:${range.getRow()}:${range.getColumn()}`;
-      if (cache.get(debounceKey)) {
-        // We've just handled this exact cell very recently; skip
-        return;
-      }
-      cache.put(debounceKey, "1", 1); // 1-second TTL
-    }
-
-    // Prefer early exits before any logging of large objects
-    if (!isSingleCell(range)) return; // Your rules currently expect single-cell edits
-
-    // Old/new equality guard (avoid churn from formatting)
-    if (
-      "oldValue" in e &&
-      normalizeForChangeCheck(e.value) === normalizeForChangeCheck(e.oldValue)
-    ) {
-      return;
-    }
-
-    const { sheetName, editBounds } = __getEventPartsOpt(e);
-
-    // Avoid feedback loops with queue sheets (do not import heavy modules here)
-    if (sheetName === "_QUEUE" || sheetName === "_DEAD") return;
-
-    // Dispatch
-    const rules = __compileRulesOpt().filter((r) =>
-      typeof r.sheet === "string"
-        ? r.sheet === sheetName
-        : (r.sheet as RegExp).test(sheetName)
-    );
-    if (rules.length === 0) return;
-
-    // Find first intersecting rule and run
-    for (const rule of rules) {
-      let match = false;
-      for (const b of rule.bounds) {
-        if (__intersectsBoundsOpt(editBounds, b)) {
-          match = true;
-          break;
-        }
-      }
-      if (!match) continue;
-
-      rule.fn(e);
-      if (FIRST_MATCH_ONLY) break;
-    }
-  } catch (err) {
-    FastLog.error(functionName, getErrorMessage(err));
-    // Do NOT rethrow in a trigger; just log.
-  } finally {
-    try {
-      lock.releaseLock();
-    } catch (_) {}
-    FastLog.finish(functionName, t0);
-  }
 }
 
 function isSingleCell(range: GoogleAppsScript.Spreadsheet.Range): boolean {

@@ -23,6 +23,7 @@ export function WithDocumentLock(label: string, timeout: number = 3000) {
           return originalMethod.apply(this, args);
         } finally {
           lock.releaseLock();
+          FastLog.log(`${label}: Lock released`);
           finish();
         }
       } else {
@@ -54,6 +55,7 @@ export function withDocumentLock<T>(
         return fn(...args);
       } finally {
         lock.releaseLock();
+        FastLog.log(`${label}: Lock released`);
         finish();
       }
     } else {

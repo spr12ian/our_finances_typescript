@@ -293,7 +293,7 @@ export function GAS_trimAllSheets() {
 }
 
 export function GAS_trimSheet() {
-  setupWorkflows(); // safe to call repeatedly; internal lock + flag
+  setupWorkflows();
   startWorkflow("trimSheetFlow", "trimSheetStep1", {
     sheetName: getActiveSheetName(),
     startedBy: "GAS_trimSheet",

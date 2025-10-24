@@ -1,14 +1,15 @@
+// onSelectionChange.ts
 
-import { ONE_SECOND } from '@lib/timeConstants';
+import { ONE_SECOND } from "@lib/timeConstants";
+import { withDocumentLock } from "@lib/WithDocumentLock";
 import { setupWorkflows } from "@workflow";
 import { startWorkflow } from "@workflow/workflowEngine";
 
 export function onSelectionChange(e: any): void {
-  const sheet = e?.range?.getSheet() ?? SpreadsheetApp.getActiveSheet();
+  const sheet = e?.range?.getSheet?.() ?? SpreadsheetApp.getActiveSheet();
   if (!sheet) return;
 
   const sheetName = sheet.getName();
-
 
   const cache = CacheService.getDocumentCache();
   if (!cache) return;
@@ -17,8 +18,9 @@ export function onSelectionChange(e: any): void {
   const lastSheet = cache.get("lastSheetName");
   if (lastSheet === sheetName) return;
 
-  // Debounce + per-sheet cooldown
-  cache.put("lastSheetName", sheetName, 20); // small debounce
+  cache.put("lastSheetName", sheetName, 20);
+
+  // Per-sheet cooldown to avoid noisy re-enqueues
   const COOLDOWN_MS = 15 * ONE_SECOND;
   const coolKey = `fixSheetCooldown:${sheetName}`;
   const lastTs = Number(cache.get(coolKey) || 0);
@@ -26,16 +28,22 @@ export function onSelectionChange(e: any): void {
   if (now - lastTs < COOLDOWN_MS) return;
   cache.put(coolKey, String(now), Math.ceil(COOLDOWN_MS / 1000) + 5);
 
-  // Light lock to avoid duplicate enqueues
-  const lock = LockService.getDocumentLock();
-  if (!lock.tryLock(200)) return;
-  try {
-    setupWorkflows(); // safe to call repeatedly (your code guards internally)
-    startWorkflow("fixSheetFlow", "fixSheetStep1", {
-      sheetName,
-      startedBy: "onSelectionChange",
-    });
-  } finally {
-    lock.releaseLock();
+  // Script-level init: safe outside document lock
+  setupWorkflows();
+
+  // Enqueue fixSheet under a short, non-blocking document lock
+  const run = withDocumentLock<void>(
+    "onSelectionChange.fixSheetEnqueue",
+    () =>
+      startWorkflow("fixSheetFlow", "fixSheetStep1", {
+        sheetName,
+        startedBy: "onSelectionChange",
+      }),
+    200 // tryLock timeout (ms). Skip if busy.
+  );
+
+  // Fire; if busy, run() returns undefined
+  if (run() === undefined) {
+    // FastLog.warn("onSelectionChange: doc lock busy — skipped enqueue");
   }
 }

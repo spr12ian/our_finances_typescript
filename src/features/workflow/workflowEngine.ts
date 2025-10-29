@@ -1,15 +1,15 @@
 // @workflow/workflowEngine.ts
 import { getErrorMessage } from "@lib/errors";
-import { FastLog } from "@logging";
+import { FastLog, functionStart } from "@logging";
 // ⬇️ Pull the canonical types + accessors from engineState
 import { toHtmlParagraph } from "@lib/html/htmlFunctions";
 import { ONE_SECOND } from "@lib/timeConstants";
+import type { EnqueueFn } from "./engineState"; // <-- use the one true EnqueueFn here
 import {
   ENGINE_INSTANCE_ID,
   getEnqueue,
   isConfigured,
   setEnqueue,
-  type EnqueueFn, // <-- use the one true EnqueueFn here
 } from "./engineState";
 import { makeStepLogger } from "./makeStepLogger";
 import { getStep } from "./workflowRegistry";
@@ -30,7 +30,8 @@ export function isEngineConfigured() {
 const DEFAULT_INVOCATION_BUDGET_MS = 25 * ONE_SECOND;
 export function runStep(job: RunStepJob): void {
   const fn = runStep.name;
-  const startTime = FastLog.start(fn, `${job.workflowName}.${job.stepName}`, {
+  const finish = functionStart(fn);
+  FastLog.log(fn, `${job.workflowName}.${job.stepName}`, {
     workflowId: job.workflowId,
     attempt: job.attempt,
   });
@@ -127,7 +128,7 @@ export function runStep(job: RunStepJob): void {
 
     throw new Error(errorMessage);
   } finally {
-    FastLog.finish(fn, startTime, `${job.workflowName}.${job.stepName}`);
+    finish();
   }
 }
 
@@ -139,7 +140,8 @@ export function startWorkflow(
   priority?: number
 ) {
   const fn = startWorkflow.name;
-  const t0 = FastLog.start(fn, workflowName, firstStep);
+  const finish = functionStart(fn);
+  FastLog.log(fn, workflowName, firstStep);
   try {
     const workflowId = Utilities.getUuid();
     enqueueRunStep(
@@ -159,7 +161,7 @@ export function startWorkflow(
     FastLog.error(fn, msg);
     throw new Error(msg);
   } finally {
-    FastLog.finish(fn, t0);
+    finish();
   }
 }
 
@@ -169,7 +171,8 @@ function enqueueRunStep(
   priority?: number
 ) {
   const fn = enqueueRunStep.name;
-  const t0 = FastLog.start(fn, rsp);
+  const finish = functionStart(fn);
+  FastLog.log(fn, rsp);
   try {
     const enqueue = getEnqueue();
     const ms = Math.max(0, Math.floor(delayMs ?? 0));
@@ -181,7 +184,7 @@ function enqueueRunStep(
     FastLog.error(fn, msg);
     throw new Error(msg);
   } finally {
-    FastLog.finish(fn, t0, rsp);
+    finish();
   }
 }
 

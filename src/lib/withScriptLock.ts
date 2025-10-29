@@ -1,24 +1,37 @@
-// withScriptLock.ts
-
 import { FIVE_SECONDS } from "@lib/timeConstants";
+import { FastLog } from "./logging";
 
+/**
+ * Executes a function with a global script lock (LockService.getScriptLock()).
+ * If LockService is unavailable (non-GAS environment), runs without locking.
+ */
 export function withScriptLock<T>(fn: () => T): T {
-  // If you run this outside GAS, stub LockService.
-  // @ts-ignore
-  const lock =
-    typeof LockService !== "undefined"
-      ? // @ts-ignore
-        LockService.getScriptLock()
-      : null;
+  // @ts-ignore: LockService exists only in GAS
+  const lockService = typeof LockService !== "undefined" ? LockService : null;
 
-  if (lock) {
-    lock.tryLock(FIVE_SECONDS); // best-effort
-    try {
-      return fn();
-    } finally {
-      lock.releaseLock();
+  if (!lockService) {
+    FastLog.warn("LockService unavailable — running without lock");
+    return fn();
+  }
+
+  try {
+    // @ts-ignore
+    const lock = lockService.getScriptLock();
+    if (lock.tryLock(FIVE_SECONDS)) {
+      FastLog.log("Script lock acquired");
+      try {
+        return fn();
+      } finally {
+        lock.releaseLock();
+        FastLog.log("Script lock released");
+      }
+    } else {
+      FastLog.warn("Script lock busy — skipping execution");
+      return undefined as unknown as T; // explicit skip
     }
-  } else {
+  } catch (err) {
+    FastLog.error("Error acquiring script lock", err);
+    // fallback to direct execution
     return fn();
   }
 }

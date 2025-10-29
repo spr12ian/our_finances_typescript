@@ -1,6 +1,7 @@
 // logging/WithLog.ts
 
-import { methodStart } from "./FastLog";
+import { getErrorMessage } from "../errors";
+import { functionStart, methodStart } from "./FastLog";
 
 /**
  * Decorator to automatically call methodStart/finish for logging.
@@ -27,7 +28,9 @@ export function WithLog(label?: string) {
 
       // Prefer instance.sheetName if available, else fallback to constructor.name
       const context =
-        (this as any)?.sheetName ?? (this as any)?.constructor?.name ?? "Unknown";
+        (this as any)?.sheetName ??
+        (this as any)?.constructor?.name ??
+        "Unknown";
 
       const finish = methodStart(name, context);
 
@@ -57,5 +60,27 @@ export function WithLog(label?: string) {
     };
 
     return descriptor;
+  };
+}
+
+/**
+ * Function wrapper version
+ */
+export function withLog<T>(
+  label: string,
+  fn: (...args: any[]) => T
+): (...args: any[]) => T {
+  Logger.log("withLog called");
+  return function (...args: any[]): T {
+    Logger.log(`label: ${label}`);
+    const finish = functionStart(label);
+    try {
+      return fn(...args);
+    } catch (err) {
+      const errorMessage = getErrorMessage(err);
+      throw new Error(errorMessage);
+    } finally {
+      finish();
+    }
   };
 }

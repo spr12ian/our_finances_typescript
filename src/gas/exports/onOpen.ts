@@ -4,22 +4,19 @@ import { buildGasMenu } from "../menus/buildGasMenu";
 import { buildSectionsMenu } from "../menus/buildSectionsMenu";
 
 export function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
-  const startTime = FastLog.start(onOpen.name, e);
+  Logger.log("onOpen called");
   try {
-    buildUiMenus();
+    buildUiMenus(e);
   } catch (err) {
     FastLog.error(onOpen.name, err);
-  } finally {
-    try {
-      FastLog.finish(onOpen.name, startTime);
-    } catch {}
   }
 }
 
-export function buildUiMenus() {
+export function buildUiMenus(e: GoogleAppsScript.Events.SheetsOnOpen) {
+  Logger.log("buildUiMenus called");
   const ui = SpreadsheetApp.getUi();
 
-  buildAccountsMenu(ui);
+  buildAccountsMenu(ui, e);
   buildGasMenu(ui);
   buildSectionsMenu(ui);
 }

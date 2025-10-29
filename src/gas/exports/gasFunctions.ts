@@ -1,7 +1,6 @@
 // @gas/exports/gasFunctions.ts
 
 import { getActiveSheetName, goToSheet, logSheetNames } from "@gas";
-
 import { exportFormulasToDrive } from "@gas/exports/exportFormulasToDrive";
 import {
   MetaBalanceSheet,
@@ -22,7 +21,7 @@ import {
 } from "@lib/constants";
 import { logTime } from "@lib/logging/logTime";
 import * as timeConstants from "@lib/timeConstants";
-import { FastLog, functionStart } from "@logging";
+import { functionStart, withLog } from "@logging";
 import { ensureQueueDateFormats, queueSetup } from "@queue/queueSetup";
 import { purgeQueuesOldData, queueWorker } from "@queue/queueWorker";
 import { validateAccountKeys } from "@sheets/validateAccountKeys";
@@ -31,7 +30,7 @@ import type {
   FormatSheetFlowInput,
   UpdateOpenBalancesFlowInput,
 } from "@workflow";
-import { setupWorkflows } from "@workflow";
+import { setupWorkflowsOnce } from "@workflow";
 import type { ExampleFlowInput } from "@workflow/flows/exampleFlow";
 import { startWorkflow } from "@workflow/workflowEngine";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
@@ -40,13 +39,13 @@ import { validateAllMenuFunctionNames } from "../../validateAllMenuFunctionNames
 import { withReentryGuard } from "../../withReentryGuard";
 import { handleEdit } from "../triggers/handleEdit";
 import { handleOpen } from "../triggers/handleOpen";
+import { applyDescriptionReplacements } from "./applyDescriptionReplacements";
 import { onChange } from "./onChange";
 import { onOpen } from "./onOpen";
 import { onSelectionChange } from "./onSelectionChange";
 
 export function GAS_applyDescriptionReplacements() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).applyDescriptionReplacements();
+  withLog(GAS_applyDescriptionReplacements.name, applyDescriptionReplacements)();
 }
 
 export function GAS_balanceSheet() {
@@ -100,7 +99,7 @@ export function GAS_showDailyAccounts() {
 }
 
 export function GAS_ensureQueueDateFormats() {
-  ensureQueueDateFormats();
+  withLog(GAS_ensureQueueDateFormats.name, ensureQueueDateFormats)();
 }
 
 export function GAS_example() {
@@ -208,6 +207,7 @@ export function GAS_showMonthlyAccounts() {
 
 export function GAS_onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
   const finish = functionStart(GAS_onChange.name);
+  setupWorkflowsOnce();
 
   onChange(e);
 
@@ -220,24 +220,19 @@ export function GAS_onEditTrigger(
   handleEdit(e);
 }
 
+export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
+  Logger.log("GAS_onOpen called");
+  withLog(GAS_onOpen.name, onOpen)(e);
+}
+
 export function GAS_onOpenTrigger(
   e: GoogleAppsScript.Events.SheetsOnOpen
 ): void {
-  const startTime = FastLog.start(GAS_onOpenTrigger.name, e);
-  handleOpen(e);
-  FastLog.finish(GAS_onOpenTrigger.name, startTime);
-}
-
-export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
-  const finish = functionStart(GAS_onOpen.name);
-  onOpen(e);
-  finish();
+  withLog(GAS_onOpenTrigger.name, handleOpen)(e);
 }
 
 export function GAS_onSelectionChange(e: any): void {
-  const finish = functionStart(GAS_onSelectionChange.name);
-  onSelectionChange(e);
-  finish();
+  withLog(GAS_onSelectionChange.name, onSelectionChange)(e);
 }
 
 export function GAS_showOpenAccounts() {
@@ -255,6 +250,7 @@ export function GAS_queueSetup(): void {
 }
 
 export function GAS_queueWorker(): void {
+  setupWorkflowsOnce();
   queueWorker();
 }
 
@@ -293,7 +289,7 @@ export function GAS_trimAllSheets() {
 }
 
 export function GAS_trimSheet() {
-  setupWorkflows();
+  setupWorkflowsOnce();
   startWorkflow("trimSheetFlow", "trimSheetStep1", {
     sheetName: getActiveSheetName(),
     startedBy: "GAS_trimSheet",
@@ -341,6 +337,6 @@ export function GAS_validateAllMenuFunctionNames() {
 // Local helper functions
 
 function startWF(workFlowName: string, firstStep: string, input: unknown) {
-  setupWorkflows(); // safe to call repeatedly; internal lock + flag
+  setupWorkflowsOnce();
   startWorkflow(workFlowName, firstStep, input);
 }

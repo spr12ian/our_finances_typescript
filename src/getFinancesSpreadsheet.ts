@@ -35,6 +35,7 @@ export function resetFinancesSpreadsheetCache(): void {
 }
 
 export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
+  Logger.log("getFinancesSpreadsheet called");
   // Fastest path: if we’ve already resolved this during this execution, return it.
   if (memo.wrapped && memo.gas) return memo.wrapped;
 
@@ -83,14 +84,17 @@ export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
   // Simple triggers (onOpen/onEdit/onChange simple) cannot open other files.
   // Heuristics: simple triggers lack triggerUid and authMode.
   const isSimpleTrigger =
-    !!e &&
-    typeof (e as any).triggerUid === "undefined" &&
-    typeof (e as any).authMode === "undefined";
+    !e || // ← treat undefined event as simple
+    (typeof (e as any).triggerUid === "undefined" &&
+      typeof (e as any).authMode === "undefined");
 
   if (isSimpleTrigger) {
-    throw new Error(
-      "Invoked by a simple trigger, but FINANCES_SPREADSHEET_ID points to a different file. Use an installable trigger."
-    );
+    // Don’t attempt openById from a simple trigger.
+    // Fall back to the container/active spreadsheet.
+    if (src && typeof (src as any).getId === "function")
+      return wrapAndMemoize(src as any);
+    if (active) return wrapAndMemoize(active);
+    throw new Error("Simple trigger: no source/active spreadsheet available.");
   }
 
   try {

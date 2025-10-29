@@ -2,7 +2,6 @@ import type { Sheet } from "@domain/Sheet";
 import * as timeConstants from "@lib/timeConstants";
 import { FastLog, functionStart } from "@logging";
 import { isAccountSheet } from "@sheets/accountSheetFunctions";
-import { setupWorkflows } from "@workflow";
 import { startWorkflow } from "@workflow/workflowEngine";
 import { getFinancesSpreadsheet } from "src/getFinancesSpreadsheet";
 import { withReentryGuard } from "../../withReentryGuard";
@@ -57,7 +56,6 @@ function startFlow(sheet: Sheet) {
 
   if (isAccountSheet(sheet)) {
     FastLog.log(`Sheet ${sheet.name} is an account sheet.`);
-    setupWorkflows();
     startWorkflow(
       "updateAccountSheetBalancesFlow",
       "updateAccountSheetBalancesStep1",

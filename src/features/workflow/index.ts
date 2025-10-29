@@ -6,7 +6,7 @@ export { updateOpenBalancesFlow } from "./flows/updateOpenBalancesFlow";
 export type { UpdateOpenBalancesFlowInput } from "./flows/updateOpenBalancesFlow";
 export { makeStepLogger } from "./makeStepLogger";
 export { registerAllWorkflows } from "./registerAllWorkflows";
-export { setupWorkflows } from "./setupWorkflows";
+export { setupWorkflowsOnce } from "./setupWorkflowsOnce";
 
 export {
   clearWorkflowRegistry,

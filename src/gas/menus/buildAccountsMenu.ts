@@ -4,12 +4,16 @@ import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 // import { registerGeneratedAccountFunctions } from "../../registerGeneratedAccountFunctions";
 import { createMenu } from "./createMenu";
 
-export function buildAccountsMenu(ui: GoogleAppsScript.Base.Ui): void {
+export function buildAccountsMenu(
+  ui: GoogleAppsScript.Base.Ui,
+  e: GoogleAppsScript.Events.SheetsOnOpen
+): void {
+  Logger.log("buildAccountsMenu called");
   const fn = buildAccountsMenu.name;
   const startTime = FastLog.start(fn);
 
   try {
-    const spreadsheet = getFinancesSpreadsheet();
+    const spreadsheet = getFinancesSpreadsheet(e);
     const accountSheetNames: string[] = getAccountSheetNames(spreadsheet);
 
     // Check if any accounts are found

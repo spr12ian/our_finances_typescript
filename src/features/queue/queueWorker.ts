@@ -6,7 +6,6 @@ import { getErrorMessage } from "@lib/errors";
 import * as timeConstants from "@lib/timeConstants";
 import { FastLog, functionStart } from "@logging";
 import type { RunStepJob, SerializedRunStepParameters } from "@workflow";
-import { setupWorkflows } from "@workflow";
 import { runStep } from "@workflow/workflowEngine";
 import {
   COL,
@@ -34,9 +33,7 @@ const MAX_CELL_LENGTH = 2000;
 /** Time-driven worker entrypoint (set to run each minute). */
 export function queueWorker(): void {
   const fn = queueWorker.name;
-  const startTime = FastLog.start(fn, {
-    at: DateHelper.formatForLog(new Date()),
-  });
+  const finish = functionStart(fn);
   try {
     withScriptLock(() => {
       processQueueBatch_(MAX_BATCH, WORKER_BUDGET_MS);
@@ -46,9 +43,7 @@ export function queueWorker(): void {
     FastLog.error(fn, errorMessage);
     throw new Error(errorMessage);
   } finally {
-    FastLog.finish(fn, startTime, {
-      doneAt: DateHelper.formatForLog(new Date()),
-    });
+    finish();
   }
 }
 
@@ -259,7 +254,6 @@ function dispatchJob_(job: Job): void {
     at: DateHelper.formatForLog(new Date()),
   });
   try {
-    setupWorkflows();
     const { payload } = job;
 
     const p = (payload as Partial<SerializedRunStepParameters>) || {};

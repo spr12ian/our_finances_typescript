@@ -7,11 +7,20 @@ import { shimGlobals } from "./shimGlobals";
 
 (() => {
   const g = globalThis as any;
+  const SIMPLE_TRIGGERS = new Set([
+    "onOpen",
+    "onEdit",
+    "onChange",
+    "onSelectionChange",
+  ]);
 
   // Expose selected names (from shimGlobals) without the GAS_ prefix for shim.gs wrappers
   const missing: string[] = [];
 
   for (const name of shimGlobals) {
+    Logger.log(`Processing global function: ${name}`);
+    if (SIMPLE_TRIGGERS.has(name)) continue;
+    Logger.log(`Exporting GAS function for global: ${name}`);
     const key = `GAS_${name}`;
     const fn = (GAS as Record<string, unknown>)[key];
     if (typeof fn === "function") {

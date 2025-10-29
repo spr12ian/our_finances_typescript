@@ -2,7 +2,7 @@
 
 import { FastLog } from "@logging/FastLog";
 import * as queueConstants from "@queue/queueConstants";
-import { setupWorkflows } from "@workflow";
+import { setupWorkflowsOnce } from "@workflow";
 import { startWorkflow } from "@workflow/workflowEngine";
 
 type SheetsOnOpen = GoogleAppsScript.Events.SheetsOnOpen;
@@ -12,6 +12,7 @@ type SheetsOnOpen = GoogleAppsScript.Events.SheetsOnOpen;
 // ---------------------------
 export function handleOpen(e: SheetsOnOpen): void {
   const startTime = FastLog.start(handleOpen.name, e);
+  setupWorkflowsOnce();
 
   try {
     if (!e || !e.source || !e.source.getActiveSheet()) return;
@@ -23,7 +24,6 @@ export function handleOpen(e: SheetsOnOpen): void {
     )
       return; // avoid feedback loops
 
-    setupWorkflows(); // safe to call repeatedly; internal lock + flag
     startWorkflow("fixSheetFlow", "fixSheetStep1", {
       sheetName: sheetName,
       startedBy: "onOpen",

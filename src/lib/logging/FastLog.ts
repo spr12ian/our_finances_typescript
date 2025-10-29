@@ -29,6 +29,7 @@ let errorCount = 0;
 let statusSheetCache: GoogleAppsScript.Spreadsheet.Sheet | null = null;
 
 export function functionStart(functionName: string) {
+  Logger.log(`functionStart called: ${functionName}`);
   const msg = `function ${functionName}`;
   const start = FastLog.start(msg);
   return () => FastLog.finish(msg, start);

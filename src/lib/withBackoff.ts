@@ -1,7 +1,8 @@
-import { ONE_SECOND } from './timeConstants';
+import { ONE_SECOND } from "./timeConstants";
 
 /** Exponential backoff retry helper */
 export function withBackoff<T>(fn: () => T, label: string, retries = 5): T {
+  Logger.log(`withBackoff called: ${label}`);
   let wait = 250; // ms
   let lastErr: unknown;
   for (let attempt = 1; attempt <= retries; attempt++) {

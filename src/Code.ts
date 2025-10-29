@@ -18,9 +18,9 @@ import { shimGlobals } from "./shimGlobals";
   const missing: string[] = [];
 
   for (const name of shimGlobals) {
-    Logger.log(`Processing global function: ${name}`);
+    // Logger.log(`Processing global function: ${name}`);
     if (SIMPLE_TRIGGERS.has(name)) continue;
-    Logger.log(`Exporting GAS function for global: ${name}`);
+    // Logger.log(`Exporting GAS function for global: ${name}`);
     const key = `GAS_${name}`;
     const fn = (GAS as Record<string, unknown>)[key];
     if (typeof fn === "function") {

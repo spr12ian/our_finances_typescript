@@ -37,6 +37,7 @@ export class Spreadsheet {
   }
 
   static getActiveWithBackoff() {
+    Logger.log("getActiveWithBackoff called");
     const RETRIES = 8;
     return withBackoff(
       () => {

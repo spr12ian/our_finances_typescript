@@ -3,7 +3,6 @@
 
 export const shimGlobals = [
   "applyDescriptionReplacements",
-  "balanceSheet",
   "budget",
   "budgetAdHocTransactions",
   "budgetAnnualTransactions",
@@ -34,6 +33,7 @@ export const shimGlobals = [
   "helloWorld",
   "logSheetNames",
   "onChange",
+  "onEdit",
   "onEditTrigger",
   "onOpen",
   "onOpenTrigger",
@@ -48,6 +48,7 @@ export const shimGlobals = [
   "showMonthlyAccounts",
   "showOpenAccounts",
   "sortSheets",
+  "toBalanceSheet",
   "trimAllSheets",
   "trimSheet",
   "updateAccountSheetBalances",

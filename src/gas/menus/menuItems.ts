@@ -36,7 +36,7 @@ export const budgetMenuItems: [string, string][] = [
 ];
 
 export const gasMenuItems: [string, string][] = [
-  ["Balance sheet", "balanceSheet"],
+  ["Balance sheet", "toBalanceSheet"],
   ["Check dependencies", "updateAllDependencies"],
   ["Sort sheet order", "sortSheets"],
   ["Trim all sheets", "trimAllSheets"],

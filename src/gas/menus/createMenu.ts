@@ -1,11 +1,12 @@
-import { FastLog } from "@logging";
+import { FastLog, functionStart } from "@logging";
 
 export function createMenu(
   ui: GoogleAppsScript.Base.Ui,
   menuCaption: string,
   menuItemArray: [string, string][]
 ): GoogleAppsScript.Base.Menu {
-  const startTime = FastLog.start(createMenu.name);
+  const finish = functionStart(createMenu.name);
+  FastLog.log(`Creating menu: ${menuCaption} with ${menuItemArray.length} items`);
 
   const menu = ui.createMenu(menuCaption);
 
@@ -15,7 +16,7 @@ export function createMenu(
 
   //menu.addToUi();
 
-  FastLog.finish(createMenu.name, startTime);
+  finish();
 
   return menu;
 }

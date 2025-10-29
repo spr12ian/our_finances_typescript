@@ -1,7 +1,7 @@
 // logging/WithLog.ts
 
 import { getErrorMessage } from "../errors";
-import { functionStart, methodStart } from "./FastLog";
+import { FastLog, functionStart, methodStart } from "./FastLog";
 
 /**
  * Decorator to automatically call methodStart/finish for logging.
@@ -78,6 +78,7 @@ export function withLog<T>(
       return fn(...args);
     } catch (err) {
       const errorMessage = getErrorMessage(err);
+      FastLog.error(`Error in ${label}: ${errorMessage}`);
       throw new Error(errorMessage);
     } finally {
       finish();

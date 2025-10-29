@@ -21,7 +21,7 @@ import {
 } from "@lib/constants";
 import { logTime } from "@lib/logging/logTime";
 import * as timeConstants from "@lib/timeConstants";
-import { functionStart, withLog } from "@logging";
+import { withLog } from "@logging";
 import { ensureQueueDateFormats, queueSetup } from "@queue/queueSetup";
 import { purgeQueuesOldData, queueWorker } from "@queue/queueWorker";
 import { validateAccountKeys } from "@sheets/validateAccountKeys";
@@ -41,15 +41,15 @@ import { handleEdit } from "../triggers/handleEdit";
 import { handleOpen } from "../triggers/handleOpen";
 import { applyDescriptionReplacements } from "./applyDescriptionReplacements";
 import { onChange } from "./onChange";
+import { onEdit } from "./onEdit";
 import { onOpen } from "./onOpen";
 import { onSelectionChange } from "./onSelectionChange";
 
 export function GAS_applyDescriptionReplacements() {
-  withLog(GAS_applyDescriptionReplacements.name, applyDescriptionReplacements)();
-}
-
-export function GAS_balanceSheet() {
-  goToSheet(MetaBalanceSheet.SHEET.NAME);
+  withLog(
+    GAS_applyDescriptionReplacements.name,
+    applyDescriptionReplacements
+  )();
 }
 
 export function GAS_budget() {
@@ -77,7 +77,7 @@ export function GAS_budgetWeeklyTransactions() {
 }
 
 export function GAS_categories() {
-  goToSheet("Categories");
+  goToSheet(MetaCategories.SHEET.NAME);
 }
 
 export function GAS_convertCurrentColumnToUppercase() {
@@ -91,11 +91,6 @@ export function GAS_dailySorts() {
   withReentryGuard("DAILY_SORTS_RUNNING", timeConstants.FIVE_MINUTES, () => {
     new OurFinances(spreadsheet).dailySorts();
   });
-}
-
-export function GAS_showDailyAccounts() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).bankAccounts.showDaily();
 }
 
 export function GAS_ensureQueueDateFormats() {
@@ -200,24 +195,30 @@ export function GAS_logSheetNames(): void {
   logSheetNames();
 }
 
+export function GAS_showDailyAccounts() {
+  const spreadsheet = getFinancesSpreadsheet();
+  new OurFinances(spreadsheet).bankAccounts.showDaily();
+}
+
 export function GAS_showMonthlyAccounts() {
   const spreadsheet = getFinancesSpreadsheet();
   new OurFinances(spreadsheet).bankAccounts.showMonthly();
 }
 
 export function GAS_onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
-  const finish = functionStart(GAS_onChange.name);
-  setupWorkflowsOnce();
+  withLog(GAS_onChange.name, onChange)(e);
+}
 
-  onChange(e);
-
-  finish();
+export function GAS_onEdit(
+  e: GoogleAppsScript.Events.SheetsOnEdit
+): void {
+  withLog(GAS_onEdit.name, onEdit)(e);
 }
 
 export function GAS_onEditTrigger(
   e: GoogleAppsScript.Events.SheetsOnEdit
 ): void {
-  handleEdit(e);
+  withLog(GAS_onEditTrigger.name, handleEdit)(e);
 }
 
 export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
@@ -281,6 +282,10 @@ export function GAS_showAllAccounts() {
 export function GAS_sortSheets() {
   const spreadsheet = getFinancesSpreadsheet();
   new OurFinances(spreadsheet).sortSheets();
+}
+
+export function GAS_toBalanceSheet() {
+  withLog(GAS_toBalanceSheet.name, goToSheet)(MetaBalanceSheet.SHEET.NAME);
 }
 
 export function GAS_trimAllSheets() {

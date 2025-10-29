@@ -1,4 +1,4 @@
-/// <reference types="google-apps-script" />
+import { safeWrite } from '@lib/safeWrite';
 
 // ────────────────────────────────────────────────────────────
 // Fast, low-noise logging for GAS (no namespaces; isolatedModules-safe)
@@ -108,19 +108,6 @@ function getStatusSheet(
   return sh;
 }
 
-function snapshotToSheet(ring: LogRecord[]) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  const sh = getStatusSheet(ss);
-  const header = [["Timestamp (ISO)", "Level", "Message"]];
-  const rows = ring.map((r) => [r.t, r.level.toUpperCase(), r.msg]);
-  const data = header.concat(rows);
-
-  sh.clearContents();
-  sh.getRange(1, 1, data.length, data[0].length).setValues(data);
-  sh.autoResizeColumns(1, data[0].length);
-  sh.getRange(1, 1, 1, data[0].length).setFontWeight("bold");
-}
-
 function log(level: LogLevel, ...parts: unknown[]) {
   if (levels[level] > levels[LOG_LEVEL]) return; // skip if below log level
 
@@ -156,7 +143,7 @@ function log(level: LogLevel, ...parts: unknown[]) {
     errorCount++;
     if (errorCount >= ERROR_SNAPSHOT_THRESHOLD) {
       try {
-        snapshotToSheet(ring);
+        safeSnapshotToSheet(ring);
         errorCount = 0;
       } catch (e) {
         console.error("Snapshot failed:", safeString(e));
@@ -177,7 +164,24 @@ function persistRing() {
 }
 
 function manualSnapshot() {
-  snapshotToSheet(getRing());
+  safeSnapshotToSheet(getRing());
+}
+
+function safeSnapshotToSheet(ring: LogRecord[]) {
+  safeWrite(() => snapshotToSheet(ring));
+}
+
+function snapshotToSheet(ring: LogRecord[]) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sh = getStatusSheet(ss);
+  const header = [["Timestamp (ISO)", "Level", "Message"]];
+  const rows = ring.map((r) => [r.t, r.level.toUpperCase(), r.msg]);
+  const data = header.concat(rows);
+
+  sh.clearContents();
+  sh.getRange(1, 1, data.length, data[0].length).setValues(data);
+  sh.autoResizeColumns(1, data[0].length);
+  sh.getRange(1, 1, 1, data[0].length).setFontWeight("bold");
 }
 
 function clearRing() {

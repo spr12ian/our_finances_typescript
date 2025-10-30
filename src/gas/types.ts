@@ -7,6 +7,8 @@ type OnEditRule = {
   range: string | string[];
   /** Handler to invoke when the edited range intersects the watched range */
   fn: (e: SheetsOnEdit) => void;
+  /** Optional note for logging/debugging purposes */
+  note?: string;
 };
 
 type SheetsOnEdit = GoogleAppsScript.Events.SheetsOnEdit;

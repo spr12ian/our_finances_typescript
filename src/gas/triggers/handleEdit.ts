@@ -7,8 +7,18 @@ import { onEditRecalcBalances } from "../../features/account/handlers/onEditReca
 
 /** Keep this lean and at top-level so it's initialized once */
 const ON_EDIT_RULES: OnEditRule[] = [
-  { sheet: /^_/, range: "C2:D", fn: onEditRecalcBalances }, // Recalc balance when credit/debit changes (sync, range-aware)
-  { sheet: /^_/, range: ["B2:B", "E2:E"], fn: toUpperCase },
+  {
+    sheet: /^_/,
+    range: "C2:D",
+    fn: onEditRecalcBalances,
+    note: "recalc balances when credit/debit changes (sync, range-aware)",
+  },
+  {
+    sheet: /^_/,
+    range: ["B2:B", "E2:E"],
+    fn: toUpperCase,
+    note: "convert B/E to uppercase",
+  },
 ];
 
 // Optional: stop after the first matching rule to avoid duplicate work.
@@ -33,7 +43,10 @@ export function handleEdit(e: SheetsOnEdit): void {
 
   try {
     // Ultra-cheap sanity checks; use only the event object
-    if (!e || !e.range) return;
+    if (!e || !e.range) {
+      FastLog.log("handleEdit → Missing event or range");
+      return;
+    }
 
     const range = e.range;
 
@@ -43,23 +56,33 @@ export function handleEdit(e: SheetsOnEdit): void {
       const debounceKey = `debounce:${range
         .getSheet()
         .getSheetId()}:${range.getRow()}:${range.getColumn()}`;
-      if (cache.get(debounceKey)) return; // recently handled: skip
+      if (cache.get(debounceKey)) {
+        FastLog.log("handleEdit → Debounced rapid re-edit");
+        return;
+      } // recently handled: skip
       cache.put(debounceKey, "1", 1); // 1-second TTL
     }
 
     // Prefer early exits before any logging of large objects
-    if (!isSingleCell(range)) return; // rules expect single cell
+    if (!isSingleCell(range)) {
+      FastLog.log("handleEdit → Ignored non-single-cell edit");
+      return;
+    } // rules expect single cell
     if (
       "oldValue" in e &&
       normalizeForChangeCheck(e.value) === normalizeForChangeCheck(e.oldValue)
     ) {
+      FastLog.log("handleEdit → No actual value change detected");
       return; // no value change
     }
 
     const { sheetName, editBounds } = __getEventPartsOpt(e);
 
     // Avoid feedback loops with queue sheets
-    if (sheetName === "_QUEUE" || sheetName === "_DEAD") return;
+    if (sheetName === "_QUEUE" || sheetName === "_DEAD") {
+      FastLog.log(`handleEdit → Ignored edit in special sheet: ${sheetName}`);
+      return;
+    }
 
     // Dispatch (pure computation—no locks yet)
     const rules = __compileRulesOpt().filter((r) =>
@@ -67,7 +90,10 @@ export function handleEdit(e: SheetsOnEdit): void {
         ? r.sheet === sheetName
         : (r.sheet as RegExp).test(sheetName)
     );
-    if (rules.length === 0) return;
+    if (rules.length === 0) {
+      FastLog.log(`handleEdit → No matching rules for sheet: ${sheetName}`);
+      return;
+    }
 
     for (const rule of rules) {
       let match = false;
@@ -77,21 +103,39 @@ export function handleEdit(e: SheetsOnEdit): void {
           break;
         }
       }
-      if (!match) continue;
-
-      // ⬇️ Acquire a short, non-blocking DocumentLock ONLY around the mutation.
-      const run = withDocumentLock<void>(
-        "handleEdit", // label in your logs
-        () => rule.fn(e), // the actual work (may read/write the sheet)
-        50 // 50ms tryLock → skip if busy
-      );
-
-      const ok = run(); // returns undefined if busy (we skip gracefully)
-      if (ok === undefined) {
-        FastLog.warn("handleEdit: doc lock busy — skipped rule execution");
+      if (!match) {
+        FastLog.log(
+          `handleEdit → Rule skipped due to range mismatch: ${
+            rule.note || "unnamed rule"
+          }`
+        );
+        continue;
       }
 
-      if (FIRST_MATCH_ONLY) break;
+      try {
+        FastLog.log(
+          `handleEdit → Executing rule: ${rule.note || "unnamed rule"}`
+        );
+
+        // ⬇️ Acquire a short, non-blocking DocumentLock ONLY around the mutation.
+        const run = withDocumentLock<void>(
+          "handleEdit", // label in your logs
+          () => rule.fn(e), // the actual work (may read/write the sheet)
+          50 // 50ms tryLock → skip if busy
+        );
+
+        const ok = run(); // returns undefined if busy (we skip gracefully)
+        if (ok === undefined) {
+          FastLog.warn("handleEdit: doc lock busy — skipped rule execution");
+        }
+      } catch (err) {
+        FastLog.error("handleEdit rule error", getErrorMessage(err));
+      }
+      
+      if (FIRST_MATCH_ONLY) {
+        FastLog.log("handleEdit → Stopping after first matching rule");
+        break;
+      }
     }
   } catch (err) {
     FastLog.error(functionName, getErrorMessage(err));
@@ -100,8 +144,6 @@ export function handleEdit(e: SheetsOnEdit): void {
     finish();
   }
 }
-
-
 
 function __colToIndexOpt(col: string): number {
   let n = 0;
@@ -238,13 +280,11 @@ function toUpperCase(e: SheetsOnEdit): void {
 }
 
 function isSingleCellActuallyChanged(e: SheetsOnEdit): boolean {
-  if (!isSingleCell(e.range)) return false;
-  const normalize = (s: string | undefined) => {
-    if (s == null) return "";
-    const t = s.trim();
-    const n = Number(t.replace(/,/g, ""));
-    if (!Number.isNaN(n) && t !== "") return String(n);
-    return t;
-  };
-  return normalize(e.value) !== normalize(e.oldValue);
+  if (!isSingleCell(e.range)) {
+    FastLog.log("isSingleCellActuallyChanged → Not a single cell");
+    return false;
+  }
+  return (
+    normalizeForChangeCheck(e.value) !== normalizeForChangeCheck(e.oldValue)
+  );
 }

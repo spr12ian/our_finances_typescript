@@ -126,12 +126,12 @@ export function handleEdit(e: SheetsOnEdit): void {
 
         const ok = run(); // returns undefined if busy (we skip gracefully)
         if (ok === undefined) {
-          FastLog.warn("handleEdit: doc lock busy — skipped rule execution");
+          FastLog.warn(`handleEdit: doc lock busy — skipped "${rule.note || 'unnamed rule'}"`);
         }
       } catch (err) {
         FastLog.error("handleEdit rule error", getErrorMessage(err));
       }
-      
+
       if (FIRST_MATCH_ONLY) {
         FastLog.log("handleEdit → Stopping after first matching rule");
         break;

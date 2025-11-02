@@ -1,22 +1,14 @@
 // onSelectionChange.ts
-import { idempotencyKey, tryClaimKey } from "@lib/idempotency";
+import { shouldHandleSelection } from "@gas/shouldHandleSelection";
+import { getNamespaceKey } from "@lib/getNamespaceKey";
+import { idempotencyKey } from "@lib/idempotency";
+import { FastLog } from "@lib/logging";
 import { ONE_SECOND } from "@lib/timeConstants";
-import { withDocumentLock } from "@lib/WithDocumentLock";
+import { withGuardedLock } from "@lib/withGuardedLock";
 import { setupWorkflowsOnce } from "@workflow";
 import { startWorkflow } from "@workflow/workflowEngine";
-import { shouldHandleSelection } from "@gas/shouldHandleSelection";
-import { FastLog } from '@lib/logging';
-
-function shouldFixSheet(name: string): boolean {
-  if (!name) return false;
-  if (name.startsWith("_")) return false;
-  if (name === "Status" || name === "Queue") return false;
-  return true;
-}
 
 export function onSelectionChange(e: any): void {
-  setupWorkflowsOnce();
-
   const sheet = e?.range?.getSheet?.() ?? SpreadsheetApp.getActiveSheet();
   if (!sheet) {
     FastLog.log("onSelectionChange → No sheet found");
@@ -30,56 +22,57 @@ export function onSelectionChange(e: any): void {
   }
 
   if (!shouldHandleSelection(sheetName)) {
-    FastLog.log(`onSelectionChange → Not handling selection for sheet: ${sheetName}`);
+    FastLog.log(
+      `onSelectionChange → Not handling selection for sheet: ${sheetName}`
+    );
     return;
   }
-
-  // --- per-user debounce (guard nullable type) ---
-  const userCache = CacheService.getUserCache();
-  if (!userCache) {
-    FastLog.log("onSelectionChange → No user cache found");
-    return;
-  } // types say nullable; bail safely
-
-  const lastSheet = userCache.get("lastSheetName");
-  if (lastSheet === sheetName) {
-    FastLog.log(`onSelectionChange → Debounced for sheet: ${sheetName}`);
-    return;
-  }
-  userCache.put("lastSheetName", sheetName, 20); // seconds
-
-  // --- shared per-sheet cooldown (guard nullable type) ---
-  const docCache = CacheService.getDocumentCache();
-  if (!docCache) {
-    FastLog.log("onSelectionChange → No document cache found");
-    return;
-  } // guard to satisfy TS
-
-  const COOLDOWN_MS = 15 * ONE_SECOND;
-  const coolKey = `fixSheetCooldown:${sheetName}`;
-  const lastTs = Number(docCache.get(coolKey) || 0);
-  const now = Date.now();
-  if (now - lastTs < COOLDOWN_MS) {
-    FastLog.log(`onSelectionChange → Cooldown active for sheet: ${sheetName}`);
-    return;
-  }
-  docCache.put(coolKey, String(now), Math.ceil(COOLDOWN_MS / 1000) + 5);
 
   // --- idempotency ---
   const wf = "fixSheetFlow";
   const step = "fixSheetStep1";
   const token = idempotencyKey(wf, step, sheetName);
-  if (!tryClaimKey(token, 30)) {
-    FastLog.log(`onSelectionChange → Failed to claim idempotency key: ${token}`);
-    return;
-  }
 
-  // --- enqueue under short non-blocking lock ---
-  withDocumentLock(
-    "onSelectionChange.fixSheetEnqueue",
-    () => {
-      startWorkflow(wf, step, { sheetName, startedBy: "onSelectionChange" });
+  const key = getNamespaceKey("onSelectionChange", sheetName);
+
+  // If fired again within 1s, it will be skipped.
+  withGuardedLock(
+    {
+      key,
+      lockLabel: key,
+      // idempotency (skip if same sheet/step claimed within TTL)
+      idemToken: token,
+      idemTtlSec: 30, // same as your previous tryClaimKey
+      idemScope: "document", // keep consistent with your cache usage
+      // per-user per-key debounce
+      userDebounceMs: 2 * ONE_SECOND, // tune to taste
+      userDebounceMode: "per-key", // don’t block other keys/sheets
+
+      reentryTtlMs: ONE_SECOND, // cooldown between events - short anti-spam debounce
+      reentryOptions: {
+        releaseOnFinish: true,
+        scope: "document",
+        lockMs: 150, // hold the reentry lock for a short time
+      },
+      // per-sheet cooldown
+      cooldownMs: 15 * ONE_SECOND, // 15s per-sheet throttle
+      // cooldownKey defaults to key; cooldownScope defaults to "document"
+      cooldownOnError: false, // default — start cooldown even if it fails
+      lockTimeoutMs: 200, // maximum wait time to get exclusive sheet access
     },
-    200
-  )();
+    () => {
+      setupWorkflowsOnce();
+      startWorkflow(wf, step, {
+        sheetName,
+        startedBy: "onSelectionChange",
+      });
+    }
+  );
+}
+
+function shouldFixSheet(name: string): boolean {
+  if (!name) return false;
+  if (name.startsWith("_")) return false;
+  if (name === "Status" || name === "Queue") return false;
+  return true;
 }

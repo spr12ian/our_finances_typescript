@@ -1,12 +1,12 @@
 import type { Sheet } from "@domain/Sheet";
-import { isProgrammaticEdit } from '@lib/programmaticEditGuard';
+import { isProgrammaticEdit } from "@lib/programmaticEditGuard";
 import * as timeConstants from "@lib/timeConstants";
 import { FastLog, functionStart } from "@logging";
 import { isAccountSheet } from "@sheets/accountSheetFunctions";
 import { setupWorkflowsOnce } from "@workflow";
 import { startWorkflow } from "@workflow/workflowEngine";
 import { getFinancesSpreadsheet } from "src/getFinancesSpreadsheet";
-import { withReentryGuard } from "../../withReentryGuard";
+import { withReentryGuard } from "../../lib/withReentryGuard";
 
 export function onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
   const ignored = new Set([

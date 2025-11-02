@@ -34,9 +34,9 @@ import { setupWorkflowsOnce } from "@workflow";
 import type { ExampleFlowInput } from "@workflow/flows/exampleFlow";
 import { startWorkflow } from "@workflow/workflowEngine";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
+import { withReentryGuard } from "../../lib/withReentryGuard";
 import { OurFinances } from "../../OurFinances";
 import { validateAllMenuFunctionNames } from "../../validateAllMenuFunctionNames";
-import { withReentryGuard } from "../../withReentryGuard";
 import { handleEdit } from "../triggers/handleEdit";
 import { handleOpen } from "../triggers/handleOpen";
 import { applyDescriptionReplacements } from "./applyDescriptionReplacements";
@@ -209,9 +209,7 @@ export function GAS_onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
   withLog(GAS_onChange.name, onChange)(e);
 }
 
-export function GAS_onEdit(
-  e: GoogleAppsScript.Events.SheetsOnEdit
-): void {
+export function GAS_onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
   withLog(GAS_onEdit.name, onEdit)(e);
 }
 

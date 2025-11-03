@@ -27,7 +27,7 @@ export function getEnqueue(): EnqueueFn {
   return enqueueRef;
 }
 
-export function isConfigured(): boolean {
+export function isEngineConfigured(): boolean {
   return !!enqueueRef;
 }
 

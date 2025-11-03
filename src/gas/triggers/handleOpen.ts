@@ -1,9 +1,10 @@
 // src/gas/triggers/handleOpen.ts
 
 import { FastLog } from "@logging/FastLog";
-import * as queueConstants from "@queue/queueConstants";
+import { DEAD_SHEET_NAME, QUEUE_SHEET_NAME } from "@queue/queueConstants";
 import { setupWorkflowsOnce } from "@workflow";
-import { isEngineConfigured, startWorkflow } from "@workflow/workflowEngine";
+import { isEngineConfigured } from "@workflow/engineState";
+import { startWorkflow } from "@workflow/workflowEngine";
 
 type SheetsOnOpen = GoogleAppsScript.Events.SheetsOnOpen;
 
@@ -11,17 +12,11 @@ type SheetsOnOpen = GoogleAppsScript.Events.SheetsOnOpen;
 // Public entry point
 // ---------------------------
 export function handleOpen(e: SheetsOnOpen): void {
-  setupWorkflowsOnce();
-
   try {
     if (!e || !e.source || !e.source.getActiveSheet()) return;
 
     const sheetName = e.source.getActiveSheet().getName();
-    if (
-      sheetName === queueConstants.QUEUE_SHEET_NAME ||
-      sheetName === queueConstants.DEAD_SHEET_NAME
-    )
-      return; // avoid feedback loops
+    if (sheetName === QUEUE_SHEET_NAME || sheetName === DEAD_SHEET_NAME) return; // avoid feedback loops
 
     const ready = setupWorkflowsOnce(); // returns true/false in your impl
     if (!ready || !isEngineConfigured()) {

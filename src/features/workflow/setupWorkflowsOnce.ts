@@ -1,8 +1,9 @@
 // @workflow/setupWorkflowsOnce.ts
 import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { FastLog, functionStart } from "@logging";
+import type { QueueEnqueueOptions } from "@queue";
 import type { EnqueueFn } from "./engineState";
-import { isConfigured, setEnqueue } from "./engineState";
+import { isEngineConfigured, setEnqueue } from "./engineState";
 import { setupWorkflows } from "./setupWorkflows";
 
 /**
@@ -20,9 +21,6 @@ const enqueueAdapter: EnqueueFn = (parameters, options) => {
   return res;
 };
 
-// module scope flag is only per-container; use it as a fast path
-let _ready = false;
-
 /**
  * Ensure the workflow engine is configured exactly once.
  * Returns true iff the engine is ready (enqueue is bound).
@@ -33,25 +31,23 @@ export function setupWorkflowsOnce(): boolean {
 
   try {
     // Already configured globally?
-    if (isConfigured()) {
-      _ready = true;
+    if (isEngineConfigured()) {
       return true;
     }
 
-    // Fast path: if this container thinks it's ready, trust but verify
-    if (_ready && isConfigured()) return true;
-
     // Acquire a short script lock to avoid concurrent initialisation
     const lock = LockService.getScriptLock();
-    if (!lock.tryLock(ONE_SECOND_MS)) {
-      FastLog.warn(`${fn}: lock busy — scheduling retry in 5s and exiting`);
+    if (!lock.tryLock(4 * ONE_SECOND_MS)) {
+      FastLog.warn(
+        `${fn}: not ready (configured=${isEngineConfigured()}) — scheduling retry`
+      );
       scheduleRetry_();
       return false;
     }
 
     try {
       // Another instance might have configured while we waited
-      if (!isConfigured()) {
+      if (!isEngineConfigured()) {
         // 🚩 The ONLY place we bind enqueue to the engine
         // ✅ Bind the ADAPTER here (not queueJob), under the lock
         setEnqueue(enqueueAdapter);
@@ -62,7 +58,6 @@ export function setupWorkflowsOnce(): boolean {
         FastLog.log(`${fn}: engine configured`);
       }
 
-      _ready = true;
       return true;
     } finally {
       lock.releaseLock();
@@ -83,10 +78,17 @@ function scheduleRetry_() {
       t.getHandlerFunction && t.getHandlerFunction() === "_retrySetupWorkflows"
   );
   if (!existing) {
-    ScriptApp.newTrigger("_retrySetupWorkflows")
-      .timeBased()
-      .after(5 * ONE_SECOND_MS)
-      .create();
+    try {
+      ScriptApp.newTrigger("_retrySetupWorkflows")
+        .timeBased()
+        .after(5 * ONE_SECOND_MS)
+        .create();
+    } catch (err) {
+      FastLog.error(
+        "_retrySetupWorkflows",
+        `retry trigger create failed: ${String(err)}`
+      );
+    }
   }
 }
 
@@ -95,7 +97,7 @@ function toQueueOptions(options?: { runAt?: Date | null; priority?: number }) {
   return {
     runAt: options?.runAt ?? undefined, // or convert to your sheet's expected format
     priority: options?.priority,
-  } as any; // or an explicit QueueEnqueueOptions if you have the type
+  } as QueueEnqueueOptions; // or an explicit QueueEnqueueOptions if you have the type
 }
 
 // Expose the retry target in global scope for Apps Script

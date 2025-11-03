@@ -8,7 +8,7 @@ import type { EnqueueFn } from "./engineState"; // <-- use the one true EnqueueF
 import {
   ENGINE_INSTANCE_ID,
   getEnqueue,
-  isConfigured,
+  isEngineConfigured,
   setEnqueue,
 } from "./engineState";
 import { makeStepLogger } from "./makeStepLogger";
@@ -21,10 +21,6 @@ import type {
 
 export function configureWorkflowEngine(enqueue: EnqueueFn) {
   setEnqueue(enqueue);
-}
-
-export function isEngineConfigured(): boolean {
-  return isConfigured();
 }
 
 const DEFAULT_INVOCATION_BUDGET_MS = 25 * ONE_SECOND_MS;
@@ -143,7 +139,7 @@ export function startWorkflow(
   const finish = functionStart(fn);
   FastLog.log(fn, workflowName, firstStep);
   try {
-    if (!isConfigured()) {
+    if (!isEngineConfigured()) {
       FastLog.warn(
         `${fn}: engine not configured — skipping ${workflowName}.${firstStep}`
       );

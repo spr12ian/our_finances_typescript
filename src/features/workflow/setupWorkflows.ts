@@ -3,7 +3,7 @@ import { FastLog } from "@lib/logging";
 import { withScriptLock } from "@lib/withScriptLock";
 import { queueJobMust } from "@queue/queueJob";
 import type { EnqueueFn, EnqueueOptions } from "./engineState";
-import { isConfigured, setEnqueue } from "./engineState";
+import { isEngineConfigured, setEnqueue } from "./engineState";
 import { registerAllWorkflows } from "./registerAllWorkflows";
 import type { RunStepJob } from "./workflowTypes";
 
@@ -15,7 +15,7 @@ export function setupWorkflows(): void {
   const startTime = FastLog.start(fn);
 
   withScriptLock(() => {
-    if (initialized && isConfigured()) return; // idempotent
+    if (initialized && isEngineConfigured()) return; // idempotent
 
     // 1) Inject an EnqueueFn-compatible wrapper (NOT queueJob directly)
     const enqueueAdapter: EnqueueFn = (

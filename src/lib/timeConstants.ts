@@ -1,10 +1,4 @@
-export const ONE_SECOND = 1000;
-export const ONE_MINUTE = 60 * ONE_SECOND;
-export const ONE_HOUR = 60 * ONE_MINUTE;
-export const ONE_DAY = 24 * ONE_HOUR;
-export const FIVE_MINUTES = 5 * ONE_MINUTE;
-export const FIVE_SECONDS = 5 * ONE_SECOND;
-export const THIRTY_MINUTES = 30 * ONE_MINUTE;
-export const THIRTY_SECONDS = 30 * ONE_SECOND;
-export const THREE_SECONDS = 3 * ONE_SECOND;
-export const TWO_SECONDS = 2 * ONE_SECOND;
+export const ONE_SECOND_MS = 1000;
+export const ONE_MINUTE_MS = 60 * ONE_SECOND_MS;
+export const ONE_HOUR_MS = 60 * ONE_MINUTE_MS;
+export const ONE_DAY_MS = 24 * ONE_HOUR_MS;

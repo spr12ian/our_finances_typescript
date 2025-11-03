@@ -40,7 +40,7 @@ export function onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
       const sheetId = sheet?.raw.getSheetId?.() ?? "unknown";
       const ssId = spreadsheet.id ?? "unknown";
       const key = `ONCHANGE_BALANCE:${ssId}:${sheetId}:${changeType}`;
-      withReentryGuard(key, timeConstants.ONE_MINUTE, () => {
+      withReentryGuard(key, timeConstants.ONE_MINUTE_MS, () => {
         startFlow(sheet);
       });
       break;

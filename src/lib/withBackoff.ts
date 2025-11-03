@@ -1,4 +1,4 @@
-import { ONE_SECOND } from "./timeConstants";
+import { ONE_SECOND_MS } from "./timeConstants";
 
 /** Exponential backoff retry helper */
 export function withBackoff<T>(fn: () => T, label: string, retries = 5): T {
@@ -13,7 +13,7 @@ export function withBackoff<T>(fn: () => T, label: string, retries = 5): T {
       console.warn(`[${label}] attempt ${attempt} failed: ${err}`);
       if (attempt === retries) break;
       Utilities.sleep(wait);
-      wait = Math.min(wait * 2, 4 * ONE_SECOND);
+      wait = Math.min(wait * 2, 4 * ONE_SECOND_MS);
     }
   }
   throw new Error(`[${label}] failed after ${retries} retries: ${lastErr}`);

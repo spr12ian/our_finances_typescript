@@ -2,8 +2,10 @@
 // Robust guard that works even if a run crashes (auto-expires).
 // Uses ScriptProperties (available everywhere including triggers).
 
+import { ONE_MINUTE_MS } from "./timeConstants";
+
 const FLAG_KEY = "OF_PROGRAMMATIC_EDIT_FLAG"; // JSON: { count: number, ts: number }
-const STALE_MS = 2 * 60 * 1000; // auto-expire after 2 minutes (safety)
+const STALE_MS = 2 * ONE_MINUTE_MS; // auto-expire after 2 minutes (safety)
 
 type Flag = { count: number; ts: number };
 

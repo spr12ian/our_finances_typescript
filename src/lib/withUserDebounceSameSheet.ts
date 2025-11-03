@@ -1,17 +1,19 @@
 // @lib/withUserDebounceSameSheet.ts
 import { withGuardedLock, type GuardedLockOptions } from "@lib/withGuardedLock";
-import { TWO_SECONDS } from "./timeConstants";
+import { ONE_SECOND_MS } from "./timeConstants";
 
 export function withUserDebounceSameSheet<T>(
   sheetName: string,
-  opts: Omit<GuardedLockOptions, "userDebounceMs" | "userDebounceKey"> & { userDebounceMs?: number },
+  opts: Omit<GuardedLockOptions, "userDebounceMs" | "userDebounceKey"> & {
+    userDebounceMs?: number;
+  },
   fn: () => T
 ): T | undefined {
   const keyStr = typeof opts.key === "function" ? opts.key() : opts.key;
   return withGuardedLock(
     {
       ...opts,
-      userDebounceMs: opts.userDebounceMs ?? TWO_SECONDS,
+      userDebounceMs: opts.userDebounceMs ?? 2 * ONE_SECOND_MS,
       userDebounceKey: `${keyStr}:sheet:${sheetName}`,
       userDebounceMode: "per-key",
     },

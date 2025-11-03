@@ -1,5 +1,6 @@
 // import { LOCALE } from "./constants";
 import { getOrdinal } from "./number";
+import { ONE_SECOND_MS } from "./timeConstants";
 
 // Dates in cells should be in UTC (Z) to avoid timezone issues.
 
@@ -8,8 +9,6 @@ import { getOrdinal } from "./number";
 // e.g., 25 Dec 2023 14:30:00
 // N.B. Google sheets automatically applies timezone conversion in cells
 export const DISPLAY_DATE_FORMAT = "dd MMM yyyy HH:mm:ss";
-
-
 
 // Convenience shorthands
 export const formatLondonDate = (x: DateInput) => formatInTZ(x);
@@ -150,7 +149,7 @@ function toDateSafe(x: DateInput): Date {
   if (x instanceof Date) return x;
 
   // support epoch seconds vs ms
-  if (typeof x === "number" && x > 0 && x < 1e12) x = x * 1000;
+  if (typeof x === "number" && x > 0 && x < 1e12) x = x * ONE_SECOND_MS;
 
   const d = new Date(x);
   const safeDate = Number.isNaN(d.getTime()) ? new Date() : d;

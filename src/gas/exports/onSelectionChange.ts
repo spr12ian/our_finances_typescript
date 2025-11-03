@@ -3,7 +3,7 @@ import { shouldHandleSelection } from "@gas/shouldHandleSelection";
 import { getNamespaceKey } from "@lib/getNamespaceKey";
 import { idempotencyKey } from "@lib/idempotency";
 import { FastLog } from "@lib/logging";
-import { ONE_SECOND } from "@lib/timeConstants";
+import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { withGuardedLock } from "@lib/withGuardedLock";
 import { setupWorkflowsOnce } from "@workflow";
 import { startWorkflow } from "@workflow/workflowEngine";
@@ -45,17 +45,17 @@ export function onSelectionChange(e: any): void {
       idemTtlSec: 30, // same as your previous tryClaimKey
       idemScope: "document", // keep consistent with your cache usage
       // per-user per-key debounce
-      userDebounceMs: 2 * ONE_SECOND, // tune to taste
+      userDebounceMs: 2 * ONE_SECOND_MS, // tune to taste
       userDebounceMode: "per-key", // don’t block other keys/sheets
 
-      reentryTtlMs: ONE_SECOND, // cooldown between events - short anti-spam debounce
+      reentryTtlMs: ONE_SECOND_MS, // cooldown between events - short anti-spam debounce
       reentryOptions: {
         releaseOnFinish: true,
         scope: "document",
         lockMs: 150, // hold the reentry lock for a short time
       },
       // per-sheet cooldown
-      cooldownMs: 15 * ONE_SECOND, // 15s per-sheet throttle
+      cooldownMs: 15 * ONE_SECOND_MS, // 15s per-sheet throttle
       // cooldownKey defaults to key; cooldownScope defaults to "document"
       cooldownOnError: false, // default — start cooldown even if it fails
       lockTimeoutMs: 200, // maximum wait time to get exclusive sheet access

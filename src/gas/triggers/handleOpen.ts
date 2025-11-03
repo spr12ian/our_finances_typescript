@@ -1,9 +1,9 @@
-/// <reference types="google-apps-script" />
+// src/gas/triggers/handleOpen.ts
 
 import { FastLog } from "@logging/FastLog";
 import * as queueConstants from "@queue/queueConstants";
 import { setupWorkflowsOnce } from "@workflow";
-import { startWorkflow } from "@workflow/workflowEngine";
+import { isEngineConfigured, startWorkflow } from "@workflow/workflowEngine";
 
 type SheetsOnOpen = GoogleAppsScript.Events.SheetsOnOpen;
 
@@ -11,7 +11,6 @@ type SheetsOnOpen = GoogleAppsScript.Events.SheetsOnOpen;
 // Public entry point
 // ---------------------------
 export function handleOpen(e: SheetsOnOpen): void {
-  const startTime = FastLog.start(handleOpen.name, e);
   setupWorkflowsOnce();
 
   try {
@@ -24,6 +23,14 @@ export function handleOpen(e: SheetsOnOpen): void {
     )
       return; // avoid feedback loops
 
+    const ready = setupWorkflowsOnce(); // returns true/false in your impl
+    if (!ready || !isEngineConfigured()) {
+      FastLog.warn(
+        "handleOpen: engine not ready; skipping open-time workflows"
+      );
+      return;
+    }
+
     startWorkflow("fixSheetFlow", "fixSheetStep1", {
       sheetName: sheetName,
       startedBy: "onOpen",
@@ -31,9 +38,5 @@ export function handleOpen(e: SheetsOnOpen): void {
   } catch (err) {
     FastLog.error(handleOpen.name, err);
     throw err;
-  } finally {
-    try {
-      FastLog.finish(handleOpen.name, startTime);
-    } catch {}
   }
 }

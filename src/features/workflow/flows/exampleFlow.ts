@@ -1,6 +1,6 @@
 // @workflow/flows/exampleFlow.ts
 import { getErrorMessage } from "@lib/errors";
-import { ONE_MINUTE, ONE_SECOND } from "@lib/timeConstants";
+import { ONE_MINUTE_MS, ONE_SECOND_MS } from "@lib/timeConstants";
 import { registerStep } from "../workflowRegistry";
 import type { StepFn } from "../workflowTypes";
 
@@ -89,7 +89,7 @@ const exampleStep3: StepFn = ({ input, state, log }) => {
     }
 
     // not ready yet — back off
-    const delayMs = Math.min(ONE_MINUTE, ONE_SECOND * 2 ** (count - 1)); // 1s,2s,4s,... max 60s
+    const delayMs = Math.min(ONE_MINUTE_MS, ONE_SECOND_MS * 2 ** (count - 1)); // 1s,2s,4s,... max 60s
     return { kind: "yield", state, delayMs: delayMs };
   } catch (err) {
     log.error(err);

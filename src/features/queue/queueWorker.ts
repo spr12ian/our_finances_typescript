@@ -3,7 +3,8 @@
 import { getSheetByName } from "@gas";
 import { DateHelper } from "@lib/DateHelper";
 import { getErrorMessage } from "@lib/errors";
-import * as timeConstants from "@lib/timeConstants";
+import { ONE_DAY_MS, ONE_SECOND_MS } from "@lib/timeConstants";
+import { withScriptLock } from "@lib/withScriptLock";
 import { FastLog, functionStart } from "@logging";
 import type { RunStepJob, SerializedRunStepParameters } from "@workflow";
 import { runStep } from "@workflow/workflowEngine";
@@ -22,7 +23,6 @@ import {
   WORKER_BUDGET_MS,
 } from "./queueConstants";
 import type { Job, JobRow, JobStatus } from "./queueTypes";
-import { withScriptLock } from "@lib/withScriptLock";
 
 const MAX_CELL_LENGTH = 2000;
 
@@ -67,7 +67,7 @@ function purgeQueueOlderThanDays(
   const dataRange = sheet.getRange(2, 1, dataRows, HEADERS.length);
   const data = dataRange.getValues() as JobRow[];
 
-  const cutoffMs = Date.now() - days * timeConstants.ONE_DAY;
+  const cutoffMs = Date.now() - days * ONE_DAY_MS;
 
   // Keep rows that are NOT (DONE/ERROR and older than cutoff)
   const keep: JobRow[] = [];
@@ -216,7 +216,7 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
           MAX_BACKOFF_MS,
           Math.round(DEFAULT_BACKOFF_MS * Math.pow(2, attempts - 1))
         );
-        const jitter = Math.floor(Math.random() * timeConstants.THREE_SECONDS); // de-sync workers
+        const jitter = Math.floor(Math.random() * 3 * ONE_SECOND_MS); // de-sync workers
         const nextWhen = new Date(Date.now() + backoff + jitter);
 
         sheet.getRange(absRow, COL.ATTEMPTS).setValue(attempts);

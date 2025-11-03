@@ -1,7 +1,7 @@
 // @lib/withGuardedLock.ts
 // TTL is the lifetime (duration) of a stored item — after that time, it’s deleted automatically.
 import { withDocumentLock } from "@lib/WithDocumentLock";
-import { ONE_SECOND } from "@lib/timeConstants";
+import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { withReentryGuard } from "@lib/withReentryGuard";
 import { FastLog } from "./logging";
 
@@ -83,7 +83,7 @@ export function withGuardedLock<T>(
     lockTimeoutMs = 300,
 
     // reentry
-    reentryTtlMs = ONE_SECOND,
+    reentryTtlMs = ONE_SECOND_MS,
     reentryOptions,
     disableReentry = false,
 
@@ -123,7 +123,7 @@ export function withGuardedLock<T>(
         uCache.put(
           "__wg_user_any_until",
           String(now + userDebounceMs),
-          Math.ceil(userDebounceMs / 1000) + 2
+          Math.ceil(userDebounceMs / ONE_SECOND_MS) + 2
         );
       } else {
         const uPerKeyUntil = Number(
@@ -138,7 +138,7 @@ export function withGuardedLock<T>(
         uCache.put(
           `__wg_user_key_until:${uKey}`,
           String(now + userDebounceMs),
-          Math.ceil(userDebounceMs / 1000) + 2
+          Math.ceil(userDebounceMs / ONE_SECOND_MS) + 2
         );
       }
     }
@@ -152,12 +152,16 @@ export function withGuardedLock<T>(
       // Acquire a short ScriptLock to make claim atomic
       const sLock = LockService.getScriptLock();
       if (!sLock.tryLock(idemLockTimeoutMs)) {
-        FastLog?.log?.(`withGuardedLock idempotency: could not get script lock for ${token}`);
+        FastLog?.log?.(
+          `withGuardedLock idempotency: could not get script lock for ${token}`
+        );
         return undefined; // soft-skip
       }
       try {
         if (cache.get(token)) {
-          FastLog?.log?.(`withGuardedLock idempotency: already claimed ${token}`);
+          FastLog?.log?.(
+            `withGuardedLock idempotency: already claimed ${token}`
+          );
           return undefined; // already claimed within ttl
         }
         cache.put(token, "1", Math.max(1, idemTtlSec));
@@ -185,7 +189,7 @@ export function withGuardedLock<T>(
       cache.put(
         ckey,
         String(expiry),
-        Math.ceil(cooldownMs / 1000) + (cooldownBufferSec ?? 5)
+        Math.ceil(cooldownMs / ONE_SECOND_MS) + (cooldownBufferSec ?? 5)
       );
     }
   }
@@ -215,7 +219,7 @@ export function withGuardedLock<T>(
         cache.put(
           ckey,
           String(expiry),
-          Math.ceil(cooldownMs / 1000) + (cooldownBufferSec ?? 5)
+          Math.ceil(cooldownMs / ONE_SECOND_MS) + (cooldownBufferSec ?? 5)
         );
       }
       return result;

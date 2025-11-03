@@ -4,7 +4,7 @@
 // Imports & constants
 // ───────────────────────────────────────────────────────────────────────────────
 import { DateHelper } from "@lib/DateHelper";
-import { THREE_SECONDS } from "@lib/timeConstants";
+import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { withDocumentLock } from "@lib/WithDocumentLock";
 import { FastLog } from "@logging";
 import { DEFAULT_PRIORITY, QUEUE_SHEET_NAME, STATUS } from "./queueConstants";
@@ -24,7 +24,7 @@ export function queueJob(
   return withDocumentLock<{ id: string; row: number }>(
     "queueJob",
     () => doQueueJob(parameters, options),
-    THREE_SECONDS
+    3 * ONE_SECOND_MS
   )();
 }
 
@@ -44,7 +44,7 @@ export function queueJobMust(
   const attempt = withDocumentLock<{ id: string; row: number }>(
     "queueJobMust",
     () => doQueueJob(parameters, options), // call the inner implementation
-    2000 // a bit more patience than THREE_SECONDS if you want
+    2 * ONE_SECOND_MS
   )();
 
   if (attempt) return attempt;

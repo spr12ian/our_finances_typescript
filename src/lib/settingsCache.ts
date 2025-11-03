@@ -1,7 +1,7 @@
 // @lib/settingsCache.ts
 import { FastLog } from "@logging";
 
-const CACHE_TTL_SECONDS = 300; // 5 minutes default
+const CACHE_TTL_SECONDS = 5 * 60; // 5 minutes default
 const PREFIX = "SET_"; // helps avoid key clashes
 
 /** Choose which properties store to use (default: script-wide) */

@@ -1,7 +1,9 @@
+import { ONE_MINUTE_MS, ONE_SECOND_MS } from "@lib/index";
+
 // shouldHandleSelection.ts
 type DebounceCfg = { minMs: number; windowMs: number };
 // windowMs reserved for future rolling-window logic
-const DEBOUNCE: DebounceCfg = { minMs: 1000, windowMs: 60000 };
+const DEBOUNCE: DebounceCfg = { minMs: ONE_SECOND_MS, windowMs: ONE_MINUTE_MS };
 
 export function shouldHandleSelection(sheetName: string): boolean {
   const p = PropertiesService.getUserProperties();

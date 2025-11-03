@@ -1,4 +1,4 @@
-import { FIVE_SECONDS } from "@lib/timeConstants";
+import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { FastLog } from "./logging";
 
 /**
@@ -17,7 +17,7 @@ export function withScriptLock<T>(fn: () => T): T {
   try {
     // @ts-ignore
     const lock = lockService.getScriptLock();
-    if (lock.tryLock(FIVE_SECONDS)) {
+    if (lock.tryLock(5 * ONE_SECOND_MS)) {
       FastLog.log("Script lock acquired");
       try {
         return fn();

@@ -3,7 +3,7 @@ import { getErrorMessage } from "@lib/errors";
 import { FastLog, functionStart } from "@logging";
 // ⬇️ Pull the canonical types + accessors from engineState
 import { toHtmlParagraph } from "@lib/html/htmlFunctions";
-import { ONE_SECOND } from "@lib/timeConstants";
+import { ONE_SECOND_MS } from "@lib/timeConstants";
 import type { EnqueueFn } from "./engineState"; // <-- use the one true EnqueueFn here
 import {
   ENGINE_INSTANCE_ID,
@@ -19,15 +19,15 @@ import type {
   StepContext,
 } from "./workflowTypes";
 
-export function configureWorkflowEngine(fn: EnqueueFn) {
-  setEnqueue(fn);
+export function configureWorkflowEngine(enqueue: EnqueueFn) {
+  setEnqueue(enqueue);
 }
 
-export function isEngineConfigured() {
+export function isEngineConfigured(): boolean {
   return isConfigured();
 }
 
-const DEFAULT_INVOCATION_BUDGET_MS = 25 * ONE_SECOND;
+const DEFAULT_INVOCATION_BUDGET_MS = 25 * ONE_SECOND_MS;
 export function runStep(job: RunStepJob): void {
   const fn = runStep.name;
   const finish = functionStart(fn);
@@ -138,11 +138,17 @@ export function startWorkflow(
   input: unknown,
   initialState: Record<string, any> = {},
   priority?: number
-) {
+): string | null {
   const fn = startWorkflow.name;
   const finish = functionStart(fn);
   FastLog.log(fn, workflowName, firstStep);
   try {
+    if (!isConfigured()) {
+      FastLog.warn(
+        `${fn}: engine not configured — skipping ${workflowName}.${firstStep}`
+      );
+      return null;
+    }
     const workflowId = Utilities.getUuid();
     enqueueRunStep(
       {

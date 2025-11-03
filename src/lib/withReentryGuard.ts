@@ -5,6 +5,7 @@
 import type { CacheScope } from "@lib/tempCache";
 import { cacheRemove, tryClaimKey } from "@lib/tempCache";
 import { FastLog } from "@logging";
+import { ONE_SECOND_MS } from "./timeConstants";
 
 // === Local in-memory guard for same-container, sub-second accuracy ===
 const __localUntil = new Map<string, number>();
@@ -48,7 +49,12 @@ export function withReentryGuard<T>(
   }
 
   // 2) Cross-instance atomic claim
-  const claimed = tryClaimKey(key, Math.ceil(ttlMs / 1000), scope, lockMs);
+  const claimed = tryClaimKey(
+    key,
+    Math.ceil(ttlMs / ONE_SECOND_MS),
+    scope,
+    lockMs
+  );
   if (!claimed) {
     FastLog?.log?.(`reentry(cache): ${key} blocked`);
     return undefined;

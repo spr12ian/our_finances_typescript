@@ -3,7 +3,7 @@ import type { Sheet, Spreadsheet } from "@domain";
 import { col0 } from "@lib/columns";
 import { formatLondonDate, getOrdinalDateTZ } from "@lib/dates";
 import { getAmountAsGBP } from "@lib/money";
-import { ONE_DAY } from "@lib/timeConstants";
+import { ONE_DAY_MS } from "@lib/timeConstants";
 import type { BudgetColumns, UpcomingDebitRow } from "@sheets/budgetTypes";
 
 /** Minimal meta contract each sheet uses */
@@ -85,7 +85,7 @@ export abstract class TransactionsBase<M extends BudgetMeta> {
 
     const horizonEnd =
       this.strategy.mode === "range-check"
-        ? new Date(today.getTime() + howManyDaysAhead * ONE_DAY)
+        ? new Date(today.getTime() + howManyDaysAhead * ONE_DAY_MS)
         : null;
 
     const dateIdx = col0(C, "DATE");

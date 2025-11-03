@@ -1,14 +1,14 @@
-import * as timeConstants from "@lib/timeConstants";
+import { ONE_MINUTE_MS, ONE_SECOND_MS } from "@lib/timeConstants";
 
 export const QUEUE_SHEET_NAME = "$Queue"; // hidden operational sheet
 export const DEAD_SHEET_NAME = "$QueueDead"; // optional dead‑letter sink
 
 export const MAX_ATTEMPTS = 5; // total tries per job
 export const DEFAULT_PRIORITY = 100; // lower number = higher priority
-export const DEFAULT_BACKOFF_MS = timeConstants.THIRTY_SECONDS; // 30s base
-export const MAX_BACKOFF_MS = timeConstants.THIRTY_MINUTES; // 30m max backoff
+export const DEFAULT_BACKOFF_MS = 30 * ONE_SECOND_MS; // 30s base
+export const MAX_BACKOFF_MS = 30 * ONE_MINUTE_MS; // 30m max backoff
 export const MAX_BATCH = 6; // jobs per worker run
-export const WORKER_BUDGET_MS = 55 * timeConstants.ONE_SECOND; // ms per worker run
+export const WORKER_BUDGET_MS = 55 * ONE_SECOND_MS; // ms per worker run
 export const PRUNE_AFTER_DAYS = 7; // prune DONE/ERROR older than N days
 
 export const STATUS = {

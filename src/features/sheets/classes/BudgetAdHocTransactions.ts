@@ -1,9 +1,13 @@
 // BudgetAdHocTransactions.ts
 import type { Spreadsheet } from "@domain";
 import { MetaBudgetAdHocTransactions as Meta } from "@lib/constants";
-import { ONE_DAY } from "@lib/timeConstants";
+import { ONE_DAY_MS } from "@lib/timeConstants";
+import {
+  TransactionsBase,
+  type BudgetMeta,
+  type DateStrategy,
+} from "@sheets/budget/TransactionsBase";
 import type { UpcomingDebitRow } from "@sheets/budgetTypes";
-import { TransactionsBase, type BudgetMeta, type DateStrategy } from "@sheets/budget/TransactionsBase";
 
 const adHocStrategy: DateStrategy = {
   mode: "range-check",
@@ -11,7 +15,7 @@ const adHocStrategy: DateStrategy = {
     // Not used directly for range matching; but we keep the contract.
     // Provide [today, horizonEnd] for consistency and possible logging/visibility.
     const start = new Date(today);
-    const end = new Date(today.getTime() + howManyDaysAhead * ONE_DAY);
+    const end = new Date(today.getTime() + howManyDaysAhead * ONE_DAY_MS);
     return [start, end];
   },
 };
@@ -21,7 +25,10 @@ export class BudgetAdHocTransactions extends TransactionsBase<BudgetMeta> {
     super(spreadsheet, Meta, adHocStrategy);
   }
 
-  public getUpcomingDebits(howManyDaysAhead: number, today = new Date()): UpcomingDebitRow[] {
+  public getUpcomingDebits(
+    howManyDaysAhead: number,
+    today = new Date()
+  ): UpcomingDebitRow[] {
     return super.getUpcomingDebits(howManyDaysAhead, today);
   }
 }

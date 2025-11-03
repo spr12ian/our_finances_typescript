@@ -1,12 +1,14 @@
 // src/locks/perFileLock.ts
 
+import { ONE_SECOND_MS } from "@lib/index";
+
 /** Best-effort distributed mutex keyed by spreadsheet/file id. */
 export function withPerFileLock<T>(
   fileId: string,
   label: string,
   fn: () => T,
-  timeoutMs = 15_000,           // how long we're willing to wait
-  leaseSeconds = 30,            // how long we hold the lease
+  timeoutMs = 15 * ONE_SECOND_MS, // how long we're willing to wait
+  leaseSeconds = 30 // how long we hold the lease
 ): T {
   const cache = getCacheWithAdd();
   const token = Utilities.getUuid();
@@ -26,7 +28,9 @@ export function withPerFileLock<T>(
     // brief jittered sleep to avoid thundering herd
     Utilities.sleep(200 + Math.floor(Math.random() * 250));
   }
-  throw new Error(`[${label}] could not acquire per-file lock for ${fileId} within ${timeoutMs}ms`);
+  throw new Error(
+    `[${label}] could not acquire per-file lock for ${fileId} within ${timeoutMs}ms`
+  );
 }
 
 function getCacheWithAdd(): GoogleAppsScript.Cache.Cache & {

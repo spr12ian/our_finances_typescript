@@ -2,11 +2,15 @@
 
 import { getErrorMessage } from "./errors";
 import { FastLog, functionStart } from "./logging";
+import { ONE_SECOND_MS } from "./timeConstants";
 
 /**
  * Method decorator version
  */
-export function WithDocumentLock(label: string, timeout: number = 3000) {
+export function WithDocumentLock(
+  label: string,
+  timeout: number = 3 * ONE_SECOND_MS
+) {
   return function (
     _target: any,
     _propertyKey: string,
@@ -44,7 +48,7 @@ export function WithDocumentLock(label: string, timeout: number = 3000) {
 export function withDocumentLock<T>(
   label: string,
   fn: (...args: any[]) => T,
-  timeout = 3000
+  timeout = 3 * ONE_SECOND_MS
 ): (...args: any[]) => T | undefined {
   return function (...args: any[]): T | undefined {
     const finish = functionStart(label);

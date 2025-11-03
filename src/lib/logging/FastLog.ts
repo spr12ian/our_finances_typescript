@@ -1,4 +1,5 @@
 import { safeWrite } from "@lib/safeWrite";
+import { ONE_SECOND_MS } from "@lib/timeConstants";
 
 // ────────────────────────────────────────────────────────────
 // Fast, low-noise logging for GAS (no namespaces; isolatedModules-safe)
@@ -97,7 +98,9 @@ function clearRing() {
 
 function formatDurationMs(ms: number): string {
   // e.g. "845 ms", "2.13 s"
-  return ms < 1000 ? `${ms} ms` : `${(ms / 1000).toFixed(2)} s`;
+  return ms < ONE_SECOND_MS
+    ? `${ms} ms`
+    : `${(ms / ONE_SECOND_MS).toFixed(2)} s`;
 }
 
 function getRing(): LogRecord[] {
@@ -243,7 +246,7 @@ function safeSnapshotToSheet(ring: LogRecord[]) {
     const last = sp.getProperty(SNAPSHOT_KEY_LAST);
     const now = new Date();
     if (last) {
-      const dt = (now.getTime() - new Date(last).getTime()) / 1000;
+      const dt = (now.getTime() - new Date(last).getTime()) / ONE_SECOND_MS;
       if (dt < SNAPSHOT_COOLDOWN_SEC) return; // throttle
     }
     safeWrite(() => snapshotToSheet(ring));

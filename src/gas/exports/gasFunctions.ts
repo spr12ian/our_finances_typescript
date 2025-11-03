@@ -20,7 +20,7 @@ import {
   MetaUncategorisedByDate,
 } from "@lib/constants";
 import { logTime } from "@lib/logging/logTime";
-import * as timeConstants from "@lib/timeConstants";
+import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { withLog } from "@logging";
 import { ensureQueueDateFormats, queueSetup } from "@queue/queueSetup";
 import { purgeQueuesOldData, queueWorker } from "@queue/queueWorker";
@@ -34,6 +34,7 @@ import { setupWorkflowsOnce } from "@workflow";
 import type { ExampleFlowInput } from "@workflow/flows/exampleFlow";
 import { startWorkflow } from "@workflow/workflowEngine";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
+import { ONE_MINUTE_MS } from "../../lib/timeConstants";
 import { withReentryGuard } from "../../lib/withReentryGuard";
 import { OurFinances } from "../../OurFinances";
 import { validateAllMenuFunctionNames } from "../../validateAllMenuFunctionNames";
@@ -88,7 +89,7 @@ export function GAS_convertCurrentColumnToUppercase() {
 export function GAS_dailySorts() {
   const spreadsheet = getFinancesSpreadsheet();
 
-  withReentryGuard("DAILY_SORTS_RUNNING", timeConstants.FIVE_MINUTES, () => {
+  withReentryGuard("DAILY_SORTS_RUNNING", 5 * ONE_MINUTE_MS, () => {
     new OurFinances(spreadsheet).dailySorts();
   });
 }
@@ -262,14 +263,10 @@ export function GAS_saveContainerIdOnce() {
 }
 
 export function GAS_sendDailyHtmlEmail() {
-  withReentryGuard(
-    "SEND_DAILY_EMAIL_RUNNING",
-    timeConstants.THIRTY_SECONDS,
-    () => {
-      const spreadsheet = getFinancesSpreadsheet();
-      new OurFinances(spreadsheet).sendDailyHtmlEmail();
-    }
-  );
+  withReentryGuard("SEND_DAILY_EMAIL_RUNNING", 30 * ONE_SECOND_MS, () => {
+    const spreadsheet = getFinancesSpreadsheet();
+    new OurFinances(spreadsheet).sendDailyHtmlEmail();
+  });
 }
 
 export function GAS_showAllAccounts() {

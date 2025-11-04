@@ -35,30 +35,29 @@ export function onSelectionChange(e: any): void {
 
   const key = getNamespaceKey("onSelectionChange", sheetName);
 
-  // If fired again within 1s, it will be skipped.
   withGuardedLock(
     {
       key,
       lockLabel: key,
-      // idempotency (skip if same sheet/step claimed within TTL)
-      idemToken: token,
-      idemTtlSec: 30, // same as your previous tryClaimKey
-      idemScope: "document", // keep consistent with your cache usage
-      // per-user per-key debounce
-      userDebounceMs: 2 * ONE_SECOND_MS, // tune to taste
-      userDebounceMode: "per-key", // don’t block other keys/sheets
 
-      reentryTtlMs: ONE_SECOND_MS, // cooldown between events - short anti-spam debounce
+      // idempotency: at most 1 fix per sheet every 61s
+      idemToken: token,
+      idemTtlSec: 61,
+      idemScope: "document",
+
+      // per-user debounce: ignore super-fast repeats
+      userDebounceMs: 2 * ONE_SECOND_MS,
+      userDebounceMode: "per-key",
+
+      // short anti-spam reentry guard
+      reentryTtlMs: ONE_SECOND_MS,
       reentryOptions: {
         releaseOnFinish: true,
         scope: "document",
-        lockMs: 150, // hold the reentry lock for a short time
+        lockMs: 150,
       },
-      // per-sheet cooldown
-      cooldownMs: 15 * ONE_SECOND_MS, // 15s per-sheet throttle
-      // cooldownKey defaults to key; cooldownScope defaults to "document"
-      cooldownOnError: false, // default — start cooldown even if it fails
-      lockTimeoutMs: 200, // maximum wait time to get exclusive sheet access
+
+      lockTimeoutMs: 200,
     },
     () => {
       setupWorkflowsOnce();

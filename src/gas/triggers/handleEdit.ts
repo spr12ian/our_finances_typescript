@@ -2,7 +2,7 @@
 
 import { getErrorMessage } from "@lib/errors";
 import { withDocumentLock } from "@lib/WithDocumentLock";
-import { FastLog, functionStart } from "@logging";
+import { FastLog } from "@logging";
 import { onEditRecalcBalances } from "../../features/account/handlers/onEditRecalcBalances";
 
 /** Keep this lean and at top-level so it's initialized once */
@@ -39,7 +39,6 @@ let __COMPILED_RULES_OPT: CompiledRule[] | null = null;
 // ─────────────────────────────────────────────────────────
 export function handleEdit(e: SheetsOnEdit): void {
   const functionName = handleEdit.name;
-  const finish = functionStart(functionName);
 
   try {
     // Ultra-cheap sanity checks; use only the event object
@@ -49,6 +48,7 @@ export function handleEdit(e: SheetsOnEdit): void {
     }
 
     const range = e.range;
+    FastLog.log(`handleEdit → Edit at ${range.getA1Notation()}`);
 
     // ── tiny per-cell debounce to suppress “write → re-trigger storm”
     const cache = CacheService.getDocumentCache();
@@ -126,7 +126,11 @@ export function handleEdit(e: SheetsOnEdit): void {
 
         const ok = run(); // returns undefined if busy (we skip gracefully)
         if (ok === undefined) {
-          FastLog.warn(`handleEdit: doc lock busy — skipped "${rule.note || 'unnamed rule'}"`);
+          FastLog.warn(
+            `handleEdit: doc lock busy — skipped "${
+              rule.note || "unnamed rule"
+            }"`
+          );
         }
       } catch (err) {
         FastLog.error("handleEdit rule error", getErrorMessage(err));
@@ -140,8 +144,6 @@ export function handleEdit(e: SheetsOnEdit): void {
   } catch (err) {
     FastLog.error(functionName, getErrorMessage(err));
     // Do NOT rethrow in a trigger; just log.
-  } finally {
-    finish();
   }
 }
 
@@ -248,6 +250,7 @@ function __getEventPartsOpt(e: SheetsOnEdit) {
 function isSingleCell(range: GoogleAppsScript.Spreadsheet.Range): boolean {
   return range.getNumRows() === 1 && range.getNumColumns() === 1;
 }
+
 // ── PATCHED: pulled out from isSingleCellActuallyChanged() so we can use it early
 function normalizeForChangeCheck(s: string | undefined): string {
   if (s == null) return "";

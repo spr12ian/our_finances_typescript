@@ -197,9 +197,9 @@ export function withGuardedLock<T>(
   // --- 3) Run wrapped function (with document lock) ---
   const runWithLock = (): T | undefined => {
     if (disableLock) return fn();
-    const res: any = withDocumentLock(finalLockLabel, fn, lockTimeoutMs);
-    if (typeof res === "function") return (res as () => T)();
-    return res as T;
+
+    const wrapped = withDocumentLock(finalLockLabel, fn, lockTimeoutMs);
+    return wrapped();
   };
 
   // --- 4) Reentry guard (short debounce), then run ---

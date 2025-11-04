@@ -2,7 +2,7 @@
 import { shouldHandleSelection } from "@gas/shouldHandleSelection";
 import { getNamespaceKey } from "@lib/getNamespaceKey";
 import { idempotencyKey } from "@lib/idempotency";
-import { FastLog } from "@lib/logging";
+import { FastLog, withLog } from "@lib/logging";
 import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { withGuardedLock } from "@lib/withGuardedLock";
 import { setupWorkflowsOnce } from "@workflow";
@@ -60,8 +60,8 @@ export function onSelectionChange(e: any): void {
       lockTimeoutMs: 200,
     },
     () => {
-      setupWorkflowsOnce();
-      startWorkflow(wf, step, {
+      withLog("setupWorkflowsOnce", setupWorkflowsOnce)();
+      withLog("startWorkflow", startWorkflow)(wf, step, {
         sheetName,
         startedBy: "onSelectionChange",
       });

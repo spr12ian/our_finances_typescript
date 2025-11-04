@@ -81,7 +81,7 @@ export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
   }
 
   // We do have an ID, but neither active nor src match → need openById.
-  // Simple triggers (onOpen/onEdit/onChange simple) cannot open other files.
+  // Simple triggers (onOpen/onEdit/handleChange simple) cannot open other files.
   // Heuristics: simple triggers lack triggerUid and authMode.
   const isSimpleTrigger =
     !e || // ← treat undefined event as simple

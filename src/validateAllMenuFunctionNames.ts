@@ -5,7 +5,7 @@ import { buildSectionsMenu } from "@gas/menus/buildSectionsMenu";
 
 const BUILDERS = [buildGasMenu, buildSectionsMenu];
 
-const IGNORE_NAMES: string[] = ["onChange", "onEdit", "onOpen"]; // Simple triggers
+const IGNORE_NAMES: string[] = ["handleChange", "onEdit", "onOpen"]; // Simple triggers
 IGNORE_NAMES.push("dailySorts"); // Trigger
 IGNORE_NAMES.push("exportFormulasToDrive"); // Manual, replacing some formulas ongoing
 IGNORE_NAMES.push("helloWorld"); // Manual, to test build

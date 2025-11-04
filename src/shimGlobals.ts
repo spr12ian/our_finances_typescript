@@ -32,7 +32,7 @@ export const shimGlobals = [
   "goToSheetXfersMismatch",
   "helloWorld",
   "logSheetNames",
-  "onChange",
+  "onChangeTrigger",
   "onEdit",
   "onEditTrigger",
   "onOpen",

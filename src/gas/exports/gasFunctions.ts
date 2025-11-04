@@ -38,10 +38,10 @@ import { ONE_MINUTE_MS } from "../../lib/timeConstants";
 import { withReentryGuard } from "../../lib/withReentryGuard";
 import { OurFinances } from "../../OurFinances";
 import { validateAllMenuFunctionNames } from "../../validateAllMenuFunctionNames";
+import { handleChange } from "../triggers/handleChange";
 import { handleEdit } from "../triggers/handleEdit";
 import { handleOpen } from "../triggers/handleOpen";
 import { applyDescriptionReplacements } from "./applyDescriptionReplacements";
-import { onChange } from "./onChange";
 import { onEdit } from "./onEdit";
 import { onOpen } from "./onOpen";
 import { onSelectionChange } from "./onSelectionChange";
@@ -206,8 +206,10 @@ export function GAS_showMonthlyAccounts() {
   new OurFinances(spreadsheet).bankAccounts.showMonthly();
 }
 
-export function GAS_onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
-  withLog(GAS_onChange.name, onChange)(e);
+export function GAS_onChangeTrigger(
+  e: GoogleAppsScript.Events.SheetsOnChange
+): void {
+  withLog(GAS_onChangeTrigger.name, handleChange)(e);
 }
 
 export function GAS_onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {

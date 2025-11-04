@@ -60,7 +60,21 @@ export function onSelectionChange(e: any): void {
       lockTimeoutMs: 200,
     },
     () => {
-      withLog("setupWorkflowsOnce", setupWorkflowsOnce)();
+      const ready = withLog(
+        "setupWorkflowsOnce",
+        setupWorkflowsOnce
+      )({
+        lockTimeoutMs: 200, // fail fast in simple trigger
+        allowRetryTrigger: false, // don't create ScriptApp triggers here
+      });
+
+      if (!ready) {
+        FastLog.warn(
+          "onSelectionChange: engine not ready, skipping fixSheetFlow"
+        );
+        return;
+      }
+
       withLog("startWorkflow", startWorkflow)(wf, step, {
         sheetName,
         startedBy: "onSelectionChange",

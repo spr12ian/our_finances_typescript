@@ -10,7 +10,7 @@ import { shimGlobals } from "./shimGlobals";
   const SIMPLE_TRIGGERS = new Set([
     "onOpen",
     "onEdit",
-    "onChange",
+    "handleChange",
     "onSelectionChange",
   ]);
 

@@ -8,15 +8,16 @@ import { startWorkflow } from "@workflow/workflowEngine";
 import { getFinancesSpreadsheet } from "src/getFinancesSpreadsheet";
 import { withReentryGuard } from "../../lib/withReentryGuard";
 
-export function onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
+export function handleChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
   const ignored = new Set([
     "FORMAT",
     "GRID_PROPERTIES_CHANGED",
     "INSERT_ROW",
+    "OTHER",
     "PROTECTED_RANGE",
   ]);
 
-  const changeType = String(e.changeType || "OTHER");
+  const changeType = String(e.changeType);
   if (ignored.has(changeType)) {
     FastLog.log(`Ignored changeType: ${changeType}`);
     return;
@@ -25,10 +26,10 @@ export function onChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
   switch (e.changeType) {
     case "EDIT":
       if (isProgrammaticEdit()) {
-        FastLog.log("onChange → Ignoring programmatic EDIT from our code");
+        FastLog.log("handleChange → Ignoring programmatic EDIT from our code");
         return;
       } else {
-        FastLog.log("onChange → Some other script changed the sheet");
+        FastLog.log("handleChange → Some other script changed the sheet");
         return;
       }
       break;
@@ -61,7 +62,7 @@ function startFlow(sheet: Sheet) {
       {
         sheetName: sheet.name,
         row: 1,
-        startedBy: "onChange",
+        startedBy: "handleChange",
       }
     );
   }

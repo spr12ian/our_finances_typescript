@@ -237,12 +237,6 @@ export function GAS_onSelectionChange(e: any): void {
   withLog(GAS_onSelectionChange.name, onSelectionChange)(e);
 }
 
-export function GAS_showOpenAccounts() {
-  const spreadsheet = getFinancesSpreadsheet();
-  const ourFinances = new OurFinances(spreadsheet);
-  ourFinances.bankAccounts.showOpenAccounts();
-}
-
 export function GAS_purgeQueuesOldData(): void {
   purgeQueuesOldData();
 }
@@ -252,8 +246,13 @@ export function GAS_queueSetup(): void {
 }
 
 export function GAS_queueWorker(): void {
-  setupWorkflowsOnce();
-  queueWorker();
+  withLog(GAS_queueWorker.name, queueWorker)();
+}
+
+export function GAS_showOpenAccounts() {
+  const spreadsheet = getFinancesSpreadsheet();
+  const ourFinances = new OurFinances(spreadsheet);
+  ourFinances.bankAccounts.showOpenAccounts();
 }
 
 export function GAS_saveContainerIdOnce() {

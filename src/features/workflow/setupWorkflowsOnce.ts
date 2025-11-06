@@ -2,10 +2,12 @@
 import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { FastLog, functionStart } from "@logging";
 import type { QueueEnqueueOptions } from "@queue";
+import { queueJob } from "@queue/queueJob";
 import type { EnqueueFn } from "./engineState";
 import { isEngineConfigured, setEnqueue } from "./engineState";
 import { setupWorkflows } from "./setupWorkflows";
-import { queueJob } from "@queue/queueJob";
+
+const DEFAULT_LOCK_TIMEOUT_MS = 4 * ONE_SECOND_MS;
 
 export interface SetupWorkflowsOptions {
   /** Max time to wait for the ScriptLock (ms). Default: 4s */
@@ -22,23 +24,30 @@ const enqueueAdapter: EnqueueFn = (parameters, options) => {
   return res;
 };
 
+let _ready = false;
+
 /**
  * Ensure the workflow engine is configured exactly once.
  * Returns true iff the engine is ready (enqueue is bound).
  */
-export function setupWorkflowsOnce(
-  opts: SetupWorkflowsOptions = {}
-): boolean {
+export function setupWorkflowsOnce(opts: SetupWorkflowsOptions = {}): boolean {
   const fn = setupWorkflowsOnce.name;
   const finish = functionStart(fn);
-  const {
-    lockTimeoutMs = 4 * ONE_SECOND_MS,
-    allowRetryTrigger = true,
-  } = opts;
+
+  const { lockTimeoutMs = DEFAULT_LOCK_TIMEOUT_MS, allowRetryTrigger = true } =
+    opts;
 
   try {
     // Already configured globally?
+    if (_ready && isEngineConfigured()) {
+      FastLog.log(fn, "Already configured (fast path)");
+      return true;
+    }
+
+    // Global engine state is configured but local flag isn't yet
     if (isEngineConfigured()) {
+      _ready = true;
+      FastLog.log(fn, "Already configured (engineState)");
       return true;
     }
 
@@ -46,9 +55,9 @@ export function setupWorkflowsOnce(
     const lock = LockService.getScriptLock();
     if (!lock.tryLock(lockTimeoutMs)) {
       FastLog.warn(
-        `${fn}: not ready (configured=${isEngineConfigured()}) —${
-          allowRetryTrigger ? " scheduling retry" : " skipping retry"
-        }`
+        fn,
+        `Not ready (configured=${isEngineConfigured()}, localReady=${_ready}) — ` +
+          (allowRetryTrigger ? "scheduling retry" : "skipping retry")
       );
 
       if (allowRetryTrigger) {
@@ -63,7 +72,10 @@ export function setupWorkflowsOnce(
         setEnqueue(enqueueAdapter);
         setupWorkflows();
         FastLog.log(`${fn}: engine configured`);
+      } else {
+        FastLog.log(`${fn}: engine already configured after acquiring lock`);
       }
+      _ready = true;
 
       return true;
     } finally {

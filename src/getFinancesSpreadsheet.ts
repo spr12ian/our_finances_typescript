@@ -1,9 +1,6 @@
 // getFinancesSpreadsheet.ts
 import { Spreadsheet } from "@domain";
 
-// Broadest event type that still lets us read .source / .authMode when present
-type AnyEvent = GoogleAppsScript.Events.AppsScriptEvent | undefined;
-
 // ────────────────────────────────────────────────────────────
 // Per-execution memoization
 // GAS provides a fresh VM per execution, but within one execution this helps
@@ -15,28 +12,13 @@ const memo: {
   wrapped?: Spreadsheet; // your wrapper
 } = {};
 
-function wrapAndMemoize(
-  gas: GoogleAppsScript.Spreadsheet.Spreadsheet,
-  id?: string
-): Spreadsheet {
-  // If we already wrapped this exact object, reuse it.
-  if (memo.gas === gas && memo.wrapped) return memo.wrapped;
-  memo.gas = gas;
-  memo.id = id ?? gas.getId();
-  memo.wrapped = new Spreadsheet(gas);
-  return memo.wrapped;
-}
-
-// Optional: call if you change properties elsewhere and want to force re-read
-export function resetFinancesSpreadsheetCache(): void {
-  memo.id = undefined;
-  memo.gas = undefined;
-  memo.wrapped = undefined;
-}
+// Broadest event type that still lets us read .source / .authMode when present
+type AnyEvent = GoogleAppsScript.Events.AppsScriptEvent | undefined;
 
 export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
   Logger.log("getFinancesSpreadsheet called");
-  // Fastest path: if we’ve already resolved this during this execution, return it.
+
+  // Per-execution memo
   if (memo.wrapped && memo.gas) return memo.wrapped;
 
   // Resolve configured ID once
@@ -47,11 +29,25 @@ export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
     up.getProperty("FINANCES_SPREADSHEET_ID") ??
     "";
 
-  // Candidate sources that don’t require extra scopes
-  const active = Spreadsheet.getActiveWithBackoff() || null;
   const src = (e as any)?.source as
     | GoogleAppsScript.Spreadsheet.Spreadsheet
     | undefined;
+
+  // Heuristic: simple triggers don’t expose triggerUid/authMode
+  const isSimpleTrigger =
+    !e ||
+    (typeof (e as any).triggerUid === "undefined" &&
+      typeof (e as any).authMode === "undefined");
+
+  // Determine active spreadsheet based on trigger type:
+  //   - Simple triggers → single cheap call to SpreadsheetApp.getActiveSpreadsheet()
+  //   - Non-simple      → defensive backoff wrapper
+  // use e.source if present; fall back to active spreadsheet if not
+  const active =
+    src ??
+    (isSimpleTrigger
+      ? SpreadsheetApp.getActiveSpreadsheet() || null
+      : Spreadsheet.getActiveWithBackoff() || null);
 
   // Fast path: configuredId present and matches active/src
   if (configuredId) {
@@ -80,25 +76,20 @@ export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
     );
   }
 
-  // We do have an ID, but neither active nor src match → need openById.
-  // Simple triggers (onOpen/onEdit/handleChange simple) cannot open other files.
-  // Heuristics: simple triggers lack triggerUid and authMode.
-  const isSimpleTrigger =
-    !e || // ← treat undefined event as simple
-    (typeof (e as any).triggerUid === "undefined" &&
-      typeof (e as any).authMode === "undefined");
-
+  // We do have an ID, but simple triggers cannot safely open other files by ID.
   if (isSimpleTrigger) {
-    // Don’t attempt openById from a simple trigger.
-    // Fall back to the container/active spreadsheet.
-    if (src && typeof (src as any).getId === "function")
+    if (src && typeof (src as any).getId === "function") {
       return wrapAndMemoize(src as any);
-    if (active) return wrapAndMemoize(active);
+    }
+    if (active) {
+      return wrapAndMemoize(active);
+    }
     throw new Error("Simple trigger: no source/active spreadsheet available.");
   }
 
+  // Non-simple trigger (installable/manual) → safe to use openByIdWithBackoff
   try {
-    const gas = Spreadsheet.openByIdWithBackoff(configuredId); // requires scopes
+    const gas = Spreadsheet.openByIdWithBackoff(configuredId);
     return wrapAndMemoize(gas, configuredId);
   } catch (err: any) {
     const msg = String(err?.message ?? "");
@@ -114,4 +105,23 @@ export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
     }
     throw err;
   }
+}
+
+// Optional: call if you change properties elsewhere and want to force re-read
+export function resetFinancesSpreadsheetCache(): void {
+  memo.id = undefined;
+  memo.gas = undefined;
+  memo.wrapped = undefined;
+}
+
+function wrapAndMemoize(
+  gas: GoogleAppsScript.Spreadsheet.Spreadsheet,
+  id?: string
+): Spreadsheet {
+  // If we already wrapped this exact object, reuse it.
+  if (memo.gas === gas && memo.wrapped) return memo.wrapped;
+  memo.gas = gas;
+  memo.id = id ?? gas.getId();
+  memo.wrapped = new Spreadsheet(gas);
+  return memo.wrapped;
 }

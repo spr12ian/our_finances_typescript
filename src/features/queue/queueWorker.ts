@@ -6,7 +6,11 @@ import { getErrorMessage } from "@lib/errors";
 import { ONE_DAY_MS, ONE_SECOND_MS } from "@lib/timeConstants";
 import { withScriptLock } from "@lib/withScriptLock";
 import { FastLog, functionStart } from "@logging";
-import type { RunStepJob, SerializedRunStepParameters } from "@workflow";
+import {
+  setupWorkflowsOnce,
+  type RunStepJob,
+  type SerializedRunStepParameters,
+} from "@workflow";
 import { runStep } from "@workflow/workflowEngine";
 import {
   COL,
@@ -33,8 +37,18 @@ const MAX_CELL_LENGTH = 2000;
 /** Time-driven worker entrypoint (set to run each minute). */
 export function queueWorker(): void {
   const fn = queueWorker.name;
-  const finish = functionStart(fn);
   try {
+    const ready = setupWorkflowsOnce({
+      lockTimeoutMs: 200, // or 400, as you prefer
+      allowRetryTrigger: true,
+    });
+
+    if (!ready) {
+      FastLog.warn(fn, "Engine not ready; skipping this tick");
+      return;
+    }
+
+    // At this point the engine is configured and enqueueFn is wired.
     withScriptLock(() => {
       processQueueBatch_(MAX_BATCH, WORKER_BUDGET_MS);
     });
@@ -42,8 +56,6 @@ export function queueWorker(): void {
     const errorMessage = getErrorMessage(err);
     FastLog.error(fn, errorMessage);
     throw new Error(errorMessage);
-  } finally {
-    finish();
   }
 }
 

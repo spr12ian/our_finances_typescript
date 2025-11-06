@@ -209,6 +209,10 @@ export class Sheet {
             columnDataRange
               .setNumberFormat("0.00%")
               .setHorizontalAlignment("right");
+          } else if (trimmed.endsWith("(#)")) {
+            columnDataRange
+              .setNumberFormat("0")
+              .setHorizontalAlignment("right");
           } else {
             // Default to text
             columnDataRange.setNumberFormat("@").setHorizontalAlignment("left");

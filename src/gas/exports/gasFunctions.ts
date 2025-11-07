@@ -28,6 +28,7 @@ import { validateAccountKeys } from "@sheets/validateAccountKeys";
 import type {
   FixSheetFlowInput,
   FormatSheetFlowInput,
+  TrimSheetFlowInput,
   UpdateOpenBalancesFlowInput,
 } from "@workflow";
 import { setupWorkflowsOnce } from "@workflow";
@@ -99,15 +100,16 @@ export function GAS_ensureQueueDateFormats() {
 }
 
 export function GAS_example() {
+  const startedBy = GAS_example.name;
   const workFlowName = "exampleFlow";
   const firstStep = "exampleStep1";
   const input = {
     parameter1: "Example string",
     parameter2: 42,
-    startedBy: "GAS_example",
+    startedBy,
   } satisfies ExampleFlowInput;
 
-  startWF(workFlowName, firstStep, input);
+  withLog(startedBy, startWF)(workFlowName, firstStep, input);
 }
 
 export function GAS_exportFormulasToDrive() {
@@ -115,25 +117,27 @@ export function GAS_exportFormulasToDrive() {
 }
 
 export function GAS_fixSheet() {
+  const startedBy = GAS_fixSheet.name;
   const workFlowName = "fixSheetFlow";
   const firstStep = "fixSheetStep1";
   const input = {
     sheetName: getActiveSheetName(),
-    startedBy: "GAS_fixSheet",
+    startedBy,
   } satisfies FixSheetFlowInput;
 
-  startWF(workFlowName, firstStep, input);
+  withLog(startedBy, startWF)(workFlowName, firstStep, input);
 }
 
 export function GAS_formatSheet() {
+  const startedBy = GAS_formatSheet.name;
   const workFlowName = "formatSheetFlow";
   const firstStep = "formatSheetStep1";
   const input = {
     sheetName: getActiveSheetName(),
-    startedBy: "GAS_formatSheet",
+    startedBy,
   } satisfies FormatSheetFlowInput;
 
-  startWF(workFlowName, firstStep, input);
+  withLog(startedBy, startWF)(workFlowName, firstStep, input);
 }
 
 export function GAS_goToSheetCategories() {
@@ -249,12 +253,6 @@ export function GAS_queueWorker(): void {
   withLog(GAS_queueWorker.name, queueWorker)();
 }
 
-export function GAS_showOpenAccounts() {
-  const spreadsheet = getFinancesSpreadsheet();
-  const ourFinances = new OurFinances(spreadsheet);
-  ourFinances.bankAccounts.showOpenAccounts();
-}
-
 export function GAS_saveContainerIdOnce() {
   const id = SpreadsheetApp.getActiveSpreadsheet().getId();
   PropertiesService.getScriptProperties().setProperty(
@@ -275,6 +273,12 @@ export function GAS_showAllAccounts() {
   new OurFinances(spreadsheet).showAllAccounts();
 }
 
+export function GAS_showOpenAccounts() {
+  const spreadsheet = getFinancesSpreadsheet();
+  const ourFinances = new OurFinances(spreadsheet);
+  ourFinances.bankAccounts.showOpenAccounts();
+}
+
 export function GAS_sortSheets() {
   const spreadsheet = getFinancesSpreadsheet();
   new OurFinances(spreadsheet).sortSheets();
@@ -290,16 +294,15 @@ export function GAS_trimAllSheets() {
 }
 
 export function GAS_trimSheet() {
-  setupWorkflowsOnce();
-  startWorkflow("trimSheetFlow", "trimSheetStep1", {
+  const startedBy = GAS_trimSheet.name;
+  const workFlowName = "trimSheetFlow";
+  const firstStep = "trimSheetStep1";
+  const input = {
     sheetName: getActiveSheetName(),
-    startedBy: "GAS_trimSheet",
-  });
-}
+    startedBy,
+  } satisfies TrimSheetFlowInput;
 
-export function GAS_updateAllDependencies() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).updateAllDependencies();
+  withLog(startedBy, startWF)(workFlowName, firstStep, input);
 }
 
 export function GAS_updateAccountSheetBalances() {
@@ -307,14 +310,20 @@ export function GAS_updateAccountSheetBalances() {
   new OurFinances(spreadsheet).updateAccountSheetBalances();
 }
 
+export function GAS_updateAllDependencies() {
+  const spreadsheet = getFinancesSpreadsheet();
+  new OurFinances(spreadsheet).updateAllDependencies();
+}
+
 export function GAS_updateOpenBalances() {
+  const startedBy = GAS_updateOpenBalances.name;
   const workFlowName = "updateOpenBalancesFlow";
   const firstStep = "init";
   const input = {
-    startedBy: "GAS_updateOpenBalances",
+    startedBy,
   } satisfies UpdateOpenBalancesFlowInput;
 
-  startWF(workFlowName, firstStep, input);
+  withLog(startedBy, startWF)(workFlowName, firstStep, input);
 }
 
 export function GAS_updateSpreadsheetSummary() {

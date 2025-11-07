@@ -8,6 +8,7 @@ import type { SheetConstructor, SheetFactory } from "./sheetFactoryTypes";
 export const sheetFactories: Record<string, SheetFactory> = {
   Assets: factoryFromClass(SheetClasses.Assets),
   "Bank accounts": factoryFromClass(SheetClasses.BankAccounts),
+  "Our money": factoryFromClass(SheetClasses.OurMoney),
 };
 
 type FactoryWithBuild<T> = SheetFactory<T> & { build: SheetFactory<T> };

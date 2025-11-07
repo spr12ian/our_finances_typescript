@@ -21,20 +21,43 @@ export function getTriggerEventSheet(
 
   if (!e) throw new Error(`${fn}: No event object provided`);
 
+  // 1) Range-based events: onEdit, onChange (with range), onSelectionChange
   const range = (e as any).range;
-  if (!range || typeof range.getSheet !== "function") {
-    throw new Error(
-      `${fn}: Event object missing a valid range or getSheet() method`
-    );
+  if (range && typeof range.getSheet === "function") {
+    try {
+      const sheet = range.getSheet();
+      if (!sheet) {
+        throw new Error(`${fn}: range.getSheet() returned null/undefined`);
+      }
+      return sheet;
+    } catch (err) {
+      throw new Error(`${fn}: Error calling range.getSheet(): ${String(err)}`);
+    }
   }
 
-  try {
-    const sheet = range.getSheet();
-    if (!sheet) {
-      throw new Error(`${fn}: getSheet() returned null/undefined`);
+  // 2) Source-based events: onOpen (installable / simple)
+  const source = (e as any).source;
+  if (source && typeof source.getActiveSheet === "function") {
+    try {
+      const sheet = source.getActiveSheet();
+      if (!sheet) {
+        throw new Error(`${fn}: source.getActiveSheet() returned null/undefined`);
+      }
+      return sheet;
+    } catch (err) {
+      throw new Error(`${fn}: Error calling source.getActiveSheet(): ${String(err)}`);
     }
-    return sheet;
-  } catch (err) {
-    throw new Error(`${fn}: Error calling getSheet(): ${String(err)}`);
+  }
+
+  // 3) Completely unexpected shape
+  try {
+    const eJson = JSON.stringify(e);
+    throw new Error(
+      `${fn}: Event object missing both range and source.getActiveSheet(): ${eJson}`
+    );
+  } catch {
+    throw new Error(
+      `${fn}: Event object missing both range and source.getActiveSheet(), and could not stringify`
+    );
   }
 }

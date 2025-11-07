@@ -41,11 +41,11 @@ export const MetaAccountSheet = {
 
 export const MetaAssets = {
   CELLS: {
-    BANK_ACCOUNTS_VALUE: "B2",
-    INVESTMENTS_VALUE: "B3",
-    OWED_TO_US_VALUE: "B6",
-    PENSIONS_VALUE: "B5",
-    PROPERTY_VALUE: "B4",
+    BANK_ACCOUNTS_CELL: "B2",
+    INVESTMENTS_CELL: "B3",
+    OWED_TO_US_CELL: "B6",
+    PENSIONS_CELL: "B5",
+    PROPERTY_CELL: "B4",
   } as const satisfies Record<string, string>,
   SHEET: { NAME: "Assets" },
 };
@@ -209,6 +209,16 @@ export const MetaMoneyOwedToUs = {
 
 export const MetaNotInTransactionCategories = {
   SHEET: { NAME: "Not in transaction categories" },
+};
+
+export const MetaOurMoney = {
+  CELLS: {
+    AS_AT_DATE_CELL: "A2",
+    TOTAL_MONEY_CELL: "A5",
+    PENSION_FUNDS_CELL: "A8",
+    IN_THE_BANK_CELL: "A11",
+  } as const satisfies Record<string, string>,
+  SHEET: { NAME: "Our money" },
 };
 
 export const MetaPensions = {

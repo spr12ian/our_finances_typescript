@@ -1,6 +1,7 @@
 import type { Sheet, Spreadsheet } from "@domain";
 import { MetaAccountSheet as Meta, MetaBankAccounts } from "@lib/constants";
 import { getErrorMessage } from "@lib/errors";
+import { FastLog } from "@lib/logging";
 import { xLookup } from "@lib/xLookup";
 import { DescriptionReplacements } from "@sheets/classes/DescriptionReplacements";
 import { BaseSheet } from "../core";
@@ -21,7 +22,10 @@ export class AccountSheet extends BaseSheet {
   }
 
   get currentEndingBalance(): number {
-    const { lastRow } = this.sheet.getTrueDataBounds();
+    const lastRow = this.lastNonFutureRow;
+    FastLog.log(
+      `AccountSheet:currentEndingBalance: ${this.accountKey} lastNonFutureRow=${lastRow}`
+    );
     const v = this.sheet.raw.getRange(lastRow, Meta.COLUMNS.BALANCE).getValue();
 
     // Coerce to number safely
@@ -46,6 +50,17 @@ export class AccountSheet extends BaseSheet {
     }
 
     return n;
+  }
+
+  get lastNonFutureRow(): number {
+    const values = this.sheet.getRange("E:E").getValues();
+    for (let i = values.length - 1; i >= 0; i--) {
+      const val = values[i][0];
+      if (val.toString().trim().toUpperCase() !== "FUTURE") {
+        return i + 1; // 1-indexed row
+      }
+    }
+    return 0; // if every cell is 'FUTURE'
   }
 
   applyDescriptionReplacements() {
@@ -204,7 +219,6 @@ export class AccountSheet extends BaseSheet {
   private setColumnWidths(sheet: Sheet) {
     const finish = this.start(this.setColumnWidths.name);
     try {
-
       const dateWidth = this.getColumnWidth(Meta.COLUMNS.DATE);
       this.log(`dateWidth: ${dateWidth}`);
 

@@ -9,6 +9,11 @@ export class OurMoney extends BaseSheet {
     super(Meta.SHEET.NAME, spreadsheet);
   }
 
+  @WithLog("OurMoney:fixSheet")
+  fixSheet(): void {
+    this.formatSheet();
+  }
+
   @WithLog("OurMoney:formatSheet")
   formatSheet(): void {
     const s = this.sheet;

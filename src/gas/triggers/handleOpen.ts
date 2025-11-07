@@ -6,6 +6,8 @@ import { setupWorkflowsOnce } from "@workflow";
 import { isEngineConfigured } from "@workflow/engineState";
 import { startWorkflow } from "@workflow/workflowEngine";
 
+const IGNORE_SHEETS = new Set([QUEUE_SHEET_NAME, DEAD_SHEET_NAME]);
+
 type SheetsOnOpen = GoogleAppsScript.Events.SheetsOnOpen;
 
 // ---------------------------
@@ -13,10 +15,20 @@ type SheetsOnOpen = GoogleAppsScript.Events.SheetsOnOpen;
 // ---------------------------
 export function handleOpen(e: SheetsOnOpen): void {
   try {
-    if (!e || !e.source || !e.source.getActiveSheet()) return;
+    if (!e || !e.source || !e.source.getActiveSheet()) {
+      FastLog.warn(
+        "handleOpen: no active sheet or missing event info; skipping open-time workflows"
+      );
+      return;
+    }
 
     const sheetName = e.source.getActiveSheet().getName();
-    if (sheetName === QUEUE_SHEET_NAME || sheetName === DEAD_SHEET_NAME) return; // avoid feedback loops
+    if (IGNORE_SHEETS.has(sheetName)) {
+      FastLog.info(
+        `handleOpen: ignoring sheet "${sheetName}"; skipping open-time workflows`
+      );
+      return;
+    }
 
     const ready = setupWorkflowsOnce(); // returns true/false in your impl
     if (!ready || !isEngineConfigured()) {

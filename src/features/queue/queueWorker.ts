@@ -140,13 +140,17 @@ function purgeQueueOlderThanDays(
 function processQueueBatch_(maxJobs: number, budgetMs: number): void {
   const fn = processQueueBatch_.name;
   const finish = functionStart(fn);
+
   try {
     const startedMs = Date.now();
     const nowUtc = new Date(); // comparisons are by epoch ms; storage remains UTC
     const sheet = getQueueSheet_();
 
     const lastRow = sheet.getLastRow();
-    if (lastRow < 2) return; // headers only
+    if (lastRow < 2) {
+      FastLog.log(fn, "No data rows (headers only); exiting");
+      return; // headers only
+    }
 
     const range = sheet.getRange(2, 1, lastRow - 1, HEADERS.length);
     const values = range.getValues() as JobRow[];
@@ -161,7 +165,15 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
         return !nextRun || nextRun.getTime() <= nowUtc.getTime();
       });
 
-    if (!runnable.length) return;
+    FastLog.log(
+      fn,
+      `Scanned ${values.length} rows → runnable=${runnable.length}`
+    );
+
+    if (!runnable.length) {
+      FastLog.log(fn, "No runnable jobs; exiting");
+      return;
+    }
 
     // sort by priority asc then enqueued_at asc
     runnable.sort((a, b) => {
@@ -178,6 +190,12 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
     // claim jobs (small N, individual writes are OK)
     const toClaim = runnable.slice(0, Math.min(maxJobs, runnable.length));
     const workerId = `w-${Utilities.getUuid().slice(0, 8)}`;
+
+    FastLog.info(
+      fn,
+      `Claiming ${toClaim.length} job(s) (workerId=${workerId}, maxJobs=${maxJobs}, budgetMs=${budgetMs})`
+    );
+
     for (const item of toClaim) {
       const absRow = item.idx + 2;
       sheet.getRange(absRow, COL.STATUS).setValue(STATUS.RUNNING);
@@ -187,12 +205,24 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
     }
     SpreadsheetApp.flush();
 
-    // Track which rows we actually started
+    // Counters for summary logging
     const startedRows = new Set<number>();
+    let succeeded = 0;
+    let retried = 0;
+    let movedToDead = 0;
+    let timedOutBeforeStart = 0;
 
     // process jobs
     for (const item of toClaim) {
-      if (Date.now() - startedMs > budgetMs) break;
+      const elapsed = Date.now() - startedMs;
+      if (elapsed > budgetMs) {
+        timedOutBeforeStart++;
+        FastLog.warn(
+          fn,
+          `Budget exhausted before starting row idx=${item.idx} (elapsedMs=${elapsed}, budgetMs=${budgetMs})`
+        );
+        break;
+      }
 
       const absRow = item.idx + 2;
       startedRows.add(absRow);
@@ -204,6 +234,7 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
 
       try {
         dispatchJob_(job);
+        succeeded++;
         sheet.getRange(absRow, COL.STATUS).setValue(STATUS.DONE);
         sheet.getRange(absRow, COL.LAST_ERROR).setValue("");
       } catch (err) {
@@ -211,15 +242,16 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
         FastLog.error(fn, errorMessage);
 
         const attempts = Number(job.attempts) + 1;
-        FastLog.info(fn, `attempts=${attempts}`);
+        FastLog.info(fn, `Job ${job.id} attempts=${attempts}`);
+        sheet.getRange(absRow, COL.ATTEMPTS).setValue(attempts);
 
         if (attempts >= MAX_ATTEMPTS) {
-          sheet.getRange(absRow, COL.ATTEMPTS).setValue(attempts);
           sheet.getRange(absRow, COL.STATUS).setValue(STATUS.ERROR);
           sheet
             .getRange(absRow, COL.LAST_ERROR)
             .setValue(toCellMsg_(errorMessage));
           moveToDeadIfConfigured_(absRow);
+          movedToDead++;
           continue;
         }
 
@@ -231,8 +263,9 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
         const jitter = Math.floor(Math.random() * 3 * ONE_SECOND_MS); // de-sync workers
         const nextWhen = new Date(Date.now() + backoff + jitter);
 
-        sheet.getRange(absRow, COL.ATTEMPTS).setValue(attempts);
+        retried++;
         // NEXT_RUN_AT in UTC with display format applied
+        sheet.getRange(absRow, COL.ATTEMPTS).setValue(attempts);
         DateHelper.writeUtc(sheet.getRange(absRow, COL.NEXT_RUN_AT), nextWhen);
         sheet.getRange(absRow, COL.STATUS).setValue(STATUS.PENDING);
         sheet
@@ -250,6 +283,15 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
         sheet.getRange(absRow, COL.STARTED_AT).setValue("");
       }
     }
+
+    const totalElapsed = Date.now() - startedMs;
+    FastLog.info(
+      fn,
+      `Batch summary: totalRows=${values.length}, runnable=${runnable.length}, ` +
+        `claimed=${toClaim.length}, started=${startedRows.size}, ` +
+        `succeeded=${succeeded}, retried=${retried}, movedToDead=${movedToDead}, ` +
+        `timedOutBeforeStart=${timedOutBeforeStart}, elapsedMs=${totalElapsed}`
+    );
   } catch (err) {
     const errorMessage = getErrorMessage(err);
     FastLog.error(fn, errorMessage);
@@ -258,6 +300,7 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
     finish();
   }
 }
+
 
 function dispatchJob_(job: Job): void {
   const fn = dispatchJob_.name;

@@ -71,9 +71,9 @@ export function setupWorkflowsOnce(opts: SetupWorkflowsOptions = {}): boolean {
       if (!isEngineConfigured()) {
         setEnqueue(enqueueAdapter);
         setupWorkflows();
-        FastLog.log(`${fn}: engine configured`);
+        FastLog.log(fn, `Engine configured`);
       } else {
-        FastLog.log(`${fn}: engine already configured after acquiring lock`);
+        FastLog.log(fn, `Engine already configured after acquiring lock`);
       }
       _ready = true;
 

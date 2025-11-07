@@ -12,7 +12,7 @@ export function fixSheet(sheetName: string): boolean {
 
     if (!hasFixSheet(sheet)) {
       // Optional: low-noise info so you can see when nothing happened
-      FastLog.info(`${fn}: no fixSheet() on ${sheetName}`);
+      FastLog.info(fn, `No fixSheet() on ${sheetName}`);
       return false;
     }
 

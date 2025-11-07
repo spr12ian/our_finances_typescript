@@ -12,7 +12,7 @@ export function formatSheet(sheetName: string): boolean {
 
     if (!hasFormatSheet(sheet)) {
       // Optional: low-noise info so you can see when nothing happened
-      FastLog.info(`${fn}: no formatSheet() on ${sheetName}`);
+      FastLog.info(fn, `No formatSheet() on ${sheetName}`);
       return false;
     }
 

@@ -140,8 +140,8 @@ export function startWorkflow(
   FastLog.log(fn, workflowName, firstStep);
   try {
     if (!isEngineConfigured()) {
-      FastLog.warn(
-        `${fn}: engine not configured — skipping ${workflowName}.${firstStep}`
+      FastLog.warn(fn,
+        `Engine not configured — skipping ${workflowName}.${firstStep}`
       );
       return null;
     }

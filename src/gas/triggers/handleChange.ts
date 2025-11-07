@@ -21,7 +21,6 @@ export function handleChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
     const ignored = new Set([
       "FORMAT",
       "GRID_PROPERTIES_CHANGED",
-      "INSERT_ROW",
       "OTHER",
       "PROTECTED_RANGE",
     ]);
@@ -35,17 +34,21 @@ export function handleChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
     switch (e.changeType) {
       case "EDIT":
         if (isProgrammaticEdit()) {
-          FastLog.log(
-            "handleChange → Ignoring programmatic EDIT from our code"
-          );
+          FastLog.log(fn, "Ignoring programmatic EDIT from our code");
           return;
         } else {
-          FastLog.log("handleChange → Some other script changed the sheet");
+          FastLog.log(fn, "Some other script changed the sheet");
           return;
         }
         break;
+      case "INSERT_COLUMN":
+        FastLog.log(fn, `Column inserted`);
+        break;
+      case "INSERT_ROW":
+        FastLog.log(fn, `Row inserted`);
+        break;
       case "REMOVE_ROW":
-        FastLog.log(`Row removed`);
+        FastLog.log(fn, `Row removed`);
 
         const spreadsheet = getFinancesSpreadsheet(e);
 
@@ -59,7 +62,7 @@ export function handleChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
         break;
       default:
         throw new Error(
-          `Unhandled change event: ${JSON.stringify(e, null, 2)}`
+          `${fn}: Unhandled change event: ${JSON.stringify(e, null, 2)}`
         );
     }
   } catch (err) {
@@ -71,10 +74,11 @@ export function handleChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
 }
 
 function startFlow(sheet: Sheet) {
-  const finish = functionStart(startFlow.name);
+  const fn = startFlow.name;
+  const finish = functionStart(fn);
 
   if (isAccountSheet(sheet)) {
-    FastLog.log(`Sheet ${sheet.name} is an account sheet.`);
+    FastLog.log(fn, `Sheet ${sheet.name} is an account sheet.`);
     setupWorkflowsOnce();
     startWorkflow(
       "updateAccountSheetBalancesFlow",

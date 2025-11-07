@@ -1,4 +1,6 @@
-import type { Sheet } from "@domain/Sheet";
+import { Sheet } from "@domain/Sheet";
+import { getTriggerEventSheet } from "@gas/getTriggerEventSheet";
+import { isSheetInIgnoreList } from "@lib/isSheetInIgnoreList";
 import { isProgrammaticEdit } from "@lib/programmaticEditGuard";
 import * as timeConstants from "@lib/timeConstants";
 import { FastLog, functionStart } from "@logging";
@@ -9,44 +11,62 @@ import { getFinancesSpreadsheet } from "src/getFinancesSpreadsheet";
 import { withReentryGuard } from "../../lib/withReentryGuard";
 
 export function handleChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
-  const ignored = new Set([
-    "FORMAT",
-    "GRID_PROPERTIES_CHANGED",
-    "INSERT_ROW",
-    "OTHER",
-    "PROTECTED_RANGE",
-  ]);
+  const fn = handleChange.name;
 
-  const changeType = String(e.changeType);
-  if (ignored.has(changeType)) {
-    FastLog.log(`Ignored changeType: ${changeType}`);
-    return;
-  }
+  try {
+    const gasSheet = getTriggerEventSheet(e);
+    const sheetName = gasSheet.getName();
+    if (isSheetInIgnoreList(sheetName, fn)) return;
 
-  switch (e.changeType) {
-    case "EDIT":
-      if (isProgrammaticEdit()) {
-        FastLog.log("handleChange → Ignoring programmatic EDIT from our code");
-        return;
-      } else {
-        FastLog.log("handleChange → Some other script changed the sheet");
-        return;
-      }
-      break;
-    case "REMOVE_ROW":
-      FastLog.log(`Row removed`);
+    const ignored = new Set([
+      "FORMAT",
+      "GRID_PROPERTIES_CHANGED",
+      "INSERT_ROW",
+      "OTHER",
+      "PROTECTED_RANGE",
+    ]);
 
-      const spreadsheet = getFinancesSpreadsheet(e);
-      const sheet = spreadsheet.activeSheet;
-      const sheetId = sheet?.raw.getSheetId?.() ?? "unknown";
-      const ssId = spreadsheet.id ?? "unknown";
-      const key = `ONCHANGE_BALANCE:${ssId}:${sheetId}:${changeType}`;
-      withReentryGuard(key, timeConstants.ONE_MINUTE_MS, () => {
-        startFlow(sheet);
-      });
-      break;
-    default:
-      throw new Error(`Unhandled change event: ${JSON.stringify(e, null, 2)}`);
+    const changeType = String(e.changeType);
+    if (ignored.has(changeType)) {
+      FastLog.log(fn, `Ignored changeType: ${changeType}`);
+      return;
+    }
+
+    switch (e.changeType) {
+      case "EDIT":
+        if (isProgrammaticEdit()) {
+          FastLog.log(
+            "handleChange → Ignoring programmatic EDIT from our code"
+          );
+          return;
+        } else {
+          FastLog.log("handleChange → Some other script changed the sheet");
+          return;
+        }
+        break;
+      case "REMOVE_ROW":
+        FastLog.log(`Row removed`);
+
+        const spreadsheet = getFinancesSpreadsheet(e);
+
+        const sheetId = gasSheet?.getSheetId?.() ?? "unknown";
+        const ssId = spreadsheet.id ?? "unknown";
+        const key = `ONCHANGE_BALANCE:${ssId}:${sheetId}:${changeType}`;
+        const sheet = new Sheet(gasSheet);
+        withReentryGuard(key, timeConstants.ONE_MINUTE_MS, () => {
+          startFlow(sheet);
+        });
+        break;
+      default:
+        throw new Error(
+          `Unhandled change event: ${JSON.stringify(e, null, 2)}`
+        );
+    }
+  } catch (err) {
+    FastLog.error(fn, `Error in handleChange: ${String(err)}`);
+    throw err;
+  } finally {
+    FastLog.log(fn, `handleChange completed`);
   }
 }
 

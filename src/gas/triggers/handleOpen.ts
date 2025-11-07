@@ -1,5 +1,6 @@
 // src/gas/triggers/handleOpen.ts
 
+import { getTriggerEventSheet } from '@gas/getTriggerEventSheet';
 import { getErrorMessage } from "@lib/errors";
 import { isSheetInIgnoreList } from "@lib/isSheetInIgnoreList";
 import { FastLog } from "@logging/FastLog";
@@ -15,15 +16,8 @@ type SheetsOnOpen = GoogleAppsScript.Events.SheetsOnOpen;
 export function handleOpen(e: SheetsOnOpen): void {
   const fn = handleOpen.name;
   try {
-    if (!e || !e.source || !e.source.getActiveSheet()) {
-      FastLog.warn(
-        fn,
-        "No active sheet or missing event info; skipping open-time workflows"
-      );
-      return;
-    }
-
-    const sheetName = e.source.getActiveSheet().getName();
+    const gasSheet = getTriggerEventSheet(e);
+    const sheetName = gasSheet.getName();
     if (isSheetInIgnoreList(sheetName, fn)) return;
 
     const ready = setupWorkflowsOnce(); // returns true/false in your impl

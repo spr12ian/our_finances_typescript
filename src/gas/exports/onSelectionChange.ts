@@ -1,4 +1,5 @@
 // onSelectionChange.ts
+import { getTriggerEventSheet } from '@gas/getTriggerEventSheet';
 import { shouldHandleSelection } from "@gas/shouldHandleSelection";
 import { getNamespaceKey } from "@lib/getNamespaceKey";
 import { idempotencyKey } from "@lib/idempotency";
@@ -11,7 +12,8 @@ import { startWorkflow } from "@workflow/workflowEngine";
 
 export function onSelectionChange(e: any): void {
   const fn = onSelectionChange.name;
-  const sheet = e?.range?.getSheet?.() ?? SpreadsheetApp.getActiveSheet();
+  
+  const sheet = getTriggerEventSheet(e);
   if (!sheet) {
     FastLog.log(fn, "→ No sheet found");
     return;

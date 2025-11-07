@@ -1,6 +1,8 @@
 // @gas/triggers/handleEdit.ts
 
+import { getTriggerEventSheet } from "@gas/getTriggerEventSheet";
 import { getErrorMessage } from "@lib/errors";
+import { isSheetInIgnoreList } from "@lib/isSheetInIgnoreList";
 import { withDocumentLock } from "@lib/WithDocumentLock";
 import { FastLog } from "@logging";
 import { onEditRecalcBalances } from "../../features/account/handlers/onEditRecalcBalances";
@@ -38,14 +40,12 @@ let __COMPILED_RULES_OPT: CompiledRule[] | null = null;
 // non-blocking lock + light preamble + tiny debounce
 // ─────────────────────────────────────────────────────────
 export function handleEdit(e: SheetsOnEdit): void {
-  const functionName = handleEdit.name;
+  const fn = handleEdit.name;
 
   try {
-    // Ultra-cheap sanity checks; use only the event object
-    if (!e || !e.range) {
-      FastLog.log("handleEdit → Missing event or range");
-      return;
-    }
+    const gasSheet = getTriggerEventSheet(e);
+    const sheetName = gasSheet.getName();
+    if (isSheetInIgnoreList(sheetName, fn)) return;
 
     const range = e.range;
     FastLog.log(`handleEdit → Edit at ${range.getA1Notation()}`);
@@ -76,7 +76,7 @@ export function handleEdit(e: SheetsOnEdit): void {
       return; // no value change
     }
 
-    const { sheetName, editBounds } = __getEventPartsOpt(e);
+    const { editBounds } = __getEventPartsOpt(e);
 
     // Avoid feedback loops with queue sheets
     if (sheetName === "_QUEUE" || sheetName === "_DEAD") {
@@ -142,7 +142,7 @@ export function handleEdit(e: SheetsOnEdit): void {
       }
     }
   } catch (err) {
-    FastLog.error(functionName, getErrorMessage(err));
+    FastLog.error(fn, getErrorMessage(err));
     // Do NOT rethrow in a trigger; just log.
   }
 }

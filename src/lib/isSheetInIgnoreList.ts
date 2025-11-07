@@ -9,6 +9,7 @@ const STATUS = "$Status";
 // Central ignore list registry
 // ---------------------------
 export const IGNORE_LISTS: Record<string, Set<string>> = {
+  handleChange: new Set([QUEUE_SHEET_NAME, DEAD_SHEET_NAME, STATUS]),
   handleOpen: new Set([QUEUE_SHEET_NAME, DEAD_SHEET_NAME, STATUS]),
   onSelectionChange: new Set([QUEUE_SHEET_NAME, DEAD_SHEET_NAME, STATUS]),
   // Add more named ignore lists as needed:

@@ -2,6 +2,7 @@
 import { shouldHandleSelection } from "@gas/shouldHandleSelection";
 import { getNamespaceKey } from "@lib/getNamespaceKey";
 import { idempotencyKey } from "@lib/idempotency";
+import { isSheetInIgnoreList } from "@lib/isSheetInIgnoreList";
 import { FastLog, withLog } from "@lib/logging";
 import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { withGuardedLock } from "@lib/withGuardedLock";
@@ -9,13 +10,16 @@ import { setupWorkflowsOnce } from "@workflow";
 import { startWorkflow } from "@workflow/workflowEngine";
 
 export function onSelectionChange(e: any): void {
+  const fn = onSelectionChange.name;
   const sheet = e?.range?.getSheet?.() ?? SpreadsheetApp.getActiveSheet();
   if (!sheet) {
-    FastLog.log("onSelectionChange → No sheet found");
+    FastLog.log(fn, "→ No sheet found");
     return;
   }
 
   const sheetName = sheet.getName();
+  if (isSheetInIgnoreList(sheetName, fn)) return;
+
   if (!shouldFixSheet(sheetName)) {
     FastLog.log(`onSelectionChange → Skipping sheet: ${sheetName}`);
     return;

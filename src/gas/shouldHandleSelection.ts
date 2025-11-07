@@ -1,16 +1,18 @@
+// shouldHandleSelection.ts
 import { ONE_MINUTE_MS, ONE_SECOND_MS } from "@lib/index";
 
-// shouldHandleSelection.ts
-type DebounceCfg = { minMs: number; windowMs: number };
 // windowMs reserved for future rolling-window logic
 const DEBOUNCE: DebounceCfg = { minMs: ONE_SECOND_MS, windowMs: ONE_MINUTE_MS };
+const USER_SELECTION_STATE_KEY = "sel:last";
+
+type DebounceCfg = { minMs: number; windowMs: number };
 
 export function shouldHandleSelection(sheetName: string): boolean {
   const p = PropertiesService.getUserProperties();
   const now = Date.now();
 
   let last: { t: number; sheet: string } | null = null;
-  const raw = p.getProperty("sel:last");
+  const raw = p.getProperty(USER_SELECTION_STATE_KEY);
   if (raw) {
     try {
       last = JSON.parse(raw);
@@ -23,6 +25,6 @@ export function shouldHandleSelection(sheetName: string): boolean {
   const ok =
     !last || last.sheet !== sheetName || now - (last.t || 0) >= DEBOUNCE.minMs;
 
-  p.setProperty("sel:last", JSON.stringify({ t: now, sheet: sheetName }));
+  p.setProperty(USER_SELECTION_STATE_KEY, JSON.stringify({ t: now, sheet: sheetName }));
   return ok;
 }

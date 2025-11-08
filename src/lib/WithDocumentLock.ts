@@ -1,7 +1,7 @@
 // WithDocumentLock
 
 import { getErrorMessage } from "./errors";
-import { FastLog, functionStart } from "./logging";
+import { FastLog, functionStart, withLog } from "./logging";
 import { ONE_SECOND_MS } from "./timeConstants";
 
 /**
@@ -57,7 +57,7 @@ export function withDocumentLock<T>(
     if (lock && lock.tryLock(timeout)) {
       FastLog.log(`${label}: Lock acquired (Document)`);
       try {
-        return fn(...args);
+        return withLog(withDocumentLock.name, fn)(...args);
       } finally {
         lock.releaseLock();
         FastLog.log(`${label}: Lock released (Document)`);

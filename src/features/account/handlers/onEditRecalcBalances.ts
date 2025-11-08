@@ -3,6 +3,10 @@
 import { FastLog } from "@logging/FastLog";
 import { Spreadsheet } from "@domain";
 import { AccountSheet } from "@sheets/classes/AccountSheet";
+import { setupWorkflowsOnce } from '@workflow/setupWorkflowsOnce';
+import { startWorkflow } from '@workflow/workflowEngine';
+
+const MAX_SYNC_ROWS = 1300;
 
 type SheetsOnEdit = GoogleAppsScript.Events.SheetsOnEdit;
 
@@ -11,10 +15,11 @@ type SheetsOnEdit = GoogleAppsScript.Events.SheetsOnEdit;
  * Recomputes running balances starting at the top-most edited row.
  */
 export function onEditRecalcBalances(e: SheetsOnEdit): void {
+  const fn= onEditRecalcBalances.name;
   try {
     const range = e.range;
-    const gsSheet = range.getSheet();
-    const sheetName = gsSheet.getName();
+    const gasSheet = range.getSheet();
+    const sheetName = gasSheet.getName();
 
     // Only account sheets (names starting with "_")
     if (!sheetName.startsWith("_")) return;
@@ -27,11 +32,34 @@ export function onEditRecalcBalances(e: SheetsOnEdit): void {
     if (!overlapsCD) return;
 
     const r1 = range.getRow(); // start from first edited row
+    const lastRow = gasSheet.getLastRow();
+    const len = Math.max(0, lastRow - r1 + 1);
+    if (len === 0) return;
 
-    FastLog.log(`[onEditRecalcBalances] ${sheetName} ${range.getA1Notation()} → start row ${r1}`);
+    FastLog.log(fn,`${sheetName} ${range.getA1Notation()} → start row ${r1}`);
+
+    if (len > MAX_SYNC_ROWS) {
+      FastLog.warn(fn,
+        `${sheetName} ${range.getA1Notation()} ` +
+          `→ len=${len} > ${MAX_SYNC_ROWS}, enqueueing async recalc`
+      );
+
+      // Hand off to your existing flow rather than doing it inline
+      setupWorkflowsOnce();
+      startWorkflow(
+        "updateAccountSheetBalancesFlow",
+        "updateAccountSheetBalancesStep1",
+        {
+          sheetName,
+          row: r1,
+          startedBy: "onEditRecalcBalances",
+        }
+      );
+      return;
+    }
 
     // Wrap native objects with your domain wrappers
-    const ss = gsSheet.getParent();
+    const ss = gasSheet.getParent();
     const spreadsheet = new Spreadsheet(ss);
     const sheet = spreadsheet.getSheet(sheetName);
 

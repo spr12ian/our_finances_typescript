@@ -44,6 +44,31 @@ export class BankAccounts {
     return this.#keys;
   }
 
+  get openAccounts(): any[][] {
+    const finish = propertyStart("openAccounts", this.constructor.name);
+    try {
+      const data = this.getValues();
+      const dateClosedIndex = Meta.COLUMNS.DATE_CLOSED - 1; // zero-based index
+
+      const openAccounts = data.filter((row, index) => {
+        // Always include the header row
+        if (index === 0) return true;
+        // Include rows where the Date Closed column is empty
+        return !row[dateClosedIndex];
+      });
+
+      FastLog.log(
+        `Found ${openAccounts.length - 1} open accounts out of ${
+          data.length - 1
+        } total accounts.`
+      );
+
+      return openAccounts;
+    } finally {
+      finish();
+    }
+  }
+
   get totalOurMoneyBalance(): number {
     const finish = propertyStart("totalOurMoneyBalance", this.constructor.name);
     try {
@@ -96,32 +121,7 @@ export class BankAccounts {
     }
   }
 
-  get openAccounts(): any[][] {
-    const finish = propertyStart("openAccounts", this.constructor.name);
-    try {
-      const data = this.getValues();
-      const dateClosedIndex = Meta.COLUMNS.DATE_CLOSED - 1; // zero-based index
-
-      const openAccounts = data.filter((row, index) => {
-        // Always include the header row
-        if (index === 0) return true;
-        // Include rows where the Date Closed column is empty
-        return !row[dateClosedIndex];
-      });
-
-      FastLog.log(
-        `Found ${openAccounts.length - 1} open accounts out of ${
-          data.length - 1
-        } total accounts.`
-      );
-
-      return openAccounts;
-    } finally {
-      finish();
-    }
-  }
-
-  applyFilters(filters: FilterSpec[]) {
+  private applyFilters(filters: FilterSpec[]) {
     const sheet = this.sheet;
 
     // Clear any existing filters

@@ -223,6 +223,14 @@ export class Sheet {
 
     logFinish();
   }
+  
+  formatAsDate(rangeList: GoogleAppsScript.Spreadsheet.RangeList): void {
+    rangeList.setNumberFormat("dd/MM/yyyy").setHorizontalAlignment("center");
+  }
+
+  formatAsMoney(rangeList: GoogleAppsScript.Spreadsheet.RangeList): void {
+    rangeList.setNumberFormat("£#,##0.00").setHorizontalAlignment("right");
+  }
 
   formatHeader(): void {
     const logFinish = methodStart(this.formatHeader.name, this.name);

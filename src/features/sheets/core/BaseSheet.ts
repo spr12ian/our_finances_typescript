@@ -27,6 +27,16 @@ export abstract class BaseSheet {
   }
 
   @WithLog()
+  formatAsDate(rangeList: GoogleAppsScript.Spreadsheet.RangeList): void {
+    this.sheet.formatAsDate(rangeList);
+  }
+
+  @WithLog()
+  formatAsMoney(rangeList: GoogleAppsScript.Spreadsheet.RangeList): void {
+    this.sheet.formatAsMoney(rangeList);
+  }
+
+  @WithLog()
   formatSheet() {
     return this.sheet.formatSheet();
   }
@@ -55,13 +65,6 @@ export abstract class BaseSheet {
   trimSheet() {
     return this.sheet.trimSheet();
   }
-
-  // protected start(label: string, ...args: unknown[]) {
-  //   return FastLog.start(`[${this.sheetName}] ${label}`, ...args);
-  // }
-  // protected finish(label: string, t0: Date) {
-  //   FastLog.finish(`[${this.sheetName}] ${label}`, t0);
-  // }
 
   /** Convenient per-sheet loggers. */
   protected error = (m: string, ...a: unknown[]) =>

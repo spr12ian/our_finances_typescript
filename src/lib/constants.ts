@@ -192,6 +192,12 @@ export const MetaHMRC_B = {
 };
 
 export const MetaHMRC_S = {
+  CELLS: {
+    DATE_OF_BIRTH_CELL: "C3",
+    UNTAXED_INTEREST_CELL: "C21",
+    BENEFIT_INCOME_CELL: "C36",
+    RLF_PENSION_CELL: "C45",
+  } as const satisfies Record<string, string>,
   COLUMNS: {
     QUESTIONS: oneBased(1),
     CATEGORY: oneBased(2),

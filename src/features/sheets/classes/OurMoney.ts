@@ -3,6 +3,10 @@ import { MetaOurMoney as Meta } from "@lib/constants";
 import { FastLog, WithLog } from "@lib/logging";
 import { BaseSheet } from "../core";
 
+type OurMoneyRangeKey = "asAt" | "total" | "pension" | "bank";
+
+type OurMoneyRangeMap = Readonly<Record<OurMoneyRangeKey, string>>;
+
 export class OurMoney extends BaseSheet {
   constructor(spreadsheet: Spreadsheet) {
     FastLog.log("OurMoney:constructor");
@@ -16,25 +20,27 @@ export class OurMoney extends BaseSheet {
 
   @WithLog("OurMoney:formatSheet")
   formatSheet(): void {
-    const s = this.sheet;
+    const s = this.sheet.raw;
 
     // Batch all getRange() calls up front
-    const ranges = {
-      asAt: s.getRange(Meta.CELLS.AS_AT_DATE_CELL),
-      total: s.getRange(Meta.CELLS.TOTAL_MONEY_CELL),
-      pension: s.getRange(Meta.CELLS.PENSION_FUNDS_CELL),
-      bank: s.getRange(Meta.CELLS.IN_THE_BANK_CELL),
+    const ranges: OurMoneyRangeMap = {
+      asAt: Meta.CELLS.AS_AT_DATE_CELL,
+      total: Meta.CELLS.TOTAL_MONEY_CELL,
+      pension: Meta.CELLS.PENSION_FUNDS_CELL,
+      bank: Meta.CELLS.IN_THE_BANK_CELL,
     };
 
-    // Apply all format/alignment changes in memory
-    ranges.asAt.setNumberFormat("dd/MM/yyyy").setHorizontalAlignment("center");
+    // Build RangeLists in one go
+    const dateRangeList = s.getRangeList([ranges.asAt]);
+    const moneyRangeList = s.getRangeList([
+      ranges.total,
+      ranges.pension,
+      ranges.bank,
+    ]);
 
-    const moneyFormat = "£#,##0.00";
-    for (const key of ["total", "pension", "bank"] as const) {
-      ranges[key].setNumberFormat(moneyFormat).setHorizontalAlignment("right");
-    }
+    this.formatAsDate(dateRangeList);
+    this.formatAsMoney(moneyRangeList);
 
-    // Push all pending changes to the server once
     SpreadsheetApp.flush();
   }
 }

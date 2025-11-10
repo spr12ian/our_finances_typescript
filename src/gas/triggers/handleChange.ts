@@ -3,7 +3,7 @@ import { getTriggerEventSheet } from "@gas/getTriggerEventSheet";
 import { isSheetInIgnoreList } from "@lib/isSheetInIgnoreList";
 import { isProgrammaticEdit } from "@lib/programmaticEditGuard";
 import * as timeConstants from "@lib/timeConstants";
-import { FastLog, functionStart } from "@logging";
+import { FastLog, withLog } from "@logging";
 import { isAccountSheet } from "@sheets/accountSheetFunctions";
 import { setupWorkflowsOnce } from "@workflow";
 import { startWorkflow } from "@workflow/workflowEngine";
@@ -21,7 +21,6 @@ export function handleChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
     const ignored = new Set([
       "FORMAT",
       "GRID_PROPERTIES_CHANGED",
-      "OTHER",
       "PROTECTED_RANGE",
     ]);
 
@@ -47,6 +46,10 @@ export function handleChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
       case "INSERT_ROW":
         FastLog.log(fn, `Row inserted`);
         break;
+      case "OTHER":
+        FastLog.log(fn, `Other change`);
+        withLog(fn, recalcFutureBalances)(new Sheet(gasSheet));
+        break;
       case "REMOVE_ROW":
         FastLog.log(fn, `Row removed`);
 
@@ -55,9 +58,8 @@ export function handleChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
         const sheetId = gasSheet?.getSheetId?.() ?? "unknown";
         const ssId = spreadsheet.id ?? "unknown";
         const key = `ONCHANGE_BALANCE:${ssId}:${sheetId}:${changeType}`;
-        const sheet = new Sheet(gasSheet);
         withReentryGuard(key, timeConstants.ONE_MINUTE_MS, () => {
-          startFlow(sheet);
+          withLog(fn, startFlow)(new Sheet(gasSheet));
         });
         break;
       default:
@@ -73,23 +75,79 @@ export function handleChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
   }
 }
 
+function recalcFutureBalances(sheet: Sheet): void {
+  const lastRow = sheet.raw.getLastRow();
+  if (lastRow <= 1) return; // only headers
+
+  // Get all data rows (A:H) in one call
+  const dataRange = sheet.raw.getRange(2, 1, lastRow - 1, 8);
+  const data = dataRange.getValues();
+
+  // Find first FUTURE row (by Note column, E => index 4)
+  let firstFutureIndex = -1;
+  for (let i = 0; i < data.length; i++) {
+    const note = (data[i][4] ?? "").toString().trim().toUpperCase();
+    if (note === "FUTURE") {
+      firstFutureIndex = i;
+      break;
+    }
+  }
+
+  if (firstFutureIndex === -1) {
+    // No FUTURE rows on this sheet
+    return;
+  }
+
+  const firstFutureRow = firstFutureIndex + 2; // +2 because data starts at row 2
+
+  // Starting balance is the balance in the row *above* the first FUTURE row
+  const startingRow = firstFutureRow - 1;
+  const startingBalance =
+    Number(sheet.raw.getRange(startingRow, 8).getValue()) || 0;
+
+  // Now work only on the FUTURE block
+  // (from firstFutureRow down until Note stops being FUTURE)
+  let running = startingBalance;
+  const newBalances: number[][] = [];
+  let writeLength = 0;
+
+  for (let r = firstFutureIndex; r < data.length; r++) {
+    const note = (data[r][4] ?? "").toString().trim().toUpperCase();
+    if (note !== "FUTURE") break; // stop when FUTURE block ends
+
+    const credit = Number(data[r][2]) || 0; // col C
+    const debit = Number(data[r][3]) || 0; // col D
+    running += credit - debit;
+
+    newBalances.push([running]);
+    writeLength++;
+  }
+
+  if (writeLength > 0) {
+    sheet.raw
+      .getRange(firstFutureRow, 8, writeLength, 1) // col H
+      .setValues(newBalances);
+  }
+}
+
 function startFlow(sheet: Sheet) {
   const fn = startFlow.name;
-  const finish = functionStart(fn);
 
   if (isAccountSheet(sheet)) {
     FastLog.log(fn, `Sheet ${sheet.name} is an account sheet.`);
-    setupWorkflowsOnce();
-    startWorkflow(
-      "updateAccountSheetBalancesFlow",
-      "updateAccountSheetBalancesStep1",
-      {
-        sheetName: sheet.name,
-        row: 1,
-        startedBy: "handleChange",
-      }
-    );
+  } else {
+    FastLog.log(fn, `Sheet ${sheet.name} is NOT an account sheet.`);
+    return;
   }
 
-  finish();
+  setupWorkflowsOnce();
+  startWorkflow(
+    "updateAccountSheetBalancesFlow",
+    "updateAccountSheetBalancesStep1",
+    {
+      sheetName: sheet.name,
+      row: 1,
+      startedBy: "handleChange",
+    }
+  );
 }

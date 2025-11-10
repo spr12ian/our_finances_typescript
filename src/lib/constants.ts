@@ -195,13 +195,20 @@ export const MetaHMRC_B = {
 
 export const MetaHMRC_S = {
   CELLS: {
-    DATE_BLOCK_1: "C3:J3",
-    MONEY_BLOCK_1: "C20:J26",
-    MONEY_BLOCK_2: "C28:J36",
-    MONEY_BLOCK_3: "C38:J41",
-    MONEY_BLOCK_4: "C45:J49",
-    MONEY_BLOCK_5: "C51:J58",
-    MONEY_BLOCK_6: "C66:J67",
+    DATE_3: "C3:J3",
+    MONEY_20: "C20:J26",
+    MONEY_28: "C28:J36",
+    MONEY_38: "C38:J41",
+    MONEY_45: "C45:J49",
+    MONEY_51: "C51:J58",
+    MONEY_66: "C66:J67",
+    MONEY_69: "C69:J70",
+    MONEY_73: "C73:J73",
+    DATE_78: "C78:J79",
+    MONEY_81: "C81:J81",
+    DATE_382: "C382:J382",
+    MONEY_384: "C384:J384",
+    MONEY_386: "C386:J390",
   } as const satisfies Record<string, string>,
   COLUMNS: {
     QUESTIONS: oneBased(1),

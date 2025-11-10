@@ -1,3 +1,5 @@
+// constants.ts
+
 import type { OneBased } from "../types/oneBased";
 import { oneBased } from "../types/oneBased";
 
@@ -193,10 +195,13 @@ export const MetaHMRC_B = {
 
 export const MetaHMRC_S = {
   CELLS: {
-    DATE_OF_BIRTH_CELL: "C3",
-    UNTAXED_INTEREST_CELL: "C21",
-    BENEFIT_INCOME_CELL: "C36",
-    RLF_PENSION_CELL: "C45",
+    DATE_BLOCK_1: "C3:J3",
+    MONEY_BLOCK_1: "C20:J26",
+    MONEY_BLOCK_2: "C28:J36",
+    MONEY_BLOCK_3: "C38:J41",
+    MONEY_BLOCK_4: "C45:J49",
+    MONEY_BLOCK_5: "C51:J58",
+    MONEY_BLOCK_6: "C66:J67",
   } as const satisfies Record<string, string>,
   COLUMNS: {
     QUESTIONS: oneBased(1),
@@ -219,10 +224,10 @@ export const MetaNotInTransactionCategories = {
 
 export const MetaOurMoney = {
   CELLS: {
-    AS_AT_DATE_CELL: "A2",
-    TOTAL_MONEY_CELL: "A5",
-    PENSION_FUNDS_CELL: "A8",
-    IN_THE_BANK_CELL: "A11",
+    DATE_AS_AT: "A2",
+    MONEY_TOTAL: "A5",
+    MONEY_PENSION_FUNDS: "A8",
+    MONEY_IN_THE_BANK: "A11",
   } as const satisfies Record<string, string>,
   SHEET: { NAME: "Our money" },
 };

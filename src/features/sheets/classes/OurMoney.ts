@@ -2,10 +2,7 @@ import type { Spreadsheet } from "@domain";
 import { MetaOurMoney as Meta } from "@lib/constants";
 import { FastLog, WithLog } from "@lib/logging";
 import { BaseSheet } from "../core";
-
-type OurMoneyRangeKey = "asAt" | "total" | "pension" | "bank";
-
-type OurMoneyRangeMap = Readonly<Record<OurMoneyRangeKey, string>>;
+import { getA1Ranges } from '@lib/getA1Ranges';
 
 export class OurMoney extends BaseSheet {
   constructor(spreadsheet: Spreadsheet) {
@@ -20,23 +17,10 @@ export class OurMoney extends BaseSheet {
 
   @WithLog("OurMoney:formatSheet")
   formatSheet(): void {
-    const s = this.sheet.raw;
+    const sheet = this.sheet.raw;
 
-    // Batch all getRange() calls up front
-    const ranges: OurMoneyRangeMap = {
-      asAt: Meta.CELLS.AS_AT_DATE_CELL,
-      total: Meta.CELLS.TOTAL_MONEY_CELL,
-      pension: Meta.CELLS.PENSION_FUNDS_CELL,
-      bank: Meta.CELLS.IN_THE_BANK_CELL,
-    };
-
-    // Build RangeLists in one go
-    const dateRangeList = s.getRangeList([ranges.asAt]);
-    const moneyRangeList = s.getRangeList([
-      ranges.total,
-      ranges.pension,
-      ranges.bank,
-    ]);
+    const dateRangeList = sheet.getRangeList(getA1Ranges(Meta, "DATE"));
+    const moneyRangeList = sheet.getRangeList(getA1Ranges(Meta, "MONEY"));
 
     this.formatAsDate(dateRangeList);
     this.formatAsMoney(moneyRangeList);

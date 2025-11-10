@@ -200,16 +200,6 @@ export function GAS_logSheetNames(): void {
   logSheetNames();
 }
 
-export function GAS_showDailyAccounts() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).bankAccounts.showDaily();
-}
-
-export function GAS_showMonthlyAccounts() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).bankAccounts.showMonthly();
-}
-
 export function GAS_onChangeTrigger(
   e: GoogleAppsScript.Events.SheetsOnChange
 ): void {
@@ -227,7 +217,6 @@ export function GAS_onEditTrigger(
 }
 
 export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
-  Logger.log("GAS_onOpen called");
   withLog(GAS_onOpen.name, onOpen)(e);
 }
 
@@ -271,6 +260,16 @@ export function GAS_sendDailyHtmlEmail() {
 export function GAS_showAllAccounts() {
   const spreadsheet = getFinancesSpreadsheet();
   new OurFinances(spreadsheet).showAllAccounts();
+}
+
+export function GAS_showDailyAccounts() {
+  const spreadsheet = getFinancesSpreadsheet();
+  new OurFinances(spreadsheet).bankAccounts.showDaily();
+}
+
+export function GAS_showMonthlyAccounts() {
+  const spreadsheet = getFinancesSpreadsheet();
+  new OurFinances(spreadsheet).bankAccounts.showMonthly();
 }
 
 export function GAS_showOpenAccounts() {

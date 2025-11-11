@@ -205,6 +205,7 @@ export const MetaHMRC_S = {
     MONEY_73: "C73:J73",
     DATE_78: "B78:B79",
     MONEY_81: "C81:J81",
+    MONEY_213: "C213:J215",
     MONEY_270: "C270:J270",
     MONEY_277: "C277:J278",
     MONEY_280: "C280:J280",

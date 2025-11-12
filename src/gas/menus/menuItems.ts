@@ -39,6 +39,7 @@ export const gasMenuItems: [string, string][] = [
   ["Balance sheet", "toBalanceSheet"],
   ["Check dependencies", "updateAllDependencies"],
   ["Sort sheet order", "sortSheets"],
+  ["Store account sheet names", "storeAccountSheetNames"],
   ["Trim all sheets", "trimAllSheets"],
   ["Update spreadsheet summary", "updateSpreadsheetSummary"],
   ["Validate all menu function names", "validateAllMenuFunctionNames"],

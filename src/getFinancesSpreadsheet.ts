@@ -1,5 +1,6 @@
 // getFinancesSpreadsheet.ts
 import { Spreadsheet } from "@domain";
+import { FastLog, withLog } from "@lib/logging";
 
 // ────────────────────────────────────────────────────────────
 // Per-execution memoization
@@ -16,10 +17,14 @@ const memo: {
 type AnyEvent = GoogleAppsScript.Events.AppsScriptEvent | undefined;
 
 export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
-  Logger.log("getFinancesSpreadsheet called");
+  const fn = getFinancesSpreadsheet.name;
+  FastLog.info(fn, "Called");
 
   // Per-execution memo
-  if (memo.wrapped && memo.gas) return memo.wrapped;
+  if (memo.wrapped && memo.gas) {
+    FastLog.info(fn, "Using memoized finances spreadsheet");
+    return memo.wrapped;
+  }
 
   // Resolve configured ID once
   const sp = PropertiesService.getScriptProperties();
@@ -28,16 +33,24 @@ export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
     sp.getProperty("FINANCES_SPREADSHEET_ID") ??
     up.getProperty("FINANCES_SPREADSHEET_ID") ??
     "";
+  FastLog.info(
+    fn,
+    `Configured finances spreadsheet ID: ${
+      configuredId ? configuredId : "<none>"
+    }`
+  );
 
   const src = (e as any)?.source as
     | GoogleAppsScript.Spreadsheet.Spreadsheet
     | undefined;
+  FastLog.info(fn, `Event source spreadsheet ID: ${src?.getId() ?? "<none>"}`);
 
   // Heuristic: simple triggers don’t expose triggerUid/authMode
   const isSimpleTrigger =
     !e ||
     (typeof (e as any).triggerUid === "undefined" &&
       typeof (e as any).authMode === "undefined");
+  FastLog.info(fn, `Is simple trigger: ${isSimpleTrigger}`);
 
   // Determine active spreadsheet based on trigger type:
   //   - Simple triggers → single cheap call to SpreadsheetApp.getActiveSpreadsheet()
@@ -46,12 +59,17 @@ export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
   const active =
     src ??
     (isSimpleTrigger
-      ? SpreadsheetApp.getActiveSpreadsheet() || null
-      : Spreadsheet.getActiveWithBackoff() || null);
+      ? withLog(fn,SpreadsheetApp.getActiveSpreadsheet)() || null
+      : withLog(fn,Spreadsheet.getActiveWithBackoff)() || null);
+  FastLog.info(
+    fn,
+    `Active spreadsheet ID: ${active?.getId() ?? "<none>"}`
+  );
 
   // Fast path: configuredId present and matches active/src
   if (configuredId) {
     if (active && active.getId() === configuredId) {
+      FastLog.info(fn, "Using active spreadsheet as finances spreadsheet");
       return wrapAndMemoize(active, configuredId);
     }
     if (
@@ -59,6 +77,7 @@ export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
       typeof src.getId === "function" &&
       src.getId() === configuredId
     ) {
+      FastLog.info(fn, "Using event source spreadsheet as finances spreadsheet");
       return wrapAndMemoize(src, configuredId);
     }
   }
@@ -66,9 +85,17 @@ export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
   // No configured ID → prefer event source, else active
   if (!configuredId) {
     if (src && typeof src.getId === "function") {
+      FastLog.info(
+        fn,
+        "No configured ID; using event source spreadsheet as finances spreadsheet"
+      );
       return wrapAndMemoize(src);
     }
     if (active) {
+      FastLog.info(
+        fn,
+        "No configured ID; using active spreadsheet as finances spreadsheet"
+      );
       return wrapAndMemoize(active);
     }
     throw new Error(
@@ -79,9 +106,17 @@ export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
   // We do have an ID, but simple triggers cannot safely open other files by ID.
   if (isSimpleTrigger) {
     if (src && typeof (src as any).getId === "function") {
+      FastLog.info(
+        fn,
+        "Simple trigger: using event source spreadsheet as finances spreadsheet"
+      );
       return wrapAndMemoize(src as any);
     }
     if (active) {
+      FastLog.info(
+        fn,
+        "Simple trigger: using active spreadsheet as finances spreadsheet"
+      );
       return wrapAndMemoize(active);
     }
     throw new Error("Simple trigger: no source/active spreadsheet available.");
@@ -90,6 +125,7 @@ export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
   // Non-simple trigger (installable/manual) → safe to use openByIdWithBackoff
   try {
     const gas = Spreadsheet.openByIdWithBackoff(configuredId);
+    FastLog.info(fn, "Opened finances spreadsheet by ID successfully");
     return wrapAndMemoize(gas, configuredId);
   } catch (err: any) {
     const msg = String(err?.message ?? "");

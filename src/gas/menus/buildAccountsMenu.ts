@@ -1,4 +1,4 @@
-import { FastLog } from "@logging";
+import { FastLog, withLog } from "@logging";
 import { getAccountSheetNames } from "../../features/sheets/accountSheetFunctions";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 // import { registerGeneratedAccountFunctions } from "../../registerGeneratedAccountFunctions";
@@ -8,33 +8,25 @@ export function buildAccountsMenu(
   ui: GoogleAppsScript.Base.Ui,
   e: GoogleAppsScript.Events.SheetsOnOpen
 ): void {
-  Logger.log("buildAccountsMenu called");
   const fn = buildAccountsMenu.name;
-  const startTime = FastLog.start(fn);
+  FastLog.info(fn, "Called");
 
-  try {
-    const spreadsheet = getFinancesSpreadsheet(e);
-    const accountSheetNames: string[] = getAccountSheetNames(spreadsheet);
+  const spreadsheet = withLog(fn, getFinancesSpreadsheet)(e);
+  const accountSheetNames: string[] = withLog(fn, getAccountSheetNames)(spreadsheet);
 
-    // Check if any accounts are found
-    if (accountSheetNames.length === 0) {
-      ui.alert("No account sheets found!");
-      FastLog.finish(fn, startTime);
-      return;
-    }
-
-    const accountsMenuItems: [string, string][] = [];
-
-    for (const accountSheetName of accountSheetNames) {
-      const funName = "goToSheetLastRow" + accountSheetName;
-      accountsMenuItems.push([accountSheetName, funName]);
-    }
-
-    const accountsMenu = createMenu(ui, "Accounts", accountsMenuItems);
-    accountsMenu.addToUi();
-
-    // registerGeneratedAccountFunctions(accountSheetNames);
-  } finally {
-    FastLog.finish(fn, startTime);
+  // Check if any accounts are found
+  if (accountSheetNames.length === 0) {
+    ui.alert("No account sheets found!");
+    return;
   }
+
+  const accountsMenuItems: [string, string][] = [];
+
+  for (const accountSheetName of accountSheetNames) {
+    const funName = "goToSheetLastRow" + accountSheetName;
+    accountsMenuItems.push([accountSheetName, funName]);
+  }
+
+  const accountsMenu = createMenu(ui, "Accounts", accountsMenuItems);
+  accountsMenu.addToUi();
 }

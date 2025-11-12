@@ -1,4 +1,3 @@
-import { FastLog } from "@logging";
 import { createMenu } from "./createMenu";
 import {
   accountSheetMenuItems,
@@ -8,15 +7,17 @@ import {
 } from "./menuItems";
 
 export function buildGasMenu(ui: GoogleAppsScript.Base.Ui) {
-  const startTime = FastLog.start(buildGasMenu.name);
-
   const accountSheetMenu = createMenu(
     ui,
     "Account sheet",
     accountSheetMenuItems
   );
   const sheetMenu = createMenu(ui, "Sheet", sheetMenuItems);
-  const bankAccountsSheetMenu = createMenu(ui, "Bank accounts", bankAccountsSheetMenuItems);
+  const bankAccountsSheetMenu = createMenu(
+    ui,
+    "Bank accounts",
+    bankAccountsSheetMenuItems
+  );
   const gasMenu = createMenu(ui, "GAS Menu", gasMenuItems);
   gasMenu
     .addSeparator()
@@ -26,6 +27,4 @@ export function buildGasMenu(ui: GoogleAppsScript.Base.Ui) {
     .addSeparator()
     .addSubMenu(sheetMenu)
     .addToUi();
-
-  FastLog.finish(buildGasMenu.name, startTime);
 }

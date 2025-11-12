@@ -24,6 +24,7 @@ import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { withLog } from "@logging";
 import { ensureQueueDateFormats, queueSetup } from "@queue/queueSetup";
 import { purgeQueuesOldData, queueWorker } from "@queue/queueWorker";
+import { storeAccountSheetNames } from "@sheets/accountSheetFunctions";
 import { validateAccountKeys } from "@sheets/validateAccountKeys";
 import type {
   FixSheetFlowInput,
@@ -281,6 +282,10 @@ export function GAS_showOpenAccounts() {
 export function GAS_sortSheets() {
   const spreadsheet = getFinancesSpreadsheet();
   new OurFinances(spreadsheet).sortSheets();
+}
+
+export function GAS_storeAccountSheetNames() {
+  withLog(GAS_storeAccountSheetNames.name, storeAccountSheetNames)();
 }
 
 export function GAS_toBalanceSheet() {

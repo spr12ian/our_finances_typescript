@@ -70,7 +70,6 @@ export function withLog<T>(
   label: string,
   fn: (...args: any[]) => T
 ): (...args: any[]) => T {
-  Logger.log("withLog called");
   return function (...args: any[]): T {
     Logger.log(`label: ${label}`);
     const finish = functionStart(label);

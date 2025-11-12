@@ -1,4 +1,4 @@
-import { FastLog } from "@logging";
+import { FastLog, withLog } from "@logging";
 import { buildAccountsMenu } from "../menus/buildAccountsMenu";
 import { buildGasMenu } from "../menus/buildGasMenu";
 import { buildSectionsMenu } from "../menus/buildSectionsMenu";
@@ -13,10 +13,12 @@ export function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
 }
 
 export function buildUiMenus(e: GoogleAppsScript.Events.SheetsOnOpen) {
-  Logger.log("buildUiMenus called");
+  const fn=buildUiMenus.name;
+  FastLog.info(fn, "Called");
+
   const ui = SpreadsheetApp.getUi();
 
-  buildAccountsMenu(ui, e);
-  buildGasMenu(ui);
-  buildSectionsMenu(ui);
+  withLog(fn, buildAccountsMenu)(ui, e);
+  withLog(fn, buildGasMenu)(ui);
+  withLog(fn, buildSectionsMenu)(ui);
 }

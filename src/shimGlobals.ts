@@ -48,6 +48,7 @@ export const shimGlobals = [
   "showMonthlyAccounts",
   "showOpenAccounts",
   "sortSheets",
+  "storeAccountSheetNames",
   "toBalanceSheet",
   "trimAllSheets",
   "trimSheet",

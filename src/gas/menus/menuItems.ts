@@ -27,12 +27,12 @@ export const bankAccountsSheetMenuItems: [string, string][] = [
 ];
 
 export const budgetMenuItems: [string, string][] = [
-  ["Budget", "budget"],
-  [MetaBudgetAnnualTransactions.SHEET.NAME, "budgetAnnualTransactions"],
-  ["Budget monthly transactions", "budgetMonthlyTransactions"],
-  [MetaBudgetAdHocTransactions.SHEET.NAME, "budgetAdHocTransactions"],
-  ["Budget predicted spend", "budgetPredictedSpend"],
-  ["Budget weekly transactions", "budgetWeeklyTransactions"],
+  ["Budget", "toBudget"],
+  [MetaBudgetAnnualTransactions.SHEET.NAME, "toBudgetAnnualTransactions"],
+  ["Budget monthly transactions", "toBudgetMonthlyTransactions"],
+  [MetaBudgetAdHocTransactions.SHEET.NAME, "toBudgetAdHocTransactions"],
+  ["Budget predicted spend", "toBudgetPredictedSpend"],
+  ["Budget weekly transactions", "toBudgetWeeklyTransactions"],
 ];
 
 export const gasMenuItems: [string, string][] = [

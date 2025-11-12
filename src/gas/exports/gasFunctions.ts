@@ -55,30 +55,6 @@ export function GAS_applyDescriptionReplacements() {
   )();
 }
 
-export function GAS_budget() {
-  goToSheet(MetaBudget.SHEET.NAME);
-}
-
-export function GAS_budgetAdHocTransactions() {
-  goToSheet(MetaBudgetAdHocTransactions.SHEET.NAME);
-}
-
-export function GAS_budgetAnnualTransactions() {
-  goToSheet(MetaBudgetAnnualTransactions.SHEET.NAME);
-}
-
-export function GAS_budgetMonthlyTransactions() {
-  goToSheet(MetaBudgetMonthlyTransactions.SHEET.NAME);
-}
-
-export function GAS_budgetPredictedSpend() {
-  goToSheet(MetaBudgetPredictedSpend.SHEET.NAME);
-}
-
-export function GAS_budgetWeeklyTransactions() {
-  goToSheet(MetaBudgetWeeklyTransactions.SHEET.NAME);
-}
-
 export function GAS_categories() {
   goToSheet(MetaCategories.SHEET.NAME);
 }
@@ -290,6 +266,30 @@ export function GAS_storeAccountSheetNames() {
 
 export function GAS_toBalanceSheet() {
   withLog(GAS_toBalanceSheet.name, goToSheet)(MetaBalanceSheet.SHEET.NAME);
+}
+
+export function GAS_toBudget() {
+  goToSheet(MetaBudget.SHEET.NAME);
+}
+
+export function GAS_toBudgetAdHocTransactions() {
+  goToSheet(MetaBudgetAdHocTransactions.SHEET.NAME);
+}
+
+export function GAS_toBudgetAnnualTransactions() {
+  goToSheet(MetaBudgetAnnualTransactions.SHEET.NAME);
+}
+
+export function GAS_toBudgetMonthlyTransactions() {
+  goToSheet(MetaBudgetMonthlyTransactions.SHEET.NAME);
+}
+
+export function GAS_toBudgetPredictedSpend() {
+  goToSheet(MetaBudgetPredictedSpend.SHEET.NAME);
+}
+
+export function GAS_toBudgetWeeklyTransactions() {
+  goToSheet(MetaBudgetWeeklyTransactions.SHEET.NAME);
 }
 
 export function GAS_trimAllSheets() {

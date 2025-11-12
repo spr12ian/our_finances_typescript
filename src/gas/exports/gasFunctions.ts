@@ -330,11 +330,6 @@ export function GAS_updateOpenBalances() {
   withLog(startedBy, startWF)(workFlowName, firstStep, input);
 }
 
-export function GAS_updateSpreadsheetSummary() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).updateSpreadsheetSummary();
-}
-
 export function GAS_updateTransactions() {
   const spreadsheet = getFinancesSpreadsheet();
   new OurFinances(spreadsheet).updateTransactions();

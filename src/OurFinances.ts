@@ -21,7 +21,6 @@ import { FastLog } from "@logging/FastLog";
 import type { UpcomingDebit } from "@sheets/budgetTypes";
 import { BudgetAnnualTransactions } from "@sheets/classes/BudgetAnnualTransactions";
 import { Dependencies } from "@sheets/classes/Dependencies";
-import { SpreadsheetSummary } from "@sheets/classes/SpreadsheetSummary";
 import { isAccountSheet } from "./features/sheets/accountSheetFunctions";
 import { AccountSheet } from "./features/sheets/classes/AccountSheet";
 import { BankAccounts } from "./features/sheets/classes/BankAccounts";
@@ -45,7 +44,6 @@ export class OurFinances {
   #budgetWeeklyTransactions?: BudgetWeeklyTransactions;
   #checkFixedAmounts?: CheckFixedAmounts;
   readonly #spreadsheet: Spreadsheet;
-  #spreadsheetSummary?: SpreadsheetSummary;
   #transactionCategories?: TransactionCategories;
   #transactions?: Transactions;
   #howManyDaysAhead?: number;
@@ -127,13 +125,6 @@ export class OurFinances {
       this.#howManyDaysAhead = this.bankDebitsDue.howManyDaysAhead;
     }
     return this.#howManyDaysAhead;
-  }
-
-  get spreadsheetSummary() {
-    if (typeof this.#spreadsheetSummary === "undefined") {
-      this.#spreadsheetSummary = new SpreadsheetSummary(this.#spreadsheet);
-    }
-    return this.#spreadsheetSummary;
   }
 
   get transactionCategories() {
@@ -248,8 +239,6 @@ export class OurFinances {
     FastLog.log(`Finished OurFinances.fixAccountSheet`);
   }
 
-
-
   sendDailyHtmlEmail(): void {
     const fixedAmountMismatches = this.fixedAmountMismatches;
     const upcomingDebits = this.upcomingDebits;
@@ -331,10 +320,6 @@ export class OurFinances {
     }
 
     FastLog.log(`Finished OurFinances.updateAccountSheetBalances`);
-  }
-
-  updateSpreadsheetSummary() {
-    this.spreadsheetSummary.update();
   }
 
   updateTransactions() {

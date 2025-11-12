@@ -4,13 +4,12 @@
 // It should be updated whenever sheets are added or removed.
 // The list is in alphabetical order.
 // It includes hidden and system sheets.
-// Last updated 2025-09-30
+// Last updated 2025-11-12
 export const sheetNames = [
   "$Queue",
   "$QueueDead",
   "$Status",
   "Assets",
-  "BMONZO",
   "Balance sheet",
   "Bank accounts",
   "Bank cards",
@@ -71,7 +70,6 @@ export const sheetNames = [
   "Income interest",
   "Income planning",
   "Income property",
-  "Income self-employment",
   "Institutions",
   "Josh",
   "Liabilities",
@@ -89,7 +87,9 @@ export const sheetNames = [
   "Our money history",
   "PMT",
   "Pension UK Gov",
+  "Pension Zurich",
   "Pensions",
+  "PensionsX",
   "People",
   "Property",
   "Property L1 3BH",
@@ -100,7 +100,6 @@ export const sheetNames = [
   "Query lookup",
   "Receipts",
   "Shares",
-  "Spreadsheet summary",
   "Summary",
   "Transaction categories",
   "Transactions",

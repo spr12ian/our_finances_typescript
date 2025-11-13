@@ -189,7 +189,7 @@ export const MetaDescriptionReplacements = {
   SHEET: { NAME: "Description replacements" },
 };
 
-export const MetaHMRC_B = {
+export const MetaHMRC_TaxReturn = {
   CELLS: {
     DATE_3: "B3:B3",
     MONEY_20: "C20:J26",
@@ -230,51 +230,7 @@ export const MetaHMRC_B = {
     CATEGORY: oneBased(2),
     LATEST_TAX_YEAR: oneBased(3),
   } as const satisfies Record<string, OneBased<number>>,
-  SHEET: { NAME: "HMRC B", HEADER_ROW: 1 },
-};
-
-export const MetaHMRC_S = {
-  CELLS: {
-    DATE_3: "B3:B3",
-    MONEY_20: "C20:J26",
-    MONEY_28: "C28:J36",
-    MONEY_38: "C38:J41",
-    MONEY_45: "C45:J49",
-    MONEY_51: "C51:J58",
-    MONEY_66: "C66:J67",
-    MONEY_73: "C73:J73",
-    DATE_78: "B78:B79",
-    MONEY_81: "C81:J81",
-    MONEY_114: "C114:J116",
-    MONEY_118: "C118:J118",
-    MONEY_127: "C127:J129",
-    MONEY_134: "C134:J139",
-    MONEY_141: "C141:J148",
-    MONEY_150: "C150:J159",
-    MONEY_176: "C176:J180",
-    MONEY_183: "C183:J188",
-    MONEY_202: "C202:J202",
-    DATE_210: "B210:B210",
-    MONEY_213: "C213:J215",
-    MONEY_225: "C225:J225",
-    MONEY_227: "C227:J228",
-    MONEY_234: "C234:J234",
-    MONEY_270: "C270:J270",
-    MONEY_277: "C277:J278",
-    MONEY_280: "C280:J280",
-    MONEY_327: "C327:J327",
-    MONEY_332: "C332:J332",
-    MONEY_335: "C335:J337",
-    DATE_382: "C382:J382",
-    MONEY_384: "C384:J384",
-    MONEY_386: "C386:J390",
-  } as const satisfies Record<string, string>,
-  COLUMNS: {
-    QUESTIONS: oneBased(1),
-    CATEGORY: oneBased(2),
-    LATEST_TAX_YEAR: oneBased(3),
-  } as const satisfies Record<string, OneBased<number>>,
-  SHEET: { NAME: "HMRC S", HEADER_ROW: 1 },
+  SHEET: { NAME: "HMRC Tax return", HEADER_ROW: 1 },
 };
 
 export const MetaMoneyOwedToUs = {

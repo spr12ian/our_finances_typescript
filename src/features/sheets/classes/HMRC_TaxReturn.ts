@@ -1,21 +1,21 @@
 import type { Spreadsheet } from "@domain";
-import { MetaHMRC_S as Meta } from "@lib/constants";
-import { FastLog, WithLog } from "@lib/logging";
+import { MetaHMRC_TaxReturn as Meta } from "@lib/constants";
 import { getA1Ranges } from "@lib/getA1Ranges";
+import { FastLog, WithLog } from "@lib/logging";
 import { BaseSheet } from "../core";
 
-export class HMRC_S extends BaseSheet {
+export class HMRC_TaxReturn extends BaseSheet {
   constructor(spreadsheet: Spreadsheet) {
-    FastLog.log("HMRC_S:constructor");
+    FastLog.log("HMRC_TaxReturn:constructor");
     super(Meta.SHEET.NAME, spreadsheet);
   }
 
-  @WithLog("HMRC_S:fixSheet")
+  @WithLog("HMRC_TaxReturn:fixSheet")
   fixSheet(): void {
     this.formatSheet();
   }
 
-  @WithLog("HMRC_S:formatSheet")
+  @WithLog("HMRC_TaxReturn:formatSheet")
   formatSheet(): void {
     const sheet = this.sheet.raw;
 

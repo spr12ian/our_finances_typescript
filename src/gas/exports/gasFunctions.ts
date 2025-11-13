@@ -12,8 +12,7 @@ import {
   MetaBudgetWeeklyTransactions,
   MetaCategories,
   MetaCategoryClash,
-  MetaHMRC_B,
-  MetaHMRC_S,
+  MetaHMRC_TaxReturn,
   MetaNotInTransactionCategories,
   MetaTransactionCategories,
   MetaTransactionsByDate,
@@ -125,12 +124,8 @@ export function GAS_goToSheetCategoryClash() {
   goToSheet(MetaCategoryClash.SHEET.NAME);
 }
 
-export function GAS_goToSheetHMRC_B() {
-  goToSheet(MetaHMRC_B.SHEET.NAME);
-}
-
-export function GAS_goToSheetHMRC_S() {
-  goToSheet(MetaHMRC_S.SHEET.NAME);
+export function GAS_goToSheetHMRC_TaxReturn() {
+  goToSheet(MetaHMRC_TaxReturn.SHEET.NAME);
 }
 
 export function GAS_goToSheetHMRCTransactionsSummary() {

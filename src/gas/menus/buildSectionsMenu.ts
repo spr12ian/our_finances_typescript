@@ -56,10 +56,9 @@ export function buildSectionsMenu(ui: GoogleAppsScript.Base.Ui) {
           "HMRC Transactions summary",
           "goToSheetHMRCTransactionsSummary"
         )
-        .addItem("Self Assessment Ian Bernard", "goToSheetHMRC_B")
-        .addItem("Self Assessment Ian Sweeney", "goToSheetHMRC_S")
         .addItem("SES Childcare", "goToSheetHMRCTransactionsSummary")
         .addItem("SES Property management", "goToSheetHMRCTransactionsSummary")
+        .addItem("Tax return", "goToSheetHMRC_TaxReturn")
         .addItem("TR People", "goToSheetPeople")
         .addItem("UKP Fownes Street", "goToSheetHMRCTransactionsSummary")
         .addItem("UKP One Park West", "goToSheetHMRCTransactionsSummary")

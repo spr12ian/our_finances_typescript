@@ -1,5 +1,5 @@
 // @constants/sheetNames.ts
-// The sheetnames list was generated using the logSheetNames function
+// The sheetNames list was generated using the logSheetNames function
 // then cut and pasted here to avoid a runtime dependency.
 // It should be updated whenever sheets are added or removed.
 // The list is in alphabetical order.
@@ -79,7 +79,6 @@ export const sheetNames = [
   "Money owed by us",
   "Money owed to us",
   "My formulas",
-  "My formulas examples",
   "Not in transaction categories",
   "Our money",
   "Our money history",
@@ -190,6 +189,7 @@ export const sheetNames = [
   "_SSAZ01",
   "_SSAZ02",
   "_SSAZ03",
+  "_SSMART",
   "_SSTARL",
   "_STAFIX",
   "_STASAV",

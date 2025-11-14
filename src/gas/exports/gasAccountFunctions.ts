@@ -312,6 +312,10 @@ export function GAS_goToSheetLastRow_SSAZ03() {
   withLog(GAS_goToSheetLastRow_SSAZ03.name, goToSheetLastRow)("_SSAZ03");
 }
 
+export function GAS_goToSheetLastRow_SSMART() {
+  withLog(GAS_goToSheetLastRow_SSMART.name, goToSheetLastRow)("_SSMART");
+}
+
 export function GAS_goToSheetLastRow_SSTARL() {
   withLog(GAS_goToSheetLastRow_SSTARL.name, goToSheetLastRow)("_SSTARL");
 }

@@ -124,6 +124,10 @@ export function GAS_goToSheetLastRow_BSATAX() {
   withLog(GAS_goToSheetLastRow_BSATAX.name, goToSheetLastRow)("_BSATAX");
 }
 
+export function GAS_goToSheetLastRow_BSMART() {
+  withLog(GAS_goToSheetLastRow_BSMART.name, goToSheetLastRow)("_BSMART");
+}
+
 export function GAS_goToSheetLastRow_BTES01() {
   withLog(GAS_goToSheetLastRow_BTES01.name, goToSheetLastRow)("_BTES01");
 }

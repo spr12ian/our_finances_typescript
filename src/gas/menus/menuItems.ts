@@ -41,7 +41,6 @@ export const gasMenuItems: [string, string][] = [
   ["Sort sheet order", "sortSheets"],
   ["Store account sheet names", "storeAccountSheetNames"],
   ["Trim all sheets", "trimAllSheets"],
-  ["Update spreadsheet summary", "updateSpreadsheetSummary"],
   ["Validate all menu function names", "validateAllMenuFunctionNames"],
 ];
 

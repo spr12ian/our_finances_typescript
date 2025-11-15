@@ -1,7 +1,7 @@
 import type { Sheet, Spreadsheet } from "@domain";
 import { MetaAccountSheet as Meta, MetaBankAccounts } from "@lib/constants";
 import { getErrorMessage } from "@lib/errors";
-import { FastLog } from "@lib/logging";
+import { FastLog, WithLog } from "@lib/logging";
 import { xLookup } from "@lib/xLookup";
 import { DescriptionReplacements } from "@sheets/classes/DescriptionReplacements";
 import { BaseSheet } from "../core";
@@ -63,6 +63,7 @@ export class AccountSheet extends BaseSheet {
     return 0; // if every cell is 'FUTURE'
   }
 
+  @WithLog("AccountSheet.applyDescriptionReplacements")
   applyDescriptionReplacements() {
     const descriptionReplacements = new DescriptionReplacements(
       this.spreadsheet

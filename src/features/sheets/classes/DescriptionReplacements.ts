@@ -1,6 +1,7 @@
 /// <reference types="google-apps-script" />
 import type { Sheet } from "@domain";
 import { Spreadsheet } from "@domain";
+import { WithLog } from '../../../lib/logging/WithLog';
 import {
   MetaDescriptionReplacements as Meta,
   MetaAccountSheet,
@@ -13,6 +14,7 @@ export class DescriptionReplacements {
     this.sheet = this.spreadsheet.getSheet(Meta.SHEET.NAME);
   }
 
+  @WithLog("DescriptionReplacements.applyReplacements")
   applyReplacements(accountSheet: Sheet) {
     const accountSheetName = accountSheet.name;
     if (accountSheetName === this.name) {

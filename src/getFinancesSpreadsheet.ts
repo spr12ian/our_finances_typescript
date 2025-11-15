@@ -154,10 +154,17 @@ function wrapAndMemoize(
   gas: GoogleAppsScript.Spreadsheet.Spreadsheet,
   id?: string
 ): Spreadsheet {
+  const fn=wrapAndMemoize.name;
+  FastLog.info(fn, `Called`);
+  FastLog.info(fn, `Wrapping spreadsheet ID: ${gas.getId()}`);
   // If we already wrapped this exact object, reuse it.
-  if (memo.gas === gas && memo.wrapped) return memo.wrapped;
+  if (memo.gas === gas && memo.wrapped) {
+    FastLog.info(fn, "Reusing existing wrapped spreadsheet");
+    return memo.wrapped
+  };
   memo.gas = gas;
   memo.id = id ?? gas.getId();
   memo.wrapped = new Spreadsheet(gas);
+  FastLog.info(fn, `Wrapped spreadsheet ID: ${gas.getId()}`);
   return memo.wrapped;
 }

@@ -4,13 +4,14 @@ import { withLog } from "../../lib/logging/WithLog";
 
 export function applyDescriptionReplacements() {
   const fn = applyDescriptionReplacements.name;
-  const accountSheet = getActiveAccountSheet();
+  const accountSheet = withLog(fn, getActiveAccountSheet)();
   if (accountSheet) {
-    withLog(fn, accountSheet.applyDescriptionReplacements)();
+    accountSheet.applyDescriptionReplacements();
   }
 }
 
 function getActiveAccountSheet(): AccountSheet {
-  const spreadsheet = getFinancesSpreadsheet();
+  const fn= getActiveAccountSheet.name;
+  const spreadsheet = withLog(fn, getFinancesSpreadsheet)();
   return new AccountSheet(spreadsheet.activeSheet, spreadsheet);
 }

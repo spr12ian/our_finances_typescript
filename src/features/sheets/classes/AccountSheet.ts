@@ -10,6 +10,7 @@ const COLOR_FUTURE_ROWS = "#D0E0E3";
 
 export class AccountSheet extends BaseSheet {
   constructor(readonly sheet: Sheet, readonly spreadsheet: Spreadsheet) {
+    FastLog.log(`AccountSheet: constructor for sheet ${sheet.name}`);
     if (sheet.name[0] !== "_") {
       throw new Error(`${sheet.name} is NOT an account sheet`);
     }

@@ -217,7 +217,7 @@ export const MetaHMRC_TaxReturn = {
     MONEY_234: "C234:I234",
     MONEY_270: "C270:I270",
     MONEY_277: "C277:I278",
-    MONEY_280: "C280:I280",
+    MONEY_280: "C280:I289",
     MONEY_291: "C291:I291",
     MONEY_327: "C327:I327",
     MONEY_332: "C332:I332",

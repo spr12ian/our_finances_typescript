@@ -2,7 +2,9 @@ import type { Sheet } from "@domain";
 import { Spreadsheet } from "@domain";
 import { MetaBankAccounts as Meta } from "@lib/constants";
 import { FastLog, methodStart, propertyStart } from "@logging";
+import type { SheetKey } from "src/constants/sheetNames";
 import { isAccountSheet } from "../accountSheetFunctions";
+import { BaseSheet } from "../core";
 import { AccountSheet } from "./AccountSheet";
 import { AccountSheets } from "./AccountSheets";
 
@@ -26,14 +28,13 @@ type UpdateKeyBalanceResult = {
   row: number;
   reason?: string;
 };
-export class BankAccounts {
+export class BankAccounts extends BaseSheet {
+  static readonly sheetName: SheetKey = Meta.SHEET.NAME as SheetKey;
   #keys?: string[];
   #rowByKey?: Map<string, number>;
 
-  private readonly sheet: Sheet;
-
-  constructor(private readonly spreadsheet: Spreadsheet) {
-    this.sheet = this.spreadsheet.getSheetByMeta(Meta);
+  constructor(spreadsheet: Spreadsheet) {
+    super(Meta.SHEET.NAME, spreadsheet);
   }
 
   get keys(): string[] {

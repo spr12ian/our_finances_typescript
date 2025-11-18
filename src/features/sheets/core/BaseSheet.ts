@@ -1,7 +1,11 @@
 import type { Sheet, Spreadsheet } from "@domain";
 import { FastLog, WithLog, methodStart } from "@logging";
+import type { SheetKey } from "src/constants/sheetNames";
 
 export abstract class BaseSheet {
+  // Every subclass must declare this:
+  static readonly sheetName: SheetKey;
+
   /** Public sheet display name (useful for menus/logs). */
   public readonly sheetName: string;
 

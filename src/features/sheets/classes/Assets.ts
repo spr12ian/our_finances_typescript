@@ -1,6 +1,7 @@
 import type { Spreadsheet } from "@domain";
 import { MetaAssets as Meta } from "@lib/constants";
 import { WithLog } from "@lib/logging";
+import type { SheetKey } from "src/constants/sheetNames";
 import { BaseSheet } from "../core";
 import { BankAccounts } from "./BankAccounts";
 import { MoneyOwedToUs } from "./MoneyOwedToUs";
@@ -9,6 +10,7 @@ import { Property } from "./Property";
 import { Shares } from "./Shares";
 
 export class Assets extends BaseSheet {
+  static readonly sheetName: SheetKey = Meta.SHEET.NAME as SheetKey;
   constructor(spreadsheet: Spreadsheet) {
     super(Meta.SHEET.NAME, spreadsheet);
   }

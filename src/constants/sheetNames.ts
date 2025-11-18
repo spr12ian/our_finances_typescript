@@ -5,6 +5,10 @@
 // The list is in alphabetical order.
 // It includes hidden and system sheets.
 // Last updated 2025-11-12
+
+// sheetNames must be 'as const' to use this type
+export type SheetKey = (typeof sheetNames)[number];
+
 export const sheetNames = [
   "$Queue",
   "$QueueDead",
@@ -207,4 +211,4 @@ export const sheetNames = [
   "_SVMSAV",
   "_SWALLE",
   "_SZOPA1",
-];
+] as const;

@@ -10,7 +10,7 @@ import { Property } from "./Property";
 import { Shares } from "./Shares";
 
 export class Assets extends BaseSheet {
-  static readonly sheetName: SheetKey = Meta.SHEET.NAME as SheetKey;
+  static readonly sheetName: SheetKey = Meta.SHEET.NAME;
   constructor(spreadsheet: Spreadsheet) {
     super(Meta.SHEET.NAME, spreadsheet);
   }

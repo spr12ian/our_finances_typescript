@@ -29,7 +29,7 @@ type UpdateKeyBalanceResult = {
   reason?: string;
 };
 export class BankAccounts extends BaseSheet {
-  static readonly sheetName: SheetKey = Meta.SHEET.NAME as SheetKey;
+  static readonly sheetName: SheetKey = Meta.SHEET.NAME;
   #keys?: string[];
   #rowByKey?: Map<string, number>;
 

@@ -1,11 +1,13 @@
 // constants.ts
 
+import { defineSheetMeta } from "@lib/metaHelpers";
 import type { OneBased } from "../types/oneBased";
 import { oneBased } from "../types/oneBased";
 
 export const ACCOUNT_PREFIX = "_";
 export const LOCALE = "en-GB" as const;
 
+// No SHEET here, so no need for defineSheetMeta
 export const MetaAccountSheet = {
   COLUMN_WIDTHS: {
     DATE: 75,
@@ -41,7 +43,7 @@ export const MetaAccountSheet = {
   MINIMUM_COLUMNS: 8,
 };
 
-export const MetaAssets = {
+export const MetaAssets = defineSheetMeta({
   CELLS: {
     BANK_ACCOUNTS_CELL: "B2",
     INVESTMENTS_CELL: "B3",
@@ -50,25 +52,14 @@ export const MetaAssets = {
     PROPERTY_CELL: "B4",
   } as const satisfies Record<string, string>,
   SHEET: { NAME: "Assets" },
-};
+} as const);
 
-export const MetaBMONZO = {
-  FORMULA_CONFIG: [
-    {
-      cell: "A1",
-      formula:
-        '=IMPORTRANGE("https://docs.google.com/spreadsheets/d/11EkOxSPkTAUi4fbbBe2gsieHvkKWO8MiFKlT35LRQEw/edit?usp=drive_link","A1:R")',
-    },
-  ] as { cell: string; formula: string }[],
-  SHEET: { NAME: "BMONZO" },
-};
-
-export const MetaBalanceSheet = {
+export const MetaBalanceSheet = defineSheetMeta({
   SHEET: { NAME: "Balance sheet" },
-};
+} as const);
 
 // Split KEY_LABEL out so COLUMNS can be strictly numeric & branded
-export const MetaBankAccounts = {
+export const MetaBankAccounts = defineSheetMeta({
   COLUMNS: {
     BALANCE: oneBased(13), // Column M
     BALANCE_UPDATED: oneBased(19), // Column S
@@ -95,13 +86,13 @@ export const MetaBankAccounts = {
     LINDA_H: "L",
   },
   SHEET: { NAME: "Bank accounts" },
-};
+} as const);
 
-export const MetaBudget = {
+export const MetaBudget = defineSheetMeta({
   SHEET: { NAME: "Budget" },
-};
+} as const);
 
-export const MetaBudgetAdHocTransactions = {
+export const MetaBudgetAdHocTransactions = defineSheetMeta({
   SHEET: { NAME: "Budget ad hoc transactions" },
   COLUMNS: {
     DATE: oneBased(1),
@@ -111,9 +102,9 @@ export const MetaBudgetAdHocTransactions = {
     FROM_ACCOUNT: oneBased(7),
     PAYMENT_TYPE: oneBased(8),
   } as const satisfies Record<string, OneBased<number>>,
-};
+} as const);
 
-export const MetaBudgetAnnualTransactions = {
+export const MetaBudgetAnnualTransactions = defineSheetMeta({
   COLUMNS: {
     DATE: oneBased(1),
     DESCRIPTION: oneBased(2),
@@ -122,9 +113,9 @@ export const MetaBudgetAnnualTransactions = {
     PAYMENT_TYPE: oneBased(6),
   } as const satisfies Record<string, OneBased<number>>,
   SHEET: { NAME: "Budget annual transactions" },
-};
+} as const);
 
-export const MetaBudgetMonthlyTransactions = {
+export const MetaBudgetMonthlyTransactions = defineSheetMeta({
   COLUMNS: {
     DATE: oneBased(1),
     DESCRIPTION: oneBased(2),
@@ -133,9 +124,9 @@ export const MetaBudgetMonthlyTransactions = {
     PAYMENT_TYPE: oneBased(10),
   } as const satisfies Record<string, OneBased<number>>,
   SHEET: { NAME: "Budget monthly transactions" },
-};
+} as const);
 
-export const MetaBudgetPredictedSpend = {
+export const MetaBudgetPredictedSpend = defineSheetMeta({
   COLUMNS: {
     AD_HOC: oneBased(9),
     ANNUAL: oneBased(8),
@@ -148,9 +139,9 @@ export const MetaBudgetPredictedSpend = {
     WEEKLY: oneBased(5),
   } as const satisfies Record<string, OneBased<number>>,
   SHEET: { NAME: "Budget predicted spend" },
-};
+} as const);
 
-export const MetaBudgetWeeklyTransactions = {
+export const MetaBudgetWeeklyTransactions = defineSheetMeta({
   COLUMNS: {
     DATE: oneBased(1),
     DESCRIPTION: oneBased(2),
@@ -159,17 +150,17 @@ export const MetaBudgetWeeklyTransactions = {
     PAYMENT_TYPE: oneBased(16),
   } as const satisfies Record<string, OneBased<number>>,
   SHEET: { NAME: "Budget weekly transactions" },
-};
+} as const);
 
-export const MetaCategories = {
+export const MetaCategories = defineSheetMeta({
   SHEET: { NAME: "Categories" },
-};
+} as const);
 
-export const MetaCategoryClash = {
+export const MetaCategoryClash = defineSheetMeta({
   SHEET: { NAME: "Category clash" },
-};
+} as const);
 
-export const MetaCheckFixedAmounts = {
+export const MetaCheckFixedAmounts = defineSheetMeta({
   COLUMNS: {
     TAX_YEAR: oneBased(1),
     CATEGORY: oneBased(2),
@@ -183,13 +174,13 @@ export const MetaCheckFixedAmounts = {
     MIN_COLUMNS: 6,
     HEADER_ROW: 1,
   },
-};
+} as const);
 
-export const MetaDescriptionReplacements = {
+export const MetaDescriptionReplacements = defineSheetMeta({
   SHEET: { NAME: "Description replacements" },
-};
+} as const);
 
-export const MetaHMRC_TaxReturn = {
+export const MetaHMRC_TaxReturn = defineSheetMeta({
   CELLS: {
     DATE_3: "B3:B3",
     MONEY_20: "C20:I26",
@@ -233,20 +224,20 @@ export const MetaHMRC_TaxReturn = {
     LATEST_TAX_YEAR: oneBased(3),
   } as const satisfies Record<string, OneBased<number>>,
   SHEET: { NAME: "HMRC Tax return", HEADER_ROW: 1 },
-};
+} as const);
 
-export const MetaMoneyOwedToUs = {
+export const MetaMoneyOwedToUs = defineSheetMeta({
   COLUMNS: {
     OWED_TO_US_AMOUNT: oneBased(2), // Column B
   } as const satisfies Record<string, OneBased<number>>,
   SHEET: { NAME: "Money owed to us" },
-};
+} as const);
 
-export const MetaNotInTransactionCategories = {
+export const MetaNotInTransactionCategories = defineSheetMeta({
   SHEET: { NAME: "Not in transaction categories" },
-};
+} as const);
 
-export const MetaOurMoney = {
+export const MetaOurMoney = defineSheetMeta({
   CELLS: {
     DATE_AS_AT: "A2",
     MONEY_TOTAL: "A5",
@@ -254,30 +245,30 @@ export const MetaOurMoney = {
     MONEY_IN_THE_BANK: "A11",
   } as const satisfies Record<string, string>,
   SHEET: { NAME: "Our money" },
-};
+} as const);
 
-export const MetaPensions = {
+export const MetaPensions = defineSheetMeta({
   COLUMNS: {
     PENSION_VALUE: oneBased(4), // Column D
   } as const satisfies Record<string, OneBased<number>>,
   SHEET: { NAME: "Pensions" },
-};
+} as const);
 
-export const MetaProperty = {
+export const MetaProperty = defineSheetMeta({
   COLUMNS: {
     PROPERTY_VALUE: oneBased(3), // Column C
   } as const satisfies Record<string, OneBased<number>>,
   SHEET: { NAME: "Property" },
-};
+} as const);
 
-export const MetaShares = {
+export const MetaShares = defineSheetMeta({
   COLUMNS: {
     BALANCE: oneBased(6), // Column F
   } as const satisfies Record<string, OneBased<number>>,
   SHEET: { NAME: "Shares" },
-};
+} as const);
 
-export const MetaSSACRD = {
+export const MetaSSACRD = defineSheetMeta({
   FORMULA_CONFIG: [
     {
       cell: "E1",
@@ -292,13 +283,13 @@ export const MetaSSACRD = {
   NUM_COLUMNS: 4,
   SHEET: { NAME: "Transaction categories" },
   START_ROW: 2,
-};
+} as const);
 
-export const MetaTransactions = {
+export const MetaTransactions = defineSheetMeta({
   SHEET: { NAME: "Transactions" },
-};
+} as const);
 
-export const MetaTransactionCategories = {
+export const MetaTransactionCategories = defineSheetMeta({
   FORMULA_CONFIG: [
     {
       cell: "B1",
@@ -314,12 +305,12 @@ export const MetaTransactionCategories = {
   NUM_COLUMNS: 4,
   SHEET: { NAME: "Transaction categories" },
   START_ROW: 2,
-};
+} as const);
 
-export const MetaTransactionsByDate = {
+export const MetaTransactionsByDate = defineSheetMeta({
   SHEET: { NAME: "Transactions by date" },
-};
+} as const);
 
-export const MetaUncategorisedByDate = {
+export const MetaUncategorisedByDate = defineSheetMeta({
   SHEET: { NAME: "Uncategorised by date" },
-};
+} as const);

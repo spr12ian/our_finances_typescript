@@ -6,7 +6,7 @@ import { getA1Ranges } from '@lib/getA1Ranges';
 import type { SheetKey } from "src/constants/sheetNames";
 
 export class OurMoney extends BaseSheet {
-  static readonly sheetName: SheetKey = Meta.SHEET.NAME as SheetKey;
+  static readonly sheetName: SheetKey = Meta.SHEET.NAME;
 
   constructor(spreadsheet: Spreadsheet) {
     FastLog.log("OurMoney:constructor");

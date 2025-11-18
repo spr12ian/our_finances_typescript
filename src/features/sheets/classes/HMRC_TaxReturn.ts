@@ -6,7 +6,7 @@ import { BaseSheet } from "../core";
 import type { SheetKey } from "src/constants/sheetNames";
 
 export class HMRC_TaxReturn extends BaseSheet {
-  static readonly sheetName: SheetKey = Meta.SHEET.NAME as SheetKey;
+  static readonly sheetName: SheetKey = Meta.SHEET.NAME;
 
   constructor(spreadsheet: Spreadsheet) {
     FastLog.log("HMRC_TaxReturn:constructor");

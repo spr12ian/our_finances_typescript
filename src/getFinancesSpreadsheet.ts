@@ -59,12 +59,9 @@ export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
   const active =
     src ??
     (isSimpleTrigger
-      ? withLog(fn,SpreadsheetApp.getActiveSpreadsheet)() || null
-      : withLog(fn,Spreadsheet.getActiveWithBackoff)() || null);
-  FastLog.info(
-    fn,
-    `Active spreadsheet ID: ${active?.getId() ?? "<none>"}`
-  );
+      ? withLog(fn, SpreadsheetApp.getActiveSpreadsheet)() || null
+      : withLog(fn, Spreadsheet.getActiveWithBackoff)() || null);
+  FastLog.info(fn, `Active spreadsheet ID: ${active?.getId() ?? "<none>"}`);
 
   // Fast path: configuredId present and matches active/src
   if (configuredId) {
@@ -77,7 +74,10 @@ export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
       typeof src.getId === "function" &&
       src.getId() === configuredId
     ) {
-      FastLog.info(fn, "Using event source spreadsheet as finances spreadsheet");
+      FastLog.info(
+        fn,
+        "Using event source spreadsheet as finances spreadsheet"
+      );
       return wrapAndMemoize(src, configuredId);
     }
   }
@@ -129,16 +129,27 @@ export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
     return wrapAndMemoize(gas, configuredId);
   } catch (err: any) {
     const msg = String(err?.message ?? "");
+    FastLog.error(fn, `Error opening finances spreadsheet: ${msg}`);
+
     if (/Required permissions|insufficient|not granted/i.test(msg)) {
       throw new Error(
         "Not authorized to open the finances spreadsheet. Run a function from the editor once to grant permissions, or invoke via an installable trigger."
       );
     }
+
     if (/no item with the given id|invalid/i.test(msg)) {
       throw new Error(
         `FINANCES_SPREADSHEET_ID appears invalid or inaccessible: ${configuredId}`
       );
     }
+
+    if (/Service Spreadsheets failed/i.test(msg)) {
+      FastLog.warn(
+        fn,
+        "Google Sheets backend internal error when opening finances spreadsheet."
+      );
+    }
+
     throw err;
   }
 }
@@ -154,14 +165,14 @@ function wrapAndMemoize(
   gas: GoogleAppsScript.Spreadsheet.Spreadsheet,
   id?: string
 ): Spreadsheet {
-  const fn=wrapAndMemoize.name;
+  const fn = wrapAndMemoize.name;
   FastLog.info(fn, `Called`);
   FastLog.info(fn, `Wrapping spreadsheet ID: ${gas.getId()}`);
   // If we already wrapped this exact object, reuse it.
   if (memo.gas === gas && memo.wrapped) {
     FastLog.info(fn, "Reusing existing wrapped spreadsheet");
-    return memo.wrapped
-  };
+    return memo.wrapped;
+  }
   memo.gas = gas;
   memo.id = id ?? gas.getId();
   memo.wrapped = new Spreadsheet(gas);

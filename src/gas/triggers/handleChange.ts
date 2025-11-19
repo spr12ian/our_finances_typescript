@@ -16,7 +16,10 @@ export function handleChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
   try {
     const gasSheet = getTriggerEventSheet(e);
     const sheetName = gasSheet.getName();
-    if (isSheetInIgnoreList(sheetName, fn)) return;
+    if (isSheetInIgnoreList(sheetName, fn)) {
+      FastLog.log(fn, `Sheet ${sheetName} is in ignore list; skipping change handling.`);
+      return;
+    }
 
     const ignored = new Set([
       "FORMAT",
@@ -48,7 +51,7 @@ export function handleChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
         break;
       case "OTHER":
         FastLog.log(fn, `Other change`);
-        withLog(fn, recalcFutureBalances)(new Sheet(gasSheet));
+        withLog(fn, recalcFutureBalances_)(new Sheet(gasSheet));
         break;
       case "REMOVE_ROW":
         FastLog.log(fn, `Row removed`);
@@ -59,7 +62,7 @@ export function handleChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
         const ssId = spreadsheet.id ?? "unknown";
         const key = `ONCHANGE_BALANCE:${ssId}:${sheetId}:${changeType}`;
         withReentryGuard(key, timeConstants.ONE_MINUTE_MS, () => {
-          withLog(fn, startFlow)(new Sheet(gasSheet));
+          withLog(fn, startFlow_)(new Sheet(gasSheet));
         });
         break;
       default:
@@ -75,7 +78,7 @@ export function handleChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
   }
 }
 
-function recalcFutureBalances(sheet: Sheet): void {
+function recalcFutureBalances_(sheet: Sheet): void {
   const lastRow = sheet.raw.getLastRow();
   if (lastRow <= 1) return; // only headers
 
@@ -130,8 +133,8 @@ function recalcFutureBalances(sheet: Sheet): void {
   }
 }
 
-function startFlow(sheet: Sheet) {
-  const fn = startFlow.name;
+function startFlow_(sheet: Sheet) {
+  const fn = startFlow_.name;
 
   if (isAccountSheet(sheet)) {
     FastLog.log(fn, `Sheet ${sheet.name} is an account sheet.`);

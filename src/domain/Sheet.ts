@@ -1,4 +1,5 @@
 import { FastLog, methodStart } from "@logging/FastLog";
+import { getSheetByName } from '../gas/getSheetByName';
 
 /**
  * Thin wrapper around a GAS Sheet.
@@ -19,6 +20,13 @@ export class Sheet {
    */
   public constructor(gasSheet: GoogleAppsScript.Spreadsheet.Sheet) {
     this.gasSheet = gasSheet;
+  }
+
+  static getSheetByName(
+    sheetName: string
+  ): Sheet | null {
+    const gasSheet = getSheetByName(sheetName);
+    return gasSheet ? new Sheet(gasSheet) : null;
   }
 
   get afterHeaderRange(): GoogleAppsScript.Spreadsheet.Range {
@@ -223,7 +231,7 @@ export class Sheet {
 
     logFinish();
   }
-  
+
   formatAsDate(rangeList: GoogleAppsScript.Spreadsheet.RangeList): void {
     rangeList.setNumberFormat("dd/MM/yyyy").setHorizontalAlignment("center");
   }

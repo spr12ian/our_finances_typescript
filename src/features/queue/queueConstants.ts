@@ -9,7 +9,8 @@ export const DEFAULT_BACKOFF_MS = 30 * ONE_SECOND_MS; // 30s base
 export const MAX_BACKOFF_MS = 30 * ONE_MINUTE_MS; // 30m max backoff
 export const MAX_BATCH = 6; // jobs per worker run
 export const WORKER_BUDGET_MS = 55 * ONE_SECOND_MS; // ms per worker run
-export const PRUNE_AFTER_DAYS = 7; // prune DONE/ERROR older than N days
+export const MOVE_AFTER_DAYS = 5; // Older than N days moved to dead sheet
+export const PURGE_AFTER_DAYS = 7; // Purge DONE/ERROR older than N days
 
 export const STATUS = {
   PENDING: "PENDING",

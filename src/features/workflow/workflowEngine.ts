@@ -175,21 +175,12 @@ function enqueueRunStep(
   priority?: number
 ) {
   const fn = enqueueRunStep.name;
-  const finish = functionStart(fn);
   FastLog.log(fn, rsp);
-  try {
-    const enqueue = getEnqueue();
-    const ms = Math.max(0, Math.floor(delayMs ?? 0));
-    const runAt: Date | undefined =
-      ms > 0 ? new Date(Date.now() + ms) : undefined;
-    enqueue(rsp, { runAt, priority }); // enqueue now accepts a Date
-  } catch (err) {
-    const msg = getErrorMessage(err);
-    FastLog.error(fn, msg);
-    throw new Error(msg);
-  } finally {
-    finish();
-  }
+  const enqueue = getEnqueue();
+  const ms = Math.max(0, Math.floor(delayMs ?? 0));
+  const runAt: Date | undefined =
+    ms > 0 ? new Date(Date.now() + ms) : undefined;
+  withLog(fn, enqueue)(rsp, { runAt, priority }); // enqueue now accepts a Date
 }
 
 FastLog.log("workflowEngine loaded", { ENGINE_INSTANCE_ID });

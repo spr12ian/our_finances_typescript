@@ -5,7 +5,7 @@ import { DateHelper } from "@lib/DateHelper";
 import { getErrorMessage } from "@lib/errors";
 import { ONE_DAY_MS, ONE_SECOND_MS } from "@lib/timeConstants";
 import { withScriptLock } from "@lib/withScriptLock";
-import { FastLog, functionStart } from "@logging";
+import { FastLog, withLog } from "@logging";
 import {
   setupWorkflowsOnce,
   type RunStepJob,
@@ -50,7 +50,7 @@ export function queueWorker(): void {
 
     // At this point the engine is configured and enqueueFn is wired.
     withScriptLock(() => {
-      processQueueBatch_(MAX_BATCH, WORKER_BUDGET_MS);
+      withLog(fn, processQueueBatch_)(MAX_BATCH, WORKER_BUDGET_MS);
     });
   } catch (err) {
     const errorMessage = getErrorMessage(err);
@@ -63,12 +63,37 @@ export function purgeQueuesOldData() {
   const queueSheetNames = [DEAD_SHEET_NAME, QUEUE_SHEET_NAME];
   for (const queueSheetName of queueSheetNames) {
     const queueSheet = getSheetByName(queueSheetName);
-    purgeQueueOlderThanDays(queueSheet, PRUNE_AFTER_DAYS);
+    purgeQueueOlderThanDays_(queueSheet, PRUNE_AFTER_DAYS);
+  }
+}
+
+function getLastDataRow_(sheet: GoogleAppsScript.Spreadsheet.Sheet): number {
+  const fn = getLastDataRow_.name;
+  const start = FastLog.start(fn);
+
+  try {
+    const lastRow = sheet.getLastRow();
+    if (lastRow < 2) return 1; // headers only
+
+    // Use STATUS column as a proxy for “row is in use”
+    const height = lastRow - 1;
+    const colRange = sheet.getRange(2, COL.STATUS, height, 1);
+    const colValues = colRange.getValues(); // [ [val], [val], ... ]
+
+    for (let i = colValues.length - 1; i >= 0; i--) {
+      const v = String(colValues[i][0] ?? "").trim();
+      if (v !== "") {
+        return i + 2; // convert 0-based index to 1-based row
+      }
+    }
+    return 1; // no non-empty rows
+  } finally {
+    FastLog.finish(fn, start);
   }
 }
 
 /** Prune DONE/ERROR jobs older than N days (defaults to PRUNE_AFTER_DAYS). */
-function purgeQueueOlderThanDays(
+function purgeQueueOlderThanDays_(
   sheet: GoogleAppsScript.Spreadsheet.Sheet,
   days: number = PRUNE_AFTER_DAYS
 ): number {
@@ -139,168 +164,155 @@ function purgeQueueOlderThanDays(
 // ───────────────────────────────────────────────────────────────────────────────
 function processQueueBatch_(maxJobs: number, budgetMs: number): void {
   const fn = processQueueBatch_.name;
-  const finish = functionStart(fn);
 
-  try {
-    const startedMs = Date.now();
-    const nowUtc = new Date(); // comparisons are by epoch ms; storage remains UTC
-    const sheet = getQueueSheet_();
+  const startedMs = Date.now();
+  const nowUtc = new Date(); // comparisons are by epoch ms; storage remains UTC
+  const sheet = getQueueSheet_();
 
-    const lastRow = sheet.getLastRow();
-    if (lastRow < 2) {
-      FastLog.log(fn, "No data rows (headers only); exiting");
-      return; // headers only
-    }
+  const lastDataRow = getLastDataRow_(sheet);
+  if (lastDataRow < 2) {
+    FastLog.log(fn, "No data rows (headers only or all blank); exiting");
+    return;
+  }
 
-    const range = sheet.getRange(2, 1, lastRow - 1, HEADERS.length);
-    const values = range.getValues() as JobRow[];
+  const height = lastDataRow - 1;
+  const range = sheet.getRange(2, 1, height, HEADERS.length);
+  const values = range.getValues() as JobRow[];
 
-    // filter runnable jobs
-    const runnable = values
-      .map((row, idx) => ({ row, idx }))
-      .filter(({ row }) => {
-        const status = String(row[COL.STATUS - 1]) as JobStatus;
-        if (status !== STATUS.PENDING) return false;
-        const nextRun = coerceCellToUtcDate_(row[COL.NEXT_RUN_AT - 1]);
-        return !nextRun || nextRun.getTime() <= nowUtc.getTime();
-      });
-
-    FastLog.log(
-      fn,
-      `Scanned ${values.length} rows → runnable=${runnable.length}`
-    );
-
-    if (!runnable.length) {
-      FastLog.log(fn, "No runnable jobs; exiting");
-      return;
-    }
-
-    // sort by priority asc then enqueued_at asc
-    runnable.sort((a, b) => {
-      const pa = Number(a.row[COL.PRIORITY - 1]) || DEFAULT_PRIORITY;
-      const pb = Number(b.row[COL.PRIORITY - 1]) || DEFAULT_PRIORITY;
-      if (pa !== pb) return pa - pb;
-      const ea =
-        coerceCellToUtcDate_(a.row[COL.ENQUEUED_AT - 1])?.getTime() ?? 0;
-      const eb =
-        coerceCellToUtcDate_(b.row[COL.ENQUEUED_AT - 1])?.getTime() ?? 0;
-      return ea - eb;
+  // filter runnable jobs
+  const runnable = values
+    .map((row, idx) => ({ row, idx }))
+    .filter(({ row }) => {
+      const status = String(row[COL.STATUS - 1]) as JobStatus;
+      if (status !== STATUS.PENDING) return false;
+      const nextRun = coerceCellToUtcDate_(row[COL.NEXT_RUN_AT - 1]);
+      return !nextRun || nextRun.getTime() <= nowUtc.getTime();
     });
 
-    // claim jobs (small N, individual writes are OK)
-    const toClaim = runnable.slice(0, Math.min(maxJobs, runnable.length));
-    const workerId = `w-${Utilities.getUuid().slice(0, 8)}`;
+  FastLog.log(
+    fn,
+    `Scanned ${values.length} rows → runnable=${runnable.length}`
+  );
 
-    FastLog.info(
-      fn,
-      `Claiming ${toClaim.length} job(s) (workerId=${workerId}, maxJobs=${maxJobs}, budgetMs=${budgetMs})`
-    );
+  if (!runnable.length) {
+    FastLog.log(fn, "No runnable jobs; exiting");
+    return;
+  }
 
-    for (const item of toClaim) {
-      const absRow = item.idx + 2;
-      sheet.getRange(absRow, COL.STATUS).setValue(STATUS.RUNNING);
-      sheet.getRange(absRow, COL.WORKER_ID).setValue(workerId);
-      // STARTED_AT in UTC with display format applied
-      DateHelper.writeUtcNow(sheet.getRange(absRow, COL.STARTED_AT));
+  // sort by priority asc then enqueued_at asc
+  runnable.sort((a, b) => {
+    const pa = Number(a.row[COL.PRIORITY - 1]) || DEFAULT_PRIORITY;
+    const pb = Number(b.row[COL.PRIORITY - 1]) || DEFAULT_PRIORITY;
+    if (pa !== pb) return pa - pb;
+    const ea = coerceCellToUtcDate_(a.row[COL.ENQUEUED_AT - 1])?.getTime() ?? 0;
+    const eb = coerceCellToUtcDate_(b.row[COL.ENQUEUED_AT - 1])?.getTime() ?? 0;
+    return ea - eb;
+  });
+
+  // claim jobs (small N, individual writes are OK)
+  const toClaim = runnable.slice(0, Math.min(maxJobs, runnable.length));
+  const workerId = `w-${Utilities.getUuid().slice(0, 8)}`;
+
+  FastLog.info(
+    fn,
+    `Claiming ${toClaim.length} job(s) (workerId=${workerId}, maxJobs=${maxJobs}, budgetMs=${budgetMs})`
+  );
+
+  for (const item of toClaim) {
+    const absRow = item.idx + 2;
+    sheet.getRange(absRow, COL.STATUS).setValue(STATUS.RUNNING);
+    sheet.getRange(absRow, COL.WORKER_ID).setValue(workerId);
+    // STARTED_AT in UTC with display format applied
+    DateHelper.writeUtcNow(sheet.getRange(absRow, COL.STARTED_AT));
+  }
+  SpreadsheetApp.flush();
+
+  // Counters for summary logging
+  const startedRows = new Set<number>();
+  let succeeded = 0;
+  let retried = 0;
+  let movedToDead = 0;
+  let timedOutBeforeStart = 0;
+
+  // process jobs
+  for (const item of toClaim) {
+    const elapsed = Date.now() - startedMs;
+    if (elapsed > budgetMs) {
+      timedOutBeforeStart++;
+      FastLog.warn(
+        fn,
+        `Budget exhausted before starting row idx=${item.idx} (elapsedMs=${elapsed}, budgetMs=${budgetMs})`
+      );
+      break;
     }
-    SpreadsheetApp.flush();
 
-    // Counters for summary logging
-    const startedRows = new Set<number>();
-    let succeeded = 0;
-    let retried = 0;
-    let movedToDead = 0;
-    let timedOutBeforeStart = 0;
+    const absRow = item.idx + 2;
+    startedRows.add(absRow);
 
-    // process jobs
-    for (const item of toClaim) {
-      const elapsed = Date.now() - startedMs;
-      if (elapsed > budgetMs) {
-        timedOutBeforeStart++;
-        FastLog.warn(
-          fn,
-          `Budget exhausted before starting row idx=${item.idx} (elapsedMs=${elapsed}, budgetMs=${budgetMs})`
-        );
-        break;
-      }
+    const data = sheet
+      .getRange(absRow, 1, 1, HEADERS.length)
+      .getValues()[0] as JobRow;
+    const job = rowToJob_(data);
 
-      const absRow = item.idx + 2;
-      startedRows.add(absRow);
+    try {
+      dispatchJob_(job);
+      succeeded++;
+      sheet.getRange(absRow, COL.STATUS).setValue(STATUS.DONE);
+      sheet.getRange(absRow, COL.LAST_ERROR).setValue("");
+    } catch (err) {
+      const errorMessage = getErrorMessage(err);
+      FastLog.error(fn, errorMessage);
 
-      const data = sheet
-        .getRange(absRow, 1, 1, HEADERS.length)
-        .getValues()[0] as JobRow;
-      const job = rowToJob_(data);
+      const attempts = Number(job.attempts) + 1;
+      FastLog.info(fn, `Job ${job.id} attempts=${attempts}`);
+      sheet.getRange(absRow, COL.ATTEMPTS).setValue(attempts);
 
-      try {
-        dispatchJob_(job);
-        succeeded++;
-        sheet.getRange(absRow, COL.STATUS).setValue(STATUS.DONE);
-        sheet.getRange(absRow, COL.LAST_ERROR).setValue("");
-      } catch (err) {
-        const errorMessage = getErrorMessage(err);
-        FastLog.error(fn, errorMessage);
-
-        const attempts = Number(job.attempts) + 1;
-        FastLog.info(fn, `Job ${job.id} attempts=${attempts}`);
-        sheet.getRange(absRow, COL.ATTEMPTS).setValue(attempts);
-
-        if (attempts >= MAX_ATTEMPTS) {
-          sheet.getRange(absRow, COL.STATUS).setValue(STATUS.ERROR);
-          sheet
-            .getRange(absRow, COL.LAST_ERROR)
-            .setValue(toCellMsg_(errorMessage));
-          moveToDeadIfConfigured_(absRow);
-          movedToDead++;
-          continue;
-        }
-
-        // schedule retry with backoff + jitter
-        const backoff = Math.min(
-          MAX_BACKOFF_MS,
-          Math.round(DEFAULT_BACKOFF_MS * Math.pow(2, attempts - 1))
-        );
-        const jitter = Math.floor(Math.random() * 3 * ONE_SECOND_MS); // de-sync workers
-        const nextWhen = new Date(Date.now() + backoff + jitter);
-
-        retried++;
-        // NEXT_RUN_AT in UTC with display format applied
-        sheet.getRange(absRow, COL.ATTEMPTS).setValue(attempts);
-        DateHelper.writeUtc(sheet.getRange(absRow, COL.NEXT_RUN_AT), nextWhen);
-        sheet.getRange(absRow, COL.STATUS).setValue(STATUS.PENDING);
+      if (attempts >= MAX_ATTEMPTS) {
+        sheet.getRange(absRow, COL.STATUS).setValue(STATUS.ERROR);
         sheet
           .getRange(absRow, COL.LAST_ERROR)
           .setValue(toCellMsg_(errorMessage));
+        moveToDeadIfConfigured_(absRow);
+        movedToDead++;
+        continue;
       }
-    }
 
-    // Unclaim any rows we set to RUNNING but didn't start
-    for (const item of toClaim) {
-      const absRow = item.idx + 2;
-      if (!startedRows.has(absRow)) {
-        sheet.getRange(absRow, COL.STATUS).setValue(STATUS.PENDING);
-        sheet.getRange(absRow, COL.WORKER_ID).setValue("");
-        sheet.getRange(absRow, COL.STARTED_AT).setValue("");
-      }
-    }
+      // schedule retry with backoff + jitter
+      const backoff = Math.min(
+        MAX_BACKOFF_MS,
+        Math.round(DEFAULT_BACKOFF_MS * Math.pow(2, attempts - 1))
+      );
+      const jitter = Math.floor(Math.random() * 3 * ONE_SECOND_MS); // de-sync workers
+      const nextWhen = new Date(Date.now() + backoff + jitter);
 
-    const totalElapsed = Date.now() - startedMs;
-    FastLog.info(
-      fn,
-      `Batch summary: totalRows=${values.length}, runnable=${runnable.length}, ` +
-        `claimed=${toClaim.length}, started=${startedRows.size}, ` +
-        `succeeded=${succeeded}, retried=${retried}, movedToDead=${movedToDead}, ` +
-        `timedOutBeforeStart=${timedOutBeforeStart}, elapsedMs=${totalElapsed}`
-    );
-  } catch (err) {
-    const errorMessage = getErrorMessage(err);
-    FastLog.error(fn, errorMessage);
-    throw new Error(errorMessage);
-  } finally {
-    finish();
+      retried++;
+      // NEXT_RUN_AT in UTC with display format applied
+      sheet.getRange(absRow, COL.ATTEMPTS).setValue(attempts);
+      DateHelper.writeUtc(sheet.getRange(absRow, COL.NEXT_RUN_AT), nextWhen);
+      sheet.getRange(absRow, COL.STATUS).setValue(STATUS.PENDING);
+      sheet.getRange(absRow, COL.LAST_ERROR).setValue(toCellMsg_(errorMessage));
+    }
   }
-}
 
+  // Unclaim any rows we set to RUNNING but didn't start
+  for (const item of toClaim) {
+    const absRow = item.idx + 2;
+    if (!startedRows.has(absRow)) {
+      sheet.getRange(absRow, COL.STATUS).setValue(STATUS.PENDING);
+      sheet.getRange(absRow, COL.WORKER_ID).setValue("");
+      sheet.getRange(absRow, COL.STARTED_AT).setValue("");
+    }
+  }
+
+  const totalElapsed = Date.now() - startedMs;
+  FastLog.info(
+    fn,
+    `Batch summary: totalRows=${values.length}, runnable=${runnable.length}, ` +
+      `claimed=${toClaim.length}, started=${startedRows.size}, ` +
+      `succeeded=${succeeded}, retried=${retried}, movedToDead=${movedToDead}, ` +
+      `timedOutBeforeStart=${timedOutBeforeStart}, elapsedMs=${totalElapsed}`
+  );
+}
 
 function dispatchJob_(job: Job): void {
   const fn = dispatchJob_.name;

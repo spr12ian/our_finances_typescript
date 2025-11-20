@@ -4,6 +4,7 @@ import { FastLog, functionStart } from "@logging";
 // ⬇️ Pull the canonical types + accessors from engineState
 import { toHtmlParagraph } from "@lib/html/htmlFunctions";
 import { ONE_SECOND_MS } from "@lib/timeConstants";
+import { withLog } from "@logging";
 import type { EnqueueFn } from "./engineState"; // <-- use the one true EnqueueFn here
 import {
   ENGINE_INSTANCE_ID,
@@ -77,11 +78,11 @@ export function runStep(job: RunStepJob): void {
 
     switch (res.kind) {
       case "yield": {
-        enqueueRunStep({ ...job, state: res.state }, res.delayMs);
+        withLog(fn, enqueueRunStep)({ ...job, state: res.state }, res.delayMs);
         return;
       }
       case "next": {
-        enqueueRunStep(
+        withLog(fn, enqueueRunStep)(
           {
             workflowId: job.workflowId,
             workflowName: job.workflowName,
@@ -140,13 +141,14 @@ export function startWorkflow(
   FastLog.log(fn, workflowName, firstStep);
   try {
     if (!isEngineConfigured()) {
-      FastLog.warn(fn,
+      FastLog.warn(
+        fn,
         `Engine not configured — skipping ${workflowName}.${firstStep}`
       );
       return null;
     }
     const workflowId = Utilities.getUuid();
-    enqueueRunStep(
+    withLog(fn, enqueueRunStep)(
       {
         workflowId,
         workflowName,

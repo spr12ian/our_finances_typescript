@@ -21,8 +21,9 @@ import {
 import { logTime } from "@lib/logging/logTime";
 import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { withLog } from "@logging";
+import { queuePurgeOldData } from "@queue/queuePurgeOldData";
 import { ensureQueueDateFormats, queueSetup } from "@queue/queueSetup";
-import { queuePurgeOldData, queueWorker } from "@queue/queueWorker";
+import { queueWorker } from "@queue/queueWorker";
 import { storeAccountSheetNames } from "@sheets/accountSheetFunctions";
 import { validateAccountKeys } from "@sheets/validateAccountKeys";
 import type {
@@ -203,7 +204,8 @@ export function GAS_onSelectionChange(e: any): void {
 }
 
 export function GAS_queuePurgeOldData(): void {
-  queuePurgeOldData();
+  const fn = GAS_queuePurgeOldData.name;
+  withLog(fn, queuePurgeOldData)();
 }
 
 export function GAS_queueSetup(): void {

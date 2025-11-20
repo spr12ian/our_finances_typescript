@@ -5,14 +5,14 @@ import { getErrorMessage } from "@lib/errors";
 import { isSheetInIgnoreList } from "@lib/isSheetInIgnoreList";
 import { withDocumentLock } from "@lib/WithDocumentLock";
 import { FastLog } from "@logging";
-import { onEditRecalcBalances } from "../../features/account/handlers/onEditRecalcBalances";
+import { debouncedOnEditRecalcBalances } from "../../features/account/handlers/debouncedOnEditRecalcBalances";
 
 /** Keep this lean and at top-level so it's initialized once */
 const ON_EDIT_RULES: OnEditRule[] = [
   {
     sheet: /^_/,
     range: "C2:D",
-    fn: onEditRecalcBalances,
+    fn: debouncedOnEditRecalcBalances,
     note: "recalc balances when credit/debit changes (sync, range-aware)",
   },
   {

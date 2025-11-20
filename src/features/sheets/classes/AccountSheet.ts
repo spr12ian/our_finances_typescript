@@ -149,61 +149,95 @@ export class AccountSheet extends BaseSheet {
   }
 
   updateAccountSheetBalances(rowEdited?: number): void {
-    const finish = this.start(this.updateAccountSheetBalances.name);
-    const COLUMNS = Meta.COLUMNS;
-    const ROW_DATA_STARTS = Meta.ROW_DATA_STARTS;
-    const gasSheet = this.sheet.raw;
+    const methodName = this.updateAccountSheetBalances.name;
+    const finish = this.start(methodName);
+    try {
+      const COLUMNS = Meta.COLUMNS;
+      const ROW_DATA_STARTS = Meta.ROW_DATA_STARTS;
+      const gasSheet = this.sheet.raw;
 
-    // Clamp to first data row
-    const row = Math.max(ROW_DATA_STARTS, rowEdited ?? ROW_DATA_STARTS);
-    const lastRow = gasSheet.getLastRow();
-    const len = Math.max(0, lastRow - row + 1);
-    if (len === 0) return;
-
-    // Seed running balance from the previous row’s BALANCE (or 0 if first data row)
-    const toPennies = (v: unknown) => Math.round((Number(v) || 0) * 100);
-    let balP = 0;
-    if (row > ROW_DATA_STARTS) {
-      balP = toPennies(gasSheet.getRange(row - 1, COLUMNS.BALANCE).getValue());
-    }
-
-    const creditColumn = gasSheet
-      .getRange(row, COLUMNS.CREDIT, len, 1)
-      .getValues();
-    const debitColumn = gasSheet
-      .getRange(row, COLUMNS.DEBIT, len, 1)
-      .getValues();
-    const balanceColumn = gasSheet
-      .getRange(row, COLUMNS.BALANCE, len, 1)
-      .getValues();
-
-    const output: number[][] = new Array(len);
-    let firstDiffIndex = -1;
-
-    for (let i = 0; i < len; i++) {
-      const creditP = toPennies(creditColumn[i][0]) || 0;
-      const debitP = toPennies(debitColumn[i][0]) || 0;
-      const currentBalanceP = toPennies(balanceColumn[i][0]) || 0;
-
-      balP += creditP - debitP;
-      output[i] = [balP / 100];
-
-      if (firstDiffIndex === -1 && currentBalanceP !== balP) {
-        firstDiffIndex = i;
+      // Clamp to first data row
+      const row = Math.max(ROW_DATA_STARTS, rowEdited ?? ROW_DATA_STARTS);
+      const lastRow = gasSheet.getLastRow();
+      let len = Math.max(0, lastRow - row + 1);
+      if (len === 0) {
+        this.log(`No data rows for ${this.accountKey}`);
+        return;
       }
+
+      // Seed running balance from previous row’s BALANCE (or 0 if first data row)
+      const toPennies = (v: unknown) => Math.round((Number(v) || 0) * 100);
+      let balP = 0;
+      if (row > ROW_DATA_STARTS) {
+        const seed = gasSheet.getRange(row - 1, COLUMNS.BALANCE).getValue();
+        balP = toPennies(seed);
+      }
+
+      // ─────────────────────────────────────────────
+      // Bulk-read CREDIT, DEBIT, BALANCE in one call
+      // ─────────────────────────────────────────────
+      const firstCol = Math.min(COLUMNS.CREDIT, COLUMNS.DEBIT, COLUMNS.BALANCE);
+      const lastCol = Math.max(COLUMNS.CREDIT, COLUMNS.DEBIT, COLUMNS.BALANCE);
+      const width = lastCol - firstCol + 1;
+
+      const data = gasSheet.getRange(row, firstCol, len, width).getValues();
+
+      const creditIdx = COLUMNS.CREDIT - firstCol;
+      const debitIdx = COLUMNS.DEBIT - firstCol;
+      const balanceIdx = COLUMNS.BALANCE - firstCol;
+
+      // Optionally shrink len down to last non-empty CREDIT/DEBIT/BALANCE row
+      let effectiveLen = len;
+      for (let i = len - 1; i >= 0; i--) {
+        const r = data[i];
+        if (r[creditIdx] !== "" || r[debitIdx] !== "" || r[balanceIdx] !== "") {
+          effectiveLen = i + 1;
+          break;
+        }
+      }
+
+      if (effectiveLen === 0) {
+        this.log(`All trailing rows empty for ${this.accountKey}`);
+        return;
+      }
+
+      const output: number[][] = new Array(effectiveLen);
+      let firstDiffIndex = -1;
+
+      for (let i = 0; i < effectiveLen; i++) {
+        const rowVals = data[i];
+        const creditP = toPennies(rowVals[creditIdx]);
+        const debitP = toPennies(rowVals[debitIdx]);
+        const currentBalanceP = toPennies(rowVals[balanceIdx]);
+
+        balP += creditP - debitP;
+        const newBalance = balP / 100;
+
+        output[i] = [newBalance];
+
+        if (firstDiffIndex === -1 && currentBalanceP !== balP) {
+          firstDiffIndex = i;
+        }
+      }
+
+      if (firstDiffIndex === -1) {
+        this.log(`No changes to balance for ${this.accountKey}`);
+        return;
+      }
+
+      const slice = output.slice(firstDiffIndex);
+
+      gasSheet
+        .getRange(row + firstDiffIndex, COLUMNS.BALANCE, slice.length, 1)
+        .setValues(slice);
+    } catch (err) {
+      const errorMessage = `Error in ${methodName}: ${getErrorMessage(err)}`;
+      FastLog.error(errorMessage);
+      throw new Error(errorMessage);
+    } finally {
+      // Always complete logging/timing
+      finish();
     }
-
-    if (firstDiffIndex === -1) {
-      this.log(`No changes to balance for ${this.accountKey}`);
-      return;
-    }
-
-    const slice = output.slice(firstDiffIndex);
-    gasSheet
-      .getRange(row + firstDiffIndex, COLUMNS.BALANCE, slice.length, 1)
-      .setValues(slice);
-
-    finish();
   }
 
   private addDefaultNotes() {

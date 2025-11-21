@@ -1,4 +1,5 @@
 import { ONE_MINUTE_MS, ONE_SECOND_MS } from "@lib/timeConstants";
+import { oneBased } from "../../types/oneBased";
 
 export const QUEUE_SHEET_NAME = "$Queue"; // hidden operational sheet
 export const DEAD_SHEET_NAME = "$QueueDead"; // optional dead‑letter sink
@@ -19,24 +20,11 @@ export const STATUS = {
   ERROR: "ERROR",
 } as const;
 
-// Column map to avoid magic numbers
-export const COL = {
-  ID: 1, // id: string
-  JSON_PAYLOAD: 2, // parameters: unknown (JSON string in sheet)
-  ENQUEUED_AT: 3, // enqueuedAt: Date
-  PRIORITY: 4, // priority: number
-  NEXT_RUN_AT: 5, // nextRunAt: Date
-  ATTEMPTS: 6, // attempts: number
-  STATUS: 7, // status: JobStatus
-  LAST_ERROR: 8, // lastError: string
-  WORKER_ID: 9, // workerId: string
-  STARTED_AT: 10, // startedAt?: Date | null
-} as const;
-
-export const HEADERS: string[] = [
+export const QUEUE_HEADERS: string[] = [
   "id",
+  "queued_at",
+  "queued_by",
   "payload",
-  "enqueued_at",
   "priority",
   "next_run_at",
   "attempts",
@@ -44,4 +32,33 @@ export const HEADERS: string[] = [
   "last_error",
   "worker_id",
   "started_at",
-];
+] as const;
+
+// Uppercase version
+export const HEADERS: string[] = [
+  "ID",
+  "QUEUED_AT",
+  "QUEUED_BY",
+  "PAYLOAD",
+  "PRIORITY",
+  "NEXT_RUN_AT",
+  "ATTEMPTS",
+  "STATUS",
+  "LAST_ERROR",
+  "WORKER_ID",
+  "STARTED_AT",
+] as const;
+
+export const COLUMNS = {
+  ID: oneBased(1),
+  QUEUED_AT: oneBased(2),
+  QUEUED_BY: oneBased(3),
+  PAYLOAD: oneBased(4),
+  PRIORITY: oneBased(5),
+  NEXT_RUN_AT: oneBased(6),
+  ATTEMPTS: oneBased(7),
+  STATUS: oneBased(8),
+  LAST_ERROR: oneBased(9),
+  WORKER_ID: oneBased(10),
+  STARTED_AT: oneBased(11),
+};

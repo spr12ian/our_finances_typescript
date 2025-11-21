@@ -17,7 +17,10 @@ export function handleChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
     const gasSheet = getTriggerEventSheet(e);
     const sheetName = gasSheet.getName();
     if (isSheetInIgnoreList(sheetName, fn)) {
-      FastLog.log(fn, `Sheet ${sheetName} is in ignore list; skipping change handling.`);
+      FastLog.log(
+        fn,
+        `Sheet ${sheetName} is in ignore list; skipping change handling.`
+      );
       return;
     }
 
@@ -144,7 +147,7 @@ function startFlow_(sheet: Sheet) {
   }
 
   setupWorkflowsOnce();
-  startWorkflow(
+  withLog(fn, startWorkflow)(
     "updateAccountSheetBalancesFlow",
     "updateAccountSheetBalancesStep1",
     {

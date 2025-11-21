@@ -6,8 +6,9 @@
 import { DateHelper } from "@lib/DateHelper";
 import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { withDocumentLock } from "@lib/WithDocumentLock";
-import { FastLog } from "@logging";
-import { DEFAULT_PRIORITY, QUEUE_SHEET_NAME, STATUS } from "./queueConstants";
+import { FastLog, withLog } from "@logging";
+import { getQueueSheet } from "./getQueueSheet";
+import { COLUMNS, DEFAULT_PRIORITY, STATUS } from "./queueConstants";
 import type { JobRow, QueueEnqueueOptions } from "./queueTypes";
 
 // ───────────────────────────────────────────────────────────────────────────────
@@ -30,12 +31,13 @@ export function queueJob(
 
 // Small bounded retry with backoff; never returns undefined
 export function queueJobMust(
-  parameters: unknown,
+  payload: unknown,
   options: QueueEnqueueOptions = {}
 ): { id: string; row: number } {
+  const fn = queueJobMust.name;
   // 1) a few fast attempts (non-blocking)
   for (let i = 0; i < 3; i++) {
-    const r = queueJob(parameters, options); // ← your soft version (T | undefined)
+    const r = withLog(fn, queueJob)(payload, options); // ← your soft version (T | undefined)
     if (r) return r;
     Utilities.sleep(100); // 100 ms
   }
@@ -43,7 +45,7 @@ export function queueJobMust(
   // 2) last chance: run the critical section with a longer lock timeout
   const attempt = withDocumentLock<{ id: string; row: number }>(
     "queueJobMust",
-    () => doQueueJob(parameters, options), // call the inner implementation
+    () => doQueueJob(payload, options), // call the inner implementation
     2 * ONE_SECOND_MS
   )();
 
@@ -62,18 +64,11 @@ function generateId_(): string {
   return Utilities.getUuid();
 }
 
-function getQueueSheet_(): GoogleAppsScript.Spreadsheet.Sheet {
-  const ss = SpreadsheetApp.getActive();
-  const sheet = ss.getSheetByName(QUEUE_SHEET_NAME);
-  if (!sheet) throw new Error("Queue sheet missing. Run queueSetup().");
-  return sheet;
-}
-
 function doQueueJob(
   parameters: unknown,
   options: QueueEnqueueOptions = {}
 ): { id: string; row: number } {
-  const functionName = queueJob.name;
+  const functionName = doQueueJob.name;
 
   const startTime = FastLog.start(functionName, { parameters, options });
 
@@ -85,9 +80,11 @@ function doQueueJob(
 
     const id = generateId_();
 
+    const queuedBy = functionName;
+
     // UTC-normalized enqueue time
-    const enqueuedAt = new Date();
-    const displayEnqueuedAt = DateHelper.formatForLog(enqueuedAt);
+    const queuedAt = new Date();
+    const displayEnqueuedAt = DateHelper.formatForLog(queuedAt);
 
     // Optional runAt normalization
     const runAtCell: Date | "" =
@@ -95,28 +92,38 @@ function doQueueJob(
         ? new Date(options.runAt.toISOString())
         : "";
 
-    FastLog.log(functionName, `Enqueuing job id=${id} at ${displayEnqueuedAt}`);
+    FastLog.log(functionName, `Queuing job id=${id} at ${displayEnqueuedAt}`);
 
     const rowValues: JobRow = [
       id, // A: id
-      JSON.stringify(parameters ?? {}), // B: payload
-      enqueuedAt, // C: enqueued_at
-      priority, // D: priority
-      runAtCell, // E: run_at
-      0, // F: attempts
-      STATUS.PENDING, // G: status
-      "", // H: started_at
-      "", // I: finished_at
-      "", // J: error
+      queuedAt, // B: queued_at
+      queuedBy, // C: queued_by
+      JSON.stringify(parameters ?? {}), // D: payload
+      priority, // E: priority
+      runAtCell, // F: run_at
+      0, // G: attempts
+      STATUS.PENDING, // H: status
+      "", // I: started_at
+      "", // J: finished_at
+      "", // K: error
     ];
+    FastLog.log(functionName, `rowValues: ${rowValues}`);
 
-    const sheet = getQueueSheet_();
-    const rowIndex = sheet.getLastRow() + 1;
-    sheet.getRange(rowIndex, 1, 1, rowValues.length).setValues([rowValues]);
+    const sheet = getQueueSheet();
+    const gasSheet = sheet.raw;
+    const rowIndex = gasSheet.getLastRow() + 1;
+    gasSheet.getRange(rowIndex, 1, 1, rowValues.length).setValues([rowValues]);
 
     // Apply human-readable date formats
-    sheet.getRange(rowIndex, 3).setNumberFormat(DateHelper.DISPLAY_DATE_FORMAT);
-    sheet.getRange(rowIndex, 5).setNumberFormat(DateHelper.DISPLAY_DATE_FORMAT);
+    gasSheet
+      .getRange(rowIndex, COLUMNS.QUEUED_AT)
+      .setNumberFormat(DateHelper.DISPLAY_DATE_FORMAT);
+    gasSheet
+      .getRange(rowIndex, COLUMNS.NEXT_RUN_AT)
+      .setNumberFormat(DateHelper.DISPLAY_DATE_FORMAT);
+    gasSheet
+      .getRange(rowIndex, COLUMNS.STARTED_AT)
+      .setNumberFormat(DateHelper.DISPLAY_DATE_FORMAT);
 
     FastLog.log(
       functionName,

@@ -23,8 +23,9 @@ export interface QueueEnqueueOptions {
 
 export interface Job {
   id: string;
+  queuedAt: Date;
+  queuedBy: string;
   payload: unknown;
-  enqueuedAt: Date;
   priority: number;
   nextRunAt: Date | null;
   attempts: number;
@@ -40,8 +41,9 @@ export interface Job {
 
 export type JobRow = [
   id: string,
+  queued_at: Date,
+  queued_by: string,
   payload: string,
-  enqueued_at: Date,
   priority: number,
   next_run_at: Date | "",
   attempts: number,

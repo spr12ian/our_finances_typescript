@@ -48,6 +48,8 @@ import { onEdit } from "./onEdit";
 import { onOpen } from "./onOpen";
 import { onSelectionChange } from "./onSelectionChange";
 
+const DISABLE_TRIGGERS = false;
+
 export function GAS_applyDescriptionReplacements() {
   withLog(
     GAS_applyDescriptionReplacements.name,
@@ -65,6 +67,7 @@ export function GAS_convertCurrentColumnToUppercase() {
 }
 
 export function GAS_dailySorts() {
+  if (DISABLE_TRIGGERS) return;
   const spreadsheet = getFinancesSpreadsheet();
 
   withReentryGuard("DAILY_SORTS_RUNNING", 5 * ONE_MINUTE_MS, () => {
@@ -176,34 +179,41 @@ export function GAS_logSheetNames(): void {
 export function GAS_onChangeTrigger(
   e: GoogleAppsScript.Events.SheetsOnChange
 ): void {
+  if (DISABLE_TRIGGERS) return;
   withLog(GAS_onChangeTrigger.name, handleChange)(e);
 }
 
 export function GAS_onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
+  if (DISABLE_TRIGGERS) return;
   withLog(GAS_onEdit.name, onEdit)(e);
 }
 
 export function GAS_onEditTrigger(
   e: GoogleAppsScript.Events.SheetsOnEdit
 ): void {
+  if (DISABLE_TRIGGERS) return;
   withLog(GAS_onEditTrigger.name, handleEdit)(e);
 }
 
 export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
+  if (DISABLE_TRIGGERS) return;
   withLog(GAS_onOpen.name, onOpen)(e);
 }
 
 export function GAS_onOpenTrigger(
   e: GoogleAppsScript.Events.SheetsOnOpen
 ): void {
+  if (DISABLE_TRIGGERS) return;
   withLog(GAS_onOpenTrigger.name, handleOpen)(e);
 }
 
 export function GAS_onSelectionChange(e: any): void {
+  if (DISABLE_TRIGGERS) return;
   withLog(GAS_onSelectionChange.name, onSelectionChange)(e);
 }
 
 export function GAS_queuePurgeOldData(): void {
+  if (DISABLE_TRIGGERS) return;
   const fn = GAS_queuePurgeOldData.name;
   withLog(fn, queuePurgeOldData)();
 }
@@ -213,6 +223,7 @@ export function GAS_queueSetup(): void {
 }
 
 export function GAS_queueWorker(): void {
+  if (DISABLE_TRIGGERS) return;
   withLog(GAS_queueWorker.name, queueWorker)();
 }
 
@@ -225,6 +236,7 @@ export function GAS_saveContainerIdOnce() {
 }
 
 export function GAS_sendDailyHtmlEmail() {
+  if (DISABLE_TRIGGERS) return;
   withReentryGuard("SEND_DAILY_EMAIL_RUNNING", 30 * ONE_SECOND_MS, () => {
     const spreadsheet = getFinancesSpreadsheet();
     new OurFinances(spreadsheet).sendDailyHtmlEmail();
@@ -343,6 +355,7 @@ export function GAS_validateAllMenuFunctionNames() {
 // Local helper functions
 
 function startWF(workFlowName: string, firstStep: string, input: unknown) {
+  const fn = startWF.name;
   setupWorkflowsOnce();
-  startWorkflow(workFlowName, firstStep, input);
+  withLog(fn, startWorkflow)(workFlowName, firstStep, input);
 }

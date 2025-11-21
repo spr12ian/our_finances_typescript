@@ -1,7 +1,7 @@
 // @queue/queueSetup.ts
 import { DISPLAY_DATE_FORMAT } from "@lib/dates";
 import {
-  COL,
+  COLUMNS,
   DEAD_SHEET_NAME,
   HEADERS,
   QUEUE_SHEET_NAME,
@@ -29,13 +29,13 @@ function ensureQueueDateFormats_(sheet: GoogleAppsScript.Spreadsheet.Sheet) {
   if (rows <= 0) return;
 
   sheet
-    .getRange(2, COL.ENQUEUED_AT, rows, 1)
+    .getRange(2, COLUMNS.QUEUED_AT, rows, 1)
     .setNumberFormat(DISPLAY_DATE_FORMAT);
   sheet
-    .getRange(2, COL.NEXT_RUN_AT, rows, 1)
+    .getRange(2, COLUMNS.NEXT_RUN_AT, rows, 1)
     .setNumberFormat(DISPLAY_DATE_FORMAT);
   sheet
-    .getRange(2, COL.STARTED_AT, rows, 1)
+    .getRange(2, COLUMNS.STARTED_AT, rows, 1)
     .setNumberFormat(DISPLAY_DATE_FORMAT);
 }
 

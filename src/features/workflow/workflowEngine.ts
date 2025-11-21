@@ -5,12 +5,10 @@ import { FastLog, functionStart } from "@logging";
 import { toHtmlParagraph } from "@lib/html/htmlFunctions";
 import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { withLog } from "@logging";
-import type { EnqueueFn } from "./engineState"; // <-- use the one true EnqueueFn here
 import {
   ENGINE_INSTANCE_ID,
   getEnqueue,
   isEngineConfigured,
-  setEnqueue,
 } from "./engineState";
 import { makeStepLogger } from "./makeStepLogger";
 import { getStep } from "./workflowRegistry";
@@ -19,10 +17,6 @@ import type {
   SerializedRunStepParameters,
   StepContext,
 } from "./workflowTypes";
-
-export function configureWorkflowEngine(enqueue: EnqueueFn) {
-  setEnqueue(enqueue);
-}
 
 const DEFAULT_INVOCATION_BUDGET_MS = 25 * ONE_SECOND_MS;
 export function runStep(job: RunStepJob): void {
@@ -111,7 +105,11 @@ export function runStep(job: RunStepJob): void {
         const htmlReason = toHtmlParagraph(res.reason);
         const input = { htmlBody: htmlReason, subject: job.stepName };
 
-        startWorkflow("sendMeHtmlEmailFlow", "sendMeHtmlEmailStep1", input);
+        withLog(fn, startWorkflow)(
+          "sendMeHtmlEmailFlow",
+          "sendMeHtmlEmailStep1",
+          input
+        );
 
         throw new Error(`runStep failed: ${String(res.reason)}`);
       }

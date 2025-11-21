@@ -13,7 +13,7 @@ import {
 import { runStep } from "@workflow/workflowEngine";
 import { getQueueSheet } from "./getQueueSheet";
 import {
-  COL,
+  COLUMNS,
   DEFAULT_BACKOFF_MS,
   DEFAULT_PRIORITY,
   HEADERS,
@@ -65,7 +65,7 @@ function getLastDataRow_(sheet: GoogleAppsScript.Spreadsheet.Sheet): number {
     if (lastRow < 2) return 1; // headers only
 
     const height = lastRow - 1; // number of data rows
-    const statusRange = sheet.getRange(2, COL.STATUS, height, 1);
+    const statusRange = sheet.getRange(2, COLUMNS.STATUS, height, 1);
     const statusValues = statusRange.getValues(); // [[val], [val], ...]
 
     for (let i = statusValues.length - 1; i >= 0; i--) {
@@ -142,11 +142,11 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
   const runnable: { row: JobRow; idx: number }[] = [];
   for (let i = 0; i < values.length; i++) {
     const row = values[i];
-    const status = String(row[COL.STATUS - 1]) as JobStatus;
+    const status = String(row[COLUMNS.STATUS - 1]) as JobStatus;
 
     if (status !== STATUS.PENDING) continue;
 
-    const nextRun = DateHelper.coerceCellToUtcDate(row[COL.NEXT_RUN_AT - 1]);
+    const nextRun = DateHelper.coerceCellToUtcDate(row[COLUMNS.NEXT_RUN_AT - 1]);
     if (nextRun && nextRun.getTime() > nowMs) continue;
 
     runnable.push({ row, idx: i });
@@ -164,15 +164,15 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
 
   // sort by priority asc then enqueued_at asc
   runnable.sort((a, b) => {
-    const pa = Number(a.row[COL.PRIORITY - 1]) || DEFAULT_PRIORITY;
-    const pb = Number(b.row[COL.PRIORITY - 1]) || DEFAULT_PRIORITY;
+    const pa = Number(a.row[COLUMNS.PRIORITY - 1]) || DEFAULT_PRIORITY;
+    const pb = Number(b.row[COLUMNS.PRIORITY - 1]) || DEFAULT_PRIORITY;
     if (pa !== pb) return pa - pb;
 
     const ea =
-      DateHelper.coerceCellToUtcDate(a.row[COL.ENQUEUED_AT - 1])?.getTime() ??
+      DateHelper.coerceCellToUtcDate(a.row[COLUMNS.QUEUED_AT - 1])?.getTime() ??
       0;
     const eb =
-      DateHelper.coerceCellToUtcDate(b.row[COL.ENQUEUED_AT - 1])?.getTime() ??
+      DateHelper.coerceCellToUtcDate(b.row[COLUMNS.QUEUED_AT - 1])?.getTime() ??
       0;
     return ea - eb;
   });
@@ -192,13 +192,13 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
     const idx = item.idx; // 0-based into values[]
     const row = values[idx];
 
-    row[COL.STATUS - 1] = STATUS.RUNNING;
-    row[COL.WORKER_ID - 1] = workerId;
+    row[COLUMNS.STATUS - 1] = STATUS.RUNNING;
+    row[COLUMNS.WORKER_ID - 1] = workerId;
 
     // How to apply the format here?
     // const DISPLAY_DATE_FORMAT = "dd MMM yyyy HH:mm:ss";
-    // COL.STARTED_AT.setNumberFormat(DISPLAY_DATE_FORMAT);
-    row[COL.STARTED_AT - 1] = nowForStart; // Date; relies on existing number format
+    // COLUMNS.STARTED_AT.setNumberFormat(DISPLAY_DATE_FORMAT);
+    row[COLUMNS.STARTED_AT - 1] = nowForStart; // Date; relies on existing number format
   }
 
   // Commit RUNNING state so other workers see the claim
@@ -235,8 +235,8 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
       dispatchJob_(job);
       succeeded++;
 
-      row[COL.STATUS - 1] = STATUS.DONE;
-      row[COL.LAST_ERROR - 1] = "";
+      row[COLUMNS.STATUS - 1] = STATUS.DONE;
+      row[COLUMNS.LAST_ERROR - 1] = "";
 
       // Optionally: leave WORKER_ID/STARTED_AT as an audit trail
     } catch (err) {
@@ -244,12 +244,12 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
       FastLog.error(fn, errorMessage);
 
       const attempts = Number(job.attempts) + 1;
-      row[COL.ATTEMPTS - 1] = attempts;
+      row[COLUMNS.ATTEMPTS - 1] = attempts;
 
       if (attempts >= MAX_ATTEMPTS) {
         // Permanently failed
-        row[COL.STATUS - 1] = STATUS.ERROR;
-        row[COL.LAST_ERROR - 1] = toCellMsg_(errorMessage);
+        row[COLUMNS.STATUS - 1] = STATUS.ERROR;
+        row[COLUMNS.LAST_ERROR - 1] = toCellMsg_(errorMessage);
         movedToDead++; // logically “perma failed”; actual move-to-dead can be a separate pass
         continue;
       }
@@ -263,9 +263,9 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
       const nextWhen = new Date(Date.now() + backoff + jitter);
 
       retried++;
-      row[COL.NEXT_RUN_AT - 1] = nextWhen; // Date; relies on cell format
-      row[COL.STATUS - 1] = STATUS.PENDING;
-      row[COL.LAST_ERROR - 1] = toCellMsg_(errorMessage);
+      row[COLUMNS.NEXT_RUN_AT - 1] = nextWhen; // Date; relies on cell format
+      row[COLUMNS.STATUS - 1] = STATUS.PENDING;
+      row[COLUMNS.LAST_ERROR - 1] = toCellMsg_(errorMessage);
     }
   }
 
@@ -278,9 +278,9 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
     if (startedIndices.has(idx)) continue;
 
     const row = values[idx];
-    row[COL.STATUS - 1] = STATUS.PENDING;
-    row[COL.WORKER_ID - 1] = "";
-    row[COL.STARTED_AT - 1] = "";
+    row[COLUMNS.STATUS - 1] = STATUS.PENDING;
+    row[COLUMNS.WORKER_ID - 1] = "";
+    row[COLUMNS.STARTED_AT - 1] = "";
   }
 
   // ── 4) Final commit of all updated rows ───────────────────────────────
@@ -304,17 +304,18 @@ function rowToJob_(r: JobRow): Job {
   const fn = rowToJob_.name;
   const startTime = FastLog.start(fn);
   const job = {
-    id: String(r[COL.ID - 1] ?? ""),
-    payload: parseJsonSafe_(String(r[COL.JSON_PAYLOAD - 1] || "{}")),
-    enqueuedAt:
-      DateHelper.coerceCellToUtcDate(r[COL.ENQUEUED_AT - 1]) ?? new Date(0),
-    priority: Number(r[COL.PRIORITY - 1]) || DEFAULT_PRIORITY,
-    nextRunAt: DateHelper.coerceCellToUtcDate(r[COL.NEXT_RUN_AT - 1]),
-    attempts: Number(r[COL.ATTEMPTS - 1]) || 0,
-    status: String(r[COL.STATUS - 1] ?? STATUS.PENDING) as JobStatus,
-    lastError: String(r[COL.LAST_ERROR - 1] || ""),
-    workerId: String(r[COL.WORKER_ID - 1] || ""),
-    startedAt: DateHelper.coerceCellToUtcDate(r[COL.STARTED_AT - 1]),
+    id: String(r[COLUMNS.ID - 1] ?? ""),
+    queuedAt:
+      DateHelper.coerceCellToUtcDate(r[COLUMNS.QUEUED_AT - 1]) ?? new Date(0),
+    queuedBy: String(r[COLUMNS.QUEUED_BY - 1] || ""),
+    payload: parseJsonSafe_(String(r[COLUMNS.PAYLOAD - 1] || "{}")),
+    priority: Number(r[COLUMNS.PRIORITY - 1]) || DEFAULT_PRIORITY,
+    nextRunAt: DateHelper.coerceCellToUtcDate(r[COLUMNS.NEXT_RUN_AT - 1]),
+    attempts: Number(r[COLUMNS.ATTEMPTS - 1]) || 0,
+    status: String(r[COLUMNS.STATUS - 1] ?? STATUS.PENDING) as JobStatus,
+    lastError: String(r[COLUMNS.LAST_ERROR - 1] || ""),
+    workerId: String(r[COLUMNS.WORKER_ID - 1] || ""),
+    startedAt: DateHelper.coerceCellToUtcDate(r[COLUMNS.STARTED_AT - 1]),
   };
   FastLog.finish(fn, startTime);
   return job;

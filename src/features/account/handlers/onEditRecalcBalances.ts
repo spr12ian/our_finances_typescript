@@ -2,6 +2,7 @@
 
 import { Spreadsheet } from "@domain";
 import { FastLog } from "@logging/FastLog";
+import { withLog } from "@logging/WithLog";
 import { AccountSheet } from "@sheets/classes/AccountSheet";
 import { setupWorkflowsOnce } from "@workflow/setupWorkflowsOnce";
 import { startWorkflow } from "@workflow/workflowEngine";
@@ -72,7 +73,7 @@ export function onEditRecalcBalances(e: SheetsOnEdit): void {
 
       // Hand off to your workflow instead of doing heavy work inline
       setupWorkflowsOnce();
-      startWorkflow(
+      withLog(fn, startWorkflow)(
         "updateAccountSheetBalancesFlow",
         "updateAccountSheetBalancesStep1",
         {

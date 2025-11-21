@@ -4,7 +4,7 @@ import { shouldHandleSelection } from "@gas/shouldHandleSelection";
 import { getNamespaceKey } from "@lib/getNamespaceKey";
 import { idempotencyKey } from "@lib/idempotency";
 import { isSheetInIgnoreList } from "@lib/isSheetInIgnoreList";
-import { FastLog } from "@lib/logging";
+import { FastLog, withLog } from "@lib/logging";
 import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { withGuardedLock } from "@lib/withGuardedLock";
 import { queueJobMust } from "@queue/queueJob"; // or wherever this actually lives
@@ -78,7 +78,7 @@ export function onSelectionChange(e: any): void {
       };
 
       // Fire-and-forget: queue worker will pick this up.
-      const job = queueJobMust(payload, {
+      const job = withLog(fn, queueJobMust)(payload, {
         // tweak priority if you have one
         priority: 5,
       });

@@ -6,7 +6,7 @@ import { ONE_DAY_MS } from "@lib/timeConstants";
 import { getDeadSheet } from "./getDeadSheet";
 import { getQueueSheet } from "./getQueueSheet";
 import {
-  COL,
+  COLUMNS,
   HEADERS,
   MOVE_AFTER_DAYS,
   PURGE_AFTER_DAYS,
@@ -60,9 +60,9 @@ function moveOlderThanDays_(
 
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
-    const status = String(row[COL.STATUS - 1]) as JobStatus;
+    const status = String(row[COLUMNS.STATUS - 1]) as JobStatus;
 
-    const enq = DateHelper.coerceCellToUtcDate(row[COL.ENQUEUED_AT - 1]);
+    const enq = DateHelper.coerceCellToUtcDate(row[COLUMNS.QUEUED_AT - 1]);
     const isOldDoneOrError =
       (status === STATUS.DONE || status === STATUS.ERROR) &&
       (enq?.getTime() ?? 0) < cutoffMs;
@@ -139,9 +139,9 @@ function purgeQueueOlderThanDays_(
   const keep: JobRow[] = [];
   for (let i = 0; i < data.length; i++) {
     const row = data[i];
-    const status = String(row[COL.STATUS - 1]) as JobStatus;
+    const status = String(row[COLUMNS.STATUS - 1]) as JobStatus;
 
-    const enq = DateHelper.coerceCellToUtcDate(row[COL.ENQUEUED_AT - 1]);
+    const enq = DateHelper.coerceCellToUtcDate(row[COLUMNS.QUEUED_AT - 1]);
     const isOldDoneOrError =
       (status === STATUS.DONE || status === STATUS.ERROR) &&
       (enq?.getTime() ?? 0) < cutoffMs;

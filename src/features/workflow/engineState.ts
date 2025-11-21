@@ -21,7 +21,7 @@ export function setEnqueue(fn: EnqueueFn): void {
 export function getEnqueue(): EnqueueFn {
   if (!enqueueRef) {
     throw new Error(
-      "Workflow engine not configured: enqueue function not set. Call configureWorkflowEngine(queueJob) at startup."
+      "Workflow engine not configured: enqueue function not set. Call setEnqueue(enqueue) at startup."
     );
   }
   return enqueueRef;

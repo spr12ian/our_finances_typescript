@@ -239,7 +239,7 @@ export class OurFinances {
     FastLog.log(`Finished OurFinances.fixAccountSheet`);
   }
 
-  sendDailyHtmlEmail(): void {
+  dailySendHtmlEmail(): void {
     const fixedAmountMismatches = this.fixedAmountMismatches;
     const upcomingDebits = this.upcomingDebits;
 
@@ -275,7 +275,7 @@ export class OurFinances {
     lines.push(htmlHorizontalRule());
 
     // Add footer with spreadsheet URL
-    lines.push(`Sent from (sendDailyHtmlEmail): ${this.url}`);
+    lines.push(`Sent from (dailySendHtmlEmail): ${this.url}`);
 
     // Generate HTML body: wrap each line in <p>
     const htmlBody = lines.map((line) => toHtmlParagraph(line)).join("");

@@ -10,7 +10,7 @@ const MAX_YIELD_STEPS = 3;
 export type UpdateBalanceValuesFlowInput = {
   sheetName: string;
   row: number;
-  startedBy?: string;
+  queuedBy?: string;
 };
 
 export function updateBalanceValuesFlow(): void {
@@ -40,11 +40,11 @@ const updateBalanceValuesStep1: StepFn = ({ input, state, log }) => {
   const fn = updateBalanceValuesStep1.name;
   const startTime = log.start(fn);
   try {
-    const { sheetName, row, startedBy } = input as UpdateBalanceValuesFlowInput;
+    const { sheetName, row, queuedBy } = input as UpdateBalanceValuesFlowInput;
     log("input:", input);
     log("sheetName:", sheetName);
     log("row:", row);
-    log("startedBy:", startedBy);
+    log("queuedBy:", queuedBy);
 
     state.e1 = updateBalanceValues(sheetName, row);
 

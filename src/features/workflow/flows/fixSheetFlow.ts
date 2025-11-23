@@ -5,7 +5,7 @@ import type { StepFn } from "../workflowTypes";
 
 export type FixSheetFlowInput = {
   sheetName: string;
-  startedBy?: string;
+  queuedBy?: string;
 };
 
 export function fixSheetFlow(): void {
@@ -17,9 +17,9 @@ const fixSheetStep1: StepFn = ({ input, log }) => {
   const fn = fixSheetStep1.name;
   const startTime = log.start(fn);
   try {
-    const { sheetName, startedBy } = input as FixSheetFlowInput;
+    const { sheetName, queuedBy } = input as FixSheetFlowInput;
     log("sheetName:", sheetName);
-    log("startedBy:", startedBy);
+    log("queuedBy:", queuedBy);
 
     fixSheet(sheetName);
     return { kind: "complete" };

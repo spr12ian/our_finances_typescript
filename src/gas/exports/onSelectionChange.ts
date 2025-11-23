@@ -8,6 +8,7 @@ import { FastLog, withLog } from "@lib/logging";
 import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { withGuardedLock } from "@lib/withGuardedLock";
 import { queueJobMust } from "@queue/queueJob"; // or wherever this actually lives
+import type { SerializedRunStepParameters } from "@workflow/workflowTypes";
 
 export function onSelectionChange(e: any): void {
   const fn = onSelectionChange.name;
@@ -36,9 +37,9 @@ export function onSelectionChange(e: any): void {
   // ─────────────────────────────────────────────────────────
   // Idempotency: at most 1 “fix” job per sheet per N seconds
   // ─────────────────────────────────────────────────────────
-  const wf = "fixSheetFlow";
-  const step = "fixSheetStep1";
-  const token = idempotencyKey(wf, step, sheetName);
+  const workflowName = "fixSheetFlow";
+  const stepName = "fixSheetStep1";
+  const token = idempotencyKey(workflowName, stepName, sheetName);
 
   const key = getNamespaceKey("onSelectionChange", sheetName);
 
@@ -70,15 +71,14 @@ export function onSelectionChange(e: any): void {
       // IMPORTANT: keep this callback *very* light.
       // Only enqueue, don't run workflows synchronously.
 
-      const payload = {
-        workflow: wf,
-        step,
-        sheetName,
-        startedBy: "onSelectionChange",
+      const runStepParameters: Partial<SerializedRunStepParameters> = {
+        workflowName,
+        stepName,
+        input: { sheetName, queuedBy: "onSelectionChange" },
       };
 
       // Fire-and-forget: queue worker will pick this up.
-      const job = withLog(fn, queueJobMust)(payload, {
+      const job = withLog(fn, queueJobMust)(runStepParameters, {
         // tweak priority if you have one
         priority: 5,
       });

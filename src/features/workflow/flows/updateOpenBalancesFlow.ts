@@ -1,14 +1,14 @@
 // src/workflow/flows/updateOpenBalancesFlow.ts
-import { registerStep } from "../workflowRegistry";
-import { getFinancesSpreadsheet } from "../../../getFinancesSpreadsheet";
-import { BankAccounts } from "@sheets/classes/BankAccounts";
 import { getErrorMessage } from "@lib/errors";
+import { BankAccounts } from "@sheets/classes/BankAccounts";
+import { getFinancesSpreadsheet } from "../../../getFinancesSpreadsheet";
+import { registerStep } from "../workflowRegistry";
 import type { StepFn } from "../workflowTypes";
 
 const WORKFLOW = "updateOpenBalancesFlow";
 
 export type UpdateOpenBalancesFlowInput = {
-  startedBy?: string; // e.g. "menu" or a user
+  queuedBy?: string; // e.g. "menu" or a user
 };
 
 type State = {
@@ -27,12 +27,12 @@ const initStep: StepFn = ({ input, log }) => {
   const start = log.start(fn);
 
   try {
-    const { startedBy } = input as UpdateOpenBalancesFlowInput;
+    const { queuedBy } = input as UpdateOpenBalancesFlowInput;
     const ss = getFinancesSpreadsheet();
     const ba = new BankAccounts(ss);
 
     const keys = ba.getOpenKeys(); // pure read, no queue calls here
-    log(`Found ${keys.length} open accounts`, { startedBy: startedBy });
+    log(`Found ${keys.length} open accounts`, { queuedBy: queuedBy });
 
     if (keys.length === 0) {
       log("No open accounts to update — finishing.");
@@ -88,7 +88,11 @@ const processOneStep: StepFn = ({ state, log, startedAt, budgetMs }) => {
     }
 
     // Loop the same step with the next index
-    return { kind: "next", nextStep: "processOne", state: { keys, idx: nextIdx } };
+    return {
+      kind: "next",
+      nextStep: "processOne",
+      state: { keys, idx: nextIdx },
+    };
   } catch (err) {
     log.error(err);
     return { kind: "fail", reason: getErrorMessage(err), retryable: true };
@@ -96,7 +100,6 @@ const processOneStep: StepFn = ({ state, log, startedAt, budgetMs }) => {
     log.finish(fn, start);
   }
 };
-
 
 // type StepFn<I = unknown, S = Record<string, unknown>> = (args: {
 //   workflowId: string;

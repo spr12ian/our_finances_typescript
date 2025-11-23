@@ -10,6 +10,7 @@ import { FastLog, withLog } from "@logging";
 import { getQueueSheet } from "./getQueueSheet";
 import { COLUMNS, DEFAULT_PRIORITY, STATUS } from "./queueConstants";
 import type { JobRow, QueueEnqueueOptions } from "./queueTypes";
+import type { SerializedRunStepParameters } from "@workflow/workflowTypes";
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Public API
@@ -18,7 +19,7 @@ import type { JobRow, QueueEnqueueOptions } from "./queueTypes";
 /** Enqueue a job */
 
 export function queueJob(
-  parameters: unknown,
+  parameters: SerializedRunStepParameters,
   options: QueueEnqueueOptions = {}
 ): { id: string; row: number } | undefined {
   // withDocumentLock returns a function → call it
@@ -31,13 +32,13 @@ export function queueJob(
 
 // Small bounded retry with backoff; never returns undefined
 export function queueJobMust(
-  payload: unknown,
+  runStepParameters: SerializedRunStepParameters,
   options: QueueEnqueueOptions = {}
 ): { id: string; row: number } {
   const fn = queueJobMust.name;
   // 1) a few fast attempts (non-blocking)
   for (let i = 0; i < 3; i++) {
-    const r = withLog(fn, queueJob)(payload, options); // ← your soft version (T | undefined)
+    const r = withLog(fn, queueJob)(runStepParameters, options); // ← your soft version (T | undefined)
     if (r) return r;
     Utilities.sleep(100); // 100 ms
   }
@@ -45,7 +46,7 @@ export function queueJobMust(
   // 2) last chance: run the critical section with a longer lock timeout
   const attempt = withDocumentLock<{ id: string; row: number }>(
     "queueJobMust",
-    () => doQueueJob(payload, options), // call the inner implementation
+    () => doQueueJob(runStepParameters, options), // call the inner implementation
     2 * ONE_SECOND_MS
   )();
 
@@ -65,12 +66,15 @@ function generateId_(): string {
 }
 
 function doQueueJob(
-  parameters: unknown,
+  payload: SerializedRunStepParameters,
   options: QueueEnqueueOptions = {}
 ): { id: string; row: number } {
   const functionName = doQueueJob.name;
 
-  const startTime = FastLog.start(functionName, { parameters, options });
+  const startTime = FastLog.start(functionName, {
+    parameters: payload,
+    options,
+  });
 
   try {
     const priority =
@@ -80,7 +84,13 @@ function doQueueJob(
 
     const id = generateId_();
 
-    const queuedBy = functionName;
+    type PayloadWithQueuedBy = { queuedBy?: string };
+
+    let queuedBy = "";
+    const p = payload as PayloadWithQueuedBy | null | undefined;
+    if (p?.queuedBy && typeof p.queuedBy === "string") {
+      queuedBy = p.queuedBy;
+    }
 
     // UTC-normalized enqueue time
     const queuedAt = new Date();
@@ -98,7 +108,7 @@ function doQueueJob(
       id, // A: id
       queuedAt, // B: queued_at
       queuedBy, // C: queued_by
-      JSON.stringify(parameters ?? {}), // D: payload
+      JSON.stringify(payload ?? {}), // D: payload
       priority, // E: priority
       runAtCell, // F: run_at
       0, // G: attempts

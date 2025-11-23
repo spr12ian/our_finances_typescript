@@ -79,7 +79,7 @@ export function onEditRecalcBalances(e: SheetsOnEdit): void {
         {
           sheetName,
           row: startRow,
-          startedBy: "onEditRecalcBalances",
+          queuedBy: "onEditRecalcBalances",
         }
       );
       return;

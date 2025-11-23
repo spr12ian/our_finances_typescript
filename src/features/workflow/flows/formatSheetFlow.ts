@@ -5,7 +5,7 @@ import type { StepFn } from "../workflowTypes";
 
 export type FormatSheetFlowInput = {
   sheetName: string;
-  startedBy?: string;
+  queuedBy?: string;
 };
 
 export function formatSheetFlow(): void {
@@ -17,9 +17,9 @@ const formatSheetStep1: StepFn = ({ input, log }) => {
   const fn = formatSheetStep1.name;
   const startTime = log.start(fn);
   try {
-    const { sheetName, startedBy } = input as FormatSheetFlowInput;
+    const { sheetName, queuedBy } = input as FormatSheetFlowInput;
     log("sheetName:", sheetName);
-    log("startedBy:", startedBy);
+    log("queuedBy:", queuedBy);
 
     formatSheet(sheetName);
     return { kind: "complete" };

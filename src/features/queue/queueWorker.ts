@@ -34,26 +34,20 @@ const MAX_CELL_LENGTH = 2000;
 /** Time-driven worker entrypoint (set to run each minute). */
 export function queueWorker(): void {
   const fn = queueWorker.name;
-  try {
-    const ready = setupWorkflowsOnce({
-      lockTimeoutMs: 200, // or 400, as you prefer
-      allowRetryTrigger: true,
-    });
+  const ready = setupWorkflowsOnce({
+    lockTimeoutMs: 200, // or 400, as you prefer
+    allowRetryTrigger: true,
+  });
 
-    if (!ready) {
-      FastLog.warn(fn, "Engine not ready; skipping this tick");
-      return;
-    }
-
-    // At this point the engine is configured and enqueueFn is wired.
-    withScriptLock(() => {
-      withLog(fn, processQueueBatch_)(MAX_BATCH, WORKER_BUDGET_MS);
-    });
-  } catch (err) {
-    const errorMessage = getErrorMessage(err);
-    FastLog.error(fn, errorMessage);
-    throw new Error(errorMessage);
+  if (!ready) {
+    FastLog.warn(fn, "Engine not ready; skipping this tick");
+    return;
   }
+
+  // At this point the engine is configured and enqueueFn is wired.
+  withScriptLock(() => {
+    withLog(fn, processQueueBatch_)(MAX_BATCH, WORKER_BUDGET_MS);
+  });
 }
 
 function getLastDataRow_(sheet: GoogleAppsScript.Spreadsheet.Sheet): number {
@@ -88,35 +82,36 @@ function getLastDataRow_(sheet: GoogleAppsScript.Spreadsheet.Sheet): number {
 
 function dispatchJob_(job: Job): void {
   const fn = dispatchJob_.name;
-  const startTime = FastLog.start(fn, {
+  FastLog.log(fn, {
     id: job.id,
     at: DateHelper.formatForLog(new Date()),
   });
-  try {
-    const { payload } = job;
 
-    const p = (payload as Partial<SerializedRunStepParameters>) || {};
-    const rsj: RunStepJob = {
-      workflowId: String(p.workflowId),
-      workflowName: String(p.workflowName),
-      stepName: String(p.stepName),
-      input: p.input,
-      state: p.state ?? {},
-      attempt: Number(job.attempts) || 0, // sheet is source of truth
-    };
-    runStep(rsj);
-  } catch (err) {
-    const errorMessage = getErrorMessage(err);
-    FastLog.error(fn, errorMessage);
-    throw new Error(errorMessage);
-  } finally {
-    FastLog.finish(
-      fn,
-      startTime,
-      `Job ${job.id} finished at ${DateHelper.formatForLog(new Date())}`
-    );
-  }
+  const { payload } = job;
+
+  const p = (payload as Partial<SerializedRunStepParameters>) || {};
+  FastLog.log(fn, p);
+
+  const rsj: RunStepJob = {
+    workflowId: String(p.workflowId),
+    workflowName: String(p.workflowName),
+    stepName: String(p.stepName),
+    input: p.input,
+    state: p.state ?? {},
+    attempt: Number(job.attempts) || 0, // sheet is source of truth
+  };
+  FastLog.log(fn, rsj);
+
+  withLog(fn, runStep)(rsj);
   return;
+}
+
+function parseJsonSafe_(s: string): unknown {
+  try {
+    return JSON.parse(s);
+  } catch {
+    return {};
+  }
 }
 
 function processQueueBatch_(maxJobs: number, budgetMs: number): void {
@@ -146,7 +141,9 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
 
     if (status !== STATUS.PENDING) continue;
 
-    const nextRun = DateHelper.coerceCellToUtcDate(row[COLUMNS.NEXT_RUN_AT - 1]);
+    const nextRun = DateHelper.coerceCellToUtcDate(
+      row[COLUMNS.NEXT_RUN_AT - 1]
+    );
     if (nextRun && nextRun.getTime() > nowMs) continue;
 
     runnable.push({ row, idx: i });
@@ -210,7 +207,6 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
 
   let succeeded = 0;
   let retried = 0;
-  let movedToDead = 0; // logical count; see note below
   let timedOutBeforeStart = 0;
 
   for (const item of toClaim) {
@@ -229,10 +225,10 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
 
     startedIndices.add(idx);
 
-    const job = rowToJob_(row);
+    const job = withLog(fn, rowToJob_)(row);
 
     try {
-      dispatchJob_(job);
+      withLog(fn, dispatchJob_)(job);
       succeeded++;
 
       row[COLUMNS.STATUS - 1] = STATUS.DONE;
@@ -250,7 +246,6 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
         // Permanently failed
         row[COLUMNS.STATUS - 1] = STATUS.ERROR;
         row[COLUMNS.LAST_ERROR - 1] = toCellMsg_(errorMessage);
-        movedToDead++; // logically “perma failed”; actual move-to-dead can be a separate pass
         continue;
       }
 
@@ -291,7 +286,7 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
     fn,
     `Batch summary: totalRows=${values.length}, runnable=${runnable.length}, ` +
       `claimed=${toClaim.length}, started=${startedIndices.size}, ` +
-      `succeeded=${succeeded}, retried=${retried}, movedToDead=${movedToDead}, ` +
+      `succeeded=${succeeded}, retried=${retried}, ` +
       `timedOutBeforeStart=${timedOutBeforeStart}, elapsedMs=${totalElapsed}`
   );
 }
@@ -302,7 +297,7 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
 
 function rowToJob_(r: JobRow): Job {
   const fn = rowToJob_.name;
-  const startTime = FastLog.start(fn);
+
   const job = {
     id: String(r[COLUMNS.ID - 1] ?? ""),
     queuedAt:
@@ -317,16 +312,9 @@ function rowToJob_(r: JobRow): Job {
     workerId: String(r[COLUMNS.WORKER_ID - 1] || ""),
     startedAt: DateHelper.coerceCellToUtcDate(r[COLUMNS.STARTED_AT - 1]),
   };
-  FastLog.finish(fn, startTime);
-  return job;
-}
+  FastLog.log(fn, job);
 
-function parseJsonSafe_(s: string): unknown {
-  try {
-    return JSON.parse(s);
-  } catch {
-    return {};
-  }
+  return job;
 }
 
 function toCellMsg_(x: unknown, max = MAX_CELL_LENGTH) {

@@ -20,7 +20,7 @@ import {
 } from "@lib/constants";
 import { logTime } from "@lib/logging/logTime";
 import { ONE_SECOND_MS } from "@lib/timeConstants";
-import { withLog } from "@logging";
+import { FastLog, withLog } from "@logging";
 import { queuePurgeOldData } from "@queue/queuePurgeOldData";
 import { ensureQueueDateFormats, queueSetup } from "@queue/queueSetup";
 import { queueWorker } from "@queue/queueWorker";
@@ -48,7 +48,24 @@ import { onEdit } from "./onEdit";
 import { onOpen } from "./onOpen";
 import { onSelectionChange } from "./onSelectionChange";
 
-const DISABLE_TRIGGERS = false;
+const DISABLE_TRIGGERS = true;
+const DISABLED_FUNCTIONS = new Set([
+  "GAS_dailySendHtmlEmail",
+  "GAS_dailySorts",
+  "GAS_onChangeTrigger",
+  "GAS_onEditTrigger",
+  "GAS_onOpenTrigger",
+  "GAS_queuePurgeOldData",
+  "GAS_queueWorker",
+]);
+
+function isDisabled_(fn: string): boolean {
+  const isEnabled = DISABLED_FUNCTIONS.has(fn);
+  if (!isEnabled) {
+    FastLog.info(`${fn} is NOT enabled`);
+  }
+  return isEnabled;
+}
 
 export function GAS_applyDescriptionReplacements() {
   withLog(
@@ -66,6 +83,16 @@ export function GAS_convertCurrentColumnToUppercase() {
   new OurFinances(spreadsheet).convertCurrentColumnToUppercase();
 }
 
+export function GAS_dailySendHtmlEmail() {
+  const fn = GAS_dailySendHtmlEmail.name;
+  if (isDisabled_(fn)) return;
+
+  withReentryGuard("SEND_DAILY_EMAIL_RUNNING", 30 * ONE_SECOND_MS, () => {
+    const spreadsheet = getFinancesSpreadsheet();
+    new OurFinances(spreadsheet).dailySendHtmlEmail();
+  });
+}
+
 export function GAS_dailySorts() {
   if (DISABLE_TRIGGERS) return;
   const spreadsheet = getFinancesSpreadsheet();
@@ -80,16 +107,16 @@ export function GAS_ensureQueueDateFormats() {
 }
 
 export function GAS_example() {
-  const startedBy = GAS_example.name;
+  const fn = GAS_example.name;
   const workFlowName = "exampleFlow";
   const firstStep = "exampleStep1";
   const input = {
     parameter1: "Example string",
     parameter2: 42,
-    startedBy,
+    queuedBy: fn,
   } satisfies ExampleFlowInput;
 
-  withLog(startedBy, startWF)(workFlowName, firstStep, input);
+  withLog(fn, startWF)(workFlowName, firstStep, input);
 }
 
 export function GAS_exportFormulasToDrive() {
@@ -97,27 +124,27 @@ export function GAS_exportFormulasToDrive() {
 }
 
 export function GAS_fixSheet() {
-  const startedBy = GAS_fixSheet.name;
+  const fn = GAS_fixSheet.name;
   const workFlowName = "fixSheetFlow";
   const firstStep = "fixSheetStep1";
   const input = {
     sheetName: getActiveSheetName(),
-    startedBy,
+    queuedBy: fn,
   } satisfies FixSheetFlowInput;
 
-  withLog(startedBy, startWF)(workFlowName, firstStep, input);
+  withLog(fn, startWF)(workFlowName, firstStep, input);
 }
 
 export function GAS_formatSheet() {
-  const startedBy = GAS_formatSheet.name;
+  const fn = GAS_formatSheet.name;
   const workFlowName = "formatSheetFlow";
   const firstStep = "formatSheetStep1";
   const input = {
     sheetName: getActiveSheetName(),
-    startedBy,
+    queuedBy: fn,
   } satisfies FormatSheetFlowInput;
 
-  withLog(startedBy, startWF)(workFlowName, firstStep, input);
+  withLog(fn, startWF)(workFlowName, firstStep, input);
 }
 
 export function GAS_goToSheetCategories() {
@@ -208,7 +235,7 @@ export function GAS_onOpenTrigger(
 }
 
 export function GAS_onSelectionChange(e: any): void {
-  if (DISABLE_TRIGGERS) return;
+  // if (DISABLE_TRIGGERS) return;
   withLog(GAS_onSelectionChange.name, onSelectionChange)(e);
 }
 
@@ -223,7 +250,7 @@ export function GAS_queueSetup(): void {
 }
 
 export function GAS_queueWorker(): void {
-  if (DISABLE_TRIGGERS) return;
+  // if (DISABLE_TRIGGERS) return;
   withLog(GAS_queueWorker.name, queueWorker)();
 }
 
@@ -233,14 +260,6 @@ export function GAS_saveContainerIdOnce() {
     "FINANCES_SPREADSHEET_ID",
     id
   );
-}
-
-export function GAS_sendDailyHtmlEmail() {
-  if (DISABLE_TRIGGERS) return;
-  withReentryGuard("SEND_DAILY_EMAIL_RUNNING", 30 * ONE_SECOND_MS, () => {
-    const spreadsheet = getFinancesSpreadsheet();
-    new OurFinances(spreadsheet).sendDailyHtmlEmail();
-  });
 }
 
 export function GAS_showAllAccounts() {
@@ -307,15 +326,15 @@ export function GAS_trimAllSheets() {
 }
 
 export function GAS_trimSheet() {
-  const startedBy = GAS_trimSheet.name;
+  const fn = GAS_trimSheet.name;
   const workFlowName = "trimSheetFlow";
   const firstStep = "trimSheetStep1";
   const input = {
     sheetName: getActiveSheetName(),
-    startedBy,
+    queuedBy: fn,
   } satisfies TrimSheetFlowInput;
 
-  withLog(startedBy, startWF)(workFlowName, firstStep, input);
+  withLog(fn, startWF)(workFlowName, firstStep, input);
 }
 
 export function GAS_updateAccountSheetBalances() {
@@ -329,14 +348,14 @@ export function GAS_updateAllDependencies() {
 }
 
 export function GAS_updateOpenBalances() {
-  const startedBy = GAS_updateOpenBalances.name;
+  const fn = GAS_updateOpenBalances.name;
   const workFlowName = "updateOpenBalancesFlow";
   const firstStep = "init";
   const input = {
-    startedBy,
+    queuedBy: fn,
   } satisfies UpdateOpenBalancesFlowInput;
 
-  withLog(startedBy, startWF)(workFlowName, firstStep, input);
+  withLog(fn, startWF)(workFlowName, firstStep, input);
 }
 
 export function GAS_updateTransactions() {

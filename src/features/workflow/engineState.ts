@@ -1,5 +1,7 @@
 // @workflow/engineState.ts
 
+import type { SerializedRunStepParameters } from "@workflow/workflowTypes";
+
 // Authoritative options type for the engine.
 // Keep ISO strings here to match your queue layer.
 export type EnqueueOptions = {
@@ -8,7 +10,7 @@ export type EnqueueOptions = {
 };
 
 export type EnqueueFn = (
-  parameters: unknown,
+  parameters: SerializedRunStepParameters,
   options?: EnqueueOptions
 ) => { id: string; row: number };
 

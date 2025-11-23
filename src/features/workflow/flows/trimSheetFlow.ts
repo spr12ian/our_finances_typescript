@@ -5,7 +5,7 @@ import type { StepFn } from "../workflowTypes";
 
 export type TrimSheetFlowInput = {
   sheetName: string;
-  startedBy?: string;
+  queuedBy?: string;
 };
 
 export function trimSheetFlow(): void {
@@ -17,9 +17,9 @@ const trimSheetStep1: StepFn = ({ input, state, log }) => {
   const fn = trimSheetStep1.name;
   const startTime = log.start(fn);
   try {
-    const { sheetName, startedBy } = input as TrimSheetFlowInput;
+    const { sheetName, queuedBy } = input as TrimSheetFlowInput;
     log("sheetName:", sheetName);
-    log("startedBy:", startedBy);
+    log("queuedBy:", queuedBy);
     log("state:", state);
 
     trimSheet(sheetName);

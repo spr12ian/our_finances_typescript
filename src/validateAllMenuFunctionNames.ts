@@ -13,7 +13,7 @@ IGNORE_NAMES.push("onEditTrigger"); // Trigger
 IGNORE_NAMES.push("onOpenTrigger"); // Trigger
 IGNORE_NAMES.push("queuePurgeOldData"); // Trigger
 IGNORE_NAMES.push("queueWorker"); // Trigger
-IGNORE_NAMES.push("sendDailyHtmlEmail"); // Trigger
+IGNORE_NAMES.push("dailySendHtmlEmail"); // Trigger
 
 type Item = { caption: string; functionName: string };
 type MenuLike = GoogleAppsScript.Base.Menu & {

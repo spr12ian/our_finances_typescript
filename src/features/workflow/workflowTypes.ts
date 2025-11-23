@@ -4,7 +4,7 @@ import type { StepLogger } from "@logging/workflowLogger";
 // A stable id for a whole workflow run
 export type WorkflowId = string;
 
-// What actually gets serialized into JSON_PAYLOAD
+// What actually gets serialized into PAYLOAD
 export type SerializedRunStepParameters = {
   workflowId: string;
   workflowName: string;

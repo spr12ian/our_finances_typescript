@@ -4,13 +4,13 @@ import { isProgrammaticEdit } from "@lib/programmaticEditGuard";
 
 const INTAKE_PREFIX = "q:intake:";
 const INTAKE_INDEX_PROP = "INTAKE_INDEX_V1";
-const INTAKE_TTL_SEC = 600;   // 10 minutes
-const INTAKE_MAX_KEYS = 500;  // bound the index size
+const INTAKE_TTL_SEC = 600; // 10 minutes
+const INTAKE_MAX_KEYS = 500; // bound the index size
 
 type IntakeEntry = {
   ts: number;
   tsIso: string;
-  startedBy: "onEdit";
+  queuedBy: "onEdit";
   sheetId: number | null;
   row: number | null;
   col: number | null;
@@ -28,7 +28,7 @@ export function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
 
   FastLog.logTime("onEdit → User edit detected");
 
-    // Optional + defensive: may still block under contention, so catch.
+  // Optional + defensive: may still block under contention, so catch.
   let sheetId: number | null = null;
   try {
     sheetId = e.range?.getSheet?.().getSheetId?.() ?? null;
@@ -39,7 +39,7 @@ export function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
   const entry: IntakeEntry = {
     ts: Date.now(),
     tsIso: new Date().toISOString(),
-    startedBy: "onEdit",
+    queuedBy: "onEdit",
     sheetId,
     row: e.range?.getRow?.() ?? null,
     col: e.range?.getColumn?.() ?? null,
@@ -59,13 +59,23 @@ export function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
 }
 
 // ── tiny helpers kept inside the IIFE ──────────────────────────────────────────
-function sc() { return CacheService.getScriptCache(); }
-function sp() { return PropertiesService.getScriptProperties(); }
+function sc() {
+  return CacheService.getScriptCache();
+}
+function sp() {
+  return PropertiesService.getScriptProperties();
+}
 
 function withScriptLock<T>(ms: number, fn: () => T): T | undefined {
   const lock = LockService.getScriptLock();
   if (!lock.tryLock(ms)) return;
-  try { return fn(); } finally { try { lock.releaseLock(); } catch {} }
+  try {
+    return fn();
+  } finally {
+    try {
+      lock.releaseLock();
+    } catch {}
+  }
 }
 
 function intakeEnqueue(entry: IntakeEntry): void {
@@ -77,7 +87,8 @@ function intakeEnqueue(entry: IntakeEntry): void {
     const raw = sp().getProperty(INTAKE_INDEX_PROP);
     const arr: string[] = raw ? JSON.parse(raw) : [];
     arr.push(key);
-    if (arr.length > INTAKE_MAX_KEYS) arr.splice(0, arr.length - INTAKE_MAX_KEYS);
+    if (arr.length > INTAKE_MAX_KEYS)
+      arr.splice(0, arr.length - INTAKE_MAX_KEYS);
     sp().setProperty(INTAKE_INDEX_PROP, JSON.stringify(arr));
   });
 }

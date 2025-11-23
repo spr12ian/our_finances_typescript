@@ -84,7 +84,7 @@ export function handleEdit(e: SheetsOnEdit): void {
       return;
     }
 
-    // Dispatch (pure computation—no locks yet)
+    // Pure computation—no locks yet
     const rules = __compileRulesOpt().filter((r) =>
       typeof r.sheet === "string"
         ? r.sheet === sheetName

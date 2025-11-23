@@ -153,7 +153,7 @@ function startFlow_(sheet: Sheet) {
     {
       sheetName: sheet.name,
       row: 1,
-      startedBy: "handleChange",
+      queuedBy: "handleChange",
     }
   );
 }

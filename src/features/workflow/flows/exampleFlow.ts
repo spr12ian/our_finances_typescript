@@ -9,7 +9,7 @@ const MAX_YIELD_STEPS = 3;
 export type ExampleFlowInput = {
   parameter1: string;
   parameter2: number;
-  startedBy?: string;
+  queuedBy?: string;
 };
 
 export function exampleFlow(): void {
@@ -23,11 +23,11 @@ const exampleStep1: StepFn = ({ input, state, log }) => {
   const fn = exampleStep1.name;
   const startTime = log.start(fn);
   try {
-    const { parameter1, parameter2, startedBy } = input as ExampleFlowInput;
+    const { parameter1, parameter2, queuedBy } = input as ExampleFlowInput;
     log("input:", input);
     log("parameter1:", parameter1);
     log("parameter2:", parameter2);
-    log("startedBy:", startedBy);
+    log("queuedBy:", queuedBy);
 
     state.e1 = example(parameter1, parameter2);
 

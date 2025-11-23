@@ -40,6 +40,8 @@ import { ONE_MINUTE_MS } from "../../lib/timeConstants";
 import { withReentryGuard } from "../../lib/withReentryGuard";
 import { OurFinances } from "../../OurFinances";
 import { validateAllMenuFunctionNames } from "../../validateAllMenuFunctionNames";
+import { dailySendHtmlEmail } from "../triggers/dailySendHtmlEmail";
+import { dailySorts } from '@gas/triggers/dailySorts';
 import { handleChange } from "../triggers/handleChange";
 import { handleEdit } from "../triggers/handleEdit";
 import { handleOpen } from "../triggers/handleOpen";
@@ -48,24 +50,18 @@ import { onEdit } from "./onEdit";
 import { onOpen } from "./onOpen";
 import { onSelectionChange } from "./onSelectionChange";
 
-const DISABLE_TRIGGERS = true;
 const DISABLED_FUNCTIONS = new Set([
-  "GAS_dailySendHtmlEmail",
-  "GAS_dailySorts",
+  // "GAS_dailySendHtmlEmail",
+  // "GAS_dailySorts",
   "GAS_onChangeTrigger",
+  "GAS_onEdit",
   "GAS_onEditTrigger",
+  "GAS_onOpen",
   "GAS_onOpenTrigger",
+  "GAS_onSelectionChange",
   "GAS_queuePurgeOldData",
   "GAS_queueWorker",
 ]);
-
-function isDisabled_(fn: string): boolean {
-  const isEnabled = DISABLED_FUNCTIONS.has(fn);
-  if (!isEnabled) {
-    FastLog.info(`${fn} is NOT enabled`);
-  }
-  return isEnabled;
-}
 
 export function GAS_applyDescriptionReplacements() {
   withLog(
@@ -88,17 +84,16 @@ export function GAS_dailySendHtmlEmail() {
   if (isDisabled_(fn)) return;
 
   withReentryGuard("SEND_DAILY_EMAIL_RUNNING", 30 * ONE_SECOND_MS, () => {
-    const spreadsheet = getFinancesSpreadsheet();
-    new OurFinances(spreadsheet).dailySendHtmlEmail();
+    withLog(fn, dailySendHtmlEmail)();
   });
 }
 
 export function GAS_dailySorts() {
-  if (DISABLE_TRIGGERS) return;
-  const spreadsheet = getFinancesSpreadsheet();
+  const fn = GAS_dailySorts.name;
+  if (isDisabled_(fn)) return;
 
   withReentryGuard("DAILY_SORTS_RUNNING", 5 * ONE_MINUTE_MS, () => {
-    new OurFinances(spreadsheet).dailySorts();
+    withLog(fn, dailySorts)();
   });
 }
 
@@ -116,7 +111,7 @@ export function GAS_example() {
     queuedBy: fn,
   } satisfies ExampleFlowInput;
 
-  withLog(fn, startWF)(workFlowName, firstStep, input);
+  withLog(fn, startWF_)(workFlowName, firstStep, input);
 }
 
 export function GAS_exportFormulasToDrive() {
@@ -132,7 +127,7 @@ export function GAS_fixSheet() {
     queuedBy: fn,
   } satisfies FixSheetFlowInput;
 
-  withLog(fn, startWF)(workFlowName, firstStep, input);
+  withLog(fn, startWF_)(workFlowName, firstStep, input);
 }
 
 export function GAS_formatSheet() {
@@ -144,7 +139,7 @@ export function GAS_formatSheet() {
     queuedBy: fn,
   } satisfies FormatSheetFlowInput;
 
-  withLog(fn, startWF)(workFlowName, firstStep, input);
+  withLog(fn, startWF_)(workFlowName, firstStep, input);
 }
 
 export function GAS_goToSheetCategories() {
@@ -206,42 +201,54 @@ export function GAS_logSheetNames(): void {
 export function GAS_onChangeTrigger(
   e: GoogleAppsScript.Events.SheetsOnChange
 ): void {
-  if (DISABLE_TRIGGERS) return;
-  withLog(GAS_onChangeTrigger.name, handleChange)(e);
+  const fn = GAS_onChangeTrigger.name;
+  if (isDisabled_(fn)) return;
+
+  withLog(fn, handleChange)(e);
 }
 
 export function GAS_onEdit(e: GoogleAppsScript.Events.SheetsOnEdit): void {
-  if (DISABLE_TRIGGERS) return;
-  withLog(GAS_onEdit.name, onEdit)(e);
+  const fn = GAS_onEdit.name;
+  if (isDisabled_(fn)) return;
+
+  withLog(fn, onEdit)(e);
 }
 
 export function GAS_onEditTrigger(
   e: GoogleAppsScript.Events.SheetsOnEdit
 ): void {
-  if (DISABLE_TRIGGERS) return;
-  withLog(GAS_onEditTrigger.name, handleEdit)(e);
+  const fn = GAS_onEditTrigger.name;
+  if (isDisabled_(fn)) return;
+
+  withLog(fn, handleEdit)(e);
 }
 
 export function GAS_onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
-  if (DISABLE_TRIGGERS) return;
-  withLog(GAS_onOpen.name, onOpen)(e);
+  const fn = GAS_onOpen.name;
+  if (isDisabled_(fn)) return;
+
+  withLog(fn, onOpen)(e);
 }
 
 export function GAS_onOpenTrigger(
   e: GoogleAppsScript.Events.SheetsOnOpen
 ): void {
-  if (DISABLE_TRIGGERS) return;
-  withLog(GAS_onOpenTrigger.name, handleOpen)(e);
+  const fn = GAS_onOpenTrigger.name;
+  if (isDisabled_(fn)) return;
+
+  withLog(fn, handleOpen)(e);
 }
 
 export function GAS_onSelectionChange(e: any): void {
-  // if (DISABLE_TRIGGERS) return;
-  withLog(GAS_onSelectionChange.name, onSelectionChange)(e);
+  const fn = GAS_onSelectionChange.name;
+  if (isDisabled_(fn)) return;
+  withLog(fn, onSelectionChange)(e);
 }
 
 export function GAS_queuePurgeOldData(): void {
-  if (DISABLE_TRIGGERS) return;
   const fn = GAS_queuePurgeOldData.name;
+  if (isDisabled_(fn)) return;
+
   withLog(fn, queuePurgeOldData)();
 }
 
@@ -250,8 +257,10 @@ export function GAS_queueSetup(): void {
 }
 
 export function GAS_queueWorker(): void {
-  // if (DISABLE_TRIGGERS) return;
-  withLog(GAS_queueWorker.name, queueWorker)();
+  const fn = GAS_queueWorker.name;
+  if (isDisabled_(fn)) return;
+
+  withLog(fn, queueWorker)();
 }
 
 export function GAS_saveContainerIdOnce() {
@@ -334,7 +343,7 @@ export function GAS_trimSheet() {
     queuedBy: fn,
   } satisfies TrimSheetFlowInput;
 
-  withLog(fn, startWF)(workFlowName, firstStep, input);
+  withLog(fn, startWF_)(workFlowName, firstStep, input);
 }
 
 export function GAS_updateAccountSheetBalances() {
@@ -355,7 +364,7 @@ export function GAS_updateOpenBalances() {
     queuedBy: fn,
   } satisfies UpdateOpenBalancesFlowInput;
 
-  withLog(fn, startWF)(workFlowName, firstStep, input);
+  withLog(fn, startWF_)(workFlowName, firstStep, input);
 }
 
 export function GAS_updateTransactions() {
@@ -373,8 +382,16 @@ export function GAS_validateAllMenuFunctionNames() {
 
 // Local helper functions
 
-function startWF(workFlowName: string, firstStep: string, input: unknown) {
-  const fn = startWF.name;
+function isDisabled_(fn: string): boolean {
+  const isDisabled = DISABLED_FUNCTIONS.has(fn);
+  if (isDisabled) {
+    FastLog.info(`${fn} is disabled`);
+  }
+  return isDisabled;
+}
+
+function startWF_(workFlowName: string, firstStep: string, input: unknown) {
+  const fn = startWF_.name;
   setupWorkflowsOnce();
   withLog(fn, startWorkflow)(workFlowName, firstStep, input);
 }

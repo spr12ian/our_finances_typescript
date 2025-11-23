@@ -1,38 +1,16 @@
 import { Spreadsheet } from "@domain";
-import {
-  MetaBankAccounts,
-  MetaBudgetAdHocTransactions,
-  MetaBudgetAnnualTransactions,
-  MetaBudgetMonthlyTransactions,
-  MetaBudgetWeeklyTransactions,
-  MetaDescriptionReplacements,
-  MetaTransactionCategories,
-} from "@lib/constants";
-import {
-  htmlHorizontalRule,
-  toHtmlH1,
-  toHtmlH2,
-  toHtmlH3,
-  toHtmlParagraph,
-} from "@lib/html/htmlFunctions";
-import { renderBankDebitsDueSummaryHtml } from "@lib/html/renderBankDebitsDueSummaryHtml";
-import { renderUpcomingDebitsAsHtmlTable } from "@lib/html/renderUpcomingDebitsAsHtmlTable";
 import { FastLog } from "@logging/FastLog";
-import type { UpcomingDebit } from "@sheets/budgetTypes";
+import { isAccountSheet } from "@sheets/accountSheetFunctions";
+import { AccountSheet } from "@sheets/classes/AccountSheet";
+import { BankAccounts } from "@sheets/classes/BankAccounts";
+import { BankDebitsDue } from "@sheets/classes/BankDebitsDue";
+import { BudgetAdHocTransactions } from "@sheets/classes/BudgetAdHocTransactions";
 import { BudgetAnnualTransactions } from "@sheets/classes/BudgetAnnualTransactions";
+import { BudgetMonthlyTransactions } from "@sheets/classes/BudgetMonthlyTransactions";
+import { BudgetWeeklyTransactions } from "@sheets/classes/BudgetWeeklyTransactions";
 import { Dependencies } from "@sheets/classes/Dependencies";
-import { isAccountSheet } from "./features/sheets/accountSheetFunctions";
-import { AccountSheet } from "./features/sheets/classes/AccountSheet";
-import { BankAccounts } from "./features/sheets/classes/BankAccounts";
-import { BankDebitsDue } from "./features/sheets/classes/BankDebitsDue";
-import { BudgetAdHocTransactions } from "./features/sheets/classes/BudgetAdHocTransactions";
-import { BudgetMonthlyTransactions } from "./features/sheets/classes/BudgetMonthlyTransactions";
-import { BudgetWeeklyTransactions } from "./features/sheets/classes/BudgetWeeklyTransactions";
-import { CheckFixedAmounts } from "./features/sheets/classes/CheckFixedAmounts";
-import { TransactionCategories } from "./features/sheets/classes/TransactionCategories";
-import { Transactions } from "./features/sheets/classes/Transactions";
-import { formatLondonDate } from "./lib/dates";
-import { sendMeHtmlEmail } from "./lib/google/email";
+import { TransactionCategories } from "@sheets/classes/TransactionCategories";
+import { Transactions } from "@sheets/classes/Transactions";
 
 export class OurFinances {
   #dependencies?: Dependencies;
@@ -42,7 +20,6 @@ export class OurFinances {
   #budgetAdhocTransactions?: BudgetAdHocTransactions;
   #budgetMonthlyTransactions?: BudgetMonthlyTransactions;
   #budgetWeeklyTransactions?: BudgetWeeklyTransactions;
-  #checkFixedAmounts?: CheckFixedAmounts;
   readonly #spreadsheet: Spreadsheet;
   #transactionCategories?: TransactionCategories;
   #transactions?: Transactions;
@@ -102,22 +79,11 @@ export class OurFinances {
     return this.#budgetWeeklyTransactions;
   }
 
-  get checkFixedAmounts() {
-    if (typeof this.#checkFixedAmounts === "undefined") {
-      this.#checkFixedAmounts = new CheckFixedAmounts(this.#spreadsheet);
-    }
-    return this.#checkFixedAmounts;
-  }
-
   get dependencies() {
     if (typeof this.#dependencies === "undefined") {
       this.#dependencies = new Dependencies(this.#spreadsheet);
     }
     return this.#dependencies;
-  }
-
-  get fixedAmountMismatches() {
-    return this.checkFixedAmounts.mismatchMessages;
   }
 
   get howManyDaysAhead() {
@@ -141,31 +107,6 @@ export class OurFinances {
       this.#transactions = new Transactions(this.#spreadsheet);
     }
     return this.#transactions;
-  }
-
-  get upcomingDebits(): UpcomingDebit[] {
-    const howManyDaysAhead = this.bankDebitsDue.howManyDaysAhead;
-    // Collect upcoming debits from different sources
-    return [
-      {
-        section: "Ad hoc",
-        rows: this.budgetAdhocTransactions.getUpcomingDebits(howManyDaysAhead),
-      },
-      {
-        section: "Annual",
-        rows: this.budgetAnnualTransactions.getUpcomingDebits(howManyDaysAhead),
-      },
-      {
-        section: "Monthly",
-        rows: this.budgetMonthlyTransactions.getUpcomingDebits(
-          howManyDaysAhead
-        ),
-      },
-      {
-        section: "Weekly",
-        rows: this.budgetWeeklyTransactions.getUpcomingDebits(howManyDaysAhead),
-      },
-    ];
   }
 
   get url(): string {
@@ -206,24 +147,6 @@ export class OurFinances {
     range.setValues(uppercasedValues);
   }
 
-  dailySorts() {
-    const sheetsToSort = [
-      MetaBankAccounts.SHEET.NAME,
-      MetaBudgetAdHocTransactions.SHEET.NAME,
-      MetaBudgetAnnualTransactions.SHEET.NAME,
-      MetaBudgetMonthlyTransactions.SHEET.NAME,
-      MetaBudgetWeeklyTransactions.SHEET.NAME,
-      MetaDescriptionReplacements.SHEET.NAME,
-      MetaTransactionCategories.SHEET.NAME,
-    ];
-    sheetsToSort.forEach((sheetName) => {
-      const sheet = this.#spreadsheet.getSheet(sheetName);
-      if (sheet) {
-        sheet.sortByFirstColumnOmittingHeader();
-      }
-    });
-  }
-
   fixAccountSheet() {
     FastLog.log(`Started OurFinances.fixAccountSheet`);
 
@@ -237,51 +160,6 @@ export class OurFinances {
     accountSheet.fixSheet();
 
     FastLog.log(`Finished OurFinances.fixAccountSheet`);
-  }
-
-  dailySendHtmlEmail(): void {
-    const fixedAmountMismatches = this.fixedAmountMismatches;
-    const upcomingDebits = this.upcomingDebits;
-
-    const subject = `Our finances daily email: ${formatLondonDate(new Date())}`;
-
-    // Build array of lines first
-    const lines: string[] = [];
-
-    lines.push(toHtmlH1(subject));
-
-    if (fixedAmountMismatches.length > 0) {
-      lines.push(toHtmlH3("Fixed amount mismatches"));
-      for (const mismatch of fixedAmountMismatches) {
-        lines.push(mismatch);
-      }
-    }
-
-    if (upcomingDebits.length > 0) {
-      lines.push(toHtmlH2(toHtmlH2("Upcoming debits")));
-      lines.push(
-        renderBankDebitsDueSummaryHtml(
-          this.bankDebitsDue.getUpcomingDebitsSummary()
-        )
-      );
-      for (const debits of upcomingDebits) {
-        if (debits.rows.length) {
-          lines.push(toHtmlH3(debits.section));
-          lines.push(renderUpcomingDebitsAsHtmlTable(debits.rows));
-        }
-      }
-    }
-
-    lines.push(htmlHorizontalRule());
-
-    // Add footer with spreadsheet URL
-    lines.push(`Sent from (dailySendHtmlEmail): ${this.url}`);
-
-    // Generate HTML body: wrap each line in <p>
-    const htmlBody = lines.map((line) => toHtmlParagraph(line)).join("");
-
-    // Send email
-    sendMeHtmlEmail(subject, htmlBody);
   }
 
   showAllAccounts() {

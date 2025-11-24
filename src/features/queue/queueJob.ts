@@ -12,8 +12,6 @@ import { getQueueSheet } from "./getQueueSheet";
 import { COLUMNS, DEFAULT_PRIORITY, STATUS } from "./queueConstants";
 import type { JobRow, QueueEnqueueOptions } from "./queueTypes";
 
-type PayloadWithQueuedBy = { queuedBy?: string };
-
 // ───────────────────────────────────────────────────────────────────────────────
 // Public API
 // ───────────────────────────────────────────────────────────────────────────────
@@ -35,7 +33,7 @@ export function queueJob(
 
   // 2) last chance: run the critical section with a longer lock timeout
   const attempt = withDocumentLock<{ id: string; row: number }>(
-    () => doQueueJob(runStepParameters, options), // call the inner implementation
+    () => withLog(doQueueJob)(runStepParameters, options), // call the inner implementation
     2 * ONE_SECOND_MS
   )();
 
@@ -52,7 +50,7 @@ export function tryQueueJob(
 ): { id: string; row: number } | undefined {
   // withDocumentLock returns a function → call it
   return withDocumentLock<{ id: string; row: number }>(
-    () => doQueueJob(parameters, options),
+    () => withLog(doQueueJob)(parameters, options),
     3 * ONE_SECOND_MS
   )();
 }
@@ -69,96 +67,101 @@ function doQueueJob(
   payload: SerializedRunStepParameters,
   options: QueueEnqueueOptions = {}
 ): { id: string; row: number } {
-  const functionName = doQueueJob.name;
+  const fn = doQueueJob.name;
 
-  const startTime = FastLog.start(functionName, {
+  FastLog.log(fn, {
     parameters: payload,
     options,
   });
 
-  try {
-    const priority =
-      typeof options?.priority === "number"
-        ? options.priority
-        : DEFAULT_PRIORITY;
+  const priority =
+    typeof options?.priority === "number" ? options.priority : DEFAULT_PRIORITY;
 
-    const id = generateId_();
+  const id = generateId_();
 
-    // UTC-normalized enqueue time
-    const queuedAt = new Date();
-    const displayEnqueuedAt = DateHelper.formatForLog(queuedAt);
+  // UTC-normalized enqueue time
+  const queuedAt = new Date();
+  const displayEnqueuedAt = DateHelper.formatForLog(queuedAt);
 
-    // Optional runAt normalization
-    const runAtCell: Date | "" =
-      options.runAt instanceof Date && !isNaN(options.runAt.getTime())
-        ? new Date(options.runAt.toISOString())
-        : "";
+  // Optional runAt normalization
+  const runAtCell: Date | "" =
+    options.runAt instanceof Date && !isNaN(options.runAt.getTime())
+      ? new Date(options.runAt.toISOString())
+      : "";
 
-    FastLog.log(functionName, `Queuing job id=${id} at ${displayEnqueuedAt}`);
+  FastLog.log(fn, `Queuing job id=${id} at ${displayEnqueuedAt}`);
 
-    const { queuedBy, cleaned } = extractQueuedBy_(payload);
+  const { queuedBy, cleaned } = extractQueuedBy_(payload);
+  FastLog.log(fn, { queuedBy, cleaned });
 
-    const rowValues: JobRow = [
-      id, // A: id
-      queuedAt, // B: queued_at
-      queuedBy, // C: queued_by
-      JSON.stringify(cleaned ?? {}), // D: payload
-      priority, // E: priority
-      runAtCell, // F: run_at
-      0, // G: attempts
-      STATUS.PENDING, // H: status
-      "", // I: started_at
-      "", // J: finished_at
-      "", // K: error
-    ];
-    FastLog.log(functionName, `rowValues: ${rowValues}`);
+  const rowValues: JobRow = [
+    id, // A: id
+    queuedAt, // B: queued_at
+    queuedBy, // C: queued_by
+    JSON.stringify(cleaned ?? {}), // D: payload
+    priority, // E: priority
+    runAtCell, // F: run_at
+    0, // G: attempts
+    STATUS.PENDING, // H: status
+    "", // I: started_at
+    "", // J: finished_at
+    "", // K: error
+  ];
+  FastLog.log(fn, `rowValues: ${rowValues}`);
 
-    const sheet = getQueueSheet();
-    const gasSheet = sheet.raw;
-    const rowIndex = gasSheet.getLastRow() + 1;
-    gasSheet.getRange(rowIndex, 1, 1, rowValues.length).setValues([rowValues]);
+  const sheet = getQueueSheet();
+  const gasSheet = sheet.raw;
+  const rowIndex = gasSheet.getLastRow() + 1;
+  gasSheet.getRange(rowIndex, 1, 1, rowValues.length).setValues([rowValues]);
 
-    // Apply human-readable date formats
-    gasSheet
-      .getRange(rowIndex, COLUMNS.QUEUED_AT)
-      .setNumberFormat(DateHelper.DISPLAY_DATE_FORMAT);
-    gasSheet
-      .getRange(rowIndex, COLUMNS.NEXT_RUN_AT)
-      .setNumberFormat(DateHelper.DISPLAY_DATE_FORMAT);
-    gasSheet
-      .getRange(rowIndex, COLUMNS.STARTED_AT)
-      .setNumberFormat(DateHelper.DISPLAY_DATE_FORMAT);
+  // Apply human-readable date formats
+  gasSheet
+    .getRange(rowIndex, COLUMNS.QUEUED_AT)
+    .setNumberFormat(DateHelper.DISPLAY_DATE_FORMAT);
+  gasSheet
+    .getRange(rowIndex, COLUMNS.NEXT_RUN_AT)
+    .setNumberFormat(DateHelper.DISPLAY_DATE_FORMAT);
+  gasSheet
+    .getRange(rowIndex, COLUMNS.STARTED_AT)
+    .setNumberFormat(DateHelper.DISPLAY_DATE_FORMAT);
 
-    FastLog.log(
-      functionName,
-      `Job ${id} successfully enqueued on row ${rowIndex}`
-    );
+  FastLog.log(fn, `Job ${id} successfully enqueued on row ${rowIndex}`);
 
-    return { id, row: rowIndex };
-  } catch (err) {
-    FastLog.error(functionName, err);
-    throw err;
-  } finally {
-    try {
-    } catch {}
-    try {
-      FastLog.finish(functionName, startTime);
-    } catch {}
-  }
+  return { id, row: rowIndex };
 }
 
-function extractQueuedBy_(payload: unknown): {
-  queuedBy: string;
-  cleaned: unknown;
-} {
-  if (payload && typeof payload === "object") {
-    const p = payload as PayloadWithQueuedBy;
+type InputWithQueuedBy = {
+  queuedBy?: string;
+  [key: string]: unknown;
+};
 
-    if (typeof p.queuedBy === "string") {
-      const queuedBy = p.queuedBy;
-      delete p.queuedBy;
-      return { queuedBy, cleaned: payload };
-    }
+function extractQueuedBy_(payload: SerializedRunStepParameters): {
+  queuedBy: string;
+  cleaned: SerializedRunStepParameters;
+} {
+  // Non-object / null safety
+  if (!payload || typeof payload !== "object") {
+    return { queuedBy: "", cleaned: payload };
   }
-  return { queuedBy: "", cleaned: payload };
+
+  // Shallow clone outer payload so we don’t mutate the original reference
+  const cleaned: SerializedRunStepParameters = { ...payload };
+
+  let queuedBy = "";
+
+  // Only bother if we have an input object
+  if (cleaned.input && typeof cleaned.input === "object") {
+    const input = { ...(cleaned.input as InputWithQueuedBy) };
+
+    if (typeof input.queuedBy === "string") {
+      queuedBy = input.queuedBy;
+    }
+
+    // Remove queuedBy from the input we’re going to enqueue
+    delete input.queuedBy;
+
+    cleaned.input = input;
+  }
+
+  return { queuedBy, cleaned };
 }

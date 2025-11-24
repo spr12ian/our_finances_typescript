@@ -74,7 +74,7 @@ export function onSelectionChange(e: any): void {
       const runStepParameters = {
         workflowName,
         stepName,
-        input: { sheetName, queuedBy: "onSelectionChange" },
+        input: { sheetName, queuedBy: fn },
       } as RunStepJob;
 
       // Fire-and-forget: queue worker will pick this up.

@@ -5,11 +5,8 @@ import { getErrorMessage } from "@lib/errors";
 import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { withScriptLock } from "@lib/withScriptLock";
 import { FastLog, withLog } from "@logging";
-import {
-  setupWorkflowsOnce,
-  type RunStepJob,
-  type SerializedRunStepParameters,
-} from "@workflow";
+import type { RunStepJob, SerializedRunStepParameters } from "@workflow";
+import { setupWorkflowsOnce } from "@workflow";
 import { runStep } from "@workflow/workflowEngine";
 import { getQueueSheet } from "./getQueueSheet";
 import {

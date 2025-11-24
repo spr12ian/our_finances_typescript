@@ -1,37 +1,44 @@
 import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { FastLog } from "./logging";
 
-/**
- * Executes a function with a global script lock (LockService.getScriptLock()).
- * If LockService is unavailable (non-GAS environment), runs without locking.
- */
-export function withScriptLock<T>(fn: () => T): T {
-  // @ts-ignore: LockService exists only in GAS
-  const lockService = typeof LockService !== "undefined" ? LockService : null;
+type LockStrategy = "skip" | "run-unlocked";
 
-  if (!lockService) {
-    FastLog.warn("LockService unavailable — running without lock");
-    return fn();
+type ScriptLockOptions =
+  | { timeoutMs: number; strategy?: LockStrategy; label?: string }
+  | { timeoutMs?: number; strategy: LockStrategy; label?: string };
+
+export function withScriptLock<T>(
+  fn: () => T,
+  {
+    timeoutMs = 5 * ONE_SECOND_MS,
+    strategy = "skip",
+    label = fn.name,
+  }: ScriptLockOptions
+): T | undefined {
+  const lock = LockService.getScriptLock();
+
+  if (!lock.tryLock(timeoutMs)) {
+    FastLog.warn(`${label}: script lock busy`);
+    return strategy === "run-unlocked" ? fn() : undefined;
+    if (strategy === "skip") {
+      FastLog.warn(`[${label}] skipped: could not acquire lock`);
+      return undefined;
+    }
+    if (strategy === "run-unlocked") {
+      FastLog.warn(`[${label}] running without lock`);
+      return fn();
+    }
   }
 
+  FastLog.log(`${label}: script lock acquired`);
   try {
-    // @ts-ignore
-    const lock = lockService.getScriptLock();
-    if (lock.tryLock(5 * ONE_SECOND_MS)) {
-      FastLog.log("Script lock acquired");
-      try {
-        return fn();
-      } finally {
-        lock.releaseLock();
-        FastLog.log("Script lock released");
-      }
-    } else {
-      FastLog.warn("Script lock busy — skipping execution");
-      return undefined as unknown as T; // explicit skip
-    }
-  } catch (err) {
-    FastLog.error("Error acquiring script lock", err);
-    // fallback to direct execution
     return fn();
+  } finally {
+    try {
+      lock.releaseLock();
+      FastLog.log(`${label}: script lock released`);
+    } catch (e) {
+      FastLog.error(`${label}: error releasing script lock`, e);
+    }
   }
 }

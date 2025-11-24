@@ -45,9 +45,14 @@ export function queueWorker(): void {
   }
 
   // At this point the engine is configured and enqueueFn is wired.
-  withScriptLock(() => {
-    withLog(fn, processQueueBatch_)(MAX_BATCH, WORKER_BUDGET_MS);
-  });
+  withScriptLock(
+    () => {
+      withLog(fn, processQueueBatch_)(MAX_BATCH, WORKER_BUDGET_MS);
+    },
+    {
+      strategy: "run-unlocked",
+    }
+  );
 }
 
 function getLastDataRow_(sheet: GoogleAppsScript.Spreadsheet.Sheet): number {

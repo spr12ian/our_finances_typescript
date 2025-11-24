@@ -14,37 +14,42 @@ export function setupWorkflows(): void {
   const fn = setupWorkflows.name;
   const startTime = FastLog.start(fn);
 
-  withScriptLock(() => {
-    if (initialized && isEngineConfigured()) return; // idempotent
+  withScriptLock(
+    () => {
+      if (initialized && isEngineConfigured()) return; // idempotent
 
-    // 1) Inject an EnqueueFn-compatible wrapper (NOT queueJob directly)
-    const enqueueAdapter: EnqueueFn = (
-      parameters: unknown,
-      opts?: EnqueueOptions
-    ) => {
-      const rsp = parameters as RunStepJob;
+      // 1) Inject an EnqueueFn-compatible wrapper (NOT queueJob directly)
+      const enqueueAdapter: EnqueueFn = (
+        parameters: unknown,
+        opts?: EnqueueOptions
+      ) => {
+        const rsp = parameters as RunStepJob;
 
-      // normalize runAt (engine side deals in Date|null)
-      const runAt =
-        opts?.runAt instanceof Date && !isNaN(opts.runAt.getTime())
-          ? opts.runAt
-          : null;
+        // normalize runAt (engine side deals in Date|null)
+        const runAt =
+          opts?.runAt instanceof Date && !isNaN(opts.runAt.getTime())
+            ? opts.runAt
+            : null;
 
-      // map EngineOpts -> QueueEnqueueOptions (you can add defaults here if you want)
-      return queueJobMust(rsp, {
-        runAt,
-        priority: opts?.priority,
-        // maxAttempts / dedupeKey can be added here if your engine later exposes them
-      });
-    };
+        // map EngineOpts -> QueueEnqueueOptions (you can add defaults here if you want)
+        return queueJobMust(rsp, {
+          runAt,
+          priority: opts?.priority,
+          // maxAttempts / dedupeKey can be added here if your engine later exposes them
+        });
+      };
 
-    setEnqueue(enqueueAdapter);
+      setEnqueue(enqueueAdapter);
 
-    // 2) Ensure the registry exists before any handlers run
-    // If your registerStep is idempotent, you can call this every time.
-    registerAllWorkflows();
+      // 2) Ensure the registry exists before any handlers run
+      // If your registerStep is idempotent, you can call this every time.
+      registerAllWorkflows();
 
-    initialized = true;
-  });
+      initialized = true;
+    },
+    {
+      strategy: "run-unlocked",
+    }
+  );
   FastLog.finish(fn, startTime);
 }

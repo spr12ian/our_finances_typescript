@@ -56,10 +56,10 @@ const DISABLED_FUNCTIONS = new Set([
   "GAS_onChangeTrigger",
   "GAS_onEdit",
   "GAS_onEditTrigger",
-  "GAS_onOpen",
+  // "GAS_onOpen",
   "GAS_onOpenTrigger",
   "GAS_onSelectionChange",
-  "GAS_queuePurgeOldData",
+  // "GAS_queuePurgeOldData",
   "GAS_queueWorker",
 ]);
 

@@ -1,6 +1,7 @@
 // @onEdit.ts
 import { FastLog } from "@lib/logging";
 import { isProgrammaticEdit } from "@lib/programmaticEditGuard";
+import { withScriptLock } from "@lib/withScriptLock";
 
 const INTAKE_PREFIX = "q:intake:";
 const INTAKE_INDEX_PROP = "INTAKE_INDEX_V1";
@@ -45,7 +46,7 @@ export function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
     col: e.range?.getColumn?.() ?? null,
   };
 
-  intakeEnqueue(entry); // fast cache + indexed key write
+  intakeEnqueue_(entry); // fast cache + indexed key write
 
   // const gasSheet = e.range.getSheet();
   // FastLog.logTime("onEdit → after e.range.getSheet() call");
@@ -59,36 +60,34 @@ export function onEdit(e: GoogleAppsScript.Events.SheetsOnEdit) {
 }
 
 // ── tiny helpers kept inside the IIFE ──────────────────────────────────────────
-function sc() {
+function getScriptCache_() {
   return CacheService.getScriptCache();
 }
-function sp() {
+
+function getScriptProperties_() {
   return PropertiesService.getScriptProperties();
 }
 
-function withScriptLock<T>(ms: number, fn: () => T): T | undefined {
-  const lock = LockService.getScriptLock();
-  if (!lock.tryLock(ms)) return;
-  try {
-    return fn();
-  } finally {
-    try {
-      lock.releaseLock();
-    } catch {}
-  }
-}
-
-function intakeEnqueue(entry: IntakeEntry): void {
+function intakeEnqueue_(entry: IntakeEntry): void {
   const key = INTAKE_PREFIX + Utilities.getUuid();
-  sc().put(key, JSON.stringify(entry), INTAKE_TTL_SEC);
+  getScriptCache_().put(key, JSON.stringify(entry), INTAKE_TTL_SEC);
 
-  // Keep a compact index of keys so the worker can flush later.
-  withScriptLock(50, () => {
-    const raw = sp().getProperty(INTAKE_INDEX_PROP);
-    const arr: string[] = raw ? JSON.parse(raw) : [];
-    arr.push(key);
-    if (arr.length > INTAKE_MAX_KEYS)
-      arr.splice(0, arr.length - INTAKE_MAX_KEYS);
-    sp().setProperty(INTAKE_INDEX_PROP, JSON.stringify(arr));
-  });
+  withScriptLock(
+    () => {
+      // Keep a compact index of keys so the worker can flush later.
+      const raw = getScriptProperties_().getProperty(INTAKE_INDEX_PROP);
+      const arr: string[] = raw ? JSON.parse(raw) : [];
+      arr.push(key);
+      if (arr.length > INTAKE_MAX_KEYS) {
+        arr.splice(0, arr.length - INTAKE_MAX_KEYS);
+      }
+      getScriptProperties_().setProperty(
+        INTAKE_INDEX_PROP,
+        JSON.stringify(arr)
+      );
+    },
+    {
+      timeoutMs: 50,
+    }
+  );
 }

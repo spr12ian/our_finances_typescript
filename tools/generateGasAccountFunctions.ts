@@ -14,7 +14,7 @@ const gasAccountFunctions = path.resolve(
 const makeAccountFn = (name: string) =>
   [
     `export function GAS_goToSheetLastRow${name}() {`,
-    `  withLog(GAS_goToSheetLastRow${name}.name, goToSheetLastRow)("${name}");`,
+    `  withLog(goToSheetLastRow)("${name}");`,
     `}`,
     ``,
   ].join("\n");

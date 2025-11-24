@@ -66,15 +66,17 @@ export function WithLog(label?: string) {
 /**
  * Function wrapper version
  */
-export function withLog<T>(
-  label: string,
-  fn: (...args: any[]) => T
-): (...args: any[]) => T {
-  return function (...args: any[]): T {
+export function withLog<Args extends any[], R>(
+  fn: (...args: Args) => R
+): (...args: Args) => R {
+  const label = fn.name || "<anonymous>";
+
+  return function (this: unknown, ...args: Args): R {
     Logger.log(`label: ${label}`);
     const finish = functionStart(label);
     try {
-      return fn(...args);
+      // preserve the caller's `this`
+      return fn.apply(this, args);
     } catch (err) {
       const errorMessage = getErrorMessage(err);
       FastLog.error(`Error in ${label}: ${errorMessage}`);
@@ -84,3 +86,4 @@ export function withLog<T>(
     }
   };
 }
+

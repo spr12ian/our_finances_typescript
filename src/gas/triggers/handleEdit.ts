@@ -119,7 +119,6 @@ export function handleEdit(e: SheetsOnEdit): void {
 
         // ⬇️ Acquire a short, non-blocking DocumentLock ONLY around the mutation.
         const run = withDocumentLock<void>(
-          "handleEdit", // label in your logs
           () => rule.fn(e), // the actual work (may read/write the sheet)
           50 // 50ms tryLock → skip if busy
         );

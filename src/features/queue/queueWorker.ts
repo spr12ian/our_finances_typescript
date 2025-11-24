@@ -47,7 +47,7 @@ export function queueWorker(): void {
   // At this point the engine is configured and enqueueFn is wired.
   withScriptLock(
     () => {
-      withLog(fn, processQueueBatch_)(MAX_BATCH, WORKER_BUDGET_MS);
+      withLog(processQueueBatch_)(MAX_BATCH, WORKER_BUDGET_MS);
     },
     {
       strategy: "run-unlocked",
@@ -107,7 +107,7 @@ function dispatchJob_(job: Job): void {
   };
   FastLog.log(fn, rsj);
 
-  withLog(fn, runStep)(rsj);
+  withLog(runStep)(rsj);
   return;
 }
 
@@ -230,10 +230,10 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
 
     startedIndices.add(idx);
 
-    const job = withLog(fn, rowToJob_)(row);
+    const job = withLog(rowToJob_)(row);
 
     try {
-      withLog(fn, dispatchJob_)(job);
+      withLog(dispatchJob_)(job);
       succeeded++;
 
       row[COLUMNS.STATUS - 1] = STATUS.DONE;

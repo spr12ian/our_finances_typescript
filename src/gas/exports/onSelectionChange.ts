@@ -7,8 +7,8 @@ import { isSheetInIgnoreList } from "@lib/isSheetInIgnoreList";
 import { FastLog, withLog } from "@lib/logging";
 import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { withGuardedLock } from "@lib/withGuardedLock";
-import { queueJobMust } from "@queue/queueJob"; // or wherever this actually lives
-import type { SerializedRunStepParameters } from "@workflow/workflowTypes";
+import { queueJob } from "@queue/queueJob"; // or wherever this actually lives
+import type { RunStepJob } from "src/features/workflow/workflowTypes";
 
 export function onSelectionChange(e: any): void {
   const fn = onSelectionChange.name;
@@ -71,14 +71,14 @@ export function onSelectionChange(e: any): void {
       // IMPORTANT: keep this callback *very* light.
       // Only enqueue, don't run workflows synchronously.
 
-      const runStepParameters: Partial<SerializedRunStepParameters> = {
+      const runStepParameters = {
         workflowName,
         stepName,
         input: { sheetName, queuedBy: "onSelectionChange" },
-      };
+      } as RunStepJob;
 
       // Fire-and-forget: queue worker will pick this up.
-      const job = withLog(fn, queueJobMust)(runStepParameters, {
+      const job = withLog(queueJob)(runStepParameters, {
         // tweak priority if you have one
         priority: 5,
       });

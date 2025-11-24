@@ -13,12 +13,12 @@ export function onOpen(e: GoogleAppsScript.Events.SheetsOnOpen): void {
 }
 
 export function buildUiMenus(e: GoogleAppsScript.Events.SheetsOnOpen) {
-  const fn=buildUiMenus.name;
+  const fn = buildUiMenus.name;
   FastLog.info(fn, "Called");
 
   const ui = SpreadsheetApp.getUi();
 
-  withLog(fn, buildAccountsMenu)(ui, e);
-  withLog(fn, buildGasMenu)(ui);
-  withLog(fn, buildSectionsMenu)(ui);
+  withLog(buildAccountsMenu)(ui, e);
+  withLog(buildGasMenu)(ui);
+  withLog(buildSectionsMenu)(ui);
 }

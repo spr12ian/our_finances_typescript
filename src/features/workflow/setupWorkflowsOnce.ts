@@ -2,7 +2,7 @@
 import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { FastLog, functionStart } from "@logging";
 import type { QueueEnqueueOptions } from "@queue";
-import { queueJob } from "@queue/queueJob";
+import { tryQueueJob } from "@queue/queueJob";
 import type { EnqueueFn } from "./engineState";
 import { isEngineConfigured, setEnqueue } from "./engineState";
 import { setupWorkflows } from "./setupWorkflows";
@@ -17,10 +17,10 @@ export interface SetupWorkflowsOptions {
 }
 
 const enqueueAdapter: EnqueueFn = (parameters, options) => {
-  const res = queueJob(parameters, toQueueOptions(options));
+  const res = tryQueueJob(parameters, toQueueOptions(options));
   if (!res) {
     throw new Error(
-      `queueJob failed to enqueue (returned undefined) for parameters=${JSON.stringify(
+      `tryQueueJob failed to enqueue (returned undefined) for parameters=${JSON.stringify(
         parameters
       )}`
     );

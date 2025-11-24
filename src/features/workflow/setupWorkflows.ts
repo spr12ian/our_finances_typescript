@@ -1,7 +1,7 @@
 // @workflow/setupWorkflows.ts
-import { FastLog } from "@lib/logging";
+import { FastLog, withLog } from "@lib/logging";
 import { withScriptLock } from "@lib/withScriptLock";
-import { queueJobMust } from "@queue/queueJob";
+import { queueJob } from "@queue/queueJob";
 import type { EnqueueFn, EnqueueOptions } from "./engineState";
 import { isEngineConfigured, setEnqueue } from "./engineState";
 import { registerAllWorkflows } from "./registerAllWorkflows";
@@ -23,7 +23,7 @@ export function setupWorkflows(): void {
         parameters: unknown,
         opts?: EnqueueOptions
       ) => {
-        const rsp = parameters as RunStepJob;
+        const runStepParameters = parameters as RunStepJob;
 
         // normalize runAt (engine side deals in Date|null)
         const runAt =
@@ -32,7 +32,7 @@ export function setupWorkflows(): void {
             : null;
 
         // map EngineOpts -> QueueEnqueueOptions (you can add defaults here if you want)
-        return queueJobMust(rsp, {
+        return withLog(queueJob)(runStepParameters, {
           runAt,
           priority: opts?.priority,
           // maxAttempts / dedupeKey can be added here if your engine later exposes them

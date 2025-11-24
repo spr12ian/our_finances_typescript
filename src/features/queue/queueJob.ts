@@ -20,34 +20,21 @@ type PayloadWithQueuedBy = { queuedBy?: string };
 
 /** Enqueue a job */
 
-export function queueJob(
-  parameters: SerializedRunStepParameters,
-  options: QueueEnqueueOptions = {}
-): { id: string; row: number } | undefined {
-  // withDocumentLock returns a function → call it
-  return withDocumentLock<{ id: string; row: number }>(
-    "queueJob",
-    () => doQueueJob(parameters, options),
-    3 * ONE_SECOND_MS
-  )();
-}
-
 // Small bounded retry with backoff; never returns undefined
-export function queueJobMust(
+export function queueJob(
   runStepParameters: SerializedRunStepParameters,
   options: QueueEnqueueOptions = {}
 ): { id: string; row: number } {
-  const fn = queueJobMust.name;
+  const fn = queueJob.name;
   // 1) a few fast attempts (non-blocking)
   for (let i = 0; i < 3; i++) {
-    const r = withLog(fn, queueJob)(runStepParameters, options); // ← your soft version (T | undefined)
+    const r = withLog(tryQueueJob)(runStepParameters, options); // ← your soft version (T | undefined)
     if (r) return r;
     Utilities.sleep(100); // 100 ms
   }
 
   // 2) last chance: run the critical section with a longer lock timeout
   const attempt = withDocumentLock<{ id: string; row: number }>(
-    "queueJobMust",
     () => doQueueJob(runStepParameters, options), // call the inner implementation
     2 * ONE_SECOND_MS
   )();
@@ -55,8 +42,19 @@ export function queueJobMust(
   if (attempt) return attempt;
 
   // 3) If still nothing, log and throw: the engine *requires* a definitive id/row
-  FastLog.error("queueJobMust", "Exhausted retries; queue is still busy.");
-  throw new Error("queueJobMust: queue busy after retries");
+  FastLog.error(fn, "Exhausted retries; queue is still busy.");
+  throw new Error(`${fn}: queue busy after retries`);
+}
+
+export function tryQueueJob(
+  parameters: SerializedRunStepParameters,
+  options: QueueEnqueueOptions = {}
+): { id: string; row: number } | undefined {
+  // withDocumentLock returns a function → call it
+  return withDocumentLock<{ id: string; row: number }>(
+    () => doQueueJob(parameters, options),
+    3 * ONE_SECOND_MS
+  )();
 }
 
 // ───────────────────────────────────────────────────────────────────────────────

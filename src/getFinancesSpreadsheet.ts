@@ -59,8 +59,8 @@ export function getFinancesSpreadsheet(e?: AnyEvent): Spreadsheet {
   const active =
     src ??
     (isSimpleTrigger
-      ? withLog(fn, SpreadsheetApp.getActiveSpreadsheet)() || null
-      : withLog(fn, Spreadsheet.getActiveWithBackoff)() || null);
+      ? withLog(SpreadsheetApp.getActiveSpreadsheet)() || null
+      : withLog(Spreadsheet.getActiveWithBackoff)() || null);
   FastLog.info(fn, `Active spreadsheet ID: ${active?.getId() ?? "<none>"}`);
 
   // Fast path: configuredId present and matches active/src

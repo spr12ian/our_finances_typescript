@@ -54,7 +54,7 @@ export function handleChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
         break;
       case "OTHER":
         FastLog.log(fn, `Other change`);
-        withLog(fn, recalcFutureBalances_)(new Sheet(gasSheet));
+        withLog(recalcFutureBalances_)(new Sheet(gasSheet));
         break;
       case "REMOVE_ROW":
         FastLog.log(fn, `Row removed`);
@@ -65,7 +65,7 @@ export function handleChange(e: GoogleAppsScript.Events.SheetsOnChange): void {
         const ssId = spreadsheet.id ?? "unknown";
         const key = `ONCHANGE_BALANCE:${ssId}:${sheetId}:${changeType}`;
         withReentryGuard(key, timeConstants.ONE_MINUTE_MS, () => {
-          withLog(fn, startFlow_)(new Sheet(gasSheet));
+          withLog(startFlow_)(new Sheet(gasSheet));
         });
         break;
       default:
@@ -147,7 +147,7 @@ function startFlow_(sheet: Sheet) {
   }
 
   setupWorkflowsOnce();
-  withLog(fn, queueWorkflow)(
+  withLog(queueWorkflow)(
     "updateAccountSheetBalancesFlow",
     "updateAccountSheetBalancesStep1",
     {

@@ -46,10 +46,12 @@ export function WithDocumentLock(
  * Function wrapper version
  */
 export function withDocumentLock<T>(
-  label: string,
   fn: (...args: any[]) => T,
   timeout = 3 * ONE_SECOND_MS
 ): (...args: any[]) => T | undefined {
+
+  const label = fn.name; // ← derive once
+
   return function (...args: any[]): T | undefined {
     const finish = functionStart(label);
     const lock = safeGetDocumentLock();
@@ -57,7 +59,7 @@ export function withDocumentLock<T>(
     if (lock && lock.tryLock(timeout)) {
       FastLog.log(`${label}: Lock acquired (Document)`);
       try {
-        return withLog(withDocumentLock.name, fn)(...args);
+        return withLog(fn)(...args);
       } finally {
         lock.releaseLock();
         FastLog.log(`${label}: Lock released (Document)`);
@@ -66,10 +68,11 @@ export function withDocumentLock<T>(
     } else {
       FastLog.warn(`${label}: Document lock busy — skipping execution.`);
       finish();
-      return undefined; // ✅ Return undefined instead of throwing
+      return undefined;
     }
   };
 }
+
 
 function safeGetDocumentLock() {
   try {

@@ -73,7 +73,7 @@ export function onEditRecalcBalances(e: SheetsOnEdit): void {
 
       // Hand off to your workflow instead of doing heavy work inline
       setupWorkflowsOnce();
-      withLog(fn, queueWorkflow)(
+      withLog(queueWorkflow)(
         "updateAccountSheetBalancesFlow",
         "updateAccountSheetBalancesStep1",
         {

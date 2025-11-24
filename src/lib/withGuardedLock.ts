@@ -79,7 +79,6 @@ export function withGuardedLock<T>(
 
     //lock
     disableLock = false,
-    lockLabel: givenLockLabel,
     lockTimeoutMs = 300,
 
     // reentry
@@ -94,7 +93,6 @@ export function withGuardedLock<T>(
   } = opts;
 
   const key = typeof opts.key === "function" ? opts.key() : opts.key;
-  const finalLockLabel = givenLockLabel ?? key ?? "withGuardedLock";
 
   // Order: userDebounce →
   // idempotency claim →
@@ -198,7 +196,7 @@ export function withGuardedLock<T>(
   const runWithLock = (): T | undefined => {
     if (disableLock) return fn();
 
-    const wrapped = withDocumentLock(finalLockLabel, fn, lockTimeoutMs);
+    const wrapped = withDocumentLock(fn, lockTimeoutMs);
     return wrapped();
   };
 

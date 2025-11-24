@@ -69,11 +69,11 @@ export function runStep(job: RunStepJob): void {
 
   switch (res.kind) {
     case "yield": {
-      withLog(fn, enqueueRunStep)({ ...job, state: res.state }, res.delayMs);
+      withLog(enqueueRunStep_)({ ...job, state: res.state }, res.delayMs);
       return;
     }
     case "next": {
-      withLog(fn, enqueueRunStep)(
+      withLog(enqueueRunStep_)(
         {
           workflowId: job.workflowId,
           workflowName: job.workflowName,
@@ -102,7 +102,7 @@ export function runStep(job: RunStepJob): void {
       const htmlReason = toHtmlParagraph(res.reason);
       const input = { htmlBody: htmlReason, subject: job.stepName };
 
-      withLog(fn, queueWorkflow)(
+      withLog(queueWorkflow)(
         "sendMeHtmlEmailFlow",
         "sendMeHtmlEmailStep1",
         input
@@ -132,7 +132,7 @@ export function queueWorkflow(
       return null;
     }
     const workflowId = Utilities.getUuid();
-    withLog(fn, enqueueRunStep)(
+    withLog(enqueueRunStep_)(
       {
         workflowId,
         workflowName,
@@ -153,18 +153,18 @@ export function queueWorkflow(
   }
 }
 
-function enqueueRunStep(
+function enqueueRunStep_(
   rsp: SerializedRunStepParameters,
   delayMs?: number,
   priority?: number
 ) {
-  const fn = enqueueRunStep.name;
+  const fn = enqueueRunStep_.name;
   FastLog.log(fn, rsp);
   const enqueue = getEnqueue();
   const ms = Math.max(0, Math.floor(delayMs ?? 0));
   const runAt: Date | undefined =
     ms > 0 ? new Date(Date.now() + ms) : undefined;
-  withLog(fn, enqueue)(rsp, { runAt, priority }); // enqueue now accepts a Date
+  withLog(enqueue)(rsp, { runAt, priority }); // enqueue now accepts a Date
 }
 
 FastLog.log("workflowEngine loaded", { ENGINE_INSTANCE_ID });

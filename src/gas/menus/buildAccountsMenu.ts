@@ -11,8 +11,9 @@ export function buildAccountsMenu(
   const fn = buildAccountsMenu.name;
   FastLog.info(fn, "Called");
 
-  const spreadsheet = withLog(fn, getFinancesSpreadsheet)(e);
-  const accountSheetNames: string[] = withLog(fn, getAccountSheetNames)(spreadsheet);
+  const spreadsheet = withLog(getFinancesSpreadsheet)(e);
+  const accountSheetNames: string[] =
+    withLog(getAccountSheetNames)(spreadsheet);
 
   // Check if any accounts are found
   if (accountSheetNames.length === 0) {

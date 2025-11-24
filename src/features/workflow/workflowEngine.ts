@@ -102,7 +102,7 @@ export function runStep(job: RunStepJob): void {
       const htmlReason = toHtmlParagraph(res.reason);
       const input = { htmlBody: htmlReason, subject: job.stepName };
 
-      withLog(fn, startWorkflow)(
+      withLog(fn, queueWorkflow)(
         "sendMeHtmlEmailFlow",
         "sendMeHtmlEmailStep1",
         input
@@ -113,14 +113,14 @@ export function runStep(job: RunStepJob): void {
   }
 }
 
-export function startWorkflow(
+export function queueWorkflow(
   workflowName: string,
   firstStep: string,
   input: unknown,
   initialState: Record<string, any> = {},
   priority?: number
 ): string | null {
-  const fn = startWorkflow.name;
+  const fn = queueWorkflow.name;
   const finish = functionStart(fn);
   FastLog.log(fn, workflowName, firstStep);
   try {

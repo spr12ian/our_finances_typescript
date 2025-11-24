@@ -6,7 +6,7 @@ import { FastLog } from "@logging/FastLog";
 import { withLog } from "@logging/WithLog";
 import { setupWorkflowsOnce } from "@workflow";
 import { isEngineConfigured } from "@workflow/engineState";
-import { startWorkflow } from "@workflow/workflowEngine";
+import { queueWorkflow } from "@workflow/workflowEngine";
 
 type SheetsOnOpen = GoogleAppsScript.Events.SheetsOnOpen;
 
@@ -25,7 +25,7 @@ export function handleOpen(e: SheetsOnOpen): void {
     return;
   }
 
-  withLog(fn, startWorkflow)("fixSheetFlow", "fixSheetStep1", {
+  withLog(fn, queueWorkflow)("fixSheetFlow", "fixSheetStep1", {
     sheetName: sheetName,
     queuedBy: "onOpen",
   });

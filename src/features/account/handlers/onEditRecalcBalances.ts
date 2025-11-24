@@ -5,7 +5,7 @@ import { FastLog } from "@logging/FastLog";
 import { withLog } from "@logging/WithLog";
 import { AccountSheet } from "@sheets/classes/AccountSheet";
 import { setupWorkflowsOnce } from "@workflow/setupWorkflowsOnce";
-import { startWorkflow } from "@workflow/workflowEngine";
+import { queueWorkflow } from "@workflow/workflowEngine";
 
 export const MAX_SYNC_ROWS = 1300;
 
@@ -73,7 +73,7 @@ export function onEditRecalcBalances(e: SheetsOnEdit): void {
 
       // Hand off to your workflow instead of doing heavy work inline
       setupWorkflowsOnce();
-      withLog(fn, startWorkflow)(
+      withLog(fn, queueWorkflow)(
         "updateAccountSheetBalancesFlow",
         "updateAccountSheetBalancesStep1",
         {

@@ -2,6 +2,7 @@
 
 import { getActiveSheetName, goToSheet, logSheetNames } from "@gas";
 import { exportFormulasToDrive } from "@gas/exports/exportFormulasToDrive";
+import { dailySorts } from "@gas/triggers/dailySorts";
 import {
   MetaBalanceSheet,
   MetaBudget,
@@ -34,14 +35,13 @@ import type {
 } from "@workflow";
 import { setupWorkflowsOnce } from "@workflow";
 import type { ExampleFlowInput } from "@workflow/flows/exampleFlow";
-import { startWorkflow } from "@workflow/workflowEngine";
+import { queueWorkflow } from "@workflow/workflowEngine";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 import { ONE_MINUTE_MS } from "../../lib/timeConstants";
 import { withReentryGuard } from "../../lib/withReentryGuard";
 import { OurFinances } from "../../OurFinances";
 import { validateAllMenuFunctionNames } from "../../validateAllMenuFunctionNames";
 import { dailySendHtmlEmail } from "../triggers/dailySendHtmlEmail";
-import { dailySorts } from '@gas/triggers/dailySorts';
 import { handleChange } from "../triggers/handleChange";
 import { handleEdit } from "../triggers/handleEdit";
 import { handleOpen } from "../triggers/handleOpen";
@@ -393,5 +393,5 @@ function isDisabled_(fn: string): boolean {
 function startWF_(workFlowName: string, firstStep: string, input: unknown) {
   const fn = startWF_.name;
   setupWorkflowsOnce();
-  withLog(fn, startWorkflow)(workFlowName, firstStep, input);
+  withLog(fn, queueWorkflow)(workFlowName, firstStep, input);
 }

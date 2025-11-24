@@ -18,7 +18,7 @@ const ON_EDIT_RULES: OnEditRule[] = [
   {
     sheet: /^_/,
     range: ["B2:B", "E2:E"],
-    fn: toUpperCase,
+    fn: toUpperCase_,
     note: "convert B/E to uppercase",
   },
 ];
@@ -64,19 +64,19 @@ export function handleEdit(e: SheetsOnEdit): void {
     }
 
     // Prefer early exits before any logging of large objects
-    if (!isSingleCell(range)) {
+    if (!isSingleCell_(range)) {
       FastLog.log("handleEdit → Ignored non-single-cell edit");
       return;
     } // rules expect single cell
     if (
       "oldValue" in e &&
-      normalizeForChangeCheck(e.value) === normalizeForChangeCheck(e.oldValue)
+      normalizeForChangeCheck_(e.value) === normalizeForChangeCheck_(e.oldValue)
     ) {
       FastLog.log("handleEdit → No actual value change detected");
       return; // no value change
     }
 
-    const { editBounds } = __getEventPartsOpt(e);
+    const { editBounds } = getEventPartsOpt_(e);
 
     // Avoid feedback loops with queue sheets
     if (sheetName === "_QUEUE" || sheetName === "_DEAD") {
@@ -85,7 +85,7 @@ export function handleEdit(e: SheetsOnEdit): void {
     }
 
     // Pure computation—no locks yet
-    const rules = __compileRulesOpt().filter((r) =>
+    const rules = compileRulesOpt_().filter((r) =>
       typeof r.sheet === "string"
         ? r.sheet === sheetName
         : (r.sheet as RegExp).test(sheetName)
@@ -98,7 +98,7 @@ export function handleEdit(e: SheetsOnEdit): void {
     for (const rule of rules) {
       let match = false;
       for (const b of rule.bounds) {
-        if (__intersectsBoundsOpt(editBounds, b)) {
+        if (intersectsBoundsOpt_(editBounds, b)) {
           match = true;
           break;
         }
@@ -147,7 +147,7 @@ export function handleEdit(e: SheetsOnEdit): void {
   }
 }
 
-function __colToIndexOpt(col: string): number {
+function colToIndexOpt_(col: string): number {
   let n = 0;
   const s = col.trim().toUpperCase();
   for (let i = 0; i < s.length; i++) {
@@ -157,7 +157,58 @@ function __colToIndexOpt(col: string): number {
   return n;
 }
 
-function __parseA1ToBoundsOpt(a1: string): Bounds {
+function compileRulesOpt_(): CompiledRule[] {
+  if (__COMPILED_RULES_OPT) return __COMPILED_RULES_OPT;
+  const compiled: CompiledRule[] = [];
+  for (const rule of ON_EDIT_RULES as any) {
+    compiled.push({
+      sheet: rule.sheet,
+      bounds: parseRangeListToBoundsOpt_(rule.range),
+      fn: rule.fn,
+      note: rule.note,
+    });
+  }
+  __COMPILED_RULES_OPT = compiled;
+  return __COMPILED_RULES_OPT;
+}
+
+function getEventPartsOpt_(e: SheetsOnEdit) {
+  const range = e.range;
+  const r1 = range.getRow();
+  const c1 = range.getColumn();
+  const r2 = r1 + range.getNumRows() - 1;
+  const c2 = c1 + range.getNumColumns() - 1;
+  const sheetName = range.getSheet().getName();
+  return { sheetName, editBounds: { r1, c1, r2, c2 } as Bounds };
+}
+
+function intersectsBoundsOpt_(a: Bounds, b: Bounds): boolean {
+  return !(a.r2 < b.r1 || a.r1 > b.r2 || a.c2 < b.c1 || a.c1 > b.c2);
+}
+
+function isSingleCell_(range: GoogleAppsScript.Spreadsheet.Range): boolean {
+  return range.getNumRows() === 1 && range.getNumColumns() === 1;
+}
+
+function isSingleCellActuallyChanged_(e: SheetsOnEdit): boolean {
+  if (!isSingleCell_(e.range)) {
+    FastLog.log("isSingleCell_ActuallyChanged → Not a single cell");
+    return false;
+  }
+  return (
+    normalizeForChangeCheck_(e.value) !== normalizeForChangeCheck_(e.oldValue)
+  );
+}
+
+function normalizeForChangeCheck_(s: string | undefined): string {
+  if (s == null) return "";
+  const t = s.trim();
+  const n = Number(t.replace(/,/g, ""));
+  if (!Number.isNaN(n) && t !== "") return String(n);
+  return t;
+}
+
+function parseA1ToBoundsOpt_(a1: string): Bounds {
   const t = a1.replace(/\s+/g, "").toUpperCase();
   const cell = /^([A-Z]+)(\d+)$/;
   const rect = /^([A-Z]+)(\d+):([A-Z]+)(\d+)$/;
@@ -172,16 +223,16 @@ function __parseA1ToBoundsOpt(a1: string): Bounds {
     c2 = MAX;
   let m: RegExpMatchArray | null;
   if ((m = t.match(rect))) {
-    c1 = __colToIndexOpt(m[1]);
+    c1 = colToIndexOpt_(m[1]);
     r1 = parseInt(m[2], 10);
-    c2 = __colToIndexOpt(m[3]);
+    c2 = colToIndexOpt_(m[3]);
     r2 = parseInt(m[4], 10);
   } else if ((m = t.match(cell))) {
-    c1 = c2 = __colToIndexOpt(m[1]);
+    c1 = c2 = colToIndexOpt_(m[1]);
     r1 = r2 = parseInt(m[2], 10);
   } else if ((m = t.match(colBand))) {
-    c1 = __colToIndexOpt(m[1]);
-    c2 = __colToIndexOpt(m[2]);
+    c1 = colToIndexOpt_(m[1]);
+    c2 = colToIndexOpt_(m[2]);
     r1 = 1;
     r2 = MAX;
   } else if ((m = t.match(rowBand))) {
@@ -190,14 +241,14 @@ function __parseA1ToBoundsOpt(a1: string): Bounds {
     c1 = 1;
     c2 = MAX;
   } else if ((m = t.match(openRight))) {
-    c1 = __colToIndexOpt(m[1]);
+    c1 = colToIndexOpt_(m[1]);
     r1 = parseInt(m[2], 10);
-    c2 = __colToIndexOpt(m[3]);
+    c2 = colToIndexOpt_(m[3]);
     r2 = MAX;
   } else if ((m = t.match(openBottom))) {
-    c1 = __colToIndexOpt(m[1]);
+    c1 = colToIndexOpt_(m[1]);
     r1 = 1;
-    c2 = __colToIndexOpt(m[2]);
+    c2 = colToIndexOpt_(m[2]);
     r2 = parseInt(m[3], 10);
   }
   if (r2 < r1) [r1, r2] = [r2, r1];
@@ -205,7 +256,7 @@ function __parseA1ToBoundsOpt(a1: string): Bounds {
   return { r1, c1, r2, c2 };
 }
 
-function __parseRangeListToBoundsOpt(range: string | string[]): Bounds[] {
+function parseRangeListToBoundsOpt_(range: string | string[]): Bounds[] {
   const parts: string[] = Array.isArray(range)
     ? range
     : String(range).split(",");
@@ -213,61 +264,17 @@ function __parseRangeListToBoundsOpt(range: string | string[]): Bounds[] {
   for (const p of parts) {
     const t = p.trim();
     if (!t) continue;
-    out.push(__parseA1ToBoundsOpt(t));
+    out.push(parseA1ToBoundsOpt_(t));
   }
   return out;
 }
 
-function __intersectsBoundsOpt(a: Bounds, b: Bounds): boolean {
-  return !(a.r2 < b.r1 || a.r1 > b.r2 || a.c2 < b.c1 || a.c1 > b.c2);
-}
-
-function __compileRulesOpt(): CompiledRule[] {
-  if (__COMPILED_RULES_OPT) return __COMPILED_RULES_OPT;
-  const compiled: CompiledRule[] = [];
-  for (const rule of ON_EDIT_RULES as any) {
-    compiled.push({
-      sheet: rule.sheet,
-      bounds: __parseRangeListToBoundsOpt(rule.range),
-      fn: rule.fn,
-      note: rule.note,
-    });
-  }
-  __COMPILED_RULES_OPT = compiled;
-  return __COMPILED_RULES_OPT;
-}
-
-function __getEventPartsOpt(e: SheetsOnEdit) {
-  const range = e.range;
-  const r1 = range.getRow();
-  const c1 = range.getColumn();
-  const r2 = r1 + range.getNumRows() - 1;
-  const c2 = c1 + range.getNumColumns() - 1;
-  const sheetName = range.getSheet().getName();
-  return { sheetName, editBounds: { r1, c1, r2, c2 } as Bounds };
-}
-
-function isSingleCell(range: GoogleAppsScript.Spreadsheet.Range): boolean {
-  return range.getNumRows() === 1 && range.getNumColumns() === 1;
-}
-
-// ── PATCHED: pulled out from isSingleCellActuallyChanged() so we can use it early
-function normalizeForChangeCheck(s: string | undefined): string {
-  if (s == null) return "";
-  const t = s.trim();
-  const n = Number(t.replace(/,/g, ""));
-  if (!Number.isNaN(n) && t !== "") return String(n);
-  return t;
-}
-
-/* ── Example handlers ───────────────────────────────────── */
-
-function toUpperCase(e: SheetsOnEdit): void {
-  const fn = toUpperCase.name;
+function toUpperCase_(e: SheetsOnEdit): void {
+  const fn = toUpperCase_.name;
   const startTime = FastLog.start(fn, e.range.getA1Notation());
 
   try {
-    if (!isSingleCellActuallyChanged(e)) return;
+    if (!isSingleCellActuallyChanged_(e)) return;
     const range = e.range;
     const value = range.getValue();
     if (typeof value === "string" && value !== value.toUpperCase()) {
@@ -280,14 +287,4 @@ function toUpperCase(e: SheetsOnEdit): void {
   } finally {
     FastLog.finish(fn, startTime);
   }
-}
-
-function isSingleCellActuallyChanged(e: SheetsOnEdit): boolean {
-  if (!isSingleCell(e.range)) {
-    FastLog.log("isSingleCellActuallyChanged → Not a single cell");
-    return false;
-  }
-  return (
-    normalizeForChangeCheck(e.value) !== normalizeForChangeCheck(e.oldValue)
-  );
 }

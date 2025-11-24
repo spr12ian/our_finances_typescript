@@ -6,7 +6,7 @@ import * as timeConstants from "@lib/timeConstants";
 import { FastLog, withLog } from "@logging";
 import { isAccountSheet } from "@sheets/accountSheetFunctions";
 import { setupWorkflowsOnce } from "@workflow";
-import { startWorkflow } from "@workflow/workflowEngine";
+import { queueWorkflow } from "@workflow/workflowEngine";
 import { getFinancesSpreadsheet } from "src/getFinancesSpreadsheet";
 import { withReentryGuard } from "../../lib/withReentryGuard";
 
@@ -147,7 +147,7 @@ function startFlow_(sheet: Sheet) {
   }
 
   setupWorkflowsOnce();
-  withLog(fn, startWorkflow)(
+  withLog(fn, queueWorkflow)(
     "updateAccountSheetBalancesFlow",
     "updateAccountSheetBalancesStep1",
     {

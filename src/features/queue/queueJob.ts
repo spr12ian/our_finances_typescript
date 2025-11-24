@@ -7,10 +7,12 @@ import { DateHelper } from "@lib/DateHelper";
 import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { withDocumentLock } from "@lib/WithDocumentLock";
 import { FastLog, withLog } from "@logging";
+import type { SerializedRunStepParameters } from "@workflow/workflowTypes";
 import { getQueueSheet } from "./getQueueSheet";
 import { COLUMNS, DEFAULT_PRIORITY, STATUS } from "./queueConstants";
 import type { JobRow, QueueEnqueueOptions } from "./queueTypes";
-import type { SerializedRunStepParameters } from "@workflow/workflowTypes";
+
+type PayloadWithQueuedBy = { queuedBy?: string };
 
 // ───────────────────────────────────────────────────────────────────────────────
 // Public API
@@ -84,14 +86,6 @@ function doQueueJob(
 
     const id = generateId_();
 
-    type PayloadWithQueuedBy = { queuedBy?: string };
-
-    let queuedBy = "";
-    const p = payload as PayloadWithQueuedBy | null | undefined;
-    if (p?.queuedBy && typeof p.queuedBy === "string") {
-      queuedBy = p.queuedBy;
-    }
-
     // UTC-normalized enqueue time
     const queuedAt = new Date();
     const displayEnqueuedAt = DateHelper.formatForLog(queuedAt);
@@ -104,11 +98,13 @@ function doQueueJob(
 
     FastLog.log(functionName, `Queuing job id=${id} at ${displayEnqueuedAt}`);
 
+    const { queuedBy, cleaned } = extractQueuedBy_(payload);
+
     const rowValues: JobRow = [
       id, // A: id
       queuedAt, // B: queued_at
       queuedBy, // C: queued_by
-      JSON.stringify(payload ?? {}), // D: payload
+      JSON.stringify(cleaned ?? {}), // D: payload
       priority, // E: priority
       runAtCell, // F: run_at
       0, // G: attempts
@@ -151,4 +147,20 @@ function doQueueJob(
       FastLog.finish(functionName, startTime);
     } catch {}
   }
+}
+
+function extractQueuedBy_(payload: unknown): {
+  queuedBy: string;
+  cleaned: unknown;
+} {
+  if (payload && typeof payload === "object") {
+    const p = payload as PayloadWithQueuedBy;
+
+    if (typeof p.queuedBy === "string") {
+      const queuedBy = p.queuedBy;
+      delete p.queuedBy;
+      return { queuedBy, cleaned: payload };
+    }
+  }
+  return { queuedBy: "", cleaned: payload };
 }

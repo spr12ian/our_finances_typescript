@@ -58,9 +58,9 @@ const DISABLED_FUNCTIONS = new Set<Function>([
   GAS_onEditTrigger,
   // GAS_onOpen,
   GAS_onOpenTrigger,
-  // GAS_onSelectionChange,
+  GAS_onSelectionChange,
   // GAS_queuePurgeOldData,
-  GAS_queueWorker,
+  // GAS_queueWorker,
 ]);
 
 export function GAS_applyDescriptionReplacements() {

@@ -85,7 +85,7 @@ function getLastDataRow_(sheet: GoogleAppsScript.Spreadsheet.Sheet): number {
 function dispatchJob_(job: Job): void {
   const fn = dispatchJob_.name;
   FastLog.log(fn, {
-    id: job.id,
+    queueId: job.queueId,
     at: DateHelper.formatForLog(new Date()),
   });
 
@@ -95,7 +95,7 @@ function dispatchJob_(job: Job): void {
   FastLog.log(fn, p);
 
   const rsj: RunStepJob = {
-    workflowId: String(p.workflowId),
+    queueId: String(job.queueId),
     workflowName: String(p.workflowName),
     stepName: String(p.stepName),
     input: p.input,
@@ -297,22 +297,23 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
 // Helpers
 // ───────────────────────────────────────────────────────────────────────────────
 
-function rowToJob_(r: JobRow): Job {
+function rowToJob_(jobRow: JobRow): Job {
   const fn = rowToJob_.name;
+  FastLog.log(fn, jobRow);
 
-  const job = {
-    id: String(r[COLUMNS.ID - 1] ?? ""),
+  const job: Job = {
+    queueId: String(jobRow[COLUMNS.QUEUE_ID - 1] ?? ""),
     queuedAt:
-      DateHelper.coerceCellToUtcDate(r[COLUMNS.QUEUED_AT - 1]) ?? new Date(0),
-    queuedBy: String(r[COLUMNS.QUEUED_BY - 1] || ""),
-    payload: parseJsonSafe_(String(r[COLUMNS.PAYLOAD - 1] || "{}")),
-    priority: Number(r[COLUMNS.PRIORITY - 1]) || DEFAULT_PRIORITY,
-    nextRunAt: DateHelper.coerceCellToUtcDate(r[COLUMNS.NEXT_RUN_AT - 1]),
-    attempts: Number(r[COLUMNS.ATTEMPTS - 1]) || 0,
-    status: String(r[COLUMNS.STATUS - 1] ?? STATUS.PENDING) as JobStatus,
-    lastError: String(r[COLUMNS.LAST_ERROR - 1] || ""),
-    workerId: String(r[COLUMNS.WORKER_ID - 1] || ""),
-    startedAt: DateHelper.coerceCellToUtcDate(r[COLUMNS.STARTED_AT - 1]),
+      DateHelper.coerceCellToUtcDate(jobRow[COLUMNS.QUEUED_AT - 1]) ?? new Date(0),
+    queuedBy: String(jobRow[COLUMNS.QUEUED_BY - 1] || ""),
+    payload: parseJsonSafe_(String(jobRow[COLUMNS.PAYLOAD - 1] || "{}")),
+    priority: Number(jobRow[COLUMNS.PRIORITY - 1]) || DEFAULT_PRIORITY,
+    nextRunAt: DateHelper.coerceCellToUtcDate(jobRow[COLUMNS.NEXT_RUN_AT - 1]),
+    attempts: Number(jobRow[COLUMNS.ATTEMPTS - 1]) || 0,
+    status: String(jobRow[COLUMNS.STATUS - 1] ?? STATUS.PENDING) as JobStatus,
+    lastError: String(jobRow[COLUMNS.LAST_ERROR - 1] || ""),
+    workerId: String(jobRow[COLUMNS.WORKER_ID - 1] || ""),
+    startedAt: DateHelper.coerceCellToUtcDate(jobRow[COLUMNS.STARTED_AT - 1]),
   };
   FastLog.log(fn, job);
 

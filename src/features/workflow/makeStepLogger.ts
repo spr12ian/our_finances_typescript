@@ -4,13 +4,13 @@ import type { StepLogger } from "@logging";
 import { FastLog } from "@logging";
 
 type Ctx = {
-  workflowId: string;
+  queueId: string;
   workflowName: string;
   stepName: string;
 };
 
 const fmt = (ctx: Ctx) =>
-  `[wf=${ctx.workflowName} id=${ctx.workflowId} step=${ctx.stepName}]`;
+  `[wf=${ctx.workflowName} id=${ctx.queueId} step=${ctx.stepName}]`;
 
 export function makeStepLogger(ctx: Ctx): StepLogger {
   const prefix = fmt(ctx);

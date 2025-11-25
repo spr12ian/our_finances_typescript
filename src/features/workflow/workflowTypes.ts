@@ -1,12 +1,10 @@
 // @workflow/workflowTypes.ts
 import type { StepLogger } from "@logging/workflowLogger";
-
-// A stable id for a whole workflow run
-export type WorkflowId = string;
+import type { QueueId } from "@queue";
 
 // What actually gets serialized into PAYLOAD
 export type SerializedRunStepParameters = {
-  workflowId: string;
+  queueId: QueueId;
   workflowName: string;
   stepName: string;
   input?: unknown;
@@ -25,7 +23,7 @@ export type RunStepJob = SerializedRunStepParameters & EngineMeta;
 
 // What every step receives, it reads attempt from EngineMeta via RunStepJob
 export type StepContext = {
-  workflowId: WorkflowId; // one run across all steps
+  queueId: QueueId; // one run across all steps
   workflowName: string; // e.g., "RecalculateBalances"
   stepName: string; // e.g., "ScanSheets"
   input: unknown; // immutable initial input for the workflow

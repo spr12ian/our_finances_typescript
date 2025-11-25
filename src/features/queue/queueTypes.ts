@@ -22,7 +22,7 @@ export interface QueueEnqueueOptions {
 }
 
 export interface Job {
-  id: string;
+  queueId: QueueId;
   queuedAt: Date;
   queuedBy: string;
   payload: unknown;
@@ -40,7 +40,7 @@ export interface Job {
 // ────────────────────────────────────────────────────────────
 
 export type JobRow = [
-  id: string,
+  queue_id: QueueId,
   queued_at: Date,
   queued_by: string,
   payload: string,
@@ -52,3 +52,5 @@ export type JobRow = [
   worker_id: string,
   started_at: Date | "" // empty until first run
 ];
+
+export type QueueId = string;

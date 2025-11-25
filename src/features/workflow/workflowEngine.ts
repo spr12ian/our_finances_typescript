@@ -23,7 +23,7 @@ export function runStep(job: RunStepJob): void {
   const fn = runStep.name;
 
   FastLog.log(fn, `${job.workflowName}.${job.stepName}`, {
-    workflowId: job.workflowId,
+    queueId: job.queueId,
     attempt: job.attempt,
   });
 
@@ -32,7 +32,7 @@ export function runStep(job: RunStepJob): void {
     throw new Error(`No step registered: ${job.workflowName}.${job.stepName}`);
 
   const log = makeStepLogger({
-    workflowId: job.workflowId,
+    queueId: job.queueId,
     workflowName: job.workflowName,
     stepName: job.stepName,
   });
@@ -47,7 +47,7 @@ export function runStep(job: RunStepJob): void {
   const state = job.state ?? {};
 
   const ctx: StepContext = {
-    workflowId: job.workflowId,
+    queueId: job.queueId,
     workflowName: job.workflowName,
     stepName: job.stepName,
     input: input,
@@ -75,7 +75,7 @@ export function runStep(job: RunStepJob): void {
     case "next": {
       withLog(enqueueRunStep_)(
         {
-          workflowId: job.workflowId,
+          queueId: job.queueId,
           workflowName: job.workflowName,
           stepName: res.nextStep,
           input: job.input,
@@ -87,7 +87,7 @@ export function runStep(job: RunStepJob): void {
     }
     case "complete": {
       FastLog.info(`Workflow complete: ${job.workflowName}`, {
-        workflowId: job.workflowId,
+        queueId: job.queueId,
         output: res.output,
       });
       return;
@@ -95,7 +95,7 @@ export function runStep(job: RunStepJob): void {
     case "fail": {
       // Let the batch handler decide attempts/backoff/dead-letter.
       FastLog.warn(`Step failed: ${job.workflowName}.${job.stepName}`, {
-        workflowId: job.workflowId,
+        queueId: job.queueId,
         reason: res.reason,
         attempt: job.attempt,
       });
@@ -131,10 +131,10 @@ export function queueWorkflow(
       );
       return null;
     }
-    const workflowId = Utilities.getUuid();
+    const queueId = Utilities.getUuid();
     withLog(enqueueRunStep_)(
       {
-        workflowId,
+        queueId,
         workflowName,
         stepName: firstStep,
         input,
@@ -143,7 +143,7 @@ export function queueWorkflow(
       /*delayMs*/ 0,
       priority
     );
-    return workflowId;
+    return queueId;
   } catch (err) {
     const msg = getErrorMessage(err);
     FastLog.error(fn, msg);

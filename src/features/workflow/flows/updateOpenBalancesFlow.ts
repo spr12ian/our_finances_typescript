@@ -102,7 +102,7 @@ const processOneStep: StepFn = ({ state, log, startedAt, budgetMs }) => {
 };
 
 // type StepFn<I = unknown, S = Record<string, unknown>> = (args: {
-//   workflowId: string;
+//   queueId: string;
 //   workflowName: string;
 //   stepName: string;
 //   input: I;

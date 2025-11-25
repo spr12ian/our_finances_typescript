@@ -50,7 +50,7 @@ export const HEADERS: string[] = [
 ] as const;
 
 export const COLUMNS = {
-  ID: oneBased(1),
+  QUEUE_ID: oneBased(1),
   QUEUED_AT: oneBased(2),
   QUEUED_BY: oneBased(3),
   PAYLOAD: oneBased(4),

@@ -1,5 +1,6 @@
 // src/lib/isSheetInIgnoreList.ts
 import { FastLog } from "@logging/FastLog";
+import type { SheetNameT } from '@domain';
 
 const QUEUE_SHEET_NAME = "$Queue";
 const DEAD_SHEET_NAME = "QueueDead";
@@ -23,7 +24,7 @@ export const IGNORE_LISTS: Record<string, Set<string>> = {
  * @returns true if the sheet should be ignored; false otherwise.
  */
 export function isSheetInIgnoreList(
-  sheetName: string,
+  sheetName: SheetNameT,
   listName: keyof typeof IGNORE_LISTS
 ): boolean {
   const fn = isSheetInIgnoreList.name;

@@ -15,3 +15,5 @@ export type AllEventsWithSource = Extract<
 >;
 
 export type SpreadsheetT = GoogleAppsScript.Spreadsheet.Spreadsheet;
+export type KeyNameT = string;
+export type SheetNameT = string;

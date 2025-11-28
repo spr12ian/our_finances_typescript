@@ -33,7 +33,6 @@ import type {
   TrimSheetFlowInput,
   UpdateOpenBalancesFlowInput,
 } from "@workflow";
-import { setupWorkflowsOnce } from "@workflow";
 import type { ExampleFlowInput } from "@workflow/flows/exampleFlow";
 import { queueWorkflow } from "@workflow/workflowEngine";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
@@ -58,10 +57,12 @@ const DISABLED_FUNCTIONS = new Set<Function>([
   GAS_onEditTrigger,
   // GAS_onOpen,
   GAS_onOpenTrigger,
-  GAS_onSelectionChange,
+  // GAS_onSelectionChange,
   // GAS_queuePurgeOldData,
   // GAS_queueWorker,
 ]);
+
+type WorkflowInputBase = { queuedBy?: string; [key: string]: unknown };
 
 export function GAS_applyDescriptionReplacements() {
   withLog(applyDescriptionReplacements)();
@@ -97,16 +98,13 @@ export function GAS_ensureQueueDateFormats() {
 }
 
 export function GAS_example() {
-  const fn = GAS_example.name;
-  const workFlowName = "exampleFlow";
   const firstStep = "exampleStep1";
   const input = {
     parameter1: "Example string",
     parameter2: 42,
-    queuedBy: fn,
   } satisfies ExampleFlowInput;
 
-  withLog(startWF_)(workFlowName, firstStep, input);
+  withLog(queueWF_)(GAS_example, firstStep, input);
 }
 
 export function GAS_exportFormulasToDrive() {
@@ -114,27 +112,21 @@ export function GAS_exportFormulasToDrive() {
 }
 
 export function GAS_fixSheet() {
-  const fn = GAS_fixSheet.name;
-  const workFlowName = "fixSheetFlow";
   const firstStep = "fixSheetStep1";
   const input = {
     sheetName: getActiveSheetName(),
-    queuedBy: fn,
   } satisfies FixSheetFlowInput;
 
-  withLog(startWF_)(workFlowName, firstStep, input);
+  withLog(queueWF_)(GAS_fixSheet, firstStep, input);
 }
 
 export function GAS_formatSheet() {
-  const fn = GAS_formatSheet.name;
-  const workFlowName = "formatSheetFlow";
   const firstStep = "formatSheetStep1";
   const input = {
     sheetName: getActiveSheetName(),
-    queuedBy: fn,
   } satisfies FormatSheetFlowInput;
 
-  withLog(startWF_)(workFlowName, firstStep, input);
+  withLog(queueWF_)(GAS_formatSheet, firstStep, input);
 }
 
 export function GAS_goToSheetCategories() {
@@ -323,15 +315,12 @@ export function GAS_trimAllSheets() {
 }
 
 export function GAS_trimSheet() {
-  const fn = GAS_trimSheet.name;
-  const workFlowName = "trimSheetFlow";
   const firstStep = "trimSheetStep1";
   const input = {
     sheetName: getActiveSheetName(),
-    queuedBy: fn,
   } satisfies TrimSheetFlowInput;
 
-  withLog(startWF_)(workFlowName, firstStep, input);
+  withLog(queueWF_)(GAS_trimSheet, firstStep, input);
 }
 
 export function GAS_updateAccountSheetBalances() {
@@ -345,14 +334,10 @@ export function GAS_updateAllDependencies() {
 }
 
 export function GAS_updateOpenBalances() {
-  const fn = GAS_updateOpenBalances.name;
-  const workFlowName = "updateOpenBalancesFlow";
   const firstStep = "init";
-  const input = {
-    queuedBy: fn,
-  } satisfies UpdateOpenBalancesFlowInput;
+  const input = {} satisfies UpdateOpenBalancesFlowInput;
 
-  withLog(startWF_)(workFlowName, firstStep, input);
+  withLog(queueWF_)(GAS_updateOpenBalances, firstStep, input);
 }
 
 export function GAS_updateTransactions() {
@@ -368,7 +353,9 @@ export function GAS_validateAllMenuFunctionNames() {
   validateAllMenuFunctionNames();
 }
 
-// Local helper functions
+function deriveWorkflowName_(queuedBy: string): string {
+  return queuedBy + "Flow";
+}
 
 function isDisabled_(fn: Function): boolean {
   const isDisabled = DISABLED_FUNCTIONS.has(fn);
@@ -378,7 +365,25 @@ function isDisabled_(fn: Function): boolean {
   return isDisabled;
 }
 
-function startWF_(workFlowName: string, firstStep: string, input: unknown) {
-  setupWorkflowsOnce();
-  withLog(queueWorkflow)(workFlowName, firstStep, input);
+function queueWF_<T extends WorkflowInputBase>(
+  workflow: Function,
+  firstStep: string,
+  input: T
+) {
+  const fn = queueWF_.name;
+  const initialName = workflow.name;
+
+  if (!initialName.startsWith("GAS_")) {
+    throw new Error(
+      `${fn}: workflowName must start with "GAS_", got "${initialName}"`
+    );
+  }
+
+  const queuedBy = initialName.slice(4);
+  input.queuedBy = queuedBy;
+
+  const workflowName = deriveWorkflowName_(queuedBy);
+  FastLog.log(fn, workflowName);
+
+  withLog(queueWorkflow)(workflowName, firstStep, input);
 }

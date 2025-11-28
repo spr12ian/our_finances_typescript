@@ -1,4 +1,4 @@
-// TypeUtils.ts
+// getType.ts
 export function getType(value: unknown): string {
   if (value === null) return "null";
   const baseType = typeof value;

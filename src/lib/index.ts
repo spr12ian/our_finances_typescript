@@ -11,5 +11,5 @@ export * from "./logging/logTime";
 export * from "./money";
 export * from "./number";
 export * from "./timeConstants";
-export * from "./types";
+export * from "./getType";
 export * from "./xLookup";

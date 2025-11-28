@@ -1,4 +1,5 @@
 // onSelectionChange.ts
+import type { SheetNameT } from "@domain";
 import { getTriggerEventSheet } from "@gas/getTriggerEventSheet";
 import { shouldHandleSelection } from "@gas/shouldHandleSelection";
 import { getNamespaceKey } from "@lib/getNamespaceKey";
@@ -19,7 +20,7 @@ export function onSelectionChange(e: any): void {
     return;
   }
 
-  const sheetName = sheet.getName();
+  const sheetName: SheetNameT = sheet.getName();
   if (isSheetInIgnoreList(sheetName, fn)) return;
 
   if (!shouldFixSheet(sheetName)) {
@@ -91,9 +92,13 @@ export function onSelectionChange(e: any): void {
   );
 }
 
-function shouldFixSheet(name: string): boolean {
+function shouldFixSheet(name: SheetNameT): boolean {
   if (!name) return false;
-  if (name.startsWith("_")) return false;
-  if (name === "Status" || name === "Queue") return false;
+  if (name.startsWith("_")) {
+    FastLog.info(
+      "onSelectionChange does not call fixSheet for account sheets. Use the menu for now!"
+    );
+    return false;
+  }
   return true;
 }

@@ -1,17 +1,14 @@
 // @workflow/flows/updateBalanceValuesFlow.ts
+
 import { getErrorMessage } from "@lib/errors";
 import { ONE_MINUTE_MS, ONE_SECOND_MS } from "@lib/timeConstants";
 import { updateBalanceValues } from "@sheets/updateBalanceValues";
 import { registerStep } from "../workflowRegistry";
 import type { StepFn } from "../workflowTypes";
+import type { UpdateBalanceValuesFlowInput } from "./flowInputTypes";
+import { withNormalizedFlowInput } from "./withNormalizedFlowInput";
 
 const MAX_YIELD_STEPS = 3;
-
-export type UpdateBalanceValuesFlowInput = {
-  sheetName: string;
-  row: number;
-  queuedBy?: string;
-};
 
 export function updateBalanceValuesFlow(): void {
   registerStep(
@@ -36,27 +33,30 @@ export function updateBalanceValuesFlow(): void {
   );
 }
 
-const updateBalanceValuesStep1: StepFn = ({ input, state, log }) => {
-  const fn = updateBalanceValuesStep1.name;
-  const startTime = log.start(fn);
-  try {
-    const { sheetName, row, queuedBy } = input as UpdateBalanceValuesFlowInput;
-    log("input:", input);
-    log("sheetName:", sheetName);
-    log("row:", row);
-    log("queuedBy:", queuedBy);
+const updateBalanceValuesStep1: StepFn = withNormalizedFlowInput(
+  "updateBalanceValuesFlow",
+  ({ input, state, log }) => {
+    const fn = updateBalanceValuesStep1.name;
+    const startTime = log.start(fn);
+    try {
+      log("input:", input);
+      const { sheetName, row, queuedBy } = input;
+      log("sheetName:", sheetName);
+      log("row:", row);
+      log("queuedBy:", queuedBy);
 
-    state.e1 = updateBalanceValues(sheetName, row);
+      state.e1 = updateBalanceValues(sheetName, row);
 
-    // NOTE: no `input` in the result; `state` is allowed on `next`
-    return { kind: "next", nextStep: "updateBalanceValuesStep2", state };
-  } catch (err) {
-    log.error(err);
-    return { kind: "fail", reason: getErrorMessage(err), retryable: true };
-  } finally {
-    log.finish(fn, startTime);
+      // NOTE: no `input` in the result; `state` is allowed on `next`
+      return { kind: "next", nextStep: "updateBalanceValuesStep2", state };
+    } catch (err) {
+      log.error(err);
+      return { kind: "fail", reason: getErrorMessage(err), retryable: true };
+    } finally {
+      log.finish(fn, startTime);
+    }
   }
-};
+);
 
 const updateBalanceValuesStep2: StepFn = ({ input, state, log }) => {
   const fn = updateBalanceValuesStep2.name;

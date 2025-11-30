@@ -34,6 +34,8 @@ import type {
   UpdateOpenBalancesFlowInput,
 } from "@workflow";
 import type { ExampleFlowInput } from "@workflow/flows/exampleFlow";
+import { FLOW_INPUT_DEFAULTS_REGISTRY } from "@workflow/flows/flowInputConstants";
+import type { UpdateBalanceValuesFlowInput } from "@workflow/flows/flowInputTypes";
 import { queueWorkflow } from "@workflow/workflowEngine";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 import { ONE_MINUTE_MS } from "../../lib/timeConstants";
@@ -324,8 +326,13 @@ export function GAS_trimSheet() {
 }
 
 export function GAS_updateAccountSheetBalances() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).updateAccountSheetBalances();
+  const firstStep = "updateAccountSheetBalancesStep1";
+  const input = {
+    ...FLOW_INPUT_DEFAULTS_REGISTRY.updateBalanceValuesFlow,
+    sheetName: getActiveSheetName(), // override the default empty string
+  } satisfies UpdateBalanceValuesFlowInput;
+
+  withLog(queueWF_)(GAS_updateAccountSheetBalances, firstStep, input);
 }
 
 export function GAS_updateAllDependencies() {

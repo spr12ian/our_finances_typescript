@@ -3,7 +3,6 @@
 import { DateHelper } from "@lib/DateHelper";
 import { getErrorMessage } from "@lib/errors";
 import { ONE_SECOND_MS } from "@lib/timeConstants";
-import { withScriptLock } from "@lib/withScriptLock";
 import { FastLog, withLog } from "@logging";
 import type { RunStepJob, SerializedRunStepParameters } from "@workflow";
 import { setupWorkflowsOnce } from "@workflow";
@@ -32,7 +31,7 @@ const MAX_CELL_LENGTH = 2000;
 export function queueWorker(): void {
   const fn = queueWorker.name;
   const ready = setupWorkflowsOnce({
-    lockTimeoutMs: 200, // or 400, as you prefer
+    lockTimeoutMs: 200,
     allowRetryTrigger: true,
   });
 
@@ -41,15 +40,7 @@ export function queueWorker(): void {
     return;
   }
 
-  // At this point the engine is configured and enqueueFn is wired.
-  withScriptLock(
-    () => {
-      withLog(processQueueBatch_)(MAX_BATCH, WORKER_BUDGET_MS);
-    },
-    {
-      strategy: "run-unlocked",
-    }
-  );
+  withLog(processQueueBatch_)(MAX_BATCH, WORKER_BUDGET_MS);
 }
 
 function getLastDataRow_(sheet: GoogleAppsScript.Spreadsheet.Sheet): number {
@@ -304,7 +295,8 @@ function rowToJob_(jobRow: JobRow): Job {
   const job: Job = {
     queueId: String(jobRow[COLUMNS.QUEUE_ID - 1] ?? ""),
     queuedAt:
-      DateHelper.coerceCellToUtcDate(jobRow[COLUMNS.QUEUED_AT - 1]) ?? new Date(0),
+      DateHelper.coerceCellToUtcDate(jobRow[COLUMNS.QUEUED_AT - 1]) ??
+      new Date(0),
     queuedBy: String(jobRow[COLUMNS.QUEUED_BY - 1] || ""),
     payload: parseJsonSafe_(String(jobRow[COLUMNS.PAYLOAD - 1] || "{}")),
     priority: Number(jobRow[COLUMNS.PRIORITY - 1]) || DEFAULT_PRIORITY,

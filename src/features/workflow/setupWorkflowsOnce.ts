@@ -1,6 +1,6 @@
 // @workflow/setupWorkflowsOnce.ts
 import { ONE_SECOND_MS } from "@lib/timeConstants";
-import { FastLog, functionStart } from "@logging";
+import { FastLog, functionStart, withLog } from "@logging";
 import type { QueueEnqueueOptions } from "@queue";
 import { tryQueueJob } from "@queue/queueJob";
 import type { EnqueueFn } from "./engineState";
@@ -75,7 +75,7 @@ export function setupWorkflowsOnce(opts: SetupWorkflowsOptions = {}): boolean {
       // Another instance might have configured while we waited
       if (!isEngineConfigured()) {
         setEnqueue(enqueueAdapter);
-        setupWorkflows();
+        withLog(setupWorkflows)();
         FastLog.log(fn, `Engine configured`);
       } else {
         FastLog.log(fn, `Engine already configured after acquiring lock`);

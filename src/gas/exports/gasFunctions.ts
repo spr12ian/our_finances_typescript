@@ -27,15 +27,19 @@ import { ensureQueueDateFormats, queueSetup } from "@queue/queueSetup";
 import { queueWorker } from "@queue/queueWorker";
 import { storeAccountSheetNames } from "@sheets/accountSheetFunctions";
 import { validateAccountKeys } from "@sheets/validateAccountKeys";
-import type {
-  FixSheetFlowInput,
-  FormatSheetFlowInput,
-  TrimSheetFlowInput,
-  UpdateOpenBalancesFlowInput,
+import {
+  setupWorkflowsOnce,
+  type FixSheetFlowInput,
+  type FormatSheetFlowInput,
+  type TrimSheetFlowInput,
+  type UpdateOpenBalancesFlowInput,
 } from "@workflow";
 import type { ExampleFlowInput } from "@workflow/flows/exampleFlow";
 import { FLOW_INPUT_DEFAULTS_REGISTRY } from "@workflow/flows/flowInputConstants";
-import type { FlowName, UpdateBalanceValuesFlowInput } from "@workflow/flows/flowInputTypes";
+import type {
+  FlowName,
+  UpdateBalanceValuesFlowInput,
+} from "@workflow/flows/flowInputTypes";
 import { queueWorkflow } from "@workflow/queueWorkflow";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 import { ONE_MINUTE_MS } from "../../lib/timeConstants";
@@ -392,5 +396,6 @@ function queueWF_<T extends WorkflowInputBase>(
   const workflowName = deriveWorkflowName_(queuedBy);
   FastLog.log(fn, workflowName);
 
+  withLog(setupWorkflowsOnce)();
   withLog(queueWorkflow)(workflowName, firstStep, input);
 }

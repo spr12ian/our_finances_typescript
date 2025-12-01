@@ -1,7 +1,6 @@
 // @workflow/queueWorkflow.ts
 
 import { FastLog, withLog } from "@logging";
-import { isEngineConfigured } from "./engineState";
 import { enqueueRunStep } from "./enqueueRunStep";
 import type { FlowName } from "./flows/flowInputTypes";
 import { normalizeFlowInput } from "./flows/normalizeFlowInput";
@@ -15,14 +14,6 @@ export function queueWorkflow(
 ): string | null {
   const fn = queueWorkflow.name;
   FastLog.log(fn, workflowName, firstStep);
-
-  if (!isEngineConfigured()) {
-    FastLog.warn(
-      fn,
-      `Engine not configured — skipping ${workflowName}.${firstStep}`
-    );
-    return null;
-  }
 
   const queueId = Utilities.getUuid();
   const normalizedInput = normalizeFlowInput(

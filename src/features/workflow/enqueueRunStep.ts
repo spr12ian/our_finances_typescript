@@ -1,8 +1,9 @@
-// @workflow/workflowEngine.ts
+// @workflow/enqueueRunStep.ts
 
 import { FastLog, withLog } from "@logging";
-import { getEnqueue } from "./engineState";
+import { getEnqueue, isEngineConfigured } from "./engineState";
 import type { SerializedRunStepParameters } from "./workflowTypes";
+import { setupWorkflowsOnce } from "./setupWorkflowsOnce";
 
 export function enqueueRunStep(
   rsp: SerializedRunStepParameters,
@@ -11,6 +12,11 @@ export function enqueueRunStep(
 ) {
   const fn = enqueueRunStep.name;
   FastLog.log(fn, rsp);
+
+  if (!isEngineConfigured()) {
+    setupWorkflowsOnce({ allowRetryTrigger: false });
+  }
+
   const enqueue = getEnqueue();
   const ms = Math.max(0, Math.floor(delayMs ?? 0));
   const runAt: Date | undefined =

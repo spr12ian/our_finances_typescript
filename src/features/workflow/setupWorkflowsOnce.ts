@@ -1,13 +1,17 @@
 // @workflow/setupWorkflowsOnce.ts
+
 import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { FastLog, functionStart, withLog } from "@logging";
 import type { QueueEnqueueOptions } from "@queue";
-import { tryQueueJob } from "@queue/queueJob";
-import type { EnqueueFn } from "./engineState";
+import { queueJob, tryQueueJob } from "@queue/queueJob";
+import type { EnqueueFn, EnqueueOptions } from "./engineState";
 import { isEngineConfigured, setEnqueue } from "./engineState";
-import { setupWorkflows } from "./setupWorkflows";
+import { registerAllWorkflows } from "./registerAllWorkflows";
+import type { RunStepJob } from "./workflowTypes";
 
 const DEFAULT_LOCK_TIMEOUT_MS = 4 * ONE_SECOND_MS;
+
+let initialized = false;
 
 export interface SetupWorkflowsOptions {
   /** Max time to wait for the ScriptLock (ms). Default: 4s */
@@ -118,6 +122,39 @@ function scheduleRetry_(delayMs: number = 5 * ONE_SECOND_MS) {
       `retry trigger create failed: ${String(err)}`
     );
   }
+}
+
+function setupWorkflows(): void {
+  if (initialized && isEngineConfigured()) return; // idempotent
+
+  // 1) Inject an EnqueueFn-compatible wrapper (NOT queueJob directly)
+  const enqueueAdapter: EnqueueFn = (
+    parameters: unknown,
+    opts?: EnqueueOptions
+  ) => {
+    const runStepParameters = parameters as RunStepJob;
+
+    // normalize runAt (engine side deals in Date|null)
+    const runAt =
+      opts?.runAt instanceof Date && !isNaN(opts.runAt.getTime())
+        ? opts.runAt
+        : null;
+
+    // map EngineOpts -> QueueEnqueueOptions (you can add defaults here if you want)
+    return withLog(queueJob)(runStepParameters, {
+      runAt,
+      priority: opts?.priority,
+      // maxAttempts / dedupeKey can be added here if your engine later exposes them
+    });
+  };
+
+  setEnqueue(enqueueAdapter);
+
+  // 2) Ensure the registry exists before any handlers run
+  // If your registerStep is idempotent, you can call this every time.
+  registerAllWorkflows();
+
+  initialized = true;
 }
 
 function toQueueOptions(options?: { runAt?: Date | null; priority?: number }) {

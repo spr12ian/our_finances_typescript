@@ -391,11 +391,10 @@ function queueWF_<T extends WorkflowInputBase>(
   }
 
   const queuedBy = initialName.slice(4);
-  input.queuedBy = queuedBy;
 
   const workflowName = deriveWorkflowName_(queuedBy);
   FastLog.log(fn, workflowName);
 
   withLog(setupWorkflowsOnce)();
-  withLog(queueWorkflow)(workflowName, firstStep, input);
+  withLog(queueWorkflow)(workflowName, firstStep, input, { queuedBy });
 }

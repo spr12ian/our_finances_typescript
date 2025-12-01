@@ -62,7 +62,7 @@ export function runStep(job: RunStepJob): void {
 
   switch (res.kind) {
     case "yield": {
-      withLog(enqueueRunStep)({ ...job, state: res.state }, res.delayMs);
+      withLog(enqueueRunStep)({ ...job, state: res.state }, { delayMs: res.delayMs });
       return;
     }
     case "next": {
@@ -74,7 +74,7 @@ export function runStep(job: RunStepJob): void {
           input: job.input,
           state: res.state ?? {},
         },
-        res.delayMs
+        { delayMs: res.delayMs }
       );
       return;
     }

@@ -19,7 +19,19 @@ export interface QueueEnqueueOptions {
   maxAttempts?: number;
   /** Optional dedupe key if you plan to dedupe externally */
   dedupeKey?: string | null;
+  /** Who queued this workflow (GAS_ function name, trigger, etc.) */
+  queuedBy?: string;
 }
+
+export interface QueueWorkflowOptions {
+  /** Initial workflow state (defaults to empty object) */
+  initialState?: Record<string, any>;
+  /** Queue priority (passed through to enqueueRunStep) */
+  priority?: number;
+  /** Who queued this workflow (GAS_ function name, trigger, etc.) */
+  queuedBy?: string;
+}
+
 
 export interface Job {
   queueId: QueueId;

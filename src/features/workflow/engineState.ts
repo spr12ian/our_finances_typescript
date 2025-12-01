@@ -7,6 +7,7 @@ import type { SerializedRunStepParameters } from "@workflow/workflowTypes";
 export type EnqueueOptions = {
   runAt?: Date | null; // ISO 8601 or null/undefined
   priority?: number;
+  queuedBy?: string | null;
 };
 
 export type EnqueueFn = (

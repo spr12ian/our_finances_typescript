@@ -91,14 +91,14 @@ function doQueueJob(
 
   FastLog.log(fn, `Queuing job id=${id} at ${displayEnqueuedAt}`);
 
-  const { queuedBy, cleaned } = extractQueuedBy_(payload);
-  FastLog.log(fn, { queuedBy, cleaned });
+  const { queuedBy } = options;
+  FastLog.log(fn, { queuedBy: queuedBy });
 
   const rowValues: JobRow = [
     id, // A: id
     queuedAt, // B: queued_at
-    queuedBy, // C: queued_by
-    JSON.stringify(cleaned ?? {}), // D: payload
+    queuedBy ?? "", // C: queued_by
+    JSON.stringify(payload ?? {}), // D: payload
     priority, // E: priority
     runAtCell, // F: run_at
     0, // G: attempts
@@ -128,40 +128,4 @@ function doQueueJob(
   FastLog.log(fn, `Job ${id} successfully enqueued on row ${rowIndex}`);
 
   return { id, row: rowIndex };
-}
-
-type InputWithQueuedBy = {
-  queuedBy?: string;
-  [key: string]: unknown;
-};
-
-function extractQueuedBy_(payload: SerializedRunStepParameters): {
-  queuedBy: string;
-  cleaned: SerializedRunStepParameters;
-} {
-  // Non-object / null safety
-  if (!payload || typeof payload !== "object") {
-    return { queuedBy: "", cleaned: payload };
-  }
-
-  // Shallow clone outer payload so we don’t mutate the original reference
-  const cleaned: SerializedRunStepParameters = { ...payload };
-
-  let queuedBy = "";
-
-  // Only bother if we have an input object
-  if (cleaned.input && typeof cleaned.input === "object") {
-    const input = { ...(cleaned.input as InputWithQueuedBy) };
-
-    if (typeof input.queuedBy === "string") {
-      queuedBy = input.queuedBy;
-    }
-
-    // Remove queuedBy from the input we’re going to enqueue
-    delete input.queuedBy;
-
-    cleaned.input = input;
-  }
-
-  return { queuedBy, cleaned };
 }

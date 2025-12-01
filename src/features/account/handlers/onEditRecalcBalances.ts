@@ -4,8 +4,8 @@ import { Spreadsheet } from "@domain";
 import { FastLog } from "@logging/FastLog";
 import { withLog } from "@logging/WithLog";
 import { AccountSheet } from "@sheets/classes/AccountSheet";
+import { queueWorkflow } from "@workflow/queueWorkflow";
 import { setupWorkflowsOnce } from "@workflow/setupWorkflowsOnce";
-import { queueWorkflow } from "@workflow/workflowEngine";
 
 export const MAX_SYNC_ROWS = 1300;
 
@@ -26,6 +26,7 @@ export function onEditRecalcBalances(e: SheetsOnEdit): void {
 
     // Only account sheets (names starting with "_")
     if (!sheetName.startsWith("_")) return;
+    const accountSheetName = sheetName;
 
     // Determine if the edit intersects C:D (Credit/Debit).
     const c1 = range.getColumn();
@@ -73,12 +74,13 @@ export function onEditRecalcBalances(e: SheetsOnEdit): void {
 
       // Hand off to your workflow instead of doing heavy work inline
       setupWorkflowsOnce();
+
       withLog(queueWorkflow)(
-        "updateAccountSheetBalancesFlow",
+        "accountSheetBalanceValuesFlow",
         "updateAccountSheetBalancesStep1",
         {
-          sheetName,
-          row: startRow,
+          accountSheetName,
+          startRow,
           queuedBy: "onEditRecalcBalances",
         }
       );

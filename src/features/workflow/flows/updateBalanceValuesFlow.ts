@@ -1,4 +1,4 @@
-// @workflow/flows/updateBalanceValuesFlow.ts
+// @workflow/flows/accountSheetBalanceValuesFlow.ts
 
 import { getErrorMessage } from "@lib/errors";
 import { ONE_MINUTE_MS, ONE_SECOND_MS } from "@lib/timeConstants";
@@ -10,31 +10,31 @@ import { withNormalizedFlowInput } from "./withNormalizedFlowInput";
 
 const MAX_YIELD_STEPS = 3;
 
-export function updateBalanceValuesFlow(): void {
+export function accountSheetBalanceValuesFlow(): void {
   registerStep(
-    "updateBalanceValuesFlow",
+    "accountSheetBalanceValuesFlow",
     "updateBalanceValuesStep1",
     updateBalanceValuesStep1
   );
   registerStep(
-    "updateBalanceValuesFlow",
+    "accountSheetBalanceValuesFlow",
     "updateBalanceValuesStep2",
     updateBalanceValuesStep2
   );
   registerStep(
-    "updateBalanceValuesFlow",
+    "accountSheetBalanceValuesFlow",
     "updateBalanceValuesStep3",
     updateBalanceValuesStep3
   );
   registerStep(
-    "updateBalanceValuesFlow",
+    "accountSheetBalanceValuesFlow",
     "updateBalanceValuesStep4",
     updateBalanceValuesStep4
   );
 }
 
 const updateBalanceValuesStep1: StepFn = withNormalizedFlowInput(
-  "updateBalanceValuesFlow",
+  "accountSheetBalanceValuesFlow",
   ({ input, state, log }) => {
     const fn = updateBalanceValuesStep1.name;
     const startTime = log.start(fn);

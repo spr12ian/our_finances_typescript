@@ -35,8 +35,8 @@ import type {
 } from "@workflow";
 import type { ExampleFlowInput } from "@workflow/flows/exampleFlow";
 import { FLOW_INPUT_DEFAULTS_REGISTRY } from "@workflow/flows/flowInputConstants";
-import type { UpdateBalanceValuesFlowInput } from "@workflow/flows/flowInputTypes";
-import { queueWorkflow } from "@workflow/workflowEngine";
+import type { FlowName, UpdateBalanceValuesFlowInput } from "@workflow/flows/flowInputTypes";
+import { queueWorkflow } from "@workflow/queueWorkflow";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 import { ONE_MINUTE_MS } from "../../lib/timeConstants";
 import { withReentryGuard } from "../../lib/withReentryGuard";
@@ -328,8 +328,8 @@ export function GAS_trimSheet() {
 export function GAS_updateAccountSheetBalances() {
   const firstStep = "updateAccountSheetBalancesStep1";
   const input = {
-    ...FLOW_INPUT_DEFAULTS_REGISTRY.updateBalanceValuesFlow,
-    sheetName: getActiveSheetName(), // override the default empty string
+    ...FLOW_INPUT_DEFAULTS_REGISTRY.accountSheetBalanceValuesFlow,
+    accountSheetName: getActiveSheetName(), // override the default empty string
   } satisfies UpdateBalanceValuesFlowInput;
 
   withLog(queueWF_)(GAS_updateAccountSheetBalances, firstStep, input);
@@ -360,8 +360,8 @@ export function GAS_validateAllMenuFunctionNames() {
   validateAllMenuFunctionNames();
 }
 
-function deriveWorkflowName_(queuedBy: string): string {
-  return queuedBy + "Flow";
+function deriveWorkflowName_(queuedBy: string): FlowName {
+  return (queuedBy + "Flow") as FlowName;
 }
 
 function isDisabled_(fn: Function): boolean {

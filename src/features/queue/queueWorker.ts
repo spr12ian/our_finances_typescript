@@ -6,7 +6,7 @@ import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { FastLog, withLog } from "@logging";
 import type { RunStepJob, SerializedRunStepParameters } from "@workflow";
 import { setupWorkflowsOnce } from "@workflow";
-import { runStep } from "@workflow/workflowEngine";
+import { runStep } from "@workflow/runStep";
 import { getQueueSheet } from "./getQueueSheet";
 import {
   COLUMNS,

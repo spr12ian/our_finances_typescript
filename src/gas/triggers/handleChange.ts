@@ -6,7 +6,7 @@ import * as timeConstants from "@lib/timeConstants";
 import { FastLog, withLog } from "@logging";
 import { isAccountSheet } from "@sheets/accountSheetFunctions";
 import { setupWorkflowsOnce } from "@workflow";
-import { queueWorkflow } from "@workflow/workflowEngine";
+import { queueWorkflow } from "@workflow/queueWorkflow";
 import { getFinancesSpreadsheet } from "src/getFinancesSpreadsheet";
 import { withReentryGuard } from "../../lib/withReentryGuard";
 
@@ -147,12 +147,13 @@ function startFlow_(sheet: Sheet) {
   }
 
   setupWorkflowsOnce();
+
   withLog(queueWorkflow)(
-    "updateAccountSheetBalancesFlow",
+    "accountSheetBalanceValuesFlow",
     "updateAccountSheetBalancesStep1",
     {
-      sheetName: sheet.name,
-      row: 1,
+      accountSheetName: sheet.name,
+      startRow: 1,
       queuedBy: "handleChange",
     }
   );

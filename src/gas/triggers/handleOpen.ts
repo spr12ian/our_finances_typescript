@@ -6,7 +6,7 @@ import { FastLog } from "@logging/FastLog";
 import { withLog } from "@logging/WithLog";
 import { setupWorkflowsOnce } from "@workflow";
 import { isEngineConfigured } from "@workflow/engineState";
-import { queueWorkflow } from "@workflow/workflowEngine";
+import { queueWorkflow } from "@workflow/queueWorkflow";
 
 type SheetsOnOpen = GoogleAppsScript.Events.SheetsOnOpen;
 

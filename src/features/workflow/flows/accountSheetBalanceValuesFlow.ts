@@ -3,34 +3,18 @@
 import { getErrorMessage } from "@lib/errors";
 import { ONE_MINUTE_MS, ONE_SECOND_MS } from "@lib/timeConstants";
 import { updateBalanceValues } from "@sheets/updateBalanceValues";
+import { withNormalizedFlowInput } from "../withNormalizedFlowInput";
 import { registerStep } from "../workflowRegistry";
 import type { StepFn } from "../workflowTypes";
 import type { UpdateBalanceValuesFlowInput } from "./flowInputTypes";
-import { withNormalizedFlowInput } from "./withNormalizedFlowInput";
 
 const MAX_YIELD_STEPS = 3;
 
 export function accountSheetBalanceValuesFlow(): void {
-  registerStep(
-    "accountSheetBalanceValuesFlow",
-    "updateBalanceValuesStep1",
-    updateBalanceValuesStep1
-  );
-  registerStep(
-    "accountSheetBalanceValuesFlow",
-    "updateBalanceValuesStep2",
-    updateBalanceValuesStep2
-  );
-  registerStep(
-    "accountSheetBalanceValuesFlow",
-    "updateBalanceValuesStep3",
-    updateBalanceValuesStep3
-  );
-  registerStep(
-    "accountSheetBalanceValuesFlow",
-    "updateBalanceValuesStep4",
-    updateBalanceValuesStep4
-  );
+  registerStep("accountSheetBalanceValuesFlow", updateBalanceValuesStep1);
+  registerStep("accountSheetBalanceValuesFlow", updateBalanceValuesStep2);
+  registerStep("accountSheetBalanceValuesFlow", updateBalanceValuesStep3);
+  registerStep("accountSheetBalanceValuesFlow", updateBalanceValuesStep4);
 }
 
 const updateBalanceValuesStep1: StepFn = withNormalizedFlowInput(

@@ -27,19 +27,20 @@ import { ensureQueueDateFormats, queueSetup } from "@queue/queueSetup";
 import { queueWorker } from "@queue/queueWorker";
 import { storeAccountSheetNames } from "@sheets/accountSheetFunctions";
 import { validateAccountKeys } from "@sheets/validateAccountKeys";
-import {
-  setupWorkflowsOnce,
-  type FixSheetFlowInput,
-  type FormatSheetFlowInput,
-  type TrimSheetFlowInput,
-  type UpdateOpenBalancesFlowInput,
+import type {
+  ApplyDescriptionReplacementsFlowInput,
+  FixSheetFlowInput,
+  FormatSheetFlowInput,
+  TrimSheetFlowInput,
+  UpdateOpenBalancesFlowInput,
 } from "@workflow";
-import type { ExampleFlowInput } from "@workflow/flows/exampleFlow";
+import { setupWorkflowsOnce } from "@workflow";
 import { FLOW_INPUT_DEFAULTS_REGISTRY } from "@workflow/flows/flowInputConstants";
 import type {
   FlowName,
   UpdateBalanceValuesFlowInput,
 } from "@workflow/flows/flowInputTypes";
+import type { TemplateFlowInput } from "@workflow/flows/templateFlow";
 import { queueWorkflow } from "@workflow/queueWorkflow";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 import { ONE_MINUTE_MS } from "../../lib/timeConstants";
@@ -68,14 +69,13 @@ const DISABLED_FUNCTIONS = new Set<Function>([
   // GAS_queueWorker,
 ]);
 
-type WorkflowInputBase = { queuedBy?: string; [key: string]: unknown };
-
 export function GAS_applyDescriptionReplacements() {
   if (isDisabled_(GAS_applyDescriptionReplacements)) return;
 
-  // withLog(applyDescriptionReplacements)();
-  const firstStep = "step1";
-  const input = {};
+  const firstStep = "applyDescriptionReplacementsStep1";
+  const input = {
+    accountSheetName: getActiveSheetName(),
+  } satisfies ApplyDescriptionReplacementsFlowInput;
 
   withLog(queueWF_)(GAS_applyDescriptionReplacements, firstStep, input);
 }
@@ -107,16 +107,6 @@ export function GAS_dailySorts() {
 
 export function GAS_ensureQueueDateFormats() {
   withLog(ensureQueueDateFormats)();
-}
-
-export function GAS_example() {
-  const firstStep = "exampleStep1";
-  const input = {
-    parameter1: "Example string",
-    parameter2: 42,
-  } satisfies ExampleFlowInput;
-
-  withLog(queueWF_)(GAS_example, firstStep, input);
 }
 
 export function GAS_exportFormulasToDrive() {
@@ -293,6 +283,16 @@ export function GAS_storeAccountSheetNames() {
   withLog(storeAccountSheetNames)();
 }
 
+export function GAS_template() {
+  const firstStep = "templateStep1";
+  const input = {
+    parameter1: "Example string",
+    parameter2: 42,
+  } satisfies TemplateFlowInput;
+
+  withLog(queueWF_)(GAS_template, firstStep, input);
+}
+
 export function GAS_toBalanceSheet() {
   withLog(goToSheet)(MetaBalanceSheet.SHEET.NAME);
 }
@@ -382,11 +382,7 @@ function isDisabled_(fn: Function): boolean {
   return isDisabled;
 }
 
-function queueWF_<T extends WorkflowInputBase>(
-  workflow: Function,
-  firstStep: string,
-  input: T
-) {
+function queueWF_(workflow: Function, firstStep: string, input: unknown) {
   const fn = queueWF_.name;
   const initialName = workflow.name;
 
@@ -398,8 +394,8 @@ function queueWF_<T extends WorkflowInputBase>(
 
   const queuedBy = initialName.slice(4);
   const workflowName = deriveWorkflowName_(queuedBy);
-  
-  FastLog.log(fn, {workflowName, firstStep, input, queuedBy });
+
+  FastLog.log(fn, { workflowName, firstStep, input, queuedBy });
 
   withLog(setupWorkflowsOnce)();
   withLog(queueWorkflow)(workflowName, firstStep, input, { queuedBy });

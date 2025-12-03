@@ -1,4 +1,5 @@
 export { fixSheetFlow } from "./flows/fixSheetFlow";
+export type { ApplyDescriptionReplacementsFlowInput } from "./flows/applyDescriptionReplacementsFlow";
 export type { FixSheetFlowInput } from "./flows/fixSheetFlow";
 export { formatSheetFlow } from "./flows/formatSheetFlow";
 export type { FormatSheetFlowInput } from "./flows/formatSheetFlow";

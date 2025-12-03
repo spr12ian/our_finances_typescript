@@ -3,9 +3,9 @@ import type { StepFn } from "./workflowTypes";
 
 const WORKFLOWS: Record<string, Record<string, StepFn>> = Object.create(null);
 
-export function registerStep(workflowName: string, stepName: string, fn: StepFn): void {
+export function registerStep(workflowName: string, fn: StepFn): void {
   if (!WORKFLOWS[workflowName]) WORKFLOWS[workflowName] = Object.create(null);
-  WORKFLOWS[workflowName][stepName] = fn;
+  WORKFLOWS[workflowName][fn.name] = fn;
 }
 
 export function getStep(workflowName: string, stepName: string): StepFn | undefined {

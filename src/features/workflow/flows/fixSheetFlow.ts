@@ -10,7 +10,7 @@ export type FixSheetFlowInput = {
 
 export function fixSheetFlow(): void {
   // import step implementations here to register them
-  registerStep("fixSheetFlow", "fixSheetStep1", fixSheetStep1);
+  registerStep("fixSheetFlow", fixSheetStep1);
 }
 
 const fixSheetStep1: StepFn = ({ input, log }) => {

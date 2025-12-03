@@ -17,8 +17,8 @@ type State = {
 };
 
 export function updateOpenBalancesFlow() {
-  registerStep(WORKFLOW, "init", initStep);
-  registerStep(WORKFLOW, "processOne", processOneStep);
+  registerStep(WORKFLOW, initStep);
+  registerStep(WORKFLOW, processOneStep);
 }
 
 /** Step 1: capture a stable list of open keys and move to the worker step. */

@@ -129,7 +129,7 @@ function setupWorkflows(): void {
 
   // 2) Ensure the registry exists before any handlers run
   // If your registerStep is idempotent, you can call this every time.
-  registerAllWorkflows();
+  withLog(registerAllWorkflows)();
 
   initialized = true;
 }

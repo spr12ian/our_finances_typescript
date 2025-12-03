@@ -7,7 +7,6 @@ export function sendMeHtmlEmailFlow(): void {
   // import step implementations here to register them
   registerStep(
     "sendMeHtmlEmailFlow",
-    "sendMeHtmlEmailStep1",
     sendMeHtmlEmailStep1
   );
 }

@@ -1,7 +1,7 @@
 // withNormalizedFlowInput.ts
-import type { StepContext, StepFn, StepResult } from "../workflowTypes";
-import type { FlowInput, FlowName } from "./flowInputTypes";
-import { normalizeFlowInput } from "./normalizeFlowInput";
+import type { FlowInput, FlowName } from "./flows/flowInputTypes";
+import { normalizeFlowInput } from "./flows/normalizeFlowInput";
+import type { StepContext, StepFn, StepResult } from "./workflowTypes";
 
 export function withNormalizedFlowInput<T extends FlowName>(
   flowName: T,

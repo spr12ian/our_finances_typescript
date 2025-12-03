@@ -113,14 +113,6 @@ export class OurFinances {
     return this.#spreadsheet.url;
   }
 
-  applyDescriptionReplacements() {
-    const activeSheet = this.#spreadsheet.activeSheet;
-    const accountSheet = new AccountSheet(activeSheet, this.#spreadsheet);
-    if (accountSheet) {
-      accountSheet.applyDescriptionReplacements();
-    }
-  }
-
   convertCurrentColumnToUppercase() {
     const gasSheet = this.#spreadsheet.activeSheet.raw;
     const activeRange = gasSheet.getActiveRange();

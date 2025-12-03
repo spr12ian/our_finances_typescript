@@ -10,7 +10,7 @@ export type FormatSheetFlowInput = {
 
 export function formatSheetFlow(): void {
   // import step implementations here to register them
-  registerStep("formatSheetFlow", "formatSheetStep1", formatSheetStep1);
+  registerStep("formatSheetFlow", formatSheetStep1);
 }
 
 const formatSheetStep1: StepFn = ({ input, log }) => {

@@ -1,15 +1,18 @@
-import { functionStart } from "@logging";
 import * as flow from "./flows";
 
-// Call once, e.g., inside onOpen or module top-level
+let allFlowsRegistered = false;
+
 export function registerAllWorkflows(): void {
-  const finish = functionStart(registerAllWorkflows.name);
-  flow.exampleFlow();
+  if (allFlowsRegistered) return;
+
+  flow.accountSheetBalanceValuesFlow();
+  flow.applyDescriptionReplacementsFlow();
   flow.fixSheetFlow();
   flow.formatSheetFlow();
   flow.sendMeHtmlEmailFlow();
+  flow.templateFlow();
   flow.trimSheetFlow();
-  flow.accountSheetBalanceValuesFlow();
   flow.updateOpenBalancesFlow();
-  finish();
+
+  allFlowsRegistered = true;
 }

@@ -10,7 +10,7 @@ export type TrimSheetFlowInput = {
 
 export function trimSheetFlow(): void {
   // import step implementations here to register them
-  registerStep("trimSheetFlow", "trimSheetStep1", trimSheetStep1);
+  registerStep("trimSheetFlow", trimSheetStep1);
 }
 
 const trimSheetStep1: StepFn = ({ input, state, log }) => {

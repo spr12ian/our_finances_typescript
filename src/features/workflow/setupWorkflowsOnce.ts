@@ -3,12 +3,11 @@
 import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { FastLog, functionStart, withLog } from "@logging";
 import type { QueueEnqueueOptions } from "@queue";
-import { queueJob, tryQueueJob } from "@queue/queueJob";
+import { queueJob } from "@queue/queueJob";
+import type { SerializedRunStepParameters } from "@workflow/workflowTypes";
 import type { EnqueueFn, EnqueueOptions } from "./engineState";
 import { isEngineConfigured, setEnqueue } from "./engineState";
 import { registerAllWorkflows } from "./registerAllWorkflows";
-import type { RunStepJob } from "./workflowTypes";
-import type { SerializedRunStepParameters } from '@workflow/workflowTypes';
 
 const DEFAULT_LOCK_TIMEOUT_MS = 4 * ONE_SECOND_MS;
 
@@ -135,13 +134,14 @@ function setupWorkflows(): void {
   initialized = true;
 }
 
-function toQueueOptions(opts?: EnqueueOptions) {
+function toQueueOptions(opts?: EnqueueOptions):QueueEnqueueOptions {
   return {
     runAt:
       opts?.runAt instanceof Date && !isNaN(opts.runAt.getTime())
         ? opts.runAt
         : undefined,
     priority: opts?.priority,
+    queuedBy: opts?.queuedBy ?? "",
   } as QueueEnqueueOptions;
 }
 

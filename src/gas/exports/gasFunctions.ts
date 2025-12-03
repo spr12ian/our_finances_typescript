@@ -50,12 +50,12 @@ import { dailySendHtmlEmail } from "../triggers/dailySendHtmlEmail";
 import { handleChange } from "../triggers/handleChange";
 import { handleEdit } from "../triggers/handleEdit";
 import { handleOpen } from "../triggers/handleOpen";
-import { applyDescriptionReplacements } from "./applyDescriptionReplacements";
 import { onEdit } from "./onEdit";
 import { onOpen } from "./onOpen";
 import { onSelectionChange } from "./onSelectionChange";
 
 const DISABLED_FUNCTIONS = new Set<Function>([
+  // GAS_applyDescriptionReplacements,
   // GAS_dailySendHtmlEmail,
   // GAS_dailySorts,
   GAS_onChangeTrigger,
@@ -71,7 +71,13 @@ const DISABLED_FUNCTIONS = new Set<Function>([
 type WorkflowInputBase = { queuedBy?: string; [key: string]: unknown };
 
 export function GAS_applyDescriptionReplacements() {
-  withLog(applyDescriptionReplacements)();
+  if (isDisabled_(GAS_applyDescriptionReplacements)) return;
+
+  // withLog(applyDescriptionReplacements)();
+  const firstStep = "step1";
+  const input = {};
+
+  withLog(queueWF_)(GAS_applyDescriptionReplacements, firstStep, input);
 }
 
 export function GAS_categories() {
@@ -391,9 +397,9 @@ function queueWF_<T extends WorkflowInputBase>(
   }
 
   const queuedBy = initialName.slice(4);
-
   const workflowName = deriveWorkflowName_(queuedBy);
-  FastLog.log(fn, workflowName);
+  
+  FastLog.log(fn, {workflowName, firstStep, input, queuedBy });
 
   withLog(setupWorkflowsOnce)();
   withLog(queueWorkflow)(workflowName, firstStep, input, { queuedBy });

@@ -2,8 +2,8 @@
 
 import { FastLog, withLog } from "@logging";
 import { getEnqueue, isEngineConfigured } from "./engineState";
-import type { SerializedRunStepParameters } from "./workflowTypes";
 import { setupWorkflowsOnce } from "./setupWorkflowsOnce";
+import type { SerializedRunStepParameters } from "./workflowTypes";
 
 export interface EnqueueRunStepOptions {
   delayMs?: number;
@@ -16,7 +16,7 @@ export function enqueueRunStep(
   options: EnqueueRunStepOptions = {}
 ) {
   const fn = enqueueRunStep.name;
-  FastLog.log(fn, rsp);
+  FastLog.log(fn, { rsp, options });
   const { delayMs = 0, priority, queuedBy } = options;
 
   if (!isEngineConfigured()) {

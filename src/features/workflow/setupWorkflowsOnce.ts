@@ -8,6 +8,7 @@ import type { EnqueueFn, EnqueueOptions } from "./engineState";
 import { isEngineConfigured, setEnqueue } from "./engineState";
 import { registerAllWorkflows } from "./registerAllWorkflows";
 import type { RunStepJob } from "./workflowTypes";
+import type { SerializedRunStepParameters } from '@workflow/workflowTypes';
 
 const DEFAULT_LOCK_TIMEOUT_MS = 4 * ONE_SECOND_MS;
 
@@ -20,17 +21,14 @@ export interface SetupWorkflowsOptions {
   allowRetryTrigger?: boolean;
 }
 
-const enqueueAdapter: EnqueueFn = (parameters, options) => {
-  const res = tryQueueJob(parameters, toQueueOptions(options));
-  if (!res) {
-    throw new Error(
-      `tryQueueJob failed to enqueue (returned undefined) for parameters=${JSON.stringify(
-        parameters
-      )}`
-    );
-  }
+// Single canonical adapter for the whole engine
+const enqueueAdapter: EnqueueFn = (
+  parameters: unknown,
+  opts?: EnqueueOptions
+) => {
+  const runStepParameters = parameters as SerializedRunStepParameters;
 
-  return res;
+  return queueJob(runStepParameters, toQueueOptions(opts));
 };
 
 let _ready = false;
@@ -78,7 +76,6 @@ export function setupWorkflowsOnce(opts: SetupWorkflowsOptions = {}): boolean {
     try {
       // Another instance might have configured while we waited
       if (!isEngineConfigured()) {
-        setEnqueue(enqueueAdapter);
         withLog(setupWorkflows)();
         FastLog.log(fn, `Engine configured`);
       } else {
@@ -127,26 +124,7 @@ function scheduleRetry_(delayMs: number = 5 * ONE_SECOND_MS) {
 function setupWorkflows(): void {
   if (initialized && isEngineConfigured()) return; // idempotent
 
-  // 1) Inject an EnqueueFn-compatible wrapper (NOT queueJob directly)
-  const enqueueAdapter: EnqueueFn = (
-    parameters: unknown,
-    opts?: EnqueueOptions
-  ) => {
-    const runStepParameters = parameters as RunStepJob;
-
-    // normalize runAt (engine side deals in Date|null)
-    const runAt =
-      opts?.runAt instanceof Date && !isNaN(opts.runAt.getTime())
-        ? opts.runAt
-        : null;
-
-    // map EngineOpts -> QueueEnqueueOptions (you can add defaults here if you want)
-    return withLog(queueJob)(runStepParameters, {
-      runAt,
-      priority: opts?.priority,
-      // maxAttempts / dedupeKey can be added here if your engine later exposes them
-    });
-  };
+  // 1) Bind the enqueue implementation
 
   setEnqueue(enqueueAdapter);
 
@@ -157,10 +135,13 @@ function setupWorkflows(): void {
   initialized = true;
 }
 
-function toQueueOptions(options?: { runAt?: Date | null; priority?: number }) {
+function toQueueOptions(opts?: EnqueueOptions) {
   return {
-    runAt: options?.runAt ?? undefined,
-    priority: options?.priority,
+    runAt:
+      opts?.runAt instanceof Date && !isNaN(opts.runAt.getTime())
+        ? opts.runAt
+        : undefined,
+    priority: opts?.priority,
   } as QueueEnqueueOptions;
 }
 

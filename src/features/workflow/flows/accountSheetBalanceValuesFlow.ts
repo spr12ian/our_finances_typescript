@@ -3,60 +3,50 @@
 import { getErrorMessage } from "@lib/errors";
 import { ONE_MINUTE_MS, ONE_SECOND_MS } from "@lib/timeConstants";
 import { updateBalanceValues } from "@sheets/updateBalanceValues";
-import { withNormalizedFlowInput } from "../withNormalizedFlowInput";
 import { registerStep } from "../workflowRegistry";
 import type { StepFn } from "../workflowTypes";
-import type { UpdateBalanceValuesFlowInput } from "./flowInputTypes";
+import type { AccountSheetBalanceValuesFlowInput } from "./flowInputTypes";
+import { normalizeFlowInput } from "./normalizeFlowInput";
 
+const FLOW_NAME = "accountSheetBalanceValuesFlow";
 const MAX_YIELD_STEPS = 3;
 
+type AccountSheetBalanceValuesStepFn =
+  StepFn<AccountSheetBalanceValuesFlowInput>;
+
 export function accountSheetBalanceValuesFlow(): void {
-  registerStep("accountSheetBalanceValuesFlow", updateBalanceValuesStep1);
-  registerStep("accountSheetBalanceValuesFlow", updateBalanceValuesStep2);
-  registerStep("accountSheetBalanceValuesFlow", updateBalanceValuesStep3);
-  registerStep("accountSheetBalanceValuesFlow", updateBalanceValuesStep4);
+  registerStep(FLOW_NAME, accountSheetBalanceValuesStep01);
+  registerStep(FLOW_NAME, accountSheetBalanceValuesStep02);
+  registerStep(FLOW_NAME, accountSheetBalanceValuesStep03);
+  registerStep(FLOW_NAME, accountSheetBalanceValuesStep04);
 }
 
-const updateBalanceValuesStep1: StepFn = withNormalizedFlowInput(
-  "accountSheetBalanceValuesFlow",
-  ({ input, state, log }) => {
-    const fn = updateBalanceValuesStep1.name;
-    const startTime = log.start(fn);
-    try {
-      log("input:", input);
-      const { accountSheetName, startRow, queuedBy } = input;
-      log("accountSheetName:", accountSheetName);
-      log("startRow:", startRow);
-      log("queuedBy:", queuedBy);
-
-      state.e1 = updateBalanceValues(accountSheetName, startRow);
-
-      // NOTE: no `input` in the result; `state` is allowed on `next`
-      return { kind: "next", nextStep: "updateBalanceValuesStep2", state };
-    } catch (err) {
-      log.error(err);
-      return { kind: "fail", reason: getErrorMessage(err), retryable: true };
-    } finally {
-      log.finish(fn, startTime);
-    }
-  }
-);
-
-const updateBalanceValuesStep2: StepFn = ({ input, state, log }) => {
-  const fn = updateBalanceValuesStep2.name;
+const accountSheetBalanceValuesStep01: AccountSheetBalanceValuesStepFn = ({
+  input,
+  state,
+  log,
+}) => {
+  const fn = accountSheetBalanceValuesStep01.name;
   const startTime = log.start(fn);
   try {
-    log("Starting updateBalanceValuesStep2");
-    const { accountSheetName, startRow } =
-      input as UpdateBalanceValuesFlowInput;
-    log("input:", input);
-    log("state:", state);
-    log("accountSheetName:", accountSheetName);
-    log("startRow:", startRow);
+    // Normalise the (possibly partial) input for this flow
+    const normalized = normalizeFlowInput(
+      FLOW_NAME,
+      (input ?? {}) as Partial<AccountSheetBalanceValuesFlowInput>
+    ) as AccountSheetBalanceValuesFlowInput;
 
-    state.e2 = updateAccountSheetBalances2(accountSheetName, startRow);
+    log("accountSheetBalanceValuesStep01 normalized input:", normalized);
 
-    return { kind: "next", nextStep: "updateBalanceValuesStep3", state };
+    const { accountSheetName, startRow } = normalized;
+
+    state.e1 = updateBalanceValues(accountSheetName, startRow);
+
+    // NOTE: no `input` in the result; `state` is allowed on `next`
+    return {
+      kind: "next",
+      nextStep: "accountSheetBalanceValuesStep02",
+      state,
+    };
   } catch (err) {
     log.error(err);
     return { kind: "fail", reason: getErrorMessage(err), retryable: true };
@@ -65,13 +55,44 @@ const updateBalanceValuesStep2: StepFn = ({ input, state, log }) => {
   }
 };
 
-const updateBalanceValuesStep3: StepFn = ({ input, state, log }) => {
-  const fn = updateBalanceValuesStep3.name;
+const accountSheetBalanceValuesStep02: AccountSheetBalanceValuesStepFn = ({
+  input,
+  state,
+  log,
+}) => {
+  const fn = accountSheetBalanceValuesStep02.name;
   const startTime = log.start(fn);
   try {
-    log("Starting updateBalanceValuesStep3");
+    log("Starting accountSheetBalanceValuesStep02");
     const { accountSheetName, startRow } =
-      input as UpdateBalanceValuesFlowInput;
+      input as AccountSheetBalanceValuesFlowInput;
+    log("input:", input);
+    log("state:", state);
+    log("accountSheetName:", accountSheetName);
+    log("startRow:", startRow);
+
+    state.e2 = accountSheetBalanceValues2(accountSheetName, startRow);
+
+    return { kind: "next", nextStep: "accountSheetBalanceValuesStep03", state };
+  } catch (err) {
+    log.error(err);
+    return { kind: "fail", reason: getErrorMessage(err), retryable: true };
+  } finally {
+    log.finish(fn, startTime);
+  }
+};
+
+const accountSheetBalanceValuesStep03: AccountSheetBalanceValuesStepFn = ({
+  input,
+  state,
+  log,
+}) => {
+  const fn = accountSheetBalanceValuesStep03.name;
+  const startTime = log.start(fn);
+  try {
+    log("Starting accountSheetBalanceValuesStep03");
+    const { accountSheetName, startRow } =
+      input as AccountSheetBalanceValuesFlowInput;
     log("input:", input);
     log("state:", state);
     log("accountSheetName:", accountSheetName);
@@ -81,12 +102,12 @@ const updateBalanceValuesStep3: StepFn = ({ input, state, log }) => {
     state.yieldCount = count;
 
     // do your poll/work here; set state.ready=true when done
-    state.e3 = updateAccountSheetBalances3(accountSheetName, startRow);
+    state.e3 = accountSheetBalanceValues3(accountSheetName, startRow);
 
     if (state.ready) {
       return {
         kind: "next",
-        nextStep: "updateBalanceValuesStep4",
+        nextStep: "accountSheetBalanceValuesStep04",
         state,
       };
     }
@@ -94,7 +115,7 @@ const updateBalanceValuesStep3: StepFn = ({ input, state, log }) => {
     if (count >= MAX_YIELD_STEPS) {
       return {
         kind: "next",
-        nextStep: "updateBalanceValuesStep4",
+        nextStep: "accountSheetBalanceValuesStep04",
         state,
       };
     }
@@ -110,19 +131,23 @@ const updateBalanceValuesStep3: StepFn = ({ input, state, log }) => {
   }
 };
 
-const updateBalanceValuesStep4: StepFn = ({ input, state, log }) => {
-  const fn = updateBalanceValuesStep4.name;
+const accountSheetBalanceValuesStep04: AccountSheetBalanceValuesStepFn = ({
+  input,
+  state,
+  log,
+}) => {
+  const fn = accountSheetBalanceValuesStep04.name;
   const startTime = log.start(fn);
   try {
-    log("Starting updateBalanceValuesStep4");
+    log("Starting accountSheetBalanceValuesStep04");
     const { accountSheetName, startRow } =
-      input as UpdateBalanceValuesFlowInput;
+      input as AccountSheetBalanceValuesFlowInput;
     log("input:", input);
     log("accountSheetName:", accountSheetName);
     log("startRow:", startRow);
     log("Final totals:", state.totals);
 
-    state.e4 = updateAccountSheetBalances4(accountSheetName, startRow);
+    state.e4 = accountSheetBalanceValues4(accountSheetName, startRow);
 
     // `complete` supports `output`, not `state`
     const output = {
@@ -141,19 +166,19 @@ const updateBalanceValuesStep4: StepFn = ({ input, state, log }) => {
   }
 };
 
-function updateAccountSheetBalances2(
+function accountSheetBalanceValues2(
   accountSheetName: string,
   startRow: number
 ): string {
   return `${accountSheetName} ${startRow}`;
 }
-function updateAccountSheetBalances3(
+function accountSheetBalanceValues3(
   accountSheetName: string,
   startRow: number
 ): string {
   return `${accountSheetName} ${startRow}`;
 }
-function updateAccountSheetBalances4(
+function accountSheetBalanceValues4(
   accountSheetName: string,
   startRow: number
 ): string {

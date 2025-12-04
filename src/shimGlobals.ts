@@ -2,6 +2,7 @@
 // eslint-disable
 
 export const shimGlobals = [
+  "accountSheetBalanceValues",
   "applyDescriptionReplacements",
   "categories",
   "convertCurrentColumnToUppercase",
@@ -51,7 +52,6 @@ export const shimGlobals = [
   "toBudgetWeeklyTransactions",
   "trimAllSheets",
   "trimSheet",
-  "updateAccountSheetBalances",
   "updateAllDependencies",
   "updateOpenBalances",
   "updateTransactions",

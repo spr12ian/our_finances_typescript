@@ -27,6 +27,5 @@ export function handleOpen(e: SheetsOnOpen): void {
 
   withLog(queueWorkflow)("fixSheetFlow", "fixSheetStep1", {
     sheetName: sheetName,
-    queuedBy: "onOpen",
-  });
+  }, { queuedBy: fn });
 }

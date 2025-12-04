@@ -6,7 +6,7 @@ import {
 export const accountSheetMenuItems: [string, string][] = [
   ["Apply description replacements", "applyDescriptionReplacements"],
   ["Convert current column to uppercase", "convertCurrentColumnToUppercase"],
-  ["Update balance values", "updateAccountSheetBalances"],
+  ["Update balance values", "accountSheetBalanceValues"],
 ];
 
 export const analyzeTransactionsMenuItems: [string, string][] = [

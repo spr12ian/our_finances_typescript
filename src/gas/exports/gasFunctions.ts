@@ -1,6 +1,7 @@
 // @gas/exports/gasFunctions.ts
 
 import { getActiveSheetName, goToSheet, logSheetNames } from "@gas";
+import { convertCurrentColumnToUppercase } from "@gas/convertCurrentColumnToUppercase";
 import { exportFormulasToDrive } from "@gas/exports/exportFormulasToDrive";
 import { dailySorts } from "@gas/triggers/dailySorts";
 import {
@@ -37,8 +38,8 @@ import type {
 import { setupWorkflowsOnce } from "@workflow";
 import { FLOW_INPUT_DEFAULTS_REGISTRY } from "@workflow/flows/flowInputConstants";
 import type {
+  AccountSheetBalanceValuesFlowInput,
   FlowName,
-  UpdateBalanceValuesFlowInput,
 } from "@workflow/flows/flowInputTypes";
 import type { TemplateFlowInput } from "@workflow/flows/templateFlow";
 import { queueWorkflow } from "@workflow/queueWorkflow";
@@ -54,7 +55,6 @@ import { handleOpen } from "../triggers/handleOpen";
 import { onEdit } from "./onEdit";
 import { onOpen } from "./onOpen";
 import { onSelectionChange } from "./onSelectionChange";
-import { convertCurrentColumnToUppercase } from '@gas/convertCurrentColumnToUppercase';
 
 const DISABLED_FUNCTIONS = new Set<Function>([
   // GAS_applyDescriptionReplacements,
@@ -70,15 +70,23 @@ const DISABLED_FUNCTIONS = new Set<Function>([
   // GAS_queueWorker,
 ]);
 
+export function GAS_accountSheetBalanceValues() {
+  const input = {
+    ...FLOW_INPUT_DEFAULTS_REGISTRY.accountSheetBalanceValuesFlow,
+    accountSheetName: getActiveSheetName(), // override the default empty string
+  } satisfies AccountSheetBalanceValuesFlowInput;
+
+  withLog(queueWF_)(GAS_accountSheetBalanceValues, input);
+}
+
 export function GAS_applyDescriptionReplacements() {
   if (isDisabled_(GAS_applyDescriptionReplacements)) return;
 
-  const firstStep = "applyDescriptionReplacementsStep1";
   const input = {
     accountSheetName: getActiveSheetName(),
   } satisfies ApplyDescriptionReplacementsFlowInput;
 
-  withLog(queueWF_)(GAS_applyDescriptionReplacements, firstStep, input);
+  withLog(queueWF_)(GAS_applyDescriptionReplacements, input);
 }
 
 export function GAS_categories() {
@@ -114,21 +122,19 @@ export function GAS_exportFormulasToDrive() {
 }
 
 export function GAS_fixSheet() {
-  const firstStep = "fixSheetStep1";
   const input = {
     sheetName: getActiveSheetName(),
   } satisfies FixSheetFlowInput;
 
-  withLog(queueWF_)(GAS_fixSheet, firstStep, input);
+  withLog(queueWF_)(GAS_fixSheet, input);
 }
 
 export function GAS_formatSheet() {
-  const firstStep = "formatSheetStep1";
   const input = {
     sheetName: getActiveSheetName(),
   } satisfies FormatSheetFlowInput;
 
-  withLog(queueWF_)(GAS_formatSheet, firstStep, input);
+  withLog(queueWF_)(GAS_formatSheet, input);
 }
 
 export function GAS_goToSheetCategories() {
@@ -284,13 +290,12 @@ export function GAS_storeAccountSheetNames() {
 }
 
 export function GAS_template() {
-  const firstStep = "templateStep1";
   const input = {
     parameter1: "Example string",
     parameter2: 42,
   } satisfies TemplateFlowInput;
 
-  withLog(queueWF_)(GAS_template, firstStep, input);
+  withLog(queueWF_)(GAS_template, input);
 }
 
 export function GAS_toBalanceSheet() {
@@ -327,22 +332,11 @@ export function GAS_trimAllSheets() {
 }
 
 export function GAS_trimSheet() {
-  const firstStep = "trimSheetStep1";
   const input = {
     sheetName: getActiveSheetName(),
   } satisfies TrimSheetFlowInput;
 
-  withLog(queueWF_)(GAS_trimSheet, firstStep, input);
-}
-
-export function GAS_updateAccountSheetBalances() {
-  const firstStep = "updateAccountSheetBalancesStep1";
-  const input = {
-    ...FLOW_INPUT_DEFAULTS_REGISTRY.accountSheetBalanceValuesFlow,
-    accountSheetName: getActiveSheetName(), // override the default empty string
-  } satisfies UpdateBalanceValuesFlowInput;
-
-  withLog(queueWF_)(GAS_updateAccountSheetBalances, firstStep, input);
+  withLog(queueWF_)(GAS_trimSheet, input);
 }
 
 export function GAS_updateAllDependencies() {
@@ -351,10 +345,9 @@ export function GAS_updateAllDependencies() {
 }
 
 export function GAS_updateOpenBalances() {
-  const firstStep = "init";
   const input = {} satisfies UpdateOpenBalancesFlowInput;
 
-  withLog(queueWF_)(GAS_updateOpenBalances, firstStep, input);
+  withLog(queueWF_)(GAS_updateOpenBalances, input);
 }
 
 export function GAS_updateTransactions() {
@@ -370,6 +363,10 @@ export function GAS_validateAllMenuFunctionNames() {
   validateAllMenuFunctionNames();
 }
 
+function deriveFirstStepName_(queuedBy: string): FlowName {
+  return (queuedBy + "Step01") as FlowName;
+}
+
 function deriveWorkflowName_(queuedBy: string): FlowName {
   return (queuedBy + "Flow") as FlowName;
 }
@@ -382,7 +379,7 @@ function isDisabled_(fn: Function): boolean {
   return isDisabled;
 }
 
-function queueWF_(workflow: Function, firstStep: string, input: unknown) {
+function queueWF_(workflow: Function, input: unknown) {
   const fn = queueWF_.name;
   const initialName = workflow.name;
 
@@ -394,6 +391,7 @@ function queueWF_(workflow: Function, firstStep: string, input: unknown) {
 
   const queuedBy = initialName.slice(4);
   const workflowName = deriveWorkflowName_(queuedBy);
+  const firstStep = deriveFirstStepName_(queuedBy);
 
   FastLog.log(fn, { workflowName, firstStep, input, queuedBy });
 

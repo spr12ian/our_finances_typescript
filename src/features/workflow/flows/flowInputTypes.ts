@@ -7,5 +7,5 @@ export type FlowInput<T extends FlowName> =
 
 export type FlowName = keyof typeof FLOW_INPUT_DEFAULTS_REGISTRY;
 
-export type UpdateBalanceValuesFlowInput =
+export type AccountSheetBalanceValuesFlowInput =
   FlowInput<"accountSheetBalanceValuesFlow">;

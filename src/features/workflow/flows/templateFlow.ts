@@ -3,7 +3,9 @@ import { getErrorMessage } from "@lib/errors";
 import { ONE_MINUTE_MS, ONE_SECOND_MS } from "@lib/timeConstants";
 import { registerStep } from "../workflowRegistry";
 import type { StepFn } from "../workflowTypes";
+import { normalizeFlowInput } from "./normalizeFlowInput";
 
+const FLOW_NAME = "templateFlow";
 const MAX_YIELD_STEPS = 3;
 
 export type TemplateFlowInput = {
@@ -11,26 +13,30 @@ export type TemplateFlowInput = {
   parameter2: number;
 };
 
+type TemplateStepFn = StepFn<TemplateFlowInput>;
+
 export function templateFlow(): void {
-  registerStep("templateFlow", templateStep1);
-  registerStep("templateFlow", templateStep2);
-  registerStep("templateFlow", templateStep3);
-  registerStep("templateFlow", templateStep4);
+  registerStep(FLOW_NAME, templateStep01);
+  registerStep(FLOW_NAME, templateStep02);
+  registerStep(FLOW_NAME, templateStep03);
+  registerStep(FLOW_NAME, templateStep04);
 }
 
-const templateStep1: StepFn = ({ input, state, log }) => {
-  const fn = templateStep1.name;
+const templateStep01: TemplateStepFn = ({ input, state, log }) => {
+  const fn = templateStep01.name;
   const startTime = log.start(fn);
+
   try {
-    const { parameter1, parameter2 } = input as TemplateFlowInput;
-    log("input:", input);
-    log("parameter1:", parameter1);
-    log("parameter2:", parameter2);
+    const normalized = normalizeFlowInput(
+      "templateFlow",
+      (input ?? {}) as Partial<TemplateFlowInput>
+    ) as TemplateFlowInput;
+    const { parameter1, parameter2 } = normalized;
 
     state.e1 = template1(parameter1, parameter2);
 
     // NOTE: no `input` in the result; `state` is allowed on `next`
-    return { kind: "next", nextStep: "templateStep2", state };
+    return { kind: "next", nextStep: "templateStep02", state };
   } catch (err) {
     log.error(err);
     return { kind: "fail", reason: getErrorMessage(err), retryable: true };
@@ -38,21 +44,15 @@ const templateStep1: StepFn = ({ input, state, log }) => {
     log.finish(fn, startTime);
   }
 };
-
-const templateStep2: StepFn = ({ input, state, log }) => {
-  const fn = templateStep2.name;
+const templateStep02: TemplateStepFn = ({ input, state, log }) => {
+  const fn = templateStep02.name;
   const startTime = log.start(fn);
   try {
-    log("Starting templateStep2");
-    const { parameter1, parameter2 } = input as TemplateFlowInput;
-    log("input:", input);
-    log("state:", state);
-    log("parameter1:", parameter1);
-    log("parameter2:", parameter2);
+    const { parameter1, parameter2 } = input;
 
     state.e2 = template2(parameter1, parameter2);
 
-    return { kind: "next", nextStep: "templateStep3", state };
+    return { kind: "next", nextStep: "templateStep03", state };
   } catch (err) {
     log.error(err);
     return { kind: "fail", reason: getErrorMessage(err), retryable: true };
@@ -61,12 +61,12 @@ const templateStep2: StepFn = ({ input, state, log }) => {
   }
 };
 
-const templateStep3: StepFn = ({ input, state, log }) => {
-  const fn = templateStep3.name;
+const templateStep03: TemplateStepFn = ({ input, state, log }) => {
+  const fn = templateStep03.name;
   const startTime = log.start(fn);
   try {
-    log("Starting templateStep3");
-    const { parameter1, parameter2 } = input as TemplateFlowInput;
+    log("Starting templateStep03");
+    const { parameter1, parameter2 } = input;
     log("input:", input);
     log("state:", state);
     log("parameter1:", parameter1);
@@ -79,11 +79,11 @@ const templateStep3: StepFn = ({ input, state, log }) => {
     state.e3 = template3(parameter1, parameter2);
 
     if (state.ready) {
-      return { kind: "next", nextStep: "templateStep4", state };
+      return { kind: "next", nextStep: "templateStep04", state };
     }
 
     if (count >= MAX_YIELD_STEPS) {
-      return { kind: "next", nextStep: "templateStep4", state };
+      return { kind: "next", nextStep: "templateStep04", state };
     }
 
     // not ready yet — back off
@@ -97,12 +97,12 @@ const templateStep3: StepFn = ({ input, state, log }) => {
   }
 };
 
-const templateStep4: StepFn = ({ input, state, log }) => {
-  const fn = templateStep4.name;
+const templateStep04: TemplateStepFn = ({ input, state, log }) => {
+  const fn = templateStep04.name;
   const startTime = log.start(fn);
   try {
-    log("Starting templateStep4");
-    const { parameter1, parameter2 } = input as TemplateFlowInput;
+    log("Starting templateStep04");
+    const { parameter1, parameter2 } = input;
     log("input:", input);
     log("parameter1:", parameter1);
     log("parameter2:", parameter2);

@@ -2,6 +2,12 @@
 import type { StepLogger } from "@logging/workflowLogger";
 import type { QueueId } from "@queue";
 
+// Engine-only meta that is NOT serialized
+export type EngineMeta = {
+  attempt: number; // sheet-derived, injected by worker
+  // You could add: queueRow?: number, budgetMs?: number, etc.
+};
+
 // What actually gets serialized into PAYLOAD
 export type SerializedRunStepParameters = {
   queueId: QueueId;
@@ -11,42 +17,40 @@ export type SerializedRunStepParameters = {
   state?: Record<string, any>;
 };
 
-// Engine-only meta that is NOT serialized
-export type EngineMeta = {
-  attempt: number; // sheet-derived, injected by worker
-  // You could add: queueRow?: number, budgetMs?: number, etc.
-};
-
-// A runnable unit the queue knows about (completely decoupled from step code)
-// What runStep receives (payload + meta)
+// A runnable unit the queue knows about (payload + meta)
 export type RunStepJob = SerializedRunStepParameters & EngineMeta;
 
-// What every step receives, it reads attempt from EngineMeta via RunStepJob
-export type StepContext = {
-  queueId: QueueId; // one run across all steps
-  workflowName: string; // e.g., "RecalculateBalances"
-  stepName: string; // e.g., "ScanSheets"
-  input: unknown; // immutable initial input for the workflow
-  state: Record<string, any>; // mutable per-step state (cursor, offsets, etc.)
-  attempt: number; // attempt count for this step
-  budgetMs: number; // soft budget per invocation (e.g., 25 seconds)
-  startedAt: number; // Date.now()
-  // utilities
+// Generic step context (what each step sees)
+export type StepContext<
+  TInput = unknown,
+  TState = Record<string, any>
+> = {
+  queueId: QueueId;              // one run across all steps
+  workflowName: string;          // e.g., "templateFlow"
+  stepName: string;              // e.g., "templateStep01"
+  input: TInput;                 // strongly-typed per flow
+  state: TState;                 // mutable per-step state
+  attempt: number;               // attempt count for this step
+  budgetMs: number;              // soft budget per invocation (e.g., 25 seconds)
+  startedAt: number;             // Date.now()
   log: StepLogger;
   now: () => number;
 };
 
+// Step function contract (generic)
+export type StepFn<
+  TInput = unknown,
+  TState = Record<string, any>
+> = (ctx: StepContext<TInput, TState>) => StepResult;
+
 // Instruction returned by a step
 export type StepResult =
-  | { kind: "yield"; state: Record<string, any>; delayMs?: number } // continue same step later
+  | { kind: "complete"; output?: unknown } // workflow done
+  | { kind: "fail"; reason: string; retryable: boolean; delayMs?: number }
   | {
       kind: "next";
       nextStep: string;
       state?: Record<string, any>;
       delayMs?: number;
-    } // jump to next step
-  | { kind: "complete"; output?: unknown } // workflow done
-  | { kind: "fail"; reason: string; retryable?: boolean; delayMs?: number }; // park or dead-letter
-
-// Step function contract
-export type StepFn = (ctx: StepContext) => StepResult;
+    }
+  | { kind: "yield"; state?: Record<string, any>; delayMs?: number };

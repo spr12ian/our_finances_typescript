@@ -113,8 +113,6 @@ export class OurFinances {
     return this.#spreadsheet.url;
   }
 
-
-
   fixAccountSheet() {
     FastLog.log(`Started OurFinances.fixAccountSheet`);
 
@@ -150,8 +148,8 @@ export class OurFinances {
     dependencies.updateAllDependencies();
   }
 
-  updateAccountSheetBalances(rowEdited?: number) {
-    FastLog.log(`Started OurFinances.updateAccountSheetBalances`);
+  accountSheetBalanceValues(rowEdited?: number) {
+    FastLog.log(`Started OurFinances.accountSheetBalanceValues`);
 
     const activeSheet = this.#spreadsheet.activeSheet;
     if (!activeSheet) {
@@ -162,10 +160,10 @@ export class OurFinances {
     if (isAccountSheet(activeSheet)) {
       FastLog.log(`Sheet ${activeSheet.name} is an account sheet.`);
       const accountSheet = new AccountSheet(activeSheet, this.#spreadsheet);
-      accountSheet.updateAccountSheetBalances(rowEdited);
+      accountSheet.accountSheetBalanceValues(rowEdited);
     }
 
-    FastLog.log(`Finished OurFinances.updateAccountSheetBalances`);
+    FastLog.log(`Finished OurFinances.accountSheetBalanceValues`);
   }
 
   updateTransactions() {

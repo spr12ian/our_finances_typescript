@@ -150,11 +150,13 @@ function startFlow_(sheet: Sheet) {
 
   withLog(queueWorkflow)(
     "accountSheetBalanceValuesFlow",
-    "updateAccountSheetBalancesStep1",
+    "accountSheetBalanceValuesStep1",
     {
       accountSheetName: sheet.name,
       startRow: 1,
-      queuedBy: "handleChange",
     }
-  );
+  ),
+    {
+      queuedBy: fn,
+    };
 }

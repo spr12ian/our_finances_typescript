@@ -1,11 +1,11 @@
 import type { Sheet, Spreadsheet } from "@domain";
+import { convertColumnToUppercase } from "@gas/convertColumnToUppercase";
 import { MetaAccountSheet as Meta, MetaBankAccounts } from "@lib/constants";
 import { getErrorMessage } from "@lib/errors";
 import { FastLog, WithLog } from "@lib/logging";
 import { xLookup } from "@lib/xLookup";
 import { DescriptionReplacements } from "@sheets/classes/DescriptionReplacements";
 import { BaseSheet } from "../core";
-import { convertColumnToUppercase } from '@gas/convertColumnToUppercase';
 
 const COLOR_FUTURE_ROWS = "#D0E0E3";
 
@@ -93,7 +93,7 @@ export class AccountSheet extends BaseSheet {
 
   fixSheet() {
     this.validateSheet();
-    this.updateAccountSheetBalances();
+    this.accountSheetBalanceValues();
     this.convertColumnsToUppercase();
 
     this.setDataValidations();
@@ -140,8 +140,8 @@ export class AccountSheet extends BaseSheet {
     this.log("AccountSheet.handleEditTrigger");
   }
 
-  updateAccountSheetBalances(rowEdited?: number): void {
-    const methodName = this.updateAccountSheetBalances.name;
+  accountSheetBalanceValues(rowEdited?: number): void {
+    const methodName = this.accountSheetBalanceValues.name;
     const finish = this.start(methodName);
     try {
       const COLUMNS = Meta.COLUMNS;

@@ -77,12 +77,12 @@ export function onEditRecalcBalances(e: SheetsOnEdit): void {
 
       withLog(queueWorkflow)(
         "accountSheetBalanceValuesFlow",
-        "updateAccountSheetBalancesStep1",
+        "accountSheetBalanceValuesStep1",
         {
           accountSheetName,
           startRow,
-          queuedBy: "onEditRecalcBalances",
-        }
+        },
+        { queuedBy: fn }
       );
       return;
     }
@@ -95,7 +95,7 @@ export function onEditRecalcBalances(e: SheetsOnEdit): void {
     const sheet = spreadsheet.getSheet(sheetName);
 
     const acct = new AccountSheet(sheet, spreadsheet);
-    acct.updateAccountSheetBalances(startRow);
+    acct.accountSheetBalanceValues(startRow);
   } catch (err) {
     FastLog.error(`[onEditRecalcBalances] ${String(err)}`);
     // Do NOT rethrow in a trigger

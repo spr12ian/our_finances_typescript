@@ -1,14 +1,11 @@
-// updateAccountSheetBalances.ts
+// accountSheetBalanceValues.ts
 import { getErrorMessage } from "@lib/errors";
 import { FastLog } from "@logging/FastLog";
 import { AccountSheet } from "@sheets/classes/AccountSheet";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 import { isAccountSheetName } from "./accountSheetFunctions";
 
-export function updateBalanceValues(
-  sheetName: string,
-  row: number
-): boolean {
+export function updateBalanceValues(sheetName: string, row: number): boolean {
   const fn = updateBalanceValues.name;
   const startTime = FastLog.start(fn, sheetName);
   try {
@@ -20,7 +17,7 @@ export function updateBalanceValues(
       }
       const accountSheet = new AccountSheet(sheet, spreadsheet);
 
-      accountSheet.updateAccountSheetBalances(row);
+      accountSheet.accountSheetBalanceValues(row);
       return true;
     } else {
       throw new Error(`${sheetName} is NOT an account sheet`);

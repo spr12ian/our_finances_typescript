@@ -113,31 +113,7 @@ export class OurFinances {
     return this.#spreadsheet.url;
   }
 
-  convertCurrentColumnToUppercase() {
-    const gasSheet = this.#spreadsheet.activeSheet.raw;
-    const activeRange = gasSheet.getActiveRange();
-    if (!activeRange) {
-      FastLog.log("No active range selected.");
-      return;
-    }
-    const START_ROW = 2;
-    const column = activeRange.getColumn();
-    if (column < 1) {
-      FastLog.log("No column selected.");
-      return;
-    }
 
-    const lastRow = gasSheet.getLastRow();
-    const numRows = lastRow + 1 - START_ROW;
-
-    const range = gasSheet.getRange(START_ROW, column, numRows, 1);
-    const values = range.getValues();
-    const uppercasedValues = values.map((row) => [
-      row[0].toString().toUpperCase(),
-    ]);
-
-    range.setValues(uppercasedValues);
-  }
 
   fixAccountSheet() {
     FastLog.log(`Started OurFinances.fixAccountSheet`);

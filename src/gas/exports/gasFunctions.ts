@@ -54,6 +54,7 @@ import { handleOpen } from "../triggers/handleOpen";
 import { onEdit } from "./onEdit";
 import { onOpen } from "./onOpen";
 import { onSelectionChange } from "./onSelectionChange";
+import { convertCurrentColumnToUppercase } from '@gas/convertCurrentColumnToUppercase';
 
 const DISABLED_FUNCTIONS = new Set<Function>([
   // GAS_applyDescriptionReplacements,
@@ -64,7 +65,7 @@ const DISABLED_FUNCTIONS = new Set<Function>([
   GAS_onEditTrigger,
   // GAS_onOpen,
   GAS_onOpenTrigger,
-  // GAS_onSelectionChange,
+  GAS_onSelectionChange,
   // GAS_queuePurgeOldData,
   // GAS_queueWorker,
 ]);
@@ -85,8 +86,7 @@ export function GAS_categories() {
 }
 
 export function GAS_convertCurrentColumnToUppercase() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).convertCurrentColumnToUppercase();
+  convertCurrentColumnToUppercase();
 }
 
 export function GAS_dailySendHtmlEmail() {

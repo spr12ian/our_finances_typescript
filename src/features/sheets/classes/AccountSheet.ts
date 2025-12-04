@@ -5,6 +5,7 @@ import { FastLog, WithLog } from "@lib/logging";
 import { xLookup } from "@lib/xLookup";
 import { DescriptionReplacements } from "@sheets/classes/DescriptionReplacements";
 import { BaseSheet } from "../core";
+import { convertColumnToUppercase } from '@gas/convertColumnToUppercase';
 
 const COLOR_FUTURE_ROWS = "#D0E0E3";
 
@@ -73,16 +74,7 @@ export class AccountSheet extends BaseSheet {
   }
 
   convertColumnToUppercase(column: number) {
-    const START_ROW = 2;
-    const lastRow = this.sheet.raw.getLastRow();
-    const numRows = lastRow - START_ROW + 1;
-
-    const range = this.sheet.raw.getRange(START_ROW, column, numRows, 1);
-    const values = range
-      .getValues()
-      .map((row: string[]) => [row[0]?.toString().toUpperCase()]);
-
-    range.setValues(values);
+    convertColumnToUppercase(this.sheet.raw, column);
   }
 
   fixHeaders() {

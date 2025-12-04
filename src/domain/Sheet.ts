@@ -1,5 +1,5 @@
 import { FastLog, methodStart } from "@logging/FastLog";
-import { getSheetByName } from '../gas/getSheetByName';
+import { getSheetByName } from "../gas/getSheetByName";
 
 /**
  * Thin wrapper around a GAS Sheet.
@@ -22,9 +22,7 @@ export class Sheet {
     this.gasSheet = gasSheet;
   }
 
-  static getSheetByName(
-    sheetName: string
-  ): Sheet | null {
+  static getSheetByName(sheetName: string): Sheet | null {
     const gasSheet = getSheetByName(sheetName);
     return gasSheet ? new Sheet(gasSheet) : null;
   }
@@ -187,8 +185,7 @@ export class Sheet {
       .setFontFamily("Arial")
       .setFontSize(10)
       .setFontWeight("normal")
-      .setVerticalAlignment("top")
-      .setWrap(true);
+      .setVerticalAlignment("top");
 
     const firstRow = this.firstRow;
     if (firstRow.length > 0) {
@@ -223,7 +220,10 @@ export class Sheet {
               .setHorizontalAlignment("right");
           } else {
             // Default to text
-            columnDataRange.setNumberFormat("@").setHorizontalAlignment("left");
+            columnDataRange
+              .setNumberFormat("@")
+              .setHorizontalAlignment("left")
+              .setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP);
           }
         }
       }

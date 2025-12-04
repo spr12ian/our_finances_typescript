@@ -33,10 +33,9 @@ const applyDescriptionReplacementsStep1: StepFn = ({ input, state, log }) => {
   }
 };
 
-function applyDescriptionReplacements(accountSheetName: string): string {
+function applyDescriptionReplacements(accountSheetName: string): void {
   const spreadsheet = getFinancesSpreadsheet();
   const sheet = spreadsheet.getSheet(accountSheetName);
   const accountSheet = new AccountSheet(sheet, spreadsheet);
   accountSheet.applyDescriptionReplacements();
-  return `${accountSheetName}`;
 }

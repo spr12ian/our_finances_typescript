@@ -20,6 +20,7 @@ import {
   WORKER_BUDGET_MS,
 } from "./queueConstants";
 import type { Job, JobRow, JobStatus } from "./queueTypes";
+import { withScriptLock } from '@lib/withScriptLock';
 
 const MAX_CELL_LENGTH = 2000;
 
@@ -39,8 +40,41 @@ export function queueWorker(): void {
     FastLog.warn(fn, "Engine not ready; skipping this tick");
     return;
   }
+  
+  withScriptLock(
+    () => withLog(processQueueBatch_)(MAX_BATCH, WORKER_BUDGET_MS),
+    {
+      timeoutMs: 5 * ONE_SECOND_MS,
+      strategy: "skip",
+      label: fn,
+    }
+  );
+}
 
-  withLog(processQueueBatch_)(MAX_BATCH, WORKER_BUDGET_MS);
+function dispatchJob_(job: Job): void {
+  const fn = dispatchJob_.name;
+  FastLog.log(fn, {
+    queueId: job.queueId,
+    at: DateHelper.formatForLog(new Date()),
+  });
+
+  const { payload } = job;
+
+  const p = (payload as Partial<SerializedRunStepParameters>) || {};
+  FastLog.log(fn, p);
+
+  const rsj: RunStepJob = {
+    queueId: String(job.queueId),
+    workflowName: String(p.workflowName),
+    stepName: String(p.stepName),
+    input: p.input,
+    state: p.state ?? {},
+    attempt: Number(job.attempts) || 0, // sheet is source of truth
+  };
+  FastLog.log(fn, rsj);
+
+  withLog(runStep)(rsj);
+  return;
 }
 
 function getLastDataRow_(sheet: GoogleAppsScript.Spreadsheet.Sheet): number {
@@ -67,36 +101,6 @@ function getLastDataRow_(sheet: GoogleAppsScript.Spreadsheet.Sheet): number {
   } finally {
     FastLog.finish(fn, start);
   }
-}
-
-// ───────────────────────────────────────────────────────────────────────────────
-// Internal: worker implementation
-// ───────────────────────────────────────────────────────────────────────────────
-
-function dispatchJob_(job: Job): void {
-  const fn = dispatchJob_.name;
-  FastLog.log(fn, {
-    queueId: job.queueId,
-    at: DateHelper.formatForLog(new Date()),
-  });
-
-  const { payload } = job;
-
-  const p = (payload as Partial<SerializedRunStepParameters>) || {};
-  FastLog.log(fn, p);
-
-  const rsj: RunStepJob = {
-    queueId: String(job.queueId),
-    workflowName: String(p.workflowName),
-    stepName: String(p.stepName),
-    input: p.input,
-    state: p.state ?? {},
-    attempt: Number(job.attempts) || 0, // sheet is source of truth
-  };
-  FastLog.log(fn, rsj);
-
-  withLog(runStep)(rsj);
-  return;
 }
 
 function parseJsonSafe_(s: string): unknown {
@@ -283,10 +287,6 @@ function processQueueBatch_(maxJobs: number, budgetMs: number): void {
       `timedOutBeforeStart=${timedOutBeforeStart}, elapsedMs=${totalElapsed}`
   );
 }
-
-// ───────────────────────────────────────────────────────────────────────────────
-// Helpers
-// ───────────────────────────────────────────────────────────────────────────────
 
 function rowToJob_(jobRow: JobRow): Job {
   const fn = rowToJob_.name;

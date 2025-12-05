@@ -28,19 +28,18 @@ import { ensureQueueDateFormats, queueSetup } from "@queue/queueSetup";
 import { queueWorker } from "@queue/queueWorker";
 import { storeAccountSheetNames } from "@sheets/accountSheetFunctions";
 import { validateAccountKeys } from "@sheets/validateAccountKeys";
+import { setupWorkflowsOnce } from "@workflow";
+import { FLOW_INPUT_DEFAULTS_REGISTRY } from "@workflow/flowInputConstants";
 import type {
+  AccountSheetBalanceValuesFlowInput,
   ApplyDescriptionReplacementsFlowInput,
   FixSheetFlowInput,
+  FlowName,
   FormatSheetFlowInput,
   TrimSheetFlowInput,
   UpdateOpenBalancesFlowInput,
-} from "@workflow";
-import { setupWorkflowsOnce } from "@workflow";
-import { FLOW_INPUT_DEFAULTS_REGISTRY } from "@workflow/flows/flowInputConstants";
-import type {
-  AccountSheetBalanceValuesFlowInput,
-  FlowName,
-} from "@workflow/flows/flowInputTypes";
+} from "@workflow/workflowTypes";
+
 import type { TemplateFlowInput } from "@workflow/flows/templateFlow";
 import { queueWorkflow } from "@workflow/queueWorkflow";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";

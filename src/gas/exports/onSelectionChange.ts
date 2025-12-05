@@ -53,20 +53,17 @@ export function onSelectionChange(e: any): void {
       idemToken: token,
       idemTtlSec: 5 * 60,
       idemScope: "document",
+      // idemUseLock: false by default → no ScriptLock
 
       // per-user debounce: ignore super-fast repeats
       userDebounceMs: 2 * ONE_SECOND_MS,
       userDebounceMode: "per-key",
 
-      // short anti-spam reentry guard
-      reentryTtlMs: ONE_SECOND_MS,
-      reentryOptions: {
-        releaseOnFinish: true,
-        scope: "document",
-        lockMs: 150,
-      },
+      // we already have debounce + idempotency; reentry is overkill here
+      disableReentry: true,
 
-      lockTimeoutMs: 200,
+      // we only enqueue a job; no need to lock the spreadsheet here
+      disableLock: true,
     },
     () => {
       // IMPORTANT: keep this callback *very* light.

@@ -1,9 +1,9 @@
 // @workflow/flows/templateFlow.ts
 import { getErrorMessage } from "@lib/errors";
 import { ONE_MINUTE_MS, ONE_SECOND_MS } from "@lib/timeConstants";
+import { normalizeFlowInput } from "../normalizeFlowInput";
 import { registerStep } from "../workflowRegistry";
 import type { StepFn } from "../workflowTypes";
-import { normalizeFlowInput } from "./normalizeFlowInput";
 
 const FLOW_NAME = "templateFlow";
 const MAX_YIELD_STEPS = 3;

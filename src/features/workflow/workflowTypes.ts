@@ -2,6 +2,49 @@
 import type { StepLogger } from "@logging/workflowLogger";
 import type { QueueId } from "@queue";
 
+import { FLOW_INPUT_DEFAULTS_REGISTRY } from "./flowInputConstants";
+
+export type FlowInput<T extends FlowName> =
+  (typeof FLOW_INPUT_DEFAULTS_REGISTRY)[T];
+
+export type FlowName = keyof typeof FLOW_INPUT_DEFAULTS_REGISTRY;
+
+export type AccountSheetBalanceValuesFlowInput =
+  FlowInput<"accountSheetBalanceValuesFlow">;
+
+export type AccountSheetBalanceValuesStepFn =
+  StepFn<AccountSheetBalanceValuesFlowInput>;
+
+export type ApplyDescriptionReplacementsFlowInput =
+  FlowInput<"applyDescriptionReplacementsFlow">;
+
+export type ApplyDescriptionReplacementsStepFn =
+  StepFn<ApplyDescriptionReplacementsFlowInput>;
+
+export type FixSheetFlowInput =
+  FlowInput<"fixSheetFlow">;
+
+export type FixSheetStepFn =
+  StepFn<FixSheetFlowInput>;
+
+export type FormatSheetFlowInput =
+  FlowInput<"formatSheetFlow">;
+
+export type FormatSheetStepFn =
+  StepFn<FormatSheetFlowInput>;
+
+export type TrimSheetFlowInput =
+  FlowInput<"trimSheetFlow">;
+
+export type TrimSheetStepFn =
+  StepFn<TrimSheetFlowInput>;
+
+export type UpdateOpenBalancesFlowInput =
+  FlowInput<"updateOpenBalancesFlow">;
+
+export type UpdateOpenBalancesStepFn =
+  StepFn<UpdateOpenBalancesFlowInput>;
+
 // Engine-only meta that is NOT serialized
 export type EngineMeta = {
   attempt: number; // sheet-derived, injected by worker

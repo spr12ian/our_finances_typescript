@@ -3,8 +3,8 @@
 import { FastLog, withLog } from "@logging";
 import type { QueueWorkflowOptions } from "@queue";
 import { enqueueRunStep } from "./enqueueRunStep";
-import type { FlowName } from "./flows/flowInputTypes";
-import { normalizeFlowInput } from "./flows/normalizeFlowInput";
+import type { FlowName } from "./flowInputTypes";
+import { normalizeFlowInput } from "./normalizeFlowInput";
 
 export function queueWorkflow(
   workflowName: FlowName,

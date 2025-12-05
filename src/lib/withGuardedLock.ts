@@ -22,6 +22,7 @@ export interface GuardedLockOptions {
   idemTtlSec?: number; // default: 30
   idemScope?: ReentryScope; // default: "document"
   idemLockTimeoutMs?: number; // default: 50 (ScriptLock tryLock)
+  idemUseLock?: boolean; // default: false
 
   // document lock
   disableLock?: boolean;
@@ -43,22 +44,7 @@ export interface GuardedLockOptions {
   userDebounceMode?: "per-key" | "any"; // default: "per-key"
 }
 
-function getCache(scope: ReentryScope): GoogleAppsScript.Cache.Cache | null {
-  try {
-    switch (scope) {
-      case "user":
-        return CacheService.getUserCache();
-      case "document":
-        return CacheService.getDocumentCache();
-      default:
-        return CacheService.getScriptCache();
-    }
-  } catch {
-    return null;
-  }
-}
-
-/** Compose: (optional) userDebounce → cooldown → reentry → documentLock → fn */
+/** Compose: (optional) userDebounce → idempotency → cooldown → reentry → documentLock → fn */
 export function withGuardedLock<T>(
   opts: GuardedLockOptions,
   fn: () => T
@@ -107,7 +93,7 @@ export function withGuardedLock<T>(
       typeof userDebounceKey === "function"
         ? userDebounceKey()
         : userDebounceKey ?? key;
-    const uCache = getCache("user");
+    const uCache = getCache_("user");
     if (uCache) {
       const now = Date.now();
       if (userDebounceMode === "any") {
@@ -145,26 +131,40 @@ export function withGuardedLock<T>(
   // --- 1) Idempotency (optional) ---
   if (idemToken) {
     const token = typeof idemToken === "function" ? idemToken() : idemToken;
-    const cache = getCache(idemScope);
+    const cache = getCache_(idemScope);
     if (cache) {
-      // Acquire a short ScriptLock to make claim atomic
-      const sLock = LockService.getScriptLock();
-      if (!sLock.tryLock(idemLockTimeoutMs)) {
-        FastLog?.log?.(
-          `withGuardedLock idempotency: could not get script lock for ${token}`
-        );
-        return undefined; // soft-skip
-      }
-      try {
+      const ttl = Math.max(1, idemTtlSec);
+      const useLock = opts.idemUseLock ?? false;
+
+      if (!useLock) {
+        // Non-locking, "best effort" idempotency
         if (cache.get(token)) {
           FastLog?.log?.(
-            `withGuardedLock idempotency: already claimed ${token}`
+            `withGuardedLock idempotency (no-lock): already claimed ${token}`
           );
-          return undefined; // already claimed within ttl
+          return undefined;
         }
-        cache.put(token, "1", Math.max(1, idemTtlSec));
-      } finally {
-        sLock.releaseLock();
+        cache.put(token, "1", ttl);
+      } else {
+        // Legacy locking path (only for truly critical sections)
+        const sLock = LockService.getScriptLock();
+        if (!sLock.tryLock(idemLockTimeoutMs)) {
+          FastLog?.log?.(
+            `withGuardedLock idempotency: could not get script lock for ${token}`
+          );
+          return undefined; // soft-skip
+        }
+        try {
+          if (cache.get(token)) {
+            FastLog?.log?.(
+              `withGuardedLock idempotency: already claimed ${token}`
+            );
+            return undefined; // already claimed within ttl
+          }
+          cache.put(token, "1", ttl);
+        } finally {
+          sLock.releaseLock();
+        }
       }
     }
   }
@@ -172,7 +172,7 @@ export function withGuardedLock<T>(
   // --- 2) Optional long(er) cooldown (e.g., per-sheet throttle) ---
   const ckey =
     typeof cooldownKey === "function" ? cooldownKey() : cooldownKey ?? key;
-  const cache = cooldownMs ? getCache(cooldownScope) : null;
+  const cache = cooldownMs ? getCache_(cooldownScope) : null;
   const now = Date.now();
 
   if (cache && cooldownMs) {
@@ -187,7 +187,7 @@ export function withGuardedLock<T>(
       cache.put(
         ckey,
         String(expiry),
-        Math.ceil(cooldownMs / ONE_SECOND_MS) + (cooldownBufferSec ?? 5)
+        Math.ceil(cooldownMs / ONE_SECOND_MS) + cooldownBufferSec
       );
     }
   }
@@ -217,7 +217,7 @@ export function withGuardedLock<T>(
         cache.put(
           ckey,
           String(expiry),
-          Math.ceil(cooldownMs / ONE_SECOND_MS) + (cooldownBufferSec ?? 5)
+          Math.ceil(cooldownMs / ONE_SECOND_MS) + cooldownBufferSec
         );
       }
       return result;
@@ -228,4 +228,19 @@ export function withGuardedLock<T>(
   };
 
   return run();
+}
+
+function getCache_(scope: ReentryScope): GoogleAppsScript.Cache.Cache | null {
+  try {
+    switch (scope) {
+      case "user":
+        return CacheService.getUserCache();
+      case "document":
+        return CacheService.getDocumentCache();
+      default:
+        return CacheService.getScriptCache();
+    }
+  } catch {
+    return null;
+  }
 }

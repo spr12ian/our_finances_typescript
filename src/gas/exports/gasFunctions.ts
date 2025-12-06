@@ -30,6 +30,8 @@ import { storeAccountSheetNames } from "@sheets/accountSheetFunctions";
 import { validateAccountKeys } from "@sheets/validateAccountKeys";
 import { setupWorkflowsOnce } from "@workflow";
 import { FLOW_INPUT_DEFAULTS_REGISTRY } from "@workflow/flowInputConstants";
+import type { TemplateFlowInput } from "@workflow/flows/templateFlow";
+import { queueWorkflow } from "@workflow/queueWorkflow";
 import type {
   AccountSheetBalanceValuesFlowInput,
   ApplyDescriptionReplacementsFlowInput,
@@ -39,9 +41,6 @@ import type {
   TrimSheetFlowInput,
   UpdateOpenBalancesFlowInput,
 } from "@workflow/workflowTypes";
-
-import type { TemplateFlowInput } from "@workflow/flows/templateFlow";
-import { queueWorkflow } from "@workflow/queueWorkflow";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 import { ONE_MINUTE_MS } from "../../lib/timeConstants";
 import { withReentryGuard } from "../../lib/withReentryGuard";
@@ -63,7 +62,7 @@ const DISABLED_FUNCTIONS = new Set<Function>([
   GAS_onEdit,
   GAS_onEditTrigger,
   // GAS_onOpen,
-  GAS_onOpenTrigger,
+  // GAS_onOpenTrigger,
   GAS_onSelectionChange,
   // GAS_queuePurgeOldData,
   // GAS_queueWorker,

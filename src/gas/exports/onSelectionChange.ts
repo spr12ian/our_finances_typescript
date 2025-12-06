@@ -5,11 +5,10 @@ import { shouldHandleSelection } from "@gas/shouldHandleSelection";
 import { getNamespaceKey } from "@lib/getNamespaceKey";
 import { idempotencyKey } from "@lib/idempotency";
 import { isSheetInIgnoreList } from "@lib/isSheetInIgnoreList";
-import { FastLog, withLog } from "@lib/logging";
+import { FastLog } from "@lib/logging";
 import { ONE_SECOND_MS } from "@lib/timeConstants";
 import { withGuardedLock } from "@lib/withGuardedLock";
-import { queueJob } from "@queue/queueJob"; // or wherever this actually lives
-import type { RunStepJob } from "src/features/workflow/workflowTypes";
+import { enqueueFixSheetFlow } from "@workflow/enqueueFixSheetFlow";
 
 export function onSelectionChange(e: any): void {
   const fn = onSelectionChange.name;
@@ -23,11 +22,6 @@ export function onSelectionChange(e: any): void {
   const sheetName: SheetNameT = sheet.getName();
   if (isSheetInIgnoreList(sheetName, fn)) return;
 
-  if (!shouldFixSheet(sheetName)) {
-    FastLog.log(`onSelectionChange → Skipping sheet: ${sheetName}`);
-    return;
-  }
-
   if (!shouldHandleSelection(sheetName)) {
     FastLog.log(
       `onSelectionChange → Not handling selection for sheet: ${sheetName}`
@@ -35,11 +29,21 @@ export function onSelectionChange(e: any): void {
     return;
   }
 
+  queueFixSheet_(sheetName, fn);
+}
+
+function queueFixSheet_(sheetName: string, fn: string) {
+  if (!shouldFixSheet_(sheetName)) {
+    FastLog.log(`onSelectionChange → Skipping sheet: ${sheetName}`);
+    return;
+  }
+
   // ─────────────────────────────────────────────────────────
   // Idempotency: at most 1 “fix” job per sheet per N seconds
   // ─────────────────────────────────────────────────────────
   const workflowName = "fixSheetFlow";
-  const stepName = "fixSheetStep1";
+  const stepName = "fixSheetStep01";
+
   const token = idempotencyKey(workflowName, stepName, sheetName);
 
   const key = getNamespaceKey("onSelectionChange", sheetName);
@@ -66,30 +70,13 @@ export function onSelectionChange(e: any): void {
       disableLock: true,
     },
     () => {
-      // IMPORTANT: keep this callback *very* light.
-      // Only enqueue, don't run workflows synchronously.
-
-      const runStepParameters = {
-        workflowName,
-        stepName,
-        input: { sheetName, queuedBy: fn },
-      } as RunStepJob;
-
-      // Fire-and-forget: queue worker will pick this up.
-      const job = withLog(queueJob)(runStepParameters, {
-        // tweak priority if you have one
-        priority: 5,
-      });
-
-      FastLog.log(
-        "onSelectionChange",
-        `Queued fixSheet job for ${sheetName} → row ${job.row}`
-      );
+      enqueueFixSheetFlow(sheetName, fn, { priority: 5 });
+      FastLog.log("onSelectionChange", `Queued fixSheet job for ${sheetName}`);
     }
   );
 }
 
-function shouldFixSheet(name: SheetNameT): boolean {
+function shouldFixSheet_(name: SheetNameT): boolean {
   if (!name) return false;
   if (name.startsWith("_")) {
     FastLog.info(

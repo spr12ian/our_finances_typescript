@@ -2,11 +2,8 @@
 
 import { getTriggerEventSheet } from "@gas/getTriggerEventSheet";
 import { isSheetInIgnoreList } from "@lib/isSheetInIgnoreList";
-import { FastLog } from "@logging/FastLog";
-import { withLog } from "@logging/WithLog";
 import { setupWorkflowsOnce } from "@workflow";
-import { isEngineConfigured } from "@workflow/engineState";
-import { queueWorkflow } from "@workflow/queueWorkflow";
+import { enqueueFixSheetFlow } from "@workflow/enqueueFixSheetFlow";
 
 type SheetsOnOpen = GoogleAppsScript.Events.SheetsOnOpen;
 
@@ -19,13 +16,11 @@ export function handleOpen(e: SheetsOnOpen): void {
   const sheetName = gasSheet.getName();
   if (isSheetInIgnoreList(sheetName, fn)) return;
 
-  const ready = setupWorkflowsOnce(); // returns true/false in your impl
-  if (!ready || !isEngineConfigured()) {
-    FastLog.warn(fn, "Engine not ready; skipping open-time workflows");
-    return;
-  }
+  queueFixSheet_(sheetName, fn);
+}
 
-  withLog(queueWorkflow)("fixSheetFlow", "fixSheetStep1", {
-    sheetName: sheetName,
-  }, { queuedBy: fn });
+function queueFixSheet_(sheetName: string, fn: string) {
+  setupWorkflowsOnce();
+
+  enqueueFixSheetFlow(sheetName, fn);
 }

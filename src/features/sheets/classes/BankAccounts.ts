@@ -3,6 +3,7 @@ import { Spreadsheet } from "@domain";
 import { MetaBankAccounts as Meta } from "@lib/constants";
 import { FastLog, methodStart, propertyStart } from "@logging";
 import type { SheetKey } from "src/constants/sheetNames";
+import { WithLog } from "../../../lib/logging/WithLog";
 import { isAccountSheet } from "../accountSheetFunctions";
 import { BaseSheet } from "../core";
 import { AccountSheet } from "./AccountSheet";
@@ -78,6 +79,7 @@ export class BankAccounts extends BaseSheet {
 
       // Convert once from 1-based to 0-based
       const balanceCol = Meta.COLUMNS.BALANCE - 1;
+      const keyCol = Meta.COLUMNS.KEY - 1;
       const ourMoneyCol = Meta.COLUMNS.OUR_MONEY - 1;
 
       // Mirror the original sheet logic if needed
@@ -105,17 +107,34 @@ export class BankAccounts extends BaseSheet {
       };
 
       let total = 0;
+      const skippedRows = [];
       // Classic for-loop is fastest in GAS
       for (let r = 1; r < rows.length; r++) {
         // skip header row 0
         const row = rows[r];
         const balance = toNumberOrNaN(row[balanceCol]);
-        if (!(balance > MIN_BALANCE)) continue; // also excludes NaN
-        if (!isTrue(row[ourMoneyCol])) continue;
+        if (!(balance > MIN_BALANCE)) {
+          skippedRows.push(
+            `Skipping row ${r + 1} ${
+              row[keyCol]
+            }. Balance <= ${MIN_BALANCE}: ${balance}`
+          );
+          continue;
+        } // also excludes NaN
+        if (!isTrue(row[ourMoneyCol])) {
+          skippedRows.push(
+            `Skipping row ${r + 1} ${row[keyCol]} is not our money.`
+          );
+          continue;
+        }
+        FastLog.log(
+          `Including row ${r + 1} ${row[keyCol]}. Balance: ${balance}`
+        );
         total += balance;
       }
 
-      FastLog.log(`Calculated total our money balance: ${total}`);
+      FastLog.info(`Calculated total our money balance: ${total}`);
+      FastLog.log(`Skipped rows:\n${skippedRows.join("\n")}`);
       return total;
     } finally {
       finish();
@@ -262,26 +281,93 @@ export class BankAccounts extends BaseSheet {
     }
   }
 
+  @WithLog()
   showOpenAccounts() {
-    const finish = methodStart(
-      this.showOpenAccounts.name,
-      this.constructor.name
-    );
-    try {
-      this.showAll();
-      const filters = [
-        {
-          column: Meta.COLUMNS.OUR_MONEY,
-          hideValues: [Meta.OWNER_CODES.CHARLIE, Meta.OWNER_CODES.LINDA_H],
-        },
-        { column: Meta.COLUMNS.DATE_CLOSED, hideValues: null },
-      ];
+    // Reset view
+    this.showAll();
 
-      this.applyFilters(filters);
-    } finally {
-      Spreadsheet.flush(); // single flush at end of the view change
-      finish();
+    const gasSheet = this.sheet.raw;
+    const lastRow = gasSheet.getLastRow();
+    if (lastRow < 2) {
+      // no data rows, nothing to do
+      return;
     }
+
+    // -------------------------------------------------------------------
+    // 1) Apply OUR_MONEY filter (hide CHARLIE + LINDA_H)
+    // -------------------------------------------------------------------
+    this.removeFilter();
+
+    const dataRange = gasSheet.getDataRange();
+    const filter = dataRange.createFilter();
+
+    const ourMoneyCriteria = this.spreadsheet
+      .newFilterCriteria() // <-- use wrapper, not gasSpreadsheet.raw
+      .setHiddenValues([Meta.OWNER_CODES.CHARLIE, Meta.OWNER_CODES.LINDA_H])
+      .build();
+
+    filter.setColumnFilterCriteria(Meta.COLUMNS.OUR_MONEY, ourMoneyCriteria);
+
+    // -------------------------------------------------------------------
+    // 2) Hide rows where DATE_CLOSED < today (i.e. already closed)
+    //    => result is "open as of today": blank or >= today stay visible
+    // -------------------------------------------------------------------
+    const dateClosedCol = Meta.COLUMNS.DATE_CLOSED;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // compare by date only
+
+    // Values in DATE_CLOSED from row 2 down
+    const numDataRows = lastRow - 1;
+    const dateValues = gasSheet
+      .getRange(2, dateClosedCol, numDataRows, 1)
+      .getValues();
+
+    // Collect ranges of consecutive rows to hide (fewer API calls)
+    let rangeStart: number | null = null;
+    let rangeLen = 0;
+
+    const flushHideRange = () => {
+      if (rangeStart !== null && rangeLen > 0) {
+        gasSheet.hideRows(rangeStart, rangeLen);
+      }
+      rangeStart = null;
+      rangeLen = 0;
+    };
+
+    for (let i = 0; i < dateValues.length; i++) {
+      const cellValue = dateValues[i][0];
+      let shouldHide = false;
+
+      if (cellValue instanceof Date) {
+        const d = new Date(cellValue);
+        d.setHours(0, 0, 0, 0);
+        if (d < today) {
+          // closed before today -> hide
+          shouldHide = true;
+        }
+      }
+      // blanks or non-dates are treated as "open" and left visible
+
+      const rowIndex = 2 + i; // convert to sheet row number
+
+      if (shouldHide) {
+        if (rangeStart === null) {
+          rangeStart = rowIndex;
+          rangeLen = 1;
+        } else {
+          rangeLen++;
+        }
+      } else {
+        // break any active hide range
+        flushHideRange();
+      }
+    }
+
+    // flush any trailing range
+    flushHideRange();
+
+    Spreadsheet.flush();
   }
 
   updateKeyBalance(

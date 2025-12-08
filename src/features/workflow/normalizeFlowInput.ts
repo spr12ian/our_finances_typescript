@@ -1,7 +1,7 @@
 // normalizeFlowInput.ts
 
 import { FLOW_INPUT_DEFAULTS_REGISTRY } from "./flowInputConstants";
-import type { FlowInput, FlowName } from "./flowInputTypes";
+import type { FlowInput, FlowName } from "./workflowTypes";
 
 export function normalizeFlowInput<TFlowName extends FlowName>(
   flowName: TFlowName,

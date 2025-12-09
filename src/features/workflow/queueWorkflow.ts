@@ -4,14 +4,14 @@ import { FastLog, withLog } from "@logging";
 import type { QueueWorkflowOptions } from "@queue";
 import { enqueueRunStep } from "./enqueueRunStep";
 import { normalizeFlowInput } from "./normalizeFlowInput";
-import type { FlowName } from "./workflowTypes";
+import type { FlowInput, FlowName } from "./workflowTypes";
 
-export function queueWorkflow(
-  workflowName: FlowName,
+export function queueWorkflow<TFlowName extends FlowName>(
+  workflowName: TFlowName,
   firstStep: string,
-  input: unknown,
+  input: Partial<FlowInput<TFlowName>>,
   options: QueueWorkflowOptions = {}
-): string | null {
+): string {
   const fn = queueWorkflow.name;
 
   const { initialState = {}, priority, queuedBy } = options;
@@ -19,10 +19,7 @@ export function queueWorkflow(
   FastLog.log(fn, workflowName, firstStep, queuedBy ?? "(no queuedBy)");
 
   const queueId = Utilities.getUuid();
-  const normalizedInput = normalizeFlowInput(
-    workflowName,
-    input as any // single cast at the boundary
-  );
+  const normalizedInput = normalizeFlowInput(workflowName, input);
 
   const delayMs = 0;
   withLog(enqueueRunStep)(

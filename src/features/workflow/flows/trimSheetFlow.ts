@@ -1,26 +1,20 @@
 import { getErrorMessage } from "@lib/errors";
 import { trimSheet } from "@sheets/trimSheet";
 import { registerStep } from "../workflowRegistry";
-import type { StepFn } from "../workflowTypes";
+import type { TrimSheetStepFn, FlowName } from "../workflowTypes";
 
-export type TrimSheetFlowInput = {
-  sheetName: string;
-  queuedBy?: string;
-};
+const FLOW_NAME = "trimSheetFlow" as FlowName;
 
 export function trimSheetFlow(): void {
   // import step implementations here to register them
-  registerStep("trimSheetFlow", trimSheetStep1);
+  registerStep(FLOW_NAME, trimSheetStep01);
 }
 
-const trimSheetStep1: StepFn = ({ input, state, log }) => {
-  const fn = trimSheetStep1.name;
+const trimSheetStep01: TrimSheetStepFn = ({ input, log }) => {
+  const fn = trimSheetStep01.name;
   const startTime = log.start(fn);
   try {
-    const { sheetName, queuedBy } = input as TrimSheetFlowInput;
-    log("sheetName:", sheetName);
-    log("queuedBy:", queuedBy);
-    log("state:", state);
+    const { sheetName } = input;
 
     trimSheet(sheetName);
     return { kind: "complete" };

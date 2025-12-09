@@ -1,25 +1,20 @@
 import { getErrorMessage } from "@lib/errors";
 import { formatSheet } from "../../sheets/formatSheet";
 import { registerStep } from "../workflowRegistry";
-import type { StepFn } from "../workflowTypes";
+import type { FlowName, FormatSheetStepFn } from "../workflowTypes";
 
-export type FormatSheetFlowInput = {
-  sheetName: string;
-  queuedBy?: string;
-};
+const FLOW_NAME = "formatSheetFlow" as FlowName;
 
 export function formatSheetFlow(): void {
   // import step implementations here to register them
-  registerStep("formatSheetFlow", formatSheetStep1);
+  registerStep(FLOW_NAME, formatSheetStep01);
 }
 
-const formatSheetStep1: StepFn = ({ input, log }) => {
-  const fn = formatSheetStep1.name;
+const formatSheetStep01: FormatSheetStepFn = ({ input, log }) => {
+  const fn = formatSheetStep01.name;
   const startTime = log.start(fn);
   try {
-    const { sheetName, queuedBy } = input as FormatSheetFlowInput;
-    log("sheetName:", sheetName);
-    log("queuedBy:", queuedBy);
+    const { sheetName } = input;
 
     formatSheet(sheetName);
     return { kind: "complete" };

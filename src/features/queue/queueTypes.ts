@@ -1,6 +1,7 @@
 // src/queueTypes.ts
 // Keep this file free of any runtime code that could drag in the worker.
 
+import type { FlowState } from '@workflow';
 import type * as queueConstants from "./queueConstants";
 
 type _StatusKey = keyof typeof queueConstants.STATUS;
@@ -25,7 +26,7 @@ export interface QueueEnqueueOptions {
 
 export interface QueueWorkflowOptions {
   /** Initial workflow state (defaults to empty object) */
-  initialState?: Record<string, any>;
+  initialState?: FlowState;
   /** Queue priority (passed through to enqueueRunStep) */
   priority?: number;
   /** Who queued this workflow (GAS_ function name, trigger, etc.) */

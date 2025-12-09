@@ -7,9 +7,7 @@ export { registerAllWorkflows } from "./registerAllWorkflows";
 export { setupWorkflowsOnce } from "./setupWorkflowsOnce";
 
 export {
-  clearWorkflowRegistry,
   getStep,
-  listWorkflows,
   registerStep,
 } from "./workflowRegistry";
 export * from "./workflowTypes";

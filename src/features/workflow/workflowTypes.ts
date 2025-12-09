@@ -1,13 +1,13 @@
 // @workflow/workflowTypes.ts
+
 import type { StepLogger } from "@logging/workflowLogger";
 import type { QueueId } from "@queue";
-
 import { FLOW_INPUT_DEFAULTS_REGISTRY } from "./flowInputConstants";
 
 export type FlowInput<T extends FlowName> =
   (typeof FLOW_INPUT_DEFAULTS_REGISTRY)[T];
-
 export type FlowName = keyof typeof FLOW_INPUT_DEFAULTS_REGISTRY;
+export type FlowState = Record<string, any>;
 
 export type AccountSheetBalanceValuesFlowInput =
   FlowInput<"accountSheetBalanceValuesFlow">;
@@ -32,6 +32,18 @@ export type FormatSheetFlowInput =
 
 export type FormatSheetStepFn =
   StepFn<FormatSheetFlowInput>;
+
+export type SendMeHtmlEmailFlowInput =
+  FlowInput<"sendMeHtmlEmailFlow">;
+
+export type SendMeHtmlEmailStepFn =
+  StepFn<SendMeHtmlEmailFlowInput>;
+
+export type TemplateFlowInput =
+  FlowInput<"templateFlow">;
+
+export type TemplateStepFn =
+  StepFn<TemplateFlowInput>;
 
 export type TrimSheetFlowInput =
   FlowInput<"trimSheetFlow">;

@@ -2,11 +2,10 @@ import { getErrorMessage } from "@lib/errors";
 import { FastLog } from "@logging/FastLog";
 import { hasFixSheet } from "@sheets/core/sheetGuards";
 import { getExtendedSheet } from "@sheets/getExtendedSheet";
-import { normalizeFlowInput } from "@workflow/normalizeFlowInput";
 import { registerStep } from "@workflow/workflowRegistry";
-import type { FixSheetStepFn } from "@workflow/workflowTypes";
+import type { FixSheetStepFn, FlowName } from "@workflow/workflowTypes";
 
-const FLOW_NAME = "fixSheetFlow" as const;
+const FLOW_NAME = "fixSheetFlow" as FlowName;
 
 export function fixSheetFlow(): void {
   // import step implementations here to register them
@@ -17,11 +16,7 @@ const fixSheetStep01: FixSheetStepFn = ({ input, log }) => {
   const fn = fixSheetStep01.name;
   const startTime = log.start(fn);
   try {
-    const normalized = normalizeFlowInput(FLOW_NAME, input ?? {});
-
-    log(`${fn}: normalized input:`, normalized);
-
-    const { sheetName } = normalized;
+    const { sheetName } = input;
 
     fixSheet_(sheetName);
     return { kind: "complete" };

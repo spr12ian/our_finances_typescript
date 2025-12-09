@@ -3,13 +3,9 @@ import { getErrorMessage } from "@lib/errors";
 import { BankAccounts } from "@sheets/classes/BankAccounts";
 import { getFinancesSpreadsheet } from "../../../getFinancesSpreadsheet";
 import { registerStep } from "../workflowRegistry";
-import type { StepFn } from "../workflowTypes";
+import type { UpdateOpenBalancesStepFn, FlowName } from "../workflowTypes";
 
-const WORKFLOW = "updateOpenBalancesFlow";
-
-export type UpdateOpenBalancesFlowInput = {
-  queuedBy?: string; // e.g. "menu" or a user
-};
+const FLOW_NAME = "updateOpenBalancesFlow" as FlowName;
 
 type State = {
   keys: string[];
@@ -17,22 +13,21 @@ type State = {
 };
 
 export function updateOpenBalancesFlow() {
-  registerStep(WORKFLOW, initStep);
-  registerStep(WORKFLOW, processOneStep);
+  registerStep(FLOW_NAME, updateOpenBalancesStep01);
+  registerStep(FLOW_NAME, processOneStep);
 }
 
 /** Step 1: capture a stable list of open keys and move to the worker step. */
-const initStep: StepFn = ({ input, log }) => {
+const updateOpenBalancesStep01: UpdateOpenBalancesStepFn = ({ log }) => {
   const fn = "init";
   const start = log.start(fn);
 
   try {
-    const { queuedBy } = input as UpdateOpenBalancesFlowInput;
     const ss = getFinancesSpreadsheet();
     const ba = new BankAccounts(ss);
 
     const keys = ba.getOpenKeys(); // pure read, no queue calls here
-    log(`Found ${keys.length} open accounts`, { queuedBy: queuedBy });
+    log(`Found ${keys.length} open accounts`);
 
     if (keys.length === 0) {
       log("No open accounts to update — finishing.");
@@ -50,7 +45,7 @@ const initStep: StepFn = ({ input, log }) => {
 };
 
 /** Step 2: process exactly ONE key per invocation, then loop until done. */
-const processOneStep: StepFn = ({ state, log, startedAt, budgetMs }) => {
+const processOneStep: UpdateOpenBalancesStepFn = ({ state, log, startedAt, budgetMs }) => {
   const fn = "processOne";
   const start = log.start(fn);
 

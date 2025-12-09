@@ -3,12 +3,11 @@
 import { getErrorMessage } from "@lib/errors";
 import { BankAccounts } from "@sheets/classes/BankAccounts";
 import { updateBalanceValues } from "@sheets/updateBalanceValues";
-import { normalizeFlowInput } from "@workflow/normalizeFlowInput";
 import { registerStep } from "@workflow/workflowRegistry";
-import type { AccountSheetBalanceValuesStepFn } from "@workflow/workflowTypes";
+import type { AccountSheetBalanceValuesStepFn, FlowName } from "@workflow/workflowTypes";
 import { getFinancesSpreadsheet } from "src/getFinancesSpreadsheet";
 
-const FLOW_NAME = "accountSheetBalanceValuesFlow" as const;
+const FLOW_NAME = "accountSheetBalanceValuesFlow" as FlowName;
 
 export function accountSheetBalanceValuesFlow(): void {
   registerStep(FLOW_NAME, accountSheetBalanceValuesStep01);
@@ -23,11 +22,7 @@ const accountSheetBalanceValuesStep01: AccountSheetBalanceValuesStepFn = ({
   const fn = accountSheetBalanceValuesStep01.name;
   const startTime = log.start(fn);
   try {
-    const normalized = normalizeFlowInput(FLOW_NAME, input ?? {});
-
-    log(`${fn}: normalized input:`, normalized);
-
-    const { accountSheetName, startRow } = normalized;
+    const { accountSheetName, startRow } = input;
 
     updateBalanceValues(accountSheetName, startRow);
 

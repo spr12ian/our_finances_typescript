@@ -1,12 +1,11 @@
 // @workflow/flows/applyDescriptionReplacementsFlow.ts
 import { getErrorMessage } from "@lib/errors";
 import { AccountSheet } from "@sheets/classes/AccountSheet";
-import { normalizeFlowInput } from "@workflow/normalizeFlowInput";
-import type { ApplyDescriptionReplacementsStepFn } from "@workflow/workflowTypes";
+import type { ApplyDescriptionReplacementsStepFn, FlowName } from "@workflow/workflowTypes";
 import { getFinancesSpreadsheet } from "src/getFinancesSpreadsheet";
 import { registerStep } from "../workflowRegistry";
 
-const FLOW_NAME = "applyDescriptionReplacementsFlow" as const;
+const FLOW_NAME = "applyDescriptionReplacementsFlow" as FlowName;
 
 export function applyDescriptionReplacementsFlow(): void {
   registerStep(FLOW_NAME, applyDescriptionReplacementsStep01);
@@ -17,11 +16,7 @@ const applyDescriptionReplacementsStep01: ApplyDescriptionReplacementsStepFn =
     const fn = applyDescriptionReplacementsStep01.name;
     const startTime = log.start(fn);
     try {
-      const normalized = normalizeFlowInput(FLOW_NAME, input ?? {});
-
-      log(`${fn}: normalized input:`, normalized);
-
-      const { accountSheetName } = normalized;
+      const { accountSheetName } = input;
 
       applyDescriptionReplacements(accountSheetName);
 

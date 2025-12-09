@@ -1,19 +1,11 @@
 // @workflow/flows/templateFlow.ts
 import { getErrorMessage } from "@lib/errors";
 import { ONE_MINUTE_MS, ONE_SECOND_MS } from "@lib/timeConstants";
-import { normalizeFlowInput } from "../normalizeFlowInput";
 import { registerStep } from "../workflowRegistry";
-import type { StepFn } from "../workflowTypes";
+import type { TemplateStepFn, FlowName } from "../workflowTypes";
 
-const FLOW_NAME = "templateFlow";
+const FLOW_NAME = "templateFlow" as FlowName;
 const MAX_YIELD_STEPS = 3;
-
-export type TemplateFlowInput = {
-  parameter1: string;
-  parameter2: number;
-};
-
-type TemplateStepFn = StepFn<TemplateFlowInput>;
 
 export function templateFlow(): void {
   registerStep(FLOW_NAME, templateStep01);
@@ -27,13 +19,9 @@ const templateStep01: TemplateStepFn = ({ input, state, log }) => {
   const startTime = log.start(fn);
 
   try {
-    const normalized = normalizeFlowInput(
-      "templateFlow",
-      (input ?? {}) as Partial<TemplateFlowInput>
-    ) as TemplateFlowInput;
-    const { parameter1, parameter2 } = normalized;
+    const { parameter1, parameter2 } = input;
 
-    state.e1 = template1(parameter1, parameter2);
+    state.step1 = template1(parameter1, parameter2);
 
     // NOTE: no `input` in the result; `state` is allowed on `next`
     return { kind: "next", nextStep: "templateStep02", state };
@@ -113,7 +101,7 @@ const templateStep04: TemplateStepFn = ({ input, state, log }) => {
     // `complete` supports `output`, not `state`
     const output = {
       done: true,
-      e1: state.e1,
+      step1: state.step1,
       e2: state.e2,
       e3: state.e3,
       e4: state.e4,

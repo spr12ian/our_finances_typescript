@@ -30,12 +30,13 @@ import { storeAccountSheetNames } from "@sheets/accountSheetFunctions";
 import { validateAccountKeys } from "@sheets/validateAccountKeys";
 import { setupWorkflowsOnce } from "@workflow";
 import { FLOW_INPUT_DEFAULTS_REGISTRY } from "@workflow/flowInputConstants";
-import type { TemplateFlowInput } from "@workflow/flows/templateFlow";
+import type { TemplateFlowInput } from "@workflow/workflowTypes";
 import { queueWorkflow } from "@workflow/queueWorkflow";
 import type {
   AccountSheetBalanceValuesFlowInput,
   ApplyDescriptionReplacementsFlowInput,
   FixSheetFlowInput,
+  FlowInput,
   FlowName,
   FormatSheetFlowInput,
   TrimSheetFlowInput,
@@ -291,7 +292,7 @@ export function GAS_template() {
   const input = {
     parameter1: "Example string",
     parameter2: 42,
-  } satisfies TemplateFlowInput;
+  } satisfies Partial<TemplateFlowInput>;
 
   withLog(queueWF_)(GAS_template, input);
 }
@@ -361,8 +362,8 @@ export function GAS_validateAllMenuFunctionNames() {
   validateAllMenuFunctionNames();
 }
 
-function deriveFirstStepName_(queuedBy: string): FlowName {
-  return (queuedBy + "Step01") as FlowName;
+function deriveFirstStepName_(queuedBy: string): string {
+  return (queuedBy + "Step01");
 }
 
 function deriveWorkflowName_(queuedBy: string): FlowName {
@@ -377,7 +378,7 @@ function isDisabled_(fn: Function): boolean {
   return isDisabled;
 }
 
-function queueWF_(workflow: Function, input: unknown) {
+function queueWF_(workflow: Function, input: Partial<FlowInput<FlowName>>) {
   const fn = queueWF_.name;
   const initialName = workflow.name;
 

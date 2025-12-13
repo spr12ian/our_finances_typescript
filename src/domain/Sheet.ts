@@ -569,10 +569,14 @@ export class Sheet {
     }
     logFinish();
   }
+  
   // Call this after any mutating operation:
   private changed() {
+    this.#afterHeaderRange = undefined;
     this.#dataRange = undefined;
-    this.#trueBounds = undefined;
+    this.#dataRows = undefined;
+    this.#firstRow = undefined;
     this.#headerRange = undefined;
+    this.#trueBounds = undefined;
   }
 }

@@ -30,7 +30,6 @@ import { storeAccountSheetNames } from "@sheets/accountSheetFunctions";
 import { validateAccountKeys } from "@sheets/validateAccountKeys";
 import { setupWorkflowsOnce } from "@workflow";
 import { FLOW_INPUT_DEFAULTS_REGISTRY } from "@workflow/flowInputConstants";
-import type { TemplateFlowInput } from "@workflow/workflowTypes";
 import { queueWorkflow } from "@workflow/queueWorkflow";
 import type {
   AccountSheetBalanceValuesFlowInput,
@@ -39,8 +38,8 @@ import type {
   FlowInput,
   FlowName,
   FormatSheetFlowInput,
+  TemplateFlowInput,
   TrimSheetFlowInput,
-  UpdateOpenBalancesFlowInput,
 } from "@workflow/workflowTypes";
 import { getFinancesSpreadsheet } from "../../getFinancesSpreadsheet";
 import { ONE_MINUTE_MS } from "../../lib/timeConstants";
@@ -344,14 +343,11 @@ export function GAS_updateAllDependencies() {
 }
 
 export function GAS_updateOpenBalances() {
-  const input = {} satisfies UpdateOpenBalancesFlowInput;
-
-  withLog(queueWF_)(GAS_updateOpenBalances, input);
+  withLog(queueWF_)(GAS_updateOpenBalances, {});
 }
 
 export function GAS_updateTransactions() {
-  const spreadsheet = getFinancesSpreadsheet();
-  new OurFinances(spreadsheet).updateTransactions();
+  withLog(queueWF_)(GAS_updateTransactions, {});
 }
 
 export function GAS_validateAccountKeys() {
@@ -363,7 +359,7 @@ export function GAS_validateAllMenuFunctionNames() {
 }
 
 function deriveFirstStepName_(queuedBy: string): string {
-  return (queuedBy + "Step01");
+  return queuedBy + "Step01";
 }
 
 function deriveWorkflowName_(queuedBy: string): FlowName {

@@ -41,8 +41,8 @@ export class Transactions {
     return result;
   }
 
-  update() {
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
+  updateFormula() {
+    const ss = this.spreadsheet.raw;
     const sheets = ss.getSheets();
     const transactionSheet = this.sheet.raw;
     // const exclude = new Set(["_CVITRA", "_SVIIRF"]);

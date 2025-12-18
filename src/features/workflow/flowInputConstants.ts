@@ -27,6 +27,8 @@ export const FLOW_INPUT_DEFAULTS_REGISTRY = {
   },
   updateOpenBalancesFlow: {
   },
+  updateTransactionsFlow: {
+  },
 } satisfies {
   accountSheetBalanceValuesFlow: {
     accountSheetName: string,
@@ -53,5 +55,7 @@ export const FLOW_INPUT_DEFAULTS_REGISTRY = {
     sheetName: string,
   },
   updateOpenBalancesFlow: {
+  },
+  updateTransactionsFlow: {
   },
 };

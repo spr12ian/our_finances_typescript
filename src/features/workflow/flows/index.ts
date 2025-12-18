@@ -6,3 +6,4 @@ export { sendMeHtmlEmailFlow } from "./sendMeHtmlEmailFlow";
 export { templateFlow } from "./templateFlow";
 export { trimSheetFlow } from "./trimSheetFlow";
 export { updateOpenBalancesFlow } from "./updateOpenBalancesFlow";
+export { updateTransactionsFlow } from "./updateTransactionsFlow";

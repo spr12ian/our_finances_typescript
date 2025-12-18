@@ -13,6 +13,7 @@ export function registerAllWorkflows(): void {
   flow.templateFlow();
   flow.trimSheetFlow();
   flow.updateOpenBalancesFlow();
+  flow.updateTransactionsFlow();
 
   allFlowsRegistered = true;
 }

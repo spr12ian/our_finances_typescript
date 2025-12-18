@@ -113,6 +113,24 @@ export class OurFinances {
     return this.#spreadsheet.url;
   }
 
+  accountSheetBalanceValues(rowEdited?: number) {
+    FastLog.log(`Started OurFinances.accountSheetBalanceValues`);
+
+    const activeSheet = this.#spreadsheet.activeSheet;
+    if (!activeSheet) {
+      FastLog.log("No active sheet found.");
+      return;
+    }
+
+    if (isAccountSheet(activeSheet)) {
+      FastLog.log(`Sheet ${activeSheet.name} is an account sheet.`);
+      const accountSheet = new AccountSheet(activeSheet, this.#spreadsheet);
+      accountSheet.accountSheetBalanceValues(rowEdited);
+    }
+
+    FastLog.log(`Finished OurFinances.accountSheetBalanceValues`);
+  }
+
   fixAccountSheet() {
     FastLog.log(`Started OurFinances.fixAccountSheet`);
 
@@ -146,27 +164,5 @@ export class OurFinances {
   updateAllDependencies() {
     const dependencies = new Dependencies(this.#spreadsheet);
     dependencies.updateAllDependencies();
-  }
-
-  accountSheetBalanceValues(rowEdited?: number) {
-    FastLog.log(`Started OurFinances.accountSheetBalanceValues`);
-
-    const activeSheet = this.#spreadsheet.activeSheet;
-    if (!activeSheet) {
-      FastLog.log("No active sheet found.");
-      return;
-    }
-
-    if (isAccountSheet(activeSheet)) {
-      FastLog.log(`Sheet ${activeSheet.name} is an account sheet.`);
-      const accountSheet = new AccountSheet(activeSheet, this.#spreadsheet);
-      accountSheet.accountSheetBalanceValues(rowEdited);
-    }
-
-    FastLog.log(`Finished OurFinances.accountSheetBalanceValues`);
-  }
-
-  updateTransactions() {
-    this.transactions.update();
   }
 }

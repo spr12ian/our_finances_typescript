@@ -57,6 +57,12 @@ export type UpdateOpenBalancesFlowInput =
 export type UpdateOpenBalancesStepFn =
   StepFn<UpdateOpenBalancesFlowInput>;
 
+export type UpdateTransactionsFlowInput =
+  FlowInput<"updateTransactionsFlow">;
+
+export type UpdateTransactionsStepFn =
+  StepFn<UpdateOpenBalancesFlowInput>;
+
 // Engine-only meta that is NOT serialized
 export type EngineMeta = {
   attempt: number; // sheet-derived, injected by worker

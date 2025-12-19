@@ -31,6 +31,7 @@ import { validateAccountKeys } from "@sheets/validateAccountKeys";
 import { setupWorkflowsOnce } from "@workflow";
 import { FLOW_INPUT_DEFAULTS_REGISTRY } from "@workflow/flowInputConstants";
 import { queueWorkflow } from "@workflow/queueWorkflow";
+import { hasStep } from "@workflow/workflowRegistry";
 import type {
   AccountSheetBalanceValuesFlowInput,
   ApplyDescriptionReplacementsFlowInput,
@@ -391,5 +392,10 @@ function queueWF_(workflow: Function, input: Partial<FlowInput<FlowName>>) {
   FastLog.log(fn, { workflowName, firstStep, input, queuedBy });
 
   withLog(setupWorkflowsOnce)();
+
+  if (!hasStep(workflowName, firstStep)) {
+    throw new Error(`No such step registered: ${workflowName}.${firstStep}`);
+  }
+
   withLog(queueWorkflow)(workflowName, firstStep, input, { queuedBy });
 }

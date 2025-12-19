@@ -8,7 +8,7 @@ import { registerStep } from "../workflowRegistry";
 const FLOW_NAME = "applyDescriptionReplacementsFlow" as FlowName;
 
 export function applyDescriptionReplacementsFlow(): void {
-  registerStep(FLOW_NAME, applyDescriptionReplacementsStep01);
+  registerStep(FLOW_NAME, "applyDescriptionReplacementsStep01", applyDescriptionReplacementsStep01);
 }
 
 const applyDescriptionReplacementsStep01: ApplyDescriptionReplacementsStepFn =

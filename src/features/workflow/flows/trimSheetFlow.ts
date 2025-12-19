@@ -7,7 +7,7 @@ const FLOW_NAME = "trimSheetFlow" as FlowName;
 
 export function trimSheetFlow(): void {
   // import step implementations here to register them
-  registerStep(FLOW_NAME, trimSheetStep01);
+  registerStep(FLOW_NAME, "trimSheetStep01", trimSheetStep01);
 }
 
 const trimSheetStep01: TrimSheetStepFn = ({ input, log }) => {

@@ -4,14 +4,25 @@ import { getErrorMessage } from "@lib/errors";
 import { BankAccounts } from "@sheets/classes/BankAccounts";
 import { updateBalanceValues } from "@sheets/updateBalanceValues";
 import { registerStep } from "@workflow/workflowRegistry";
-import type { AccountSheetBalanceValuesStepFn, FlowName } from "@workflow/workflowTypes";
+import type {
+  AccountSheetBalanceValuesStepFn,
+  FlowName,
+} from "@workflow/workflowTypes";
 import { getFinancesSpreadsheet } from "src/getFinancesSpreadsheet";
 
 const FLOW_NAME = "accountSheetBalanceValuesFlow" as FlowName;
 
 export function accountSheetBalanceValuesFlow(): void {
-  registerStep(FLOW_NAME, accountSheetBalanceValuesStep01);
-  registerStep(FLOW_NAME, accountSheetBalanceValuesStep02);
+  registerStep(
+    FLOW_NAME,
+    "accountSheetBalanceValuesStep01",
+    accountSheetBalanceValuesStep01
+  );
+  registerStep(
+    FLOW_NAME,
+    "accountSheetBalanceValuesStep02",
+    accountSheetBalanceValuesStep02
+  );
 }
 
 const accountSheetBalanceValuesStep01: AccountSheetBalanceValuesStepFn = ({

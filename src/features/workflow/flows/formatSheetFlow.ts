@@ -7,7 +7,7 @@ const FLOW_NAME = "formatSheetFlow" as FlowName;
 
 export function formatSheetFlow(): void {
   // import step implementations here to register them
-  registerStep(FLOW_NAME, formatSheetStep01);
+  registerStep(FLOW_NAME, "formatSheetStep01", formatSheetStep01);
 }
 
 const formatSheetStep01: FormatSheetStepFn = ({ input, log }) => {

@@ -15,12 +15,17 @@ export function getStep(
   return step;
 }
 
+export function hasStep(workflowName: string, stepName: string): boolean {
+  return stepRegistry.has(`${workflowName}.${stepName}`);
+}
+
 export function registerStep<TInput = unknown, TState = Record<string, any>>(
   workflowName: string,
+  stepName: string,
   stepFn: StepFn<TInput, TState>
 ): void {
   stepRegistry.set(
-    `${workflowName}.${stepFn.name}`,
+    `${workflowName}.${stepName}`,
     stepFn as StepFn<any, any>
   );
 }

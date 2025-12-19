@@ -9,7 +9,7 @@ const FLOW_NAME = "fixSheetFlow" as FlowName;
 
 export function fixSheetFlow(): void {
   // import step implementations here to register them
-  registerStep(FLOW_NAME, fixSheetStep01);
+  registerStep(FLOW_NAME, "fixSheetStep01", fixSheetStep01);
 }
 
 const fixSheetStep01: FixSheetStepFn = ({ input, log }) => {

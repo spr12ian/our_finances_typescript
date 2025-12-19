@@ -21,47 +21,33 @@ export type ApplyDescriptionReplacementsFlowInput =
 export type ApplyDescriptionReplacementsStepFn =
   StepFn<ApplyDescriptionReplacementsFlowInput>;
 
-export type FixSheetFlowInput =
-  FlowInput<"fixSheetFlow">;
+export type FixSheetFlowInput = FlowInput<"fixSheetFlow">;
 
-export type FixSheetStepFn =
-  StepFn<FixSheetFlowInput>;
+export type FixSheetStepFn = StepFn<FixSheetFlowInput>;
 
-export type FormatSheetFlowInput =
-  FlowInput<"formatSheetFlow">;
+export type FormatSheetFlowInput = FlowInput<"formatSheetFlow">;
 
-export type FormatSheetStepFn =
-  StepFn<FormatSheetFlowInput>;
+export type FormatSheetStepFn = StepFn<FormatSheetFlowInput>;
 
-export type SendMeHtmlEmailFlowInput =
-  FlowInput<"sendMeHtmlEmailFlow">;
+export type SendMeHtmlEmailFlowInput = FlowInput<"sendMeHtmlEmailFlow">;
 
-export type SendMeHtmlEmailStepFn =
-  StepFn<SendMeHtmlEmailFlowInput>;
+export type SendMeHtmlEmailStepFn = StepFn<SendMeHtmlEmailFlowInput>;
 
-export type TemplateFlowInput =
-  FlowInput<"templateFlow">;
+export type TemplateFlowInput = FlowInput<"templateFlow">;
 
-export type TemplateStepFn =
-  StepFn<TemplateFlowInput>;
+export type TemplateStepFn = StepFn<TemplateFlowInput>;
 
-export type TrimSheetFlowInput =
-  FlowInput<"trimSheetFlow">;
+export type TrimSheetFlowInput = FlowInput<"trimSheetFlow">;
 
-export type TrimSheetStepFn =
-  StepFn<TrimSheetFlowInput>;
+export type TrimSheetStepFn = StepFn<TrimSheetFlowInput>;
 
-export type UpdateOpenBalancesFlowInput =
-  FlowInput<"updateOpenBalancesFlow">;
+export type UpdateOpenBalancesFlowInput = FlowInput<"updateOpenBalancesFlow">;
 
-export type UpdateOpenBalancesStepFn =
-  StepFn<UpdateOpenBalancesFlowInput>;
+export type UpdateOpenBalancesStepFn = StepFn<UpdateOpenBalancesFlowInput>;
 
-export type UpdateTransactionsFlowInput =
-  FlowInput<"updateTransactionsFlow">;
+export type UpdateTransactionsFlowInput = FlowInput<"updateTransactionsFlow">;
 
-export type UpdateTransactionsStepFn =
-  StepFn<UpdateOpenBalancesFlowInput>;
+export type UpdateTransactionsStepFn = StepFn<UpdateTransactionsFlowInput>;
 
 // Engine-only meta that is NOT serialized
 export type EngineMeta = {
@@ -82,27 +68,23 @@ export type SerializedRunStepParameters = {
 export type RunStepJob = SerializedRunStepParameters & EngineMeta;
 
 // Generic step context (what each step sees)
-export type StepContext<
-  TInput = unknown,
-  TState = Record<string, any>
-> = {
-  queueId: QueueId;              // one run across all steps
-  workflowName: string;          // e.g., "templateFlow"
-  stepName: string;              // e.g., "templateStep01"
-  input: TInput;                 // strongly-typed per flow
-  state: TState;                 // mutable per-step state
-  attempt: number;               // attempt count for this step
-  budgetMs: number;              // soft budget per invocation (e.g., 25 seconds)
-  startedAt: number;             // Date.now()
+export type StepContext<TInput = unknown, TState = Record<string, any>> = {
+  queueId: QueueId; // one run across all steps
+  workflowName: string; // e.g., "templateFlow"
+  stepName: string; // e.g., "templateStep01"
+  input: TInput; // strongly-typed per flow
+  state: TState; // mutable per-step state
+  attempt: number; // attempt count for this step
+  budgetMs: number; // soft budget per invocation (e.g., 25 seconds)
+  startedAt: number; // Date.now()
   log: StepLogger;
   now: () => number;
 };
 
 // Step function contract (generic)
-export type StepFn<
-  TInput = unknown,
-  TState = Record<string, any>
-> = (ctx: StepContext<TInput, TState>) => StepResult;
+export type StepFn<TInput = unknown, TState = Record<string, any>> = (
+  ctx: StepContext<TInput, TState>
+) => StepResult;
 
 // Instruction returned by a step
 export type StepResult =

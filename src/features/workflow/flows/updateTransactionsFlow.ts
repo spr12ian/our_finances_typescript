@@ -1,21 +1,19 @@
 // @workflow/flows/updateTransactionsFlow.ts
+
 import { getErrorMessage } from "@lib/errors";
+import { trimSheet } from "@sheets/trimSheet";
 import { updateTransactionsFormula } from "@sheets/updateTransactionsFormula";
 import { registerStep } from "../workflowRegistry";
 import type { FlowName, UpdateTransactionsStepFn } from "../workflowTypes";
-import { trimSheet } from '@sheets/trimSheet';
 
 const FLOW_NAME = "updateTransactionsFlow" as FlowName;
 
 export function updateTransactionsFlow(): void {
-  registerStep(FLOW_NAME, updateTransactionsStep01);
-  registerStep(FLOW_NAME, updateTransactionsStep02);
+  registerStep(FLOW_NAME, "updateTransactionsStep01", updateTransactionsStep01);
+  registerStep(FLOW_NAME, "updateTransactionsStep02", updateTransactionsStep02);
 }
 
-const updateTransactionsStep01: UpdateTransactionsStepFn = ({
-  state,
-  log,
-}) => {
+const updateTransactionsStep01: UpdateTransactionsStepFn = ({ state, log }) => {
   const fn = updateTransactionsStep01.name;
   const startTime = log.start(fn);
 
@@ -31,10 +29,7 @@ const updateTransactionsStep01: UpdateTransactionsStepFn = ({
     log.finish(fn, startTime);
   }
 };
-const updateTransactionsStep02: UpdateTransactionsStepFn = ({
-  state,
-  log,
-}) => {
+const updateTransactionsStep02: UpdateTransactionsStepFn = ({ state, log }) => {
   const fn = updateTransactionsStep02.name;
   const startTime = log.start(fn);
   try {

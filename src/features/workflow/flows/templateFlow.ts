@@ -8,10 +8,10 @@ const FLOW_NAME = "templateFlow" as FlowName;
 const MAX_YIELD_STEPS = 3;
 
 export function templateFlow(): void {
-  registerStep(FLOW_NAME, templateStep01);
-  registerStep(FLOW_NAME, templateStep02);
-  registerStep(FLOW_NAME, templateStep03);
-  registerStep(FLOW_NAME, templateStep04);
+  registerStep(FLOW_NAME, "templateStep01", templateStep01);
+  registerStep(FLOW_NAME, "templateStep02", templateStep02);
+  registerStep(FLOW_NAME, "templateStep03", templateStep03);
+  registerStep(FLOW_NAME, "templateStep04", templateStep04);
 }
 
 const templateStep01: TemplateStepFn = ({ input, state, log }) => {

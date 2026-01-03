@@ -73,7 +73,14 @@ export function onEditRecalcBalances(e: SheetsOnEdit): void {
       );
 
       // Hand off to your workflow instead of doing heavy work inline
-      setupWorkflowsOnce();
+      const ready = withLog(setupWorkflowsOnce)();
+      if (!ready) {
+        FastLog.warn(
+          fn,
+          "Workflows not ready (lock contention). Skipping accountSheetBalanceValuesFlow."
+        );
+        return;
+      }
 
       withLog(queueWorkflow)(
         "accountSheetBalanceValuesFlow",

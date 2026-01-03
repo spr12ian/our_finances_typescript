@@ -21,12 +21,20 @@ export function enqueueRunStep(
   const { delayMs = 0, priority, queuedBy } = options;
 
   if (!isEngineConfigured()) {
-    setupWorkflowsOnce({ allowRetryTrigger: false });
+    const ready = setupWorkflowsOnce({ allowRetryTrigger: true });
+    if (!ready) {
+      FastLog.warn(
+        fn,
+        "Engine not ready (lock contention). Retry scheduled; skipping enqueueRunStep."
+      );
+      return;
+    }
   }
 
-  const enqueue = getEnqueue();
+  const enqueue = getEnqueue(); // now safe
   const ms = Math.max(0, Math.floor(delayMs ?? 0));
   const runAt: Date | undefined =
     ms > 0 ? new Date(Date.now() + ms) : undefined;
+
   withLog(enqueue)(rsp, { runAt, priority, queuedBy });
 }

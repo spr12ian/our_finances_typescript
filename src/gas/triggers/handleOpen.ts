@@ -2,6 +2,8 @@
 
 import { getTriggerEventSheet } from "@gas/getTriggerEventSheet";
 import { isSheetInIgnoreList } from "@lib/isSheetInIgnoreList";
+import { FastLog } from "@lib/logging/FastLog";
+import { withLog } from "@lib/logging/WithLog";
 import { setupWorkflowsOnce } from "@workflow";
 import { enqueueFixSheetFlow } from "@workflow/enqueueFixSheetFlow";
 
@@ -20,7 +22,14 @@ export function handleOpen(e: SheetsOnOpen): void {
 }
 
 function queueFixSheet_(sheetName: string, fn: string) {
-  setupWorkflowsOnce();
+  const ready = withLog(setupWorkflowsOnce)();
+  if (!ready) {
+    FastLog.warn(
+      fn,
+      "Workflows not ready (lock contention). Skipping enqueueFixSheetFlow."
+    );
+    return;
+  }
 
   enqueueFixSheetFlow(sheetName, fn);
 }

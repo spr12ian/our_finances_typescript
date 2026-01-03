@@ -146,7 +146,14 @@ function startFlow_(sheet: Sheet) {
     return;
   }
 
-  setupWorkflowsOnce();
+  const ready = withLog(setupWorkflowsOnce)();
+  if (!ready) {
+    FastLog.warn(
+      fn,
+      "Workflows not ready (lock contention). Skipping accountSheetBalanceValuesFlow."
+    );
+    return;
+  }
 
   withLog(queueWorkflow)(
     "accountSheetBalanceValuesFlow",

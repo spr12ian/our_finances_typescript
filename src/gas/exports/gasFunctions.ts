@@ -391,7 +391,11 @@ function queueWF_(workflow: Function, input: Partial<FlowInput<FlowName>>) {
 
   FastLog.log(fn, { workflowName, firstStep, input, queuedBy });
 
-  withLog(setupWorkflowsOnce)();
+  const ready = withLog(setupWorkflowsOnce)();
+  if (!ready) {
+    FastLog.warn(fn, "Workflows not ready (lock contention). Retry trigger scheduled; skipping queueWF_.");
+    return;
+  }
 
   if (!hasStep(workflowName, firstStep)) {
     throw new Error(`No such step registered: ${workflowName}.${firstStep}`);
